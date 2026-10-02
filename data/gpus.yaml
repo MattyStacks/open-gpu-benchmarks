@@ -1,0 +1,80 @@
+
+# form_factor enables desktop vs laptop vs handheld in same graph
+- id: rtx_4090
+  name: GeForce RTX 4090
+  vendor: nvidia
+  form_factor: desktop
+  vram_gb: 24
+  tdp_w: 450
+
+- id: rtx_4080_super
+  name: GeForce RTX 4080 Super
+  vendor: nvidia
+  form_factor: desktop
+  vram_gb: 16
+  tdp_w: 320
+
+- id: rtx_4070_super
+  name: GeForce RTX 4070 Super
+  vendor: nvidia
+  form_factor: desktop
+  vram_gb: 12
+  tdp_w: 220
+
+- id: rx_7900_xtx
+  name: Radeon RX 7900 XTX
+  vendor: amd
+  form_factor: desktop
+  vram_gb: 24
+  tdp_w: 355
+
+- id: arc_a770
+  name: Intel Arc A770
+  vendor: intel
+  form_factor: desktop
+  vram_gb: 16
+  tdp_w: 225
+
+- id: rtx_4090_laptop
+  name: GeForce RTX 4090 Laptop
+  vendor: nvidia
+  form_factor: laptop
+  vram_gb: 16
+  tdp_w: 150
+
+- id: rtx_4070_laptop
+  name: GeForce RTX 4070 Laptop
+  vendor: nvidia
+  form_factor: laptop
+  vram_gb: 8
+  tdp_w: 115
+
+- id: arc_a770m
+  name: Intel Arc A770M
+  vendor: intel
+  form_factor: laptop
+  vram_gb: 16
+  tdp_w: 120
+
+- id: rog_ally_z1_extreme
+  name: ROG Ally Z1 Extreme
+  vendor: amd
+  form_factor: handheld
+  vram_gb: 0
+  tdp_w: 30
+  device: handheld
+
+- id: steam_deck_oled
+  name: Steam Deck OLED
+  vendor: amd
+  form_factor: handheld
+  vram_gb: 0
+  tdp_w: 15
+  device: handheld
+
+- id: legion_go
+  name: Legion Go Z1 Extreme
+  vendor: amd
+  form_factor: handheld
+  vram_gb: 0
+  tdp_w: 30

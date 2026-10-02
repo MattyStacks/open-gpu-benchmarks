@@ -1,0 +1,16 @@
+
+gpu_id: rtx_4070_super
+game: Cyberpunk 2077
+resolution: 1440p
+settings: Ultra RT
+form_factor: desktop
+os: Windows 11
+results:
+  avg_fps: 79.1
+  p1_low: 65.0
+  p5_low: 68.2 # optional from PresentMon screenshot
+system:
+  driver: 561.09 # OPTIONAL - not required for PR
+proof:
+  raw_log: Cyberpunk_4070S_1440p.csv
+  format: presentmon_summary

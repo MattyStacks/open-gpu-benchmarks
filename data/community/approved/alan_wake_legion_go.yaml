@@ -1,0 +1,13 @@
+gpu_id: legion_go
+game: Alan Wake 2
+version: "1.2"
+resolution: 1440p
+settings: High RT
+synthetic: true
+results:
+  avg_fps: 31.0
+  p1_low: 22.0
+system:
+  driver: "24.1.1"
+proof:
+  raw_log: raw/legion_go/alan_wake_2_1440p.csv

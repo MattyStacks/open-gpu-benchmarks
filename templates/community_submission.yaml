@@ -12,5 +12,10 @@ results:
 system:
   driver: 561.09 # OPTIONAL - not required for PR
 proof:
-  raw_log: Cyberpunk_4070S_1440p.csv
+  # Strongly encouraged when a raw capture is available. Keep the capture
+  # under data/community/approved/raw/ after approval.
+  raw_log: raw/rtx_4070_super/Cyberpunk_4070S_1440p.csv
   format: presentmon_summary
+  # If a raw log is unavailable, remove raw_log and provide a clear source.
+  # Summary-only submissions are accepted for review but are labeled as such.
+  # summary_source: Screenshot or manually recorded benchmark summary

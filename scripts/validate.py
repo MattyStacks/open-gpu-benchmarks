@@ -42,8 +42,12 @@ for pf in pending:
     if not data.get("system",{}).get("driver"):
         print(f"::warning:: {pf} missing optional driver - OK, but encourage adding it")
 
-    if not data.get("proof",{}).get("raw_log"):
-        print(f"::warning:: {pf} missing proof.raw_log")
+    proof=data.get("proof",{})
+    if not proof.get("raw_log"):
+        if proof.get("summary_source"):
+            print(f"::warning:: {pf} is a summary-only submission; raw proof is encouraged")
+        else:
+            print(f"::warning:: {pf} has no raw_log or summary_source proof reference")
 
 print("\nValidation done" + (" - FAILED" if failed else " - PASSED"))
 sys.exit(1 if failed else 0)

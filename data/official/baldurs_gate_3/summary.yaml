@@ -1,0 +1,22 @@
+game: Baldur's Gate 3
+version: "4.1"
+synthetic: true
+runs:
+  - gpu_id: rtx_4090
+    resolution: 4K
+    settings: Ultra
+    avg_fps: 138.0
+    p1_low: 112.0
+    driver: "551.23"
+  - gpu_id: rtx_4080_super
+    resolution: 4K
+    settings: Ultra
+    avg_fps: 108.0
+    p1_low: 88.0
+    driver: "551.23"
+  - gpu_id: rtx_4090_laptop
+    resolution: 4K
+    settings: Ultra
+    avg_fps: 72.0
+    p1_low: 56.0
+    driver: "551.23"

@@ -6,6 +6,29 @@ Compare desktop, laptop, handheld, and integrated GPUs in one interactive graph.
 The site is a static GitHub Pages dashboard. Benchmark source data lives in
 `data/`, and the build script publishes browser-ready JSON to `site/api/`.
 
+## Data flow
+
+Official and community results stay separate from review through publication:
+
+```text
+data/official/**/summary.yaml              reviewed official summaries
+data/community/pending/*.yaml              incoming community PR submissions
+data/community/approved/*.yaml             approved community summaries
+data/community/approved/raw/**             optional raw capture evidence
+                    ↓
+python scripts/build.py
+                    ↓
+site/api/v1/official.json                  official dashboard records
+site/api/v1/community.json                 averaged community records
+site/api/v1/dashboard.json                 combined dashboard dataset
+```
+
+Raw captures are retained in Git for reproducibility but are deliberately
+excluded from the browser payload. Community summaries without raw captures
+are accepted for review when they provide `proof.summary_source`; the site
+labels them as **Summary only**. This initial `v0.1.0` dataset is synthetic
+scaffolding and is visibly marked as such in the dashboard.
+
 ## Site
 `site/index.html` is the dashboard entry point.
 
@@ -40,6 +63,12 @@ See docs/COPILOT_HANDOFF.md
 python scripts/parse.py your.csv --gpu-id rog_ally_z1_extreme --game "Cyberpunk 2077" --form-factor handheld
 
 Supports summary CSV from screenshot + detailed + MangoHud.
+
+## Versioning
+
+The repository uses Git tags for named public releases. `v0.1.0` is the first
+synthetic, data-driven Pages scaffold. Each tagged commit versions the site,
+source YAML, raw evidence, and build logic together.
 
 ## License
 MIT Code, CC0 Data

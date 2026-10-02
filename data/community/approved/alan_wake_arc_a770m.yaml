@@ -1,0 +1,11 @@
+gpu_id: arc_a770m
+game: Alan Wake 2
+version: "1.2"
+resolution: 1440p
+settings: High RT
+synthetic: true
+results:
+  avg_fps: 46.0
+  p1_low: 35.0
+proof:
+  summary_source: Screenshot of PresentMon summary supplied by contributor

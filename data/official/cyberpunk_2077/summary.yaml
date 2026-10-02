@@ -1,0 +1,22 @@
+game: Cyberpunk 2077
+version: "2.12"
+synthetic: true
+runs:
+  - gpu_id: rtx_4090
+    resolution: 1440p
+    settings: Ultra RT
+    avg_fps: 178.0
+    p1_low: 146.0
+    driver: "551.23"
+  - gpu_id: rtx_4070_super
+    resolution: 1440p
+    settings: Ultra RT
+    avg_fps: 96.0
+    p1_low: 78.0
+    driver: "551.23"
+  - gpu_id: rtx_4090_laptop
+    resolution: 1440p
+    settings: Ultra RT
+    avg_fps: 118.0
+    p1_low: 96.0
+    driver: "551.23"

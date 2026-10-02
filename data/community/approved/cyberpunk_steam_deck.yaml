@@ -1,0 +1,11 @@
+gpu_id: steam_deck_oled
+game: Cyberpunk 2077
+version: "2.12"
+resolution: 1440p
+settings: Ultra RT
+synthetic: true
+results:
+  avg_fps: 27.0
+  p1_low: 19.0
+proof:
+  summary_source: Manual benchmark summary supplied by contributor

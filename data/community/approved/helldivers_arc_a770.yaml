@@ -1,0 +1,11 @@
+gpu_id: arc_a770
+game: Helldivers 2
+version: "1.001"
+resolution: 1080p
+settings: Ultra
+synthetic: true
+results:
+  avg_fps: 72.0
+  p1_low: 52.0
+proof:
+  summary_source: Average and 1% low manually transcribed by contributor

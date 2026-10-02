@@ -1,0 +1,11 @@
+gpu_id: steam_deck_oled
+game: Baldur's Gate 3
+version: "4.1"
+resolution: 4K
+settings: Ultra
+synthetic: true
+results:
+  avg_fps: 38.0
+  p1_low: 28.0
+proof:
+  raw_log: raw/steam_deck_oled/baldurs_gate_3_4k.csv

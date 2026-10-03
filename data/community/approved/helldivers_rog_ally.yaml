@@ -2,7 +2,7 @@ gpu_id: rog_ally_z1_extreme
 game: Helldivers 2
 version: "1.001"
 resolution: 1080p
-settings: Ultra
+graphics_preset: Ultra
 synthetic: true
 results:
   avg_fps: 48.0

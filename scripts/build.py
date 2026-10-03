@@ -21,7 +21,8 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 OUTPUT_DIR = ROOT / "site" / "api" / "v1"
-SCHEMA_VERSION = "0.1"
+SCHEMA_VERSION = "0.3"
+RELEASE_VERSION = "0.2.0"
 
 
 def load_yaml(path):
@@ -51,9 +52,12 @@ def build_record(run, source, source_path, index, gpu_by_id, defaults):
     if float(p1_low) > float(avg_fps):
         raise ValueError(f"{source_path}: p1_low cannot exceed avg_fps")
 
+    system = run.get("system", {})
     proof = run.get("proof", {})
     raw_log = proof.get("raw_log")
     summary_source = proof.get("summary_source")
+    gpu_power_w = run.get("gpu_power_w", run.get("tgp_w", system.get("gpu_power_w", system.get("tgp_w"))))
+    implementation_name = run.get("device_name", run.get("implementation_name", system.get("device_name")))
     return {
         "id": run_id(source, source_path, index),
         "source": source,
@@ -66,10 +70,19 @@ def build_record(run, source, source_path, index, gpu_by_id, defaults):
         "game": run.get("game", defaults.get("game")),
         "game_version": str(run.get("version", defaults.get("version", ""))),
         "resolution": run.get("resolution"),
-        "settings": run.get("settings"),
+        "graphics_preset": run.get("graphics_preset", ""),
+        "upscaling": run.get("upscaling", ""),
+        "frame_generation": bool(run.get("frame_generation", False)),
         "avg_fps": round(float(avg_fps), 2),
         "p1_low": round(float(p1_low), 2),
-        "driver": str(run.get("system", {}).get("driver", run.get("driver", ""))),
+        "driver": str(system.get("driver", run.get("driver", ""))),
+        "implementation_name": implementation_name or "",
+        "gpu_power_w": float(gpu_power_w) if gpu_power_w is not None else None,
+        "overclocked": bool(run.get("overclocked", False)),
+        "cpu": str(system.get("cpu", "")),
+        "memory": str(system.get("memory", system.get("ram", ""))),
+        "power_mode": str(system.get("power_mode", system.get("tdp_mode", ""))),
+        "display_mode": str(system.get("display_mode", "")),
         "proof_level": "raw-log" if raw_log else "summary-only",
         "proof_reference": raw_log or summary_source or "",
         "source_file": relative_path(source_path),
@@ -107,28 +120,53 @@ def community_records(gpu_by_id):
 
 
 def community_averages(records):
+    return aggregate_records(records, "community-average")
+
+
+def aggregate_records(records, id_prefix):
     grouped = defaultdict(list)
     for record in records:
         grouped[
             (
                 record["gpu_id"],
                 record["game"],
-                record["game_version"],
                 record["resolution"],
-                record["settings"],
+                record["graphics_preset"],
+                record["form_factor"],
+                record["gpu_power_w"],
             )
         ].append(record)
 
     averages = []
     for runs in grouped.values():
         first = runs[0]
+        implementations = [
+            {
+                key: run[key]
+                for key in (
+                    "implementation_name",
+                    "gpu_power_w",
+                    "overclocked",
+                    "cpu",
+                    "memory",
+                    "power_mode",
+                    "display_mode",
+                    "driver",
+                )
+                if run[key] not in ("", None)
+            }
+            for run in runs
+        ]
         averages.append(
             {
                 **first,
-                "id": f"community-average-{first['id']}",
+                "id": f"{id_prefix}-{first['id']}",
                 "run_count": len(runs),
                 "avg_fps": round(sum(run["avg_fps"] for run in runs) / len(runs), 2),
                 "p1_low": round(sum(run["p1_low"] for run in runs) / len(runs), 2),
+                "avg_fps_range": [min(run["avg_fps"] for run in runs), max(run["avg_fps"] for run in runs)],
+                "p1_low_range": [min(run["p1_low"] for run in runs), max(run["p1_low"] for run in runs)],
+                "implementations": implementations,
             }
         )
     return averages
@@ -143,12 +181,14 @@ def write_json(name, payload):
 
 def main():
     gpus = load_yaml(DATA_DIR / "gpus.yaml")
+    reviews_source = load_yaml(DATA_DIR / "reviews.yaml")
     gpu_by_id = {gpu["id"]: gpu for gpu in gpus}
     official = official_records(gpu_by_id)
     community_raw = community_records(gpu_by_id)
+    official_summaries = aggregate_records(official, "official-summary")
     community = community_averages(community_raw)
     dashboard_records = sorted(
-        [*official, *community],
+        [*official_summaries, *community],
         key=lambda record: (
             record["game"],
             record["resolution"],
@@ -166,12 +206,26 @@ def main():
         if value.endswith("p")
         else (1, value),
     )
+    preset_order = ["Low", "Medium", "High", "Ultra", "Steam Deck"]
+    graphics_presets = sorted(
+        {*preset_order, *(record["graphics_preset"] for record in dashboard_records)},
+        key=lambda preset: (
+            preset_order.index(preset) if preset in preset_order else len(preset_order),
+            preset,
+        ),
+    )
     metadata = {
         "schema_version": SCHEMA_VERSION,
-        "release_version": os.getenv("RELEASE_VERSION", "0.1.0"),
+        "release_version": os.getenv("RELEASE_VERSION", RELEASE_VERSION),
         "commit": os.getenv("GITHUB_SHA", "local")[:12],
         "generated_at": datetime.now(UTC).isoformat(),
         "synthetic_data": any(record["synthetic"] for record in dashboard_records),
+        "comparison_policy": {
+            "group_by": ["gpu_id", "form_factor", "gpu_power_w", "game", "resolution", "graphics_preset"],
+            "game_version_is_not_a_grouping_key": True,
+            "frame_generation": "off",
+            "community_outlier_threshold": 0.5,
+        },
     }
 
     write_json("gpus.json", {"metadata": metadata, "gpus": gpus})
@@ -186,7 +240,9 @@ def main():
             "metadata": metadata,
             "games": games,
             "resolutions": resolutions,
+            "graphics_presets": graphics_presets,
             "records": dashboard_records,
+            "reviews": reviews_source.get("reviews", []),
         },
     )
 

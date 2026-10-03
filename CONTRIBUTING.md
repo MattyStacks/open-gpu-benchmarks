@@ -23,9 +23,20 @@ Required fields currently include:
 - `gpu_id`
 - `game`
 - `resolution`
-- `settings`
+- `graphics_preset`
 - `results.avg_fps`
 - `results.p1_low`
+
+Use a clear graphics preset in `graphics_preset` such as `Low`, `Medium`, `High`,
+`Ultra`, or a game-specific preset such as `Steam Deck`. Frame generation must
+be off. Game version is retained as metadata but is not used to group
+comparable summaries. Desktop and laptop GPUs never share a group; laptop TGP
+is optional when unknown but strongly encouraged.
+
+Include exact machine details whenever known: `device_name`, GPU power/TGP,
+`overclocked`, CPU, memory, power mode, display/MUX mode, driver, and operating
+system. See [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md) for
+the full workflow and review policy.
 
 Raw benchmark captures are strongly encouraged. Keep approved captures under
 `data/community/approved/raw/` and reference them with `proof.raw_log`.

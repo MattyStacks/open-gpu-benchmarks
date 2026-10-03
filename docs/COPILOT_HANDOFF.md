@@ -12,6 +12,7 @@ another computer or in another coding session.
 - Public dashboard data: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/dashboard.json>
 - First release tag: `v0.1.0`
 - Release commit: `8c9922f`
+- Current development version: `v0.2.0`
 - Handoff documentation was added after the release; use `git log --oneline`
   to identify the current `main` tip.
 
@@ -34,6 +35,7 @@ The dashboard preserves the original visual direction and interactions:
 - dark/light theme toggle, persisted in local storage;
 - game selector;
 - resolution selector;
+- graphics-preset selector populated from the generated dashboard payload;
 - All / Official / Community source filters;
 - Desktop / Laptop / Handheld / iGPU form-factor filters;
 - Avg FPS and 1% Low metric toggles;
@@ -42,7 +44,12 @@ The dashboard preserves the original visual direction and interactions:
 - up to six selected GPUs;
 - selected comparison summary;
 - chart and table loaded from generated JSON rather than hard-coded benchmark rows;
-- evidence label for `Raw log` versus `Summary only`.
+- evidence label for `Raw log` versus `Summary only`;
+- grouped chart summaries with exact implementation metadata and observed
+  sample ranges retained in generated records;
+- community submission guidance and a review-link section below the dashboard.
+- a collapsible community-submission workflow with a syntax-highlighted YAML
+  example and review checklist.
 
 The frontend is deliberately a single static `site/index.html` file. It is
 not a Vite, React, or npm project at this time. ECharts is loaded from the
@@ -196,9 +203,9 @@ The current synthetic dataset includes four games:
 The build currently produces:
 
 - 11 GPU catalog entries;
-- 12 official records;
+- 13 official records;
 - 8 approved community summary records;
-- 20 combined dashboard records.
+- 21 combined dashboard records.
 
 All current fixture records contain `synthetic: true`. Replace or remove that
 marker when real reviewed data is introduced.
@@ -211,13 +218,15 @@ These are known, intentional next steps:
    is not implemented.
 2. `scripts/parse.py` converts PresentMon/MangoHud CSV data into community YAML,
    but it does not automatically add files to an approved raw-capture folder.
-3. Validation checks required fields and `p1_low <= avg_fps`, but does not yet
-   compare community results against official results.
+3. Validation requires `graphics_preset`, checks `p1_low <= avg_fps`, rejects
+   frame generation, and flags major deviations from matching official results.
 4. The frontend currently loads one combined dashboard JSON file. If the
    dataset grows significantly, add a manifest plus per-game files.
-5. The ECharts CDN dependency is external. Consider pinning/self-hosting it if
+5. Review links currently come from `data/reviews.yaml`; add a database only
+   when contribution volume or analysis queries justify the migration.
+6. The ECharts CDN dependency is external. Consider pinning/self-hosting it if
    offline or supply-chain resilience becomes important.
-6. The current frontend is hand-maintained static JavaScript. Introduce a
+7. The current frontend is hand-maintained static JavaScript. Introduce a
    build tool only when the dashboard complexity justifies it.
 
 ## Recommended next work
@@ -230,6 +239,21 @@ These are known, intentional next steps:
 6. Split generated dashboard data by game if payload size becomes noticeable.
 7. Add metadata such as source commit, generation time, and methodology version
    to the visible UI and release notes.
+
+## Version and maintenance checklist
+
+Before committing a versioned dashboard change:
+
+1. Read this handoff, [README.md](../README.md), and
+   [.github/copilot-instructions.md](../.github/copilot-instructions.md).
+2. Update `RELEASE_VERSION` and `SCHEMA_VERSION` in `scripts/build.py` when
+   the dashboard payload schema changes.
+3. Update the current-version references and fixture counts in this document
+   and [README.md](../README.md).
+4. Run `python scripts/build.py`, `python scripts/validate.py`,
+   `python -m py_compile scripts\build.py scripts\validate.py scripts\parse.py`,
+   and `git diff --check`.
+5. Tag the reviewed commit for a named public release when requested.
 
 ## Resume checklist
 

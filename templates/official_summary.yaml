@@ -4,7 +4,7 @@ version: 2.12
 runs:
   - gpu_id: rtx_4090
     resolution: 1440p
-    settings: Ultra RT
+    graphics_preset: Ultra RT
     avg_fps: 122.4
     p1_low: 98.1
     form_factor: desktop

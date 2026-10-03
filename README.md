@@ -57,7 +57,9 @@ The site will be available at
 `https://<github-user>.github.io/open-gpu-benchmarks/`.
 
 ## Quick Start
-See docs/COPILOT_HANDOFF.md
+For the complete architecture and resume instructions, see
+[docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md). Contributor setup and PR
+requirements are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Parse PresentMon
 python scripts/parse.py your.csv --gpu-id rog_ally_z1_extreme --game "Cyberpunk 2077" --form-factor handheld

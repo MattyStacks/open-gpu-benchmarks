@@ -12,7 +12,7 @@ another computer or in another coding session.
 - Public dashboard data: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/dashboard.json>
 - First release tag: `v0.1.0`
 - Release commit: `8c9922f`
-- Latest `main` commit: `3cd08ea`
+- Latest `main` commit: `7dcd85e` (this handoff)
 
 The repository is already connected to:
 

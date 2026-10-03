@@ -254,10 +254,11 @@
       }
       if (!chart) chart = window.echarts.init(elements.chart, undefined, { renderer: "canvas" });
       const labels = records.map((record) => record.gpu_name);
-      const colorFor = (record) => record.source === "official" ? "#60a5fa" : "#34d399";
+      const vendorColors = { nvidia: "#76b900", amd: "#ed1c24", intel: "#0071c5" };
+      const colorFor = (record) => vendorColors[record.vendor] || "#94a3b8";
       const series = [];
       if (state.showAvg) series.push({ name: "Avg FPS", type: "bar", barMaxWidth: 22, data: records.map((record) => ({ value: record.avg_fps, itemStyle: { color: colorFor(record) } })) });
-      if (state.showP1) series.push({ name: "1% Low", type: "bar", barMaxWidth: 22, data: records.map((record) => ({ value: record.p1_low, itemStyle: { color: "#a78bfa" } })) });
+      if (state.showP1) series.push({ name: "1% Low", type: "bar", barMaxWidth: 22, data: records.map((record) => ({ value: record.p1_low, itemStyle: { color: colorFor(record), opacity: 0.5 } })) });
       chart.setOption({
         animationDuration: 250, backgroundColor: "transparent",
         grid: { left: 15, right: 22, top: 18, bottom: 18, containLabel: true },

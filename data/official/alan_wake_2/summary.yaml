@@ -14,6 +14,12 @@ runs:
     avg_fps: 102.0
     p1_low: 84.0
     driver: "551.23"
+  - gpu_id: rx_7900_xtx
+    resolution: 1440p
+    graphics_preset: High
+    avg_fps: 112.0
+    p1_low: 91.0
+    driver: "24.2.1"
   - gpu_id: rtx_4070_laptop
     resolution: 1440p
     graphics_preset: High

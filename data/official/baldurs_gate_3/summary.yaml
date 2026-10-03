@@ -14,6 +14,12 @@ runs:
     avg_fps: 108.0
     p1_low: 88.0
     driver: "551.23"
+  - gpu_id: rx_7900_xtx
+    resolution: 4K
+    graphics_preset: Ultra
+    avg_fps: 120.0
+    p1_low: 96.0
+    driver: "24.2.1"
   - gpu_id: rtx_4090_laptop
     resolution: 4K
     graphics_preset: Ultra

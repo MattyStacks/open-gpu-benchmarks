@@ -23,6 +23,7 @@ jobs:
         with: {python-version: '3.11'}
       - run: pip install pyyaml numpy
       - run: python scripts/build.py
+      - run: python scripts/test_build.py
       - uses: actions/configure-pages@v5
         with:
           enablement: true

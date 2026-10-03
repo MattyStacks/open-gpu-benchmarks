@@ -1,0 +1,11 @@
+gpu_id: rtx_4070_super
+benchmark_type: game
+game: Helldivers 2
+version: '1.001'
+synthetic: true
+driver: '551.23'
+result:
+- avg_fps: 112.0
+  p1_low: 91.0
+  resolution: 1080p
+  graphics_preset: Ultra

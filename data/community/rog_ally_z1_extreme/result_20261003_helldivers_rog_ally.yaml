@@ -1,0 +1,12 @@
+gpu_id: rog_ally_z1_extreme
+game: Helldivers 2
+version: '1.001'
+synthetic: true
+proof:
+  raw_log: raw/rog_ally_z1_extreme/helldivers_2_1080p.csv
+benchmark_type: game
+result:
+- avg_fps: 48.0
+  p1_low: 35.0
+  resolution: 1080p
+  graphics_preset: Ultra

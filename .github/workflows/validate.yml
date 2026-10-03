@@ -2,7 +2,7 @@
 name: Validate Community YAML
 on:
   pull_request:
-    paths: ['data/community/pending/**/*.yaml']
+    paths: ['data/community/**/result_*.yaml', 'data/community/**/result_*.yml', 'data/official/**/result_*.yaml', 'data/official/**/result_*.yml', 'data/gpus.yaml', 'scripts/build.py', 'scripts/test_build.py', 'scripts/validate.py']
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -12,3 +12,4 @@ jobs:
         with: {python-version: '3.11'}
       - run: pip install pyyaml numpy
       - run: python scripts/validate.py
+      - run: python scripts/test_build.py

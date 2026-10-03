@@ -1,272 +1,97 @@
 # Open GPU Benchmarks - Project Handoff
 
-This document is the current source of truth for picking up the project on
-another computer or in another coding session.
-
 ## Project identity
 
 - Repository: `MattyStacks/open-gpu-benchmarks`
-- Local project folder used previously: `C:\Users\matt\repos\open-gpu-benchmarks`
 - Default branch: `main`
 - Public site: <https://mattystacks.github.io/open-gpu-benchmarks/>
-- Public dashboard data: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/dashboard.json>
-- First release tag: `v0.1.0`
-- Release commit: `8c9922f`
-- Current development version: `v0.2.0`
-- Handoff documentation was added after the release; use `git log --oneline`
-  to identify the current `main` tip.
+- Public dashboard API: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/dashboard.json>
+- GPU master API: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/gpus.json>
+- Current development version: `v0.3.0`
 
-The repository is already connected to:
+## Current data contract
 
-```text
-https://github.com/MattyStacks/open-gpu-benchmarks.git
-```
-
-The working tree was clean at the time this handoff was written.
-
-## Current product state
-
-The site is a static GitHub Pages dashboard named **Open GPU Benchmarks**.
-The current data is intentionally synthetic scaffolding. The page visibly
-warns users that the data is not published benchmark evidence yet.
-
-The dashboard preserves the original visual direction and interactions:
-
-- dark/light theme toggle, persisted in local storage;
-- game selector;
-- resolution selector;
-- graphics-preset selector populated from the generated dashboard payload;
-- All / Official / Community source filters;
-- Desktop / Laptop / Handheld / iGPU form-factor filters;
-- Avg FPS and 1% Low metric toggles;
-- GPU search;
-- table checkboxes that pin selected GPUs to the top;
-- up to six selected GPUs;
-- selected comparison summary;
-- chart and table loaded from generated JSON rather than hard-coded benchmark rows;
-- evidence label for `Raw log` versus `Summary only`;
-- grouped chart summaries with exact implementation metadata and observed
-  sample ranges retained in generated records;
-- community submission guidance and a review-link section below the dashboard.
-- a collapsible community-submission workflow with a syntax-highlighted YAML
-  example and review checklist.
-
-The frontend is deliberately a single static `site/index.html` file. It is
-not a Vite, React, or npm project at this time. ECharts is loaded from the
-jsDelivr CDN.
-
-## Data flow
+The static dashboard is built from a GPU-rooted source tree. `data/gpus.yaml`
+is authoritative: every official and community result must be in the folder
+named by its exact catalog ID and must carry the same `gpu_id`.
 
 ```text
 data/gpus.yaml
-data/official/**/summary.yaml
-data/community/pending/*.yaml
-data/community/approved/*.yaml
-data/community/approved/raw/**          optional raw captures
+data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<contributor>.yaml
+data/community/<gpu_id>/raw/**                         optional raw evidence
                  |
                  v
 python scripts/build.py
                  |
                  v
 site/api/v1/gpus.json
-site/api/v1/official.json
-site/api/v1/community.json
+site/api/v1/official/<gpu_id>/summary.json
+site/api/v1/community/<gpu_id>/summary.json
 site/api/v1/dashboard.json
-                 |
-                 v
-site/index.html fetches ./api/v1/dashboard.json
-                 |
-                 v
-GitHub Pages publishes the entire site/ directory
 ```
 
-`site/api/` is generated and ignored by Git. It is created locally by the
-build script and recreated by GitHub Actions on every Pages deployment.
+There are no source `summary.yaml` files. Each source file describes one
+benchmark capture and has a non-empty `result` YAML list. Each dashed list
+entry is a separate resolution/preset profile. The dash is required YAML list
+syntax: duplicate `result:` keys overwrite each other. The build validates and
+expands every entry before deriving source-specific per-GPU and dashboard
+summaries. The per-GPU summaries retain all records and metrics, allowing
+future benchmark types such as 3DMark to coexist with game FPS results.
 
-The browser payload contains summary metrics only. Raw CSV/frame-time files
-are retained in Git for reproducibility but are not downloaded by every site
-visitor.
+`gpus.json` is the master API. Each catalog entry includes official/community
+run and game-summary data plus links to the generated per-GPU summary JSON.
+`dashboard.json` remains a game-FPS-only, chart-ready projection.
 
-## Official versus community data
+## Data rules
 
-Official and public/community results are intentionally separate:
+- The source schema uses `graphics_preset`; do not add a `settings` fallback.
+- Desktop and laptop GPU records never share a summary group.
+- Frame generation must be disabled for comparable game runs.
+- Keep exact machine metadata with each run while charts display grouped
+  summaries.
+- Treat raw capture evidence as preferred and preserve its reference when
+  correcting or removing a record.
 
-- `data/official/<game>/summary.yaml`
-  - curated official benchmark summaries;
-  - one file may contain multiple `runs`;
-  - source is published to `official.json`.
-- `data/community/pending/*.yaml`
-  - incoming contributor submissions;
-  - validated by the pull-request workflow.
-- `data/community/approved/*.yaml`
-  - approved public submissions;
-  - published as averaged records in `community.json`;
-  - also included in the combined `dashboard.json`.
-- `data/community/approved/raw/**`
-  - optional approved raw benchmark captures;
-  - use `proof.raw_log` as a relative reference.
-
-Community submissions can provide either:
-
-```yaml
-proof:
-  raw_log: raw/rog_ally_z1_extreme/cyberpunk_1440p.csv
-```
-
-or, when raw data is unavailable:
-
-```yaml
-proof:
-  summary_source: Screenshot or manually recorded benchmark summary
-```
-
-Raw evidence is encouraged. Summary-only records are accepted by the current
-scaffold and are labeled **Summary only** in the dashboard.
+`benchmark_type` defaults to `game`. Game source files need `game` and a
+`result` list whose entries each carry `resolution`, `graphics_preset`,
+`avg_fps`, and `p1_low`. Each entry is independently validated and expanded.
+The build averages matching entries from one or several files, while different
+resolution/preset profiles remain distinct. Other types retain their `result`
+entries in per-GPU API data but do not enter dashboard charts.
 
 ## Build and validation
 
-Install the only Python dependencies:
-
 ```powershell
 python -m pip install pyyaml numpy
-```
-
-Build generated API files:
-
-```powershell
 python scripts/build.py
-```
-
-Validate pending community YAML:
-
-```powershell
 python scripts/validate.py
-```
-
-Run the local Pages-style preview. Use a local HTTP server rather than opening
-`index.html` directly so `fetch("./api/v1/dashboard.json")` works:
-
-```powershell
-python -m http.server 8000 --directory site
-```
-
-Open <http://localhost:8000/>.
-
-Useful checks:
-
-```powershell
 python -m py_compile scripts\build.py scripts\validate.py scripts\parse.py
 git diff --check
 ```
 
-## Versioning and deployment
+[`scripts/parse.py`](../scripts/parse.py) writes converted CSV output directly
+to `data/community/<gpu_id>/result_YYYYMMDD_*.yaml`.
 
-Git commits version all source YAML, raw evidence, build logic, workflows,
-documentation, and the dashboard together. Git tags identify named releases.
+## Current synthetic fixtures
 
-- `v0.1.0` is the first synthetic data-driven dashboard release.
-- Do not create `index-v1.html` or similar files.
-- Keep `site/index.html` as the stable entry point.
+The repository has 11 catalog GPU entries, 15 official result runs, 10
+community result runs, and 24 combined dashboard summaries. The Arc A770
+fixtures exercise a multi-profile source file and matching-run aggregation.
+Every fixture is marked `synthetic: true`.
 
-The workflow is [.github/workflows/build.yml](../.github/workflows/build.yml).
-It:
+## Version and deployment
 
-1. checks out `main`;
-2. installs Python 3.11, PyYAML, and NumPy;
-3. runs `scripts/build.py`;
-4. uploads `site/` as the Pages artifact;
-5. deploys it with the official Pages deployment action.
+The project deploys `site/` using
+[.github/workflows/build.yml](../.github/workflows/build.yml). Generated
+`site/api/` files are ignored and recreated in CI.
 
-Repository Pages must use **Settings > Pages > Source: GitHub Actions**.
-Do not select a branch folder. The published root is the contents of `site/`,
-so `site/index.html` becomes the public site root.
+For a versioned dashboard payload change:
 
-The current GitHub Pages URL is:
-
-```text
-https://mattystacks.github.io/open-gpu-benchmarks/
-```
-
-If a browser shows the old README after a deployment, check Pages source mode
-first, then force refresh or use a temporary query string to bypass CDN/browser
-cache.
-
-## Existing synthetic fixtures
-
-The current synthetic dataset includes four games:
-
-- Alan Wake 2
-- Baldur's Gate 3
-- Cyberpunk 2077
-- Helldivers 2
-
-The build currently produces:
-
-- 11 GPU catalog entries;
-- 13 official records;
-- 8 approved community summary records;
-- 21 combined dashboard records.
-
-All current fixture records contain `synthetic: true`. Replace or remove that
-marker when real reviewed data is introduced.
-
-## Current limitations
-
-These are known, intentional next steps:
-
-1. `scripts/build.py` reads prepared YAML summaries. Its old raw CSV fallback
-   is not implemented.
-2. `scripts/parse.py` converts PresentMon/MangoHud CSV data into community YAML,
-   but it does not automatically add files to an approved raw-capture folder.
-3. Validation requires `graphics_preset`, checks `p1_low <= avg_fps`, rejects
-   frame generation, and flags major deviations from matching official results.
-4. The frontend currently loads one combined dashboard JSON file. If the
-   dataset grows significantly, add a manifest plus per-game files.
-5. Review links currently come from `data/reviews.yaml`; add a database only
-   when contribution volume or analysis queries justify the migration.
-6. The ECharts CDN dependency is external. Consider pinning/self-hosting it if
-   offline or supply-chain resilience becomes important.
-7. The current frontend is hand-maintained static JavaScript. Introduce a
-   build tool only when the dashboard complexity justifies it.
-
-## Recommended next work
-
-1. Decide and document the final official benchmark methodology.
-2. Replace synthetic official fixtures with reviewed real summaries.
-3. Add real raw captures under the approved raw-data folders where available.
-4. Tighten the community schema and PR review rules.
-5. Add official-vs-community comparison warnings.
-6. Split generated dashboard data by game if payload size becomes noticeable.
-7. Add metadata such as source commit, generation time, and methodology version
-   to the visible UI and release notes.
-
-## Version and maintenance checklist
-
-Before committing a versioned dashboard change:
-
-1. Read this handoff, [README.md](../README.md), and
-   [.github/copilot-instructions.md](../.github/copilot-instructions.md).
-2. Update `RELEASE_VERSION` and `SCHEMA_VERSION` in `scripts/build.py` when
-   the dashboard payload schema changes.
-3. Update the current-version references and fixture counts in this document
-   and [README.md](../README.md).
-4. Run `python scripts/build.py`, `python scripts/validate.py`,
-   `python -m py_compile scripts\build.py scripts\validate.py scripts\parse.py`,
-   and `git diff --check`.
-5. Tag the reviewed commit for a named public release when requested.
-
-## Resume checklist
-
-On another computer:
-
-```powershell
-git clone https://github.com/MattyStacks/open-gpu-benchmarks.git
-Set-Location open-gpu-benchmarks
-python -m pip install pyyaml numpy
-python scripts/build.py
-python scripts/validate.py
-python -m http.server 8000 --directory site
-```
-
-Then open <http://localhost:8000/> and read this file before changing the data
-schema or deployment workflow.
+1. Update `RELEASE_VERSION` and `SCHEMA_VERSION` in
+   [`scripts/build.py`](../scripts/build.py).
+2. Update current-version references, fixture counts, and feature summary in
+   [README.md](../README.md) and this document.
+3. Run the build, validation, compile checks, and `git diff --check`.
+4. Do not commit `site/api/` unless repository policy changes.
+5. Create a Git tag only when explicitly requested after review.

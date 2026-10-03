@@ -1,5 +1,4 @@
-
-"""Validate pending community benchmark submissions."""
+"""Validate GPU-rooted community benchmark result files."""
 import sys
 from pathlib import Path
 
@@ -9,8 +8,11 @@ except ImportError:
     print("pip install pyyaml")
     sys.exit(1)
 
+
 ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT / "data"
 OUTLIER_RATIO = 0.5
+RESULT_GLOBS = ("result_*.yaml", "result_*.yml")
 
 
 def load_yaml(path):
@@ -18,119 +20,183 @@ def load_yaml(path):
         return yaml.safe_load(source) or {}
 
 
-def official_records():
+def result_paths(source):
+    paths = set()
+    for pattern in RESULT_GLOBS:
+        paths.update((DATA_DIR / source).glob(f"*/{pattern}"))
+    return sorted(paths)
+
+
+def result_entries(data, path):
+    entries = data.get("result")
+    if not isinstance(entries, list) or not entries:
+        return None, [f"{path}: result must be a non-empty list"]
+    if not all(isinstance(entry, dict) for entry in entries):
+        return None, [f"{path}: every result entry must be a mapping"]
+    return entries, []
+
+
+def gpu_catalog():
+    return {gpu["id"]: gpu for gpu in load_yaml(DATA_DIR / "gpus.yaml")}
+
+
+def gpu_power_w(data):
+    system = data.get("system", {})
+    return data.get(
+        "gpu_power_w",
+        data.get("tgp_w", system.get("gpu_power_w", system.get("tgp_w"))),
+    )
+
+
+def official_records(catalog):
     records = []
-    for path in sorted((ROOT / "data" / "official").rglob("summary.yaml")):
-        summary = load_yaml(path)
-        defaults = {
-            "game": summary.get("game", path.parent.name.replace("_", " ").title()),
-            "version": summary.get("version", ""),
-        }
-        for run in summary.get("runs", [summary]):
-            results = run.get("results", run)
-            system = run.get("system", {})
+    for path in result_paths("official"):
+        data = load_yaml(path)
+        entries, errors = result_entries(data, path)
+        if errors or data.get("benchmark_type", "game") != "game":
+            continue
+        gpu = catalog.get(data.get("gpu_id"))
+        if not gpu:
+            continue
+        for result in entries:
             records.append(
                 {
-                    "gpu_id": run.get("gpu_id"),
-                    "game": run.get("game", defaults["game"]),
-                    "resolution": run.get("resolution"),
-                    "graphics_preset": run.get("graphics_preset"),
-                    "form_factor": run.get("form_factor"),
-                    "gpu_power_w": run.get(
-                        "gpu_power_w",
-                        run.get("tgp_w", system.get("gpu_power_w", system.get("tgp_w"))),
-                    ),
-                    "avg_fps": results.get("avg_fps"),
+                    "gpu_id": data.get("gpu_id"),
+                    "game": data.get("game"),
+                    "resolution": result.get("resolution"),
+                    "graphics_preset": result.get("graphics_preset"),
+                    "form_factor": data.get("form_factor", gpu["form_factor"]),
+                    "gpu_power_w": gpu_power_w(data),
+                    "avg_fps": result.get("avg_fps"),
                 }
             )
     return records
 
 
-def matching_official_baseline(data, baselines):
-    system = data.get("system", {})
-    power = data.get("gpu_power_w", data.get("tgp_w", system.get("gpu_power_w", system.get("tgp_w"))))
+def matching_official_baseline(data, result, baselines, catalog):
+    gpu = catalog[data["gpu_id"]]
+    form_factor = data.get("form_factor", gpu["form_factor"])
+    power = gpu_power_w(data)
     candidates = [
         record
         for record in baselines
-        if all(
-            (
-                data.get(field)
-                == record.get(field)
-                or (field == "form_factor" and not data.get(field))
-            )
-            for field in ("gpu_id", "game", "resolution", "graphics_preset")
-        )
-        and (
-            not data.get("form_factor")
-            or record.get("form_factor") is None
-            or data["form_factor"].lower() == str(record.get("form_factor", "")).lower()
-        )
-        and (power is None or record.get("gpu_power_w") in (None, power))
-        and record.get("avg_fps") is not None
+        if record["gpu_id"] == data["gpu_id"]
+        and record["game"] == data.get("game")
+        and record["resolution"] == result.get("resolution")
+        and record["graphics_preset"] == result.get("graphics_preset")
+        and form_factor.lower() == str(record["form_factor"]).lower()
+        and (power is None or record["gpu_power_w"] in (None, power))
+        and record["avg_fps"] is not None
     ]
     if not candidates:
         return None
     return sum(float(record["avg_fps"]) for record in candidates) / len(candidates)
 
 
-failed = False
-pending = list((ROOT / "data" / "community" / "pending").rglob("*.yaml"))
-if not pending:
-    print("No pending files")
-    sys.exit(0)
+def validate_file(path, data, catalog):
+    errors = []
+    warnings = []
+    gpu_id = data.get("gpu_id")
+    if path.parent.name != gpu_id:
+        errors.append(f"gpu_id '{gpu_id}' must match GPU folder '{path.parent.name}'")
+    if gpu_id not in catalog:
+        return [*errors, f"unknown gpu_id '{gpu_id}'"], warnings, None
 
-baselines = official_records()
-for pf in pending:
-    print(f"\nChecking {pf}")
-    try:
-        data=load_yaml(pf)
-    except Exception as e:
-        print(f"::error:: Invalid YAML {pf}: {e}"); failed=True; continue
+    form_factor = str(data.get("form_factor", catalog[gpu_id]["form_factor"])).lower()
+    if form_factor != catalog[gpu_id]["form_factor"]:
+        errors.append(
+            f"form_factor '{form_factor}' does not match catalog value "
+            f"'{catalog[gpu_id]['form_factor']}'"
+        )
+    entries, entry_errors = result_entries(data, path)
+    errors.extend(entry_errors)
+    if entries is None:
+        return errors, warnings, None
 
-    for field in ["gpu_id","game","resolution","graphics_preset","results"]:
-        if field not in data:
-            print(f"::error:: {pf} missing {field}"); failed=True
-
-    if "results" in data:
-        if "avg_fps" not in data["results"] or "p1_low" not in data["results"]:
-            print(f"::error:: {pf} needs results.avg_fps and p1_low"); failed=True
-        avg = data["results"].get("avg_fps", 0)
-        p1 = data["results"].get("p1_low", 0)
-        if p1>avg:
-            print(f"::error:: p1_low {p1} > avg {avg} impossible"); failed=True
-
+    benchmark_type = data.get("benchmark_type", "game")
+    if benchmark_type != "game":
+        return errors, warnings, entries
+    if not data.get("game"):
+        errors.append("missing game")
     if data.get("frame_generation", False):
-        print(f"::error:: {pf} must disable frame generation for comparable runs")
-        failed = True
-
-    if str(data.get("form_factor", "")).lower() == "laptop":
-        system = data.get("system", {})
-        if data.get("gpu_power_w", data.get("tgp_w", system.get("gpu_power_w", system.get("tgp_w")))) is None:
-            print(f"::warning:: {pf} is a laptop submission without TGP; add it when discoverable")
-
-    if not data.get("system",{}).get("driver"):
-        print(f"::warning:: {pf} missing optional driver - OK, but encourage adding it")
-
-    proof=data.get("proof",{})
+        errors.append("frame generation must be disabled for comparable game runs")
+    if form_factor == "laptop" and gpu_power_w(data) is None:
+        warnings.append("laptop submission has no TGP; add it when discoverable")
+    if not data.get("system", {}).get("driver"):
+        warnings.append("missing optional driver; add it when available")
+    proof = data.get("proof", {})
     if not proof.get("raw_log"):
         if proof.get("summary_source"):
-            print(f"::warning:: {pf} is a summary-only submission; raw proof is encouraged")
+            warnings.append("summary-only submission; raw proof is encouraged")
         else:
-            print(f"::warning:: {pf} has no raw_log or summary_source proof reference")
+            warnings.append("no raw_log or summary_source proof reference")
 
-    baseline = matching_official_baseline(data, baselines)
-    avg = data.get("results", {}).get("avg_fps")
-    if baseline and avg:
-        difference = abs(float(avg) - baseline) / baseline
-        if difference > OUTLIER_RATIO:
-            print(
-                f"::error:: {pf} avg_fps {avg} differs {difference:.0%} from "
-                f"matching official baseline {baseline:.1f}; correct, explain the "
-                "profile difference, or remove the entry"
+    for result_index, result in enumerate(entries):
+        label = f"result[{result_index}]"
+        for field in ("resolution", "graphics_preset", "avg_fps", "p1_low"):
+            if result.get(field) is None:
+                errors.append(f"{label} missing {field}")
+        if (
+            result.get("avg_fps") is not None
+            and result.get("p1_low") is not None
+            and float(result["p1_low"]) > float(result["avg_fps"])
+        ):
+            errors.append(
+                f"{label} p1_low {result['p1_low']} > avg_fps {result['avg_fps']} is impossible"
             )
-            failed = True
-    elif not baseline:
-        print("::warning:: no matching official baseline found; maintainer review is required")
+        if result.get("frame_generation", False):
+            errors.append(f"{label} must disable frame generation for comparable game runs")
+    return errors, warnings, entries
 
-print("\nValidation done" + (" - FAILED" if failed else " - PASSED"))
-sys.exit(1 if failed else 0)
+
+def main():
+    catalog = gpu_catalog()
+    community_paths = result_paths("community")
+    if not community_paths:
+        print("No community result files")
+        return 0
+
+    baselines = official_records(catalog)
+    failed = False
+    for path in community_paths:
+        print(f"\nChecking {path.relative_to(ROOT)}")
+        try:
+            data = load_yaml(path)
+        except yaml.YAMLError as error:
+            print(f"::error:: Invalid YAML {path}: {error}")
+            failed = True
+            continue
+
+        errors, warnings, entries = validate_file(path, data, catalog)
+        for error in errors:
+            print(f"::error:: {path}: {error}")
+        for warning in warnings:
+            print(f"::warning:: {path}: {warning}")
+        failed = failed or bool(errors)
+
+        if errors or data.get("benchmark_type", "game") != "game":
+            continue
+        for result_index, result in enumerate(entries):
+            baseline = matching_official_baseline(data, result, baselines, catalog)
+            avg_fps = result.get("avg_fps")
+            if baseline and avg_fps:
+                difference = abs(float(avg_fps) - baseline) / baseline
+                if difference > OUTLIER_RATIO:
+                    print(
+                        f"::error:: {path}: result[{result_index}] avg_fps {avg_fps} differs "
+                        f"{difference:.0%} from matching official baseline {baseline:.1f}; "
+                        "correct, explain the profile difference, or remove the entry"
+                    )
+                    failed = True
+            elif not baseline:
+                print(
+                    f"::warning:: result[{result_index}] has no matching official baseline; "
+                    "maintainer review is required"
+                )
+
+    print("\nValidation done" + (" - FAILED" if failed else " - PASSED"))
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

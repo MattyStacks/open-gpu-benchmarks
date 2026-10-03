@@ -1,0 +1,13 @@
+gpu_id: steam_deck_oled
+benchmark_type: game
+game: Cyberpunk 2077
+version: '2.12'
+synthetic: true
+form_factor: handheld
+device_name: Steam Deck OLED
+gpu_power_w: 15
+result:
+- avg_fps: 34.0
+  p1_low: 27.0
+  resolution: 1280x800
+  graphics_preset: Steam Deck

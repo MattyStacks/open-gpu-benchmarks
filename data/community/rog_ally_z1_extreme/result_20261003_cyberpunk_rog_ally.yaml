@@ -1,0 +1,14 @@
+gpu_id: rog_ally_z1_extreme
+game: Cyberpunk 2077
+version: '2.12'
+synthetic: true
+system:
+  driver: 24.1.1
+proof:
+  raw_log: raw/rog_ally_z1_extreme/cyberpunk_1440p.csv
+benchmark_type: game
+result:
+- avg_fps: 34.0
+  p1_low: 24.0
+  resolution: 1440p
+  graphics_preset: Ultra

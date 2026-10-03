@@ -1,30 +1,41 @@
-
+# Save as data/community/<gpu_id>/result_YYYYMMDD_<contributor>.yaml.
+# The folder name and gpu_id must exactly match an ID in data/gpus.yaml.
+#
+# result is a YAML list. Keep the leading "-" for every benchmark profile:
+# it lets one file contain different resolutions or presets without duplicate
+# YAML keys. Every list item is validated and aggregated independently.
 gpu_id: rtx_4070_super
+benchmark_type: game
 game: Cyberpunk 2077
-resolution: 1440p
-graphics_preset: Ultra RT
-upscaling: DLSS Quality
+version: "2.12"
 frame_generation: false
 form_factor: desktop
 device_name: ASUS TUF RTX 4070 Super # Optional; encouraged for exact machine metadata
 gpu_power_w: 220 # Optional for desktops; strongly encouraged for laptops
 overclocked: false
-results:
-  avg_fps: 79.1
-  p1_low: 65.0
-  p5_low: 68.2 # optional from PresentMon screenshot
+result:
+  - resolution: 1440p
+    graphics_preset: Ultra RT
+    upscaling: DLSS Quality
+    avg_fps: 79.1
+    p1_low: 65.0
+    p5_low: 68.2 # Optional from PresentMon
+  - resolution: 1080p
+    graphics_preset: Ultra RT
+    upscaling: DLSS Quality
+    avg_fps: 103.4
+    p1_low: 84.7
 system:
   cpu: AMD Ryzen 7 7800X3D
   memory: 32 GB DDR5
   power_mode: Performance
   display_mode: direct
-  driver: "561.09" # Optional; encouraged but not required for PR
+  driver: "561.09" # Optional; encouraged but not required for review
   os: Windows 11
 proof:
-  # Strongly encouraged when a raw capture is available. Keep the capture
-  # under data/community/approved/raw/ after approval.
-  raw_log: raw/rtx_4070_super/Cyberpunk_4070S_1440p.csv
+  # Keep raw captures in this GPU folder, such as
+  # data/community/rtx_4070_super/raw/Cyberpunk_4070S_1440p.csv.
+  raw_log: raw/Cyberpunk_4070S_1440p.csv
   format: presentmon_summary
   # If a raw log is unavailable, remove raw_log and provide a clear source.
-  # Summary-only submissions are accepted for review but are labeled as such.
   # summary_source: Screenshot or manually recorded benchmark summary

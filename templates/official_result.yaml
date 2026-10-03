@@ -1,0 +1,20 @@
+# Save as data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml.
+# The build derives all official GPU summaries from individual result files.
+#
+# result is a YAML list. The leading "-" is required for each separate
+# resolution/preset profile, and each profile becomes an independent run.
+gpu_id: rtx_4090
+benchmark_type: game
+game: Cyberpunk 2077
+version: "2.12"
+frame_generation: false
+result:
+  - resolution: 1440p
+    graphics_preset: Ultra RT
+    upscaling: DLSS Quality
+    avg_fps: 122.4
+    p1_low: 98.1
+system:
+  driver: "561.09"
+proof:
+  summary_source: Curated official benchmark result

@@ -1,85 +1,94 @@
-
 # Open GPU Benchmarks
 
-Compare desktop, laptop, handheld, and integrated GPUs in one interactive graph.
+Compare desktop, laptop, handheld, and integrated GPUs in one interactive
+graph. The site is a static GitHub Pages dashboard built from reviewable YAML.
 
-The site is a static GitHub Pages dashboard. Benchmark source data lives in
-`data/`, and the build script publishes browser-ready JSON to `site/api/`.
-Exact machine metadata is retained in each benchmark record while charts show
-grouped summaries. Desktop and laptop GPUs never share a summary group.
+## GPU-rooted data flow
 
-## Data flow
-
-Official and community results stay separate from review through publication:
+`data/gpus.yaml` is the authoritative hardware catalog. Every source folder
+uses one of its IDs exactly, so each card, laptop GPU, handheld, or iGPU owns
+its benchmark results and any future card-specific metrics.
 
 ```text
-data/official/**/summary.yaml              reviewed official summaries
-data/community/pending/*.yaml              incoming community PR submissions
-data/community/approved/*.yaml             approved community summaries
-data/community/approved/raw/**             optional raw capture evidence
+data/gpus.yaml
+data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<contributor>.yaml
+data/community/<gpu_id>/raw/**                         optional raw evidence
                     ↓
 python scripts/build.py
                     ↓
-site/api/v1/official.json                  official dashboard records
-site/api/v1/community.json                 averaged community records
-site/api/v1/dashboard.json                 combined dashboard dataset
+site/api/v1/gpus.json                                  GPU-rooted master API
+site/api/v1/official/<gpu_id>/summary.json             generated GPU summary
+site/api/v1/community/<gpu_id>/summary.json            generated GPU summary
+site/api/v1/dashboard.json                             game-FPS dashboard data
 ```
 
-Raw captures are retained in Git for reproducibility but are deliberately
-excluded from the browser payload. Community summaries without raw captures
-are accepted for review when they provide `proof.summary_source`; the site
-labels them as **Summary only**. The current `v0.2.0` dataset is synthetic
-scaffolding and is visibly marked as such in the dashboard.
+Each result file describes one benchmark capture and contains a non-empty
+`result` YAML list. Each dashed list item is one resolution/preset result; the
+dash is required so YAML retains multiple profiles rather than overwriting a
+duplicate key. There are no checked-in source summaries. The build validates
+and expands every list item, then derives game summaries by GPU ID, form
+factor, known power profile, game, resolution, and `graphics_preset`. It never
+groups desktop and laptop GPUs together.
 
-Community submission policy and the comparison rules are documented in
-[docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md). Published
-hardware reviews can be registered in `data/reviews.yaml` and are shown below
-the benchmark table.
+[`site/api/v1/gpus.json`](site/api/v1/gpus.json) is the master JSON contract:
+each catalog GPU has `links.official_summary` and
+`links.community_summary`, plus its generated `official` and `community`
+statistics. The linked per-GPU JSON includes all source runs, grouped game
+summaries, evidence references, and exact machine metadata. Generated API
+files are ignored by Git and appear after running the build.
 
-## Site
-`site/index.html` is the dashboard entry point.
+Current synthetic fixtures: 11 catalog GPUs, 15 official runs, 10 community
+runs, and 24 dashboard summaries. The community fixtures include a
+multi-profile file and two matching Arc A770 results that aggregate into one
+1080p summary. All fixture records are marked
+`synthetic: true`.
+
+## Community contributions
+
+Copy [templates/community_submission.yaml](templates/community_submission.yaml)
+to the folder matching its `gpu_id`, for example:
+
+```text
+data/community/rtx_4090/result_20261003_matty.yaml
+```
+
+The pull-request validator checks all community `result_*.yaml` and
+`result_*.yml` files in GPU folders. It enforces the game benchmark contract,
+requires frame generation to be disabled, checks catalog/folder identity, and
+compares matching game runs with official baselines. See
+[docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md) for the
+complete rules.
 
 ## Local development
 
 ```powershell
 python -m pip install pyyaml numpy
 python scripts/build.py
+python scripts/validate.py
 python -m http.server 8000 --directory site
 ```
 
 Open <http://localhost:8000>.
 
-## GitHub Pages deployment
+Use `scripts/parse.py` to convert PresentMon or MangoHud CSV data directly
+into `data/community/<gpu_id>/result_YYYYMMDD_*.yaml`:
 
-The workflow in `.github/workflows/build.yml` builds the data API and deploys
-`site/` with the official GitHub Pages actions whenever `main` is updated.
+```powershell
+python scripts/parse.py capture.csv --gpu-id rtx_4090 --game "Cyberpunk 2077"
+```
 
-After creating the repository:
+## Site and deployment
 
-1. Push this project to the repository's `main` branch.
-2. In **Settings > Pages**, set **Source** to **GitHub Actions**.
-3. Wait for the **Build and Deploy Open GPU Benchmarks** workflow to finish.
+`site/index.html` fetches the generated dashboard JSON. The workflow in
+[.github/workflows/build.yml](.github/workflows/build.yml) rebuilds `site/api/`
+and deploys the site whenever `main` changes. Do not commit generated API
+files unless repository policy changes.
 
-The site will be available at
-`https://<github-user>.github.io/open-gpu-benchmarks/`.
-
-## Quick Start
-For the complete architecture and resume instructions, see
+For the architecture and maintenance checklist, see
 [docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md). Contributor setup and PR
 requirements are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Parse PresentMon
-python scripts/parse.py your.csv --gpu-id rog_ally_z1_extreme --game "Cyberpunk 2077" --form-factor handheld
-
-Supports summary CSV from screenshot + detailed + MangoHud.
-
-## Versioning
-
-The repository uses Git tags for named public releases. `v0.1.0` is the first
-synthetic, data-driven Pages scaffold; `v0.2.0` introduces exact-machine
-metadata, graphics-preset filtering, and community submission review guidance.
-Each tagged commit versions the site, source YAML, raw evidence, and build
-logic together.
-
 ## License
+
 MIT Code, CC0 Data

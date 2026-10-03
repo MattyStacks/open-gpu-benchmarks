@@ -13,38 +13,42 @@ Open <http://localhost:8000/> to preview the dashboard.
 
 ## Adding benchmark data
 
-Community submissions begin in `data/community/pending/` and are reviewed
-through a pull request. Use
-[templates/community_submission.yaml](templates/community_submission.yaml) as
-the starting point.
+`data/gpus.yaml` owns the accepted GPU IDs. Add each run under the matching
+source and GPU folder:
 
-Required fields currently include:
+```text
+data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<contributor>.yaml
+```
 
-- `gpu_id`
-- `game`
-- `resolution`
-- `graphics_preset`
-- `results.avg_fps`
-- `results.p1_low`
+Use [templates/community_submission.yaml](templates/community_submission.yaml)
+for community runs or [templates/official_result.yaml](templates/official_result.yaml)
+for official runs. The parent folder and `gpu_id` must match exactly.
 
-Use a clear graphics preset in `graphics_preset` such as `Low`, `Medium`, `High`,
-`Ultra`, or a game-specific preset such as `Steam Deck`. Frame generation must
-be off. Game version is retained as metadata but is not used to group
-comparable summaries. Desktop and laptop GPUs never share a group; laptop TGP
-is optional when unknown but strongly encouraged.
+Game records require `game` and a non-empty `result` list. Each list entry
+requires `resolution`, `graphics_preset`, `avg_fps`, and `p1_low`; frame
+generation must be disabled.
 
-Include exact machine details whenever known: `device_name`, GPU power/TGP,
-`overclocked`, CPU, memory, power mode, display/MUX mode, driver, and operating
-system. See [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md) for
-the full workflow and review policy.
+The leading `-` is required YAML syntax for separate list entries. It is what
+allows one source file to include multiple resolution/preset profiles without
+duplicating a `result` key, which YAML would overwrite. The validator checks
+every entry independently, and the build aggregates only entries that match on
+GPU, form factor, known power profile, game, resolution, and graphics preset.
+Matching entries from the same file or different files are averaged together;
+different profiles remain separate dashboard rows.
 
-Raw benchmark captures are strongly encouraged. Keep approved captures under
-`data/community/approved/raw/` and reference them with `proof.raw_log`.
-Summary-only submissions are allowed when raw data is unavailable, but they
-must provide `proof.summary_source` and are labeled accordingly on the site.
+Use `benchmark_type` for future card-specific result categories; those retain
+their `result` entries in the GPU API but are not shown in the game-FPS
+dashboard until support is added.
 
-Do not place raw capture files in the browser-facing `site/api/` directory.
-That directory is generated and ignored by Git.
+Include exact machine details whenever known: device or board name, GPU
+power/TGP, overclock status, CPU, memory, power mode, display/MUX mode,
+driver, and operating system. Desktop and laptop GPUs never share a group.
+
+Raw captures are strongly encouraged. Keep them under the same GPU folder,
+such as `data/community/rtx_4090/raw/capture.csv`, and use a relative
+`proof.raw_log` reference. Summary-only submissions need
+`proof.summary_source` and are labeled on the site.
 
 ## Before opening a pull request
 
@@ -55,8 +59,7 @@ python -m py_compile scripts\build.py scripts\validate.py scripts\parse.py
 git diff --check
 ```
 
-The Pages workflow rebuilds generated API files from the YAML source. Do not
-commit generated `site/api/` output unless the repository policy changes.
-
-See [docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md) for the full architecture,
-deployment details, current release state, and known limitations.
+The Pages workflow regenerates `site/api/` from YAML source. Do not commit the
+generated files unless repository policy changes. See
+[docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md) for detailed
+review rules.

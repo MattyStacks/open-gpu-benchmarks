@@ -10,6 +10,7 @@ Driver is OPTIONAL for community PRs per your request.
 form_factor supported: desktop, laptop, handheld, igpu
 """
 import argparse, csv, sys
+from datetime import datetime
 from pathlib import Path
 try:
     import yaml
@@ -143,15 +144,16 @@ def main():
 
     data={
         "gpu_id": args.gpu_id,
+        "benchmark_type": "game",
         "game": args.game,
-        "resolution": args.resolution,
-        "graphics_preset": args.graphics_preset,
         "form_factor": args.form_factor,
         "os": args.os,
         "capture_method": result["format"],
-        "results": {
+        "result": [{
             "avg_fps": round(float(result["avg"]),2),
             "p1_low": round(float(result["p1"]),2),
+            "resolution": args.resolution,
+            "graphics_preset": args.graphics_preset,
             "p5_low": round(float(result["p5"]),2) if result.get("p5") else None,
             "p01_low": round(float(result["p01"]),2) if result.get("p01") else None,
             "min_fps": round(float(result["min"]),2) if result.get("min") else None,
@@ -159,16 +161,17 @@ def main():
             "duration": result.get("duration"),
             "anim_error_per_sec": result.get("anim_err"),
             "frame_count": result.get("frame_count")
-        },
+        }],
         "system": {"driver": args.driver} if args.driver else {},
         "overclock": {"is_oc": False, "power_limit_percent": 100},
         "proof": {"raw_log": str(csv_path.name), "format": result["format"]},
     }
-    data["results"]={k:v for k,v in data["results"].items() if v is not None}
+    data["result"][0]={k:v for k,v in data["result"][0].items() if v is not None}
 
     if not args.output:
         safe_game=args.game.lower().replace(" ","_").replace(":","")
-        out=Path(f"data/community/pending/{args.gpu_id}_{safe_game}_{args.resolution}_{csv_path.stem}.yaml")
+        date = datetime.now().strftime("%Y%m%d")
+        out=Path(f"data/community/{args.gpu_id}/result_{date}_{safe_game}_{args.resolution}_{csv_path.stem}.yaml")
     else:
         out=Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)

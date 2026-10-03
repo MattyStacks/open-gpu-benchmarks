@@ -5,6 +5,8 @@ Compare desktop, laptop, handheld, and integrated GPUs in one interactive graph.
 
 The site is a static GitHub Pages dashboard. Benchmark source data lives in
 `data/`, and the build script publishes browser-ready JSON to `site/api/`.
+Exact machine metadata is retained in each benchmark record while charts show
+grouped summaries. Desktop and laptop GPUs never share a summary group.
 
 ## Data flow
 
@@ -26,8 +28,13 @@ site/api/v1/dashboard.json                 combined dashboard dataset
 Raw captures are retained in Git for reproducibility but are deliberately
 excluded from the browser payload. Community summaries without raw captures
 are accepted for review when they provide `proof.summary_source`; the site
-labels them as **Summary only**. This initial `v0.1.0` dataset is synthetic
+labels them as **Summary only**. The current `v0.2.0` dataset is synthetic
 scaffolding and is visibly marked as such in the dashboard.
+
+Community submission policy and the comparison rules are documented in
+[docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md). Published
+hardware reviews can be registered in `data/reviews.yaml` and are shown below
+the benchmark table.
 
 ## Site
 `site/index.html` is the dashboard entry point.
@@ -69,8 +76,10 @@ Supports summary CSV from screenshot + detailed + MangoHud.
 ## Versioning
 
 The repository uses Git tags for named public releases. `v0.1.0` is the first
-synthetic, data-driven Pages scaffold. Each tagged commit versions the site,
-source YAML, raw evidence, and build logic together.
+synthetic, data-driven Pages scaffold; `v0.2.0` introduces exact-machine
+metadata, graphics-preset filtering, and community submission review guidance.
+Each tagged commit versions the site, source YAML, raw evidence, and build
+logic together.
 
 ## License
 MIT Code, CC0 Data

@@ -4,19 +4,19 @@ synthetic: true
 runs:
   - gpu_id: rx_7900_xtx
     resolution: 1080p
-    settings: Ultra
+    graphics_preset: Ultra
     avg_fps: 152.0
     p1_low: 126.0
     driver: "24.2.1"
   - gpu_id: rtx_4070_super
     resolution: 1080p
-    settings: Ultra
+    graphics_preset: Ultra
     avg_fps: 112.0
     p1_low: 91.0
     driver: "551.23"
   - gpu_id: rtx_4070_laptop
     resolution: 1080p
-    settings: Ultra
+    graphics_preset: Ultra
     avg_fps: 74.0
     p1_low: 58.0
     driver: "551.23"

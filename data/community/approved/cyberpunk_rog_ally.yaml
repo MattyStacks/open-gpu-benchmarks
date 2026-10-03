@@ -2,7 +2,7 @@ gpu_id: rog_ally_z1_extreme
 game: Cyberpunk 2077
 version: "2.12"
 resolution: 1440p
-settings: Ultra RT
+graphics_preset: Ultra
 synthetic: true
 results:
   avg_fps: 34.0

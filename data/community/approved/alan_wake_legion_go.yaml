@@ -2,7 +2,7 @@ gpu_id: legion_go
 game: Alan Wake 2
 version: "1.2"
 resolution: 1440p
-settings: High RT
+graphics_preset: High
 synthetic: true
 results:
   avg_fps: 31.0

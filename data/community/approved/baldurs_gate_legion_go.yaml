@@ -2,7 +2,7 @@ gpu_id: legion_go
 game: Baldur's Gate 3
 version: "4.1"
 resolution: 4K
-settings: Ultra
+graphics_preset: Ultra
 synthetic: true
 results:
   avg_fps: 42.0

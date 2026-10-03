@@ -131,7 +131,7 @@ def main():
     p.add_argument("--gpu-id", required=True, help="Must exist in gpus.yaml")
     p.add_argument("--game", required=True)
     p.add_argument("--resolution", default="1440p")
-    p.add_argument("--settings", default="Ultra")
+    p.add_argument("--graphics-preset", default="Ultra")
     p.add_argument("--form-factor", default="desktop", choices=["desktop","laptop","handheld","igpu"])
     p.add_argument("--driver", default="", help="OPTIONAL - not required for PR approval")
     p.add_argument("--os", default="Windows 11")
@@ -145,7 +145,7 @@ def main():
         "gpu_id": args.gpu_id,
         "game": args.game,
         "resolution": args.resolution,
-        "settings": args.settings,
+        "graphics_preset": args.graphics_preset,
         "form_factor": args.form_factor,
         "os": args.os,
         "capture_method": result["format"],

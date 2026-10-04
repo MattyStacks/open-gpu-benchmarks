@@ -16,8 +16,8 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 OUTPUT_DIR = ROOT / "site" / "api" / "v1"
-SCHEMA_VERSION = "0.4"
-RELEASE_VERSION = "0.3.0"
+SCHEMA_VERSION = "0.5"
+RELEASE_VERSION = "0.4.0"
 RESULT_GLOBS = ("result_*.yaml", "result_*.yml")
 
 
@@ -110,6 +110,7 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "proof_level": "raw-log" if raw_log else "summary-only",
         "proof_reference": raw_log or summary_source or "",
         "source_file": relative_path(source_path),
+        "submitted_by": str(run.get("submitted_by", "")),
         "synthetic": bool(run.get("synthetic", False)),
     }
     if benchmark_type == "game":
@@ -164,6 +165,7 @@ def aggregate_game_records(records, id_prefix):
                     "power_mode",
                     "display_mode",
                     "driver",
+                    "submitted_by",
                 )
                 if run[key] not in ("", None)
             }
@@ -185,6 +187,10 @@ def aggregate_game_records(records, id_prefix):
                     max(run["p1_low"] for run in runs),
                 ],
                 "implementations": implementations,
+                "contributors": sorted(
+                    {run["submitted_by"] for run in runs if run["submitted_by"]},
+                    key=str.lower,
+                ),
             }
         )
     return summaries

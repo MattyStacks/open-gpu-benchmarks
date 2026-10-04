@@ -1,14 +1,20 @@
-﻿# Community GPU result folders
+# Community GPU result folders
 
 Place each community submission in the folder whose name exactly matches its
 `gpu_id` in `data/gpus.yaml`:
 
 ```text
-data/community/<gpu_id>/result_YYYYMMDD_<contributor>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
 ```
 
 For example, use
-`data/community/rtx_4090/result_20261003_matty.yaml`. The validator checks
+`data/community/rtx_4090/result_20261003_cyberpunk_mattystacks.yaml`.
+Every community file sets `submitted_by` to the GitHub username of the person
+opening the pull request, and the file name ends with that username
+(compared case-insensitively; lowercase is conventional). For a second file
+with the same date and game, add a number before the username, such as
+`result_20261003_cyberpunk_2_mattystacks.yaml`.
+The validator checks
 all `result_*.yaml` and `result_*.yml` files in these folders. The build
 creates the corresponding generated summary at
 `site/api/v1/community/<gpu_id>/summary.json`.

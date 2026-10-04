@@ -131,6 +131,7 @@ def main():
     p.add_argument("csv_file")
     p.add_argument("--gpu-id", required=True, help="Must exist in gpus.yaml")
     p.add_argument("--game", required=True)
+    p.add_argument("--submitted-by", required=True, help="GitHub username of the PR submitter")
     p.add_argument("--resolution", default="1440p")
     p.add_argument("--graphics-preset", default="Ultra")
     p.add_argument("--form-factor", default="desktop", choices=["desktop","laptop","handheld","igpu"])
@@ -144,6 +145,7 @@ def main():
 
     data={
         "gpu_id": args.gpu_id,
+        "submitted_by": args.submitted_by,
         "benchmark_type": "game",
         "game": args.game,
         "form_factor": args.form_factor,
@@ -171,7 +173,13 @@ def main():
     if not args.output:
         safe_game=args.game.lower().replace(" ","_").replace(":","")
         date = datetime.now().strftime("%Y%m%d")
-        out=Path(f"data/community/{args.gpu_id}/result_{date}_{safe_game}_{args.resolution}_{csv_path.stem}.yaml")
+        handle = args.submitted_by.lower()
+        folder = Path(f"data/community/{args.gpu_id}")
+        out = folder / f"result_{date}_{safe_game}_{handle}.yaml"
+        repeat = 2
+        while out.exists():
+            out = folder / f"result_{date}_{safe_game}_{repeat}_{handle}.yaml"
+            repeat += 1
     else:
         out=Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)

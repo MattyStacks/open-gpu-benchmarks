@@ -91,13 +91,9 @@ different profile, or remove it.
 
 ## Submission workflow
 
-1. Fork and clone the repository.
-2. Copy the template to
-   `data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml` and set
-   `submitted_by` to your GitHub username.
-3. Add raw evidence in that GPU folder when available.
-4. Run `python scripts/build.py`, `python scripts/validate.py`, and
-   `python scripts/test_build.py`.
-5. Open a pull request with the benchmark profile and hardware details.
-6. A maintainer reviews the evidence and the generated per-GPU community
-   summary before merging.
+The step-by-step contributor walkthrough, with examples, lives in
+[CONTRIBUTING.md](../CONTRIBUTING.md). In short: fork, add one result file (and
+optional raw evidence) under `data/community/<gpu_id>/`, run `build.py`,
+`validate.py`, and `test_build.py`, then open a pull request. A maintainer
+reviews the evidence and the generated per-GPU community summary before
+merging.

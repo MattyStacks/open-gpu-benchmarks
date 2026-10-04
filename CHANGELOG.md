@@ -11,7 +11,11 @@ and date and start a fresh `Unreleased` section.
 
 ## Unreleased
 
-Nothing yet.
+### Changed
+- Rewrote `CONTRIBUTING.md` around submitting a result: a 5-step flow with a
+  diagram, file-name and folder visuals, validated desktop/laptop/handheld/
+  summary-only examples, a required-fields table, and a common-mistakes table.
+  `data/community/README.md` now points to it.
 
 ## 0.4.0 - 2026-10-03
 

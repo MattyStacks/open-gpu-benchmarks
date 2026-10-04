@@ -4,14 +4,20 @@ Community source data is organized by catalog GPU. Find the exact ID in
 [`data/gpus.yaml`](../data/gpus.yaml), then add one result file to its folder:
 
 ```text
-data/community/<gpu_id>/result_YYYYMMDD_<contributor>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
 ```
 
 For example:
 
 ```text
-data/community/rtx_4090/result_20261003_matty.yaml
+data/community/rtx_4090/result_20261003_cyberpunk_mattystacks.yaml
 ```
+
+Every community file sets `submitted_by` to the GitHub username of the person
+opening the pull request, and the file name ends with that username
+(compared case-insensitively; lowercase is conventional). For a second file
+with the same date and game, add a number before the username, such as
+`result_20261003_cyberpunk_2_mattystacks.yaml`.
 
 The folder name and `gpu_id` in the YAML must match. On a merged pull request,
 the build includes that run in
@@ -34,6 +40,7 @@ resolution/preset combinations:
 
 ```yaml
 gpu_id: arc_a770
+submitted_by: MattyStacks
 game: Helldivers 2
 benchmark_type: game
 result:
@@ -75,7 +82,8 @@ accordingly. Raw captures remain in Git but outside browser-facing JSON.
 ## Review and validation
 
 The validator checks every `result_*.yaml` and `result_*.yml` community file
-and every `result` list entry. It verifies folder/catalog identity, list
+and every `result` list entry. It verifies folder/catalog identity, that
+`submitted_by` is a valid GitHub username matching the end of the file name, list
 shape, comparable game settings, frame-generation status, and impossible FPS
 values. When a matching official baseline exists, a community average more
 than 50% different is a validation error. Correct it, explain a materially
@@ -84,9 +92,12 @@ different profile, or remove it.
 ## Submission workflow
 
 1. Fork and clone the repository.
-2. Copy the template to `data/community/<gpu_id>/result_YYYYMMDD_<name>.yaml`.
+2. Copy the template to
+   `data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml` and set
+   `submitted_by` to your GitHub username.
 3. Add raw evidence in that GPU folder when available.
-4. Run `python scripts/build.py` and `python scripts/validate.py`.
+4. Run `python scripts/build.py`, `python scripts/validate.py`, and
+   `python scripts/test_build.py`.
 5. Open a pull request with the benchmark profile and hardware details.
 6. A maintainer reviews the evidence and the generated per-GPU community
    summary before merging.

@@ -1,4 +1,5 @@
 """Validate GPU-rooted community benchmark result files."""
+import re
 import sys
 from pathlib import Path
 
@@ -12,6 +13,7 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 OUTLIER_RATIO = 0.5
+GITHUB_USER_PATTERN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$")
 RESULT_GLOBS = ("result_*.yaml", "result_*.yml")
 
 
@@ -93,6 +95,22 @@ def matching_official_baseline(data, result, baselines, catalog):
     return sum(float(record["avg_fps"]) for record in candidates) / len(candidates)
 
 
+def submitter_errors(path, data):
+    submitted_by = data.get("submitted_by")
+    if not submitted_by:
+        return ["missing submitted_by; set it to your GitHub username"]
+    submitted_by = str(submitted_by)
+    if not GITHUB_USER_PATTERN.match(submitted_by):
+        return [f"submitted_by '{submitted_by}' is not a valid GitHub username"]
+    expected = rf"^result_\d{{8}}_.+_{re.escape(submitted_by.lower())}$"
+    if not re.match(expected, path.stem.lower()):
+        return [
+            f"file name '{path.name}' must follow "
+            f"result_YYYYMMDD_<game>_{submitted_by.lower()}{path.suffix}"
+        ]
+    return []
+
+
 def validate_file(path, data, catalog):
     errors = []
     warnings = []
@@ -101,6 +119,7 @@ def validate_file(path, data, catalog):
         errors.append(f"gpu_id '{gpu_id}' must match GPU folder '{path.parent.name}'")
     if gpu_id not in catalog:
         return [*errors, f"unknown gpu_id '{gpu_id}'"], warnings, None
+    errors.extend(submitter_errors(path, data))
 
     form_factor = str(data.get("form_factor", catalog[gpu_id]["form_factor"])).lower()
     if form_factor != catalog[gpu_id]["form_factor"]:

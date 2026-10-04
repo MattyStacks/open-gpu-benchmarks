@@ -6,6 +6,7 @@
 python -m pip install pyyaml numpy
 python scripts/build.py
 python scripts/validate.py
+python scripts/test_build.py
 python -m http.server 8000 --directory site
 ```
 
@@ -18,12 +19,18 @@ source and GPU folder:
 
 ```text
 data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
-data/community/<gpu_id>/result_YYYYMMDD_<contributor>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
 ```
 
 Use [templates/community_submission.yaml](templates/community_submission.yaml)
 for community runs or [templates/official_result.yaml](templates/official_result.yaml)
 for official runs. The parent folder and `gpu_id` must match exactly.
+
+Every community file sets `submitted_by` to the GitHub username of the person
+opening the pull request, and the file name ends with that username
+(compared case-insensitively; lowercase is conventional). For a second file
+with the same date and game, add a number before the username, such as
+`result_20261003_cyberpunk_2_mattystacks.yaml`.
 
 Game records require `game` and a non-empty `result` list. Each list entry
 requires `resolution`, `graphics_preset`, `avg_fps`, and `p1_low`; frame
@@ -52,9 +59,14 @@ such as `data/community/rtx_4090/raw/capture.csv`, and use a relative
 
 ## Before opening a pull request
 
+Add a line under `Unreleased` in [CHANGELOG.md](CHANGELOG.md) for any change to
+behavior, the data contract, the dashboard, or this workflow. Data-only
+submissions can skip it.
+
 ```powershell
 python scripts/build.py
 python scripts/validate.py
+python scripts/test_build.py
 python -m py_compile scripts\build.py scripts\validate.py scripts\parse.py
 git diff --check
 ```

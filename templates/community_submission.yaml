@@ -1,10 +1,15 @@
-# Save as data/community/<gpu_id>/result_YYYYMMDD_<contributor>.yaml.
+# Save as data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_username>.yaml,
+# for example data/community/rtx_4070_super/result_20261003_cyberpunk_mattystacks.yaml.
 # The folder name and gpu_id must exactly match an ID in data/gpus.yaml.
+# The file name must end with your GitHub username (lowercase is fine), and the
+# same username goes in submitted_by. For a second file with the same date and
+# game, add a number before the username: result_20261003_cyberpunk_2_mattystacks.yaml.
 #
 # result is a YAML list. Keep the leading "-" for every benchmark profile:
 # it lets one file contain different resolutions or presets without duplicate
 # YAML keys. Every list item is validated and aggregated independently.
 gpu_id: rtx_4070_super
+submitted_by: your-github-username # Required; GitHub user opening the pull request
 benchmark_type: game
 game: Cyberpunk 2077
 version: "2.12"

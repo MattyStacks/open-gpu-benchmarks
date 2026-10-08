@@ -1,0 +1,46 @@
+id: rx_7900_xtx_24gb_reference
+identity:
+  name: Radeon RX 7900 XTX
+  codename: Navi 31
+  gpu_vendor: amd
+classification:
+  form_factor: desktop
+  architecture: RDNA 3
+silicon:
+  process: TSMC 5nm + 6nm
+  die_size_mm2: 529
+  transistors_b: 57.7
+  shader_cores: 6144
+  rt_cores: 96
+  tmus: 384
+  rops: 192
+memory:
+  capacity_gb: 24
+  type: GDDR6
+  bus_width_bits: 384
+  bandwidth_gbs: 960
+clocks:
+  base_mhz: 1900
+  boost_mhz: 2500
+  mem_mhz: 2500
+power:
+  tdp_w: 355
+  connectors:
+  - 2x 8-pin
+  pcie: 4.0 x16
+release:
+  date: '2022-12-13'
+  msrp_usd: 999
+  msrp_history:
+  - date: '2022-12'
+    price_usd: 999
+  - date: '2024-01'
+    price_usd: 899
+features:
+  fsr: '3.1'
+  av1: encode+decode
+  outputs:
+  - HDMI 2.1a
+  - DP 2.1 x2
+  - USB-C
+notes: Chiplet design. The 300 mm2 graphics die pairs with six memory-cache dies carrying Infinity Cache.

@@ -18,7 +18,8 @@ docs, read:
    [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md) — contributor
    setup and the full submission/review rules.
 5. [data/community/README.md](data/community/README.md) — folder-level rules for
-   community result files.
+   community result files. [data/gpus/README.md](data/gpus/README.md) — catalog
+   layout, ID grammar, field reference, and an explanation of every check rule.
 6. [CHANGELOG.md](CHANGELOG.md) — high-level version history. Add an entry under
    `Unreleased` for every user-visible, schema, or workflow change.
 7. [docs/TODO.md](docs/TODO.md) — deferred work. Do not pull items from it into
@@ -41,22 +42,26 @@ toolchain beyond Python.
 ### Layout
 
 ```text
-data/gpus.yaml                     authoritative GPU catalog (IDs come from here)
+data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml
+                                   authoritative catalog, one file per product
+data/gpus/README.md                catalog rules, ID grammar, every check explained
 data/reviews.yaml                  optional published-review links
 data/official/<gpu_id>/result_*.yaml
 data/community/<gpu_id>/result_*.yaml
 data/community/<gpu_id>/raw/**     optional raw capture evidence
-scripts/build.py                   YAML source -> site/api/v1/** JSON
-scripts/validate.py                PR validator for source YAML
+scripts/checks.py                  every catalog and result rule, written once
+scripts/build.py                   YAML source -> site/api/v1/** JSON (runs checks first)
+scripts/validate.py                PR validator: validate.py [catalog|results]
 scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
-templates/                         starting points for official/community runs
+templates/                         starting points for runs and catalog entries
 CHANGELOG.md                       high-level version history (update with every change)
 docs/TODO.md                       deferred work, out of scope until asked
 .github/workflows/build.yml        builds site/api and deploys Pages on main
-.github/workflows/validate.yml     runs validate.py + test_build.py on PRs
+.github/workflows/validate.yml     three PR checks: Catalog entries, Benchmark results,
+                                   Build and tests
 ```
 
 Generated `site/api/` output is gitignored and recreated in CI. Do not commit it
@@ -69,11 +74,23 @@ unless repository policy changes.
   leading `-`. A duplicated `result:` key silently drops data.
 - Desktop and laptop GPU records never share a summary group.
 - `frame_generation: false` is required for comparable game runs.
-- Catalog specs in `data/gpus.yaml` are nested (`identity`,
-  `classification`, `silicon`, `memory`, `clocks`, `power`, `release`,
-  `features`); quote every date so YAML keeps it a string.
+- Catalog specs are nested (`identity`, `classification`, `silicon`,
+  `memory`, `clocks`, `power`, `release`, `features`). Only five fields are
+  required (`id`, `identity.name`, `identity.gpu_vendor`,
+  `classification.form_factor`, `memory.capacity_gb`); quote every date and
+  version number so YAML keeps it a string.
 - A result folder's name must exactly equal the `gpu_id` inside its files, and
-  that ID must exist in `data/gpus.yaml`.
+  that ID must be a catalog file name under `data/gpus/`.
+- Catalog IDs are product-level with one `<N>gb` token equal to
+  `memory.capacity_gb`. Different memory sizes and board partners are
+  different IDs. Handheld RAM is in the ID; laptop system RAM is recorded per
+  run. The catalog folder is `<form_factor>/<gpu_vendor>`, where
+  `gpu_vendor` is the GPU chip maker. The field is `identity.gpu_vendor`, not
+  `vendor`.
+- Block-style YAML only in data and templates: no inline `[ ]` or `{ }`.
+- Every rule lives once in `scripts/checks.py`. A new rule needs a
+  ``#### `rule-name` `` heading in `data/gpus/README.md` or
+  `docs/COMMUNITY_SUBMISSIONS.md`, and `test_build.py` enforces that.
 - Exact machine metadata stays on each run; charts show grouped summaries.
 - Raw capture evidence is preferred; preserve its reference when correcting or
   removing a record.
@@ -87,10 +104,10 @@ unless repository policy changes.
 
 ```powershell
 python -m pip install pyyaml numpy
-python scripts/build.py
 python scripts/validate.py
+python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\build.py scripts\validate.py scripts\parse.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\test_build.py
 git diff --check
 ```
 
@@ -120,8 +137,9 @@ conversation. Before you report a task complete, update whatever is now stale:
   `docs/COPILOT_HANDOFF.md`. These counts are quoted in both files and go wrong
   easily.
 - **Submission or validation rules changed** → update `CONTRIBUTING.md`,
-  `docs/COMMUNITY_SUBMISSIONS.md`, `data/community/README.md`, and the data
-  rules in `.github/copilot-instructions.md`.
+  `docs/COMMUNITY_SUBMISSIONS.md`, `data/community/README.md`,
+  `data/gpus/README.md`, and the data rules in
+  `.github/copilot-instructions.md`.
 - **New command, script, or workflow step** → add it to the check lists in
   `README.md`, `CONTRIBUTING.md`, `docs/COPILOT_HANDOFF.md`, and
   `.github/copilot-instructions.md`.

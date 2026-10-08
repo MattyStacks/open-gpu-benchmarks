@@ -1,0 +1,13 @@
+gpu_id: steam_deck_oled_16gb
+submitted_by: MattyStacks
+game: Cyberpunk 2077
+version: '2.12'
+synthetic: true
+proof:
+  summary_source: Manual benchmark summary supplied by contributor
+benchmark_type: game
+result:
+- avg_fps: 27.0
+  p1_low: 19.0
+  resolution: 1440p
+  graphics_preset: Steam Deck

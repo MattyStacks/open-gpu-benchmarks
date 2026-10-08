@@ -1,0 +1,39 @@
+id: steam_deck_oled_16gb
+identity:
+  name: Steam Deck OLED
+  codename: Sephiroth
+  gpu_vendor: amd
+classification:
+  form_factor: handheld
+  architecture: RDNA 2
+silicon:
+  process: TSMC 6nm
+  shader_cores: 512
+  rt_cores: 8
+  tmus: 32
+  rops: 16
+memory:
+  capacity_gb: 16
+  type: LPDDR5
+  bus_width_bits: 128
+  bandwidth_gbs: 102.4
+  shared: true
+clocks:
+  base_mhz: 1000
+  boost_mhz: 1600
+power:
+  tdp_w: 15
+release:
+  date: '2023-11-16'
+  msrp_usd: 549
+  msrp_history:
+  - date: '2022-02'
+    price_usd: 399
+    label: LCD 64GB
+  - date: '2023-11'
+    price_usd: 549
+    label: OLED 512GB
+features:
+  fsr: '3.1'
+  av1: decode
+notes: 6 nm shrink of the Aerith APU (Zen 2 4C/8T, 8 CUs) at roughly 20 percent less die area. APU power spans 4-15 W. Memory is shared system RAM.

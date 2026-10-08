@@ -1,0 +1,11 @@
+gpu_id: rtx_4080_super_16gb_fe
+benchmark_type: game
+game: Alan Wake 2
+version: '1.2'
+synthetic: true
+driver: '551.23'
+result:
+- avg_fps: 102.0
+  p1_low: 84.0
+  resolution: 1440p
+  graphics_preset: High

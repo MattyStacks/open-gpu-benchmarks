@@ -1,0 +1,11 @@
+gpu_id: rtx_4090_laptop_16gb_generic
+benchmark_type: game
+game: Cyberpunk 2077
+version: '2.12'
+synthetic: true
+driver: '551.23'
+result:
+- avg_fps: 118.0
+  p1_low: 96.0
+  resolution: 1440p
+  graphics_preset: Ultra

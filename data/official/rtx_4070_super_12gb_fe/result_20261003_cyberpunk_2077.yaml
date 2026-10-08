@@ -1,0 +1,11 @@
+gpu_id: rtx_4070_super_12gb_fe
+benchmark_type: game
+game: Cyberpunk 2077
+version: '2.12'
+synthetic: true
+driver: '551.23'
+result:
+- avg_fps: 96.0
+  p1_low: 78.0
+  resolution: 1440p
+  graphics_preset: Ultra

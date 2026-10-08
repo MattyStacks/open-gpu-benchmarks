@@ -1,0 +1,51 @@
+# Handheld catalog entry. Rules: data/gpus/README.md
+#
+# Save as data/gpus/handheld/<gpu_vendor>/<id>.yaml, for example
+# data/gpus/handheld/amd/rog_ally_x_z1_extreme_24gb.yaml.
+#
+# The example values are the ROG Ally Z1 Extreme with 16 GB. Replace them all.
+# Only the fields marked "required" must be filled in. Delete any optional line
+# you don't know; the dashboard shows "—" for it. Keep block style: one "-"
+# line per list item, no [ ] or { }. Quote dates and version numbers.
+#
+# id pattern: <device>_<chip>_<ram>gb, ending with the RAM size
+#   legion_go_z1_extreme_16gb, rog_ally_x_z1_extreme_24gb
+#   Leave out <chip> only if the device was only ever sold with one chip:
+#   steam_deck_oled_16gb
+# Handheld RAM is soldered, so each RAM size is its own entry and its own id.
+id: rog_ally_z1_extreme_16gb     # required; also the file name
+identity:
+  name: ROG Ally Z1 Extreme      # required
+  codename: Phoenix
+  gpu_vendor: amd                # required; the chip maker, not the device maker
+classification:
+  form_factor: handheld          # required
+  architecture: RDNA 3
+silicon:
+  process: TSMC 4nm
+  die_size_mm2: 178
+  transistors_b: 25.0
+  shader_cores: 768
+  rt_cores: 12
+  tmus: 48
+  rops: 32
+memory:
+  capacity_gb: 16                # required; system RAM, must equal the <N>gb in the id
+  type: LPDDR5
+  bus_width_bits: 128
+  bandwidth_gbs: 102.4
+  shared: true                   # the GPU uses system RAM
+clocks:
+  boost_mhz: 2700
+power:
+  tdp_w: 30                      # top of the APU power range
+release:
+  date: '2023-06-13'
+  msrp_usd: 699
+  msrp_history:
+    - date: '2023-06'
+      price_usd: 699
+features:
+  fsr: '3.1'
+  av1: decode
+notes: Custom Phoenix APU (Zen 4 8C/16T, 12 CUs). APU power spans 9-30 W.

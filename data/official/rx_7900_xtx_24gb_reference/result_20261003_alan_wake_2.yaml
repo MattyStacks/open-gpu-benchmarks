@@ -1,0 +1,11 @@
+gpu_id: rx_7900_xtx_24gb_reference
+benchmark_type: game
+game: Alan Wake 2
+version: '1.2'
+synthetic: true
+driver: 24.2.1
+result:
+- avg_fps: 112.0
+  p1_low: 91.0
+  resolution: 1440p
+  graphics_preset: High

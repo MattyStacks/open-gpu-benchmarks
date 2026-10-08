@@ -1,0 +1,13 @@
+gpu_id: arc_a770_16gb_le
+submitted_by: MattyStacks
+game: Helldivers 2
+version: '1.001'
+synthetic: true
+benchmark_type: game
+result:
+  - avg_fps: 70.0
+    p1_low: 50.0
+    resolution: 1080p
+    graphics_preset: Ultra
+proof:
+  summary_source: Second synthetic run used to verify grouped averaging

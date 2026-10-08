@@ -1,0 +1,57 @@
+# Desktop card catalog entry. Rules: data/gpus/README.md
+#
+# Save as data/gpus/desktop/<gpu_vendor>/<id>.yaml, for example
+# data/gpus/desktop/nvidia/rtx_5060_ti_16gb_msi_ventus_2x.yaml.
+#
+# The example values are the RTX 4070 Super Founders Edition. Replace them all.
+# Only the fields marked "required" must be filled in. Delete any optional line
+# you don't know; the dashboard shows "—" for it. Keep block style: one "-"
+# line per list item, no [ ] or { }. Quote dates and version numbers.
+#
+# id pattern: <gpu_model>_<vram>gb_<brand>_<product_line>
+#   rtx_5060_ti_8gb_msi_ventus_2x_oc, rtx_5060_ti_16gb_asus_tuf_gaming
+#   GPU vendor's own card: _fe (NVIDIA), _reference (AMD), _le (Intel)
+id: rtx_4070_super_12gb_fe       # required; also the file name
+identity:
+  name: GeForce RTX 4070 Super   # required; the retail name
+  codename: AD104
+  gpu_vendor: nvidia             # required; nvidia, amd, or intel (also the folder)
+classification:
+  form_factor: desktop           # required
+  architecture: Ada Lovelace
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 294.5
+  transistors_b: 35.8
+  shader_cores: 7168
+  rt_cores: 56
+  tmus: 224
+  rops: 80
+memory:
+  capacity_gb: 12                # required; must equal the <N>gb in the id
+  type: GDDR6X
+  bus_width_bits: 192
+  bandwidth_gbs: 504.2
+clocks:
+  base_mhz: 1980
+  boost_mhz: 2475                # use the board's own boost clock for partner cards
+  mem_mhz: 1313
+power:
+  tdp_w: 220
+  connectors:
+    - 16-pin 12VHPWR
+  pcie: 4.0 x16
+release:
+  date: '2024-01-17'
+  msrp_usd: 599
+  msrp_history:
+    - date: '2024-01'
+      price_usd: 599
+features:
+  dlss: '3.5'
+  fsr: '3.1'
+  av1: encode+decode
+  outputs:
+    - HDMI 2.1a
+    - DP 1.4a x3
+notes: One or two sentences about what makes this card notable.

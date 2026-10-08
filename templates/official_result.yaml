@@ -3,7 +3,7 @@
 #
 # result is a YAML list. The leading "-" is required for each separate
 # resolution/preset profile, and each profile becomes an independent run.
-gpu_id: rtx_4090
+gpu_id: rtx_4090_24gb_fe
 benchmark_type: game
 game: Cyberpunk 2077
 version: "2.12"

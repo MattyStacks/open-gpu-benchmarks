@@ -147,7 +147,7 @@
         <article class="api-card"><h3>gpus.json</h3><p>The GPU catalog with full hardware specs, each GPU's official and community summaries, and links to its per-GPU files.</p><div class="api-actions" data-api-path="api/v1/gpus.json"></div></article>
         <article class="api-card"><h3>official.json</h3><p>Every official run, one record per resolution and preset profile.</p><div class="api-actions" data-api-path="api/v1/official.json"></div></article>
         <article class="api-card"><h3>community.json</h3><p>Grouped community summaries, with the exact machine details and GitHub submitter for each run.</p><div class="api-actions" data-api-path="api/v1/community.json"></div></article>
-        <article class="api-card"><h3>&lt;source&gt;/&lt;gpu_id&gt;/summary.json</h3><p>One GPU's runs and summaries, for example <span class="mono">official/rtx_4090</span> or <span class="mono">community/steam_deck_oled</span>. GPU IDs are listed in gpus.json.</p><div class="api-actions" data-api-path="api/v1/official/rtx_4090/summary.json"></div></article>
+        <article class="api-card"><h3>&lt;source&gt;/&lt;gpu_id&gt;/summary.json</h3><p>One GPU's runs and summaries, for example <span class="mono">official/rtx_4090_24gb_fe</span> or <span class="mono">community/steam_deck_oled_16gb</span>. GPU IDs are listed in gpus.json.</p><div class="api-actions" data-api-path="api/v1/official/rtx_4090_24gb_fe/summary.json"></div></article>
       </div>
       <div class="api-usage">
         <div><h3 class="submission-heading">Command line</h3><pre class="yaml-example"><code id="api-curl"></code></pre></div>
@@ -181,14 +181,14 @@
       <div class="submission-details">
         <div>
           <h3 class="submission-heading">Community YAML example</h3>
-          <pre class="yaml-example"><code><span class="yaml-comment"># data/community/rtx_4070_super/result_20261003_cyberpunk_mattystacks.yaml</span>
-<span class="yaml-key">gpu_id</span>: <span class="yaml-string">rtx_4070_super</span>
+          <pre class="yaml-example"><code><span class="yaml-comment"># data/community/rtx_4070_super_12gb_fe/result_20261003_cyberpunk_mattystacks.yaml</span>
+<span class="yaml-key">gpu_id</span>: <span class="yaml-string">rtx_4070_super_12gb_fe</span> <span class="yaml-comment"># catalog file name in data/gpus/</span>
 <span class="yaml-key">submitted_by</span>: <span class="yaml-string">MattyStacks</span> <span class="yaml-comment"># your GitHub username</span>
 <span class="yaml-key">benchmark_type</span>: <span class="yaml-string">game</span>
 <span class="yaml-key">game</span>: <span class="yaml-string">Cyberpunk 2077</span>
 <span class="yaml-key">frame_generation</span>: <span class="yaml-boolean">false</span>
 <span class="yaml-key">form_factor</span>: <span class="yaml-string">desktop</span>
-<span class="yaml-key">device_name</span>: <span class="yaml-string">ASUS TUF RTX 4070 Super</span>
+<span class="yaml-key">device_name</span>: <span class="yaml-string">Ryzen 7 7800X3D test bench</span>
 <span class="yaml-key">gpu_power_w</span>: <span class="yaml-number">220</span>
 <span class="yaml-key">overclocked</span>: <span class="yaml-boolean">false</span>
 <span class="yaml-key">result</span>:
@@ -320,7 +320,7 @@
     function sortValue(record, key) {
       switch (key) {
         case "gpu": return record.gpu_name;
-        case "vendor": return record.vendor;
+        case "vendor": return record.gpu_vendor;
         case "form": return record.form_factor;
         case "arch": return specValue(record, "classification", "architecture");
         case "vram": return specValue(record, "memory", "capacity_gb");
@@ -358,13 +358,13 @@
     function matchesSearch(record) {
       const query = state.search.toLowerCase();
       if (!query) return true;
-      return [record.gpu_name, record.gpu_id, record.vendor, record.form_factor,
+      return [record.gpu_name, record.gpu_id, record.gpu_vendor, record.form_factor,
         specValue(record, "classification", "architecture"),
         specValue(record, "identity", "codename")].some((value) => value && String(value).toLowerCase().includes(query));
     }
 
     function formatVendor(record) {
-      return record.vendor ? record.vendor.toUpperCase() : MISSING;
+      return record.gpu_vendor ? record.gpu_vendor.toUpperCase() : MISSING;
     }
 
     function formatForm(record) {
@@ -374,8 +374,8 @@
     function formatMemory(record) {
       const capacity = specValue(record, "memory", "capacity_gb");
       const type = specValue(record, "memory", "type");
-      if (capacity === null || !type) return MISSING;
-      return `${capacity}GB ${type}${specValue(record, "memory", "shared") ? " (shared)" : ""}`;
+      if (capacity === null) return MISSING;
+      return `${capacity}GB${type ? ` ${type}` : ""}${specValue(record, "memory", "shared") ? " (shared)" : ""}`;
     }
 
     function formatBus(record) {
@@ -474,7 +474,7 @@
       if (!chart) chart = window.echarts.init(elements.chart, undefined, { renderer: "canvas" });
       const labels = records.map((record) => record.gpu_name);
       const vendorColors = { nvidia: "#76b900", amd: "#ed1c24", intel: "#0071c5" };
-      const colorFor = (record) => vendorColors[record.vendor] || "#94a3b8";
+      const colorFor = (record) => vendorColors[record.gpu_vendor] || "#94a3b8";
       const series = [];
       if (state.showAvg) series.push({ name: "Avg FPS", type: "bar", barMaxWidth: 22, data: records.map((record) => ({ value: record.avg_fps, itemStyle: { color: colorFor(record) } })) });
       if (state.showP1) series.push({ name: "1% Low", type: "bar", barMaxWidth: 22, data: records.map((record) => ({ value: record.p1_low, itemStyle: { color: colorFor(record), opacity: 0.5 } })) });

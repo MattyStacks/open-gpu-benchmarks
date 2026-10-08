@@ -1,0 +1,11 @@
+gpu_id: rx_7900_xtx_24gb_reference
+benchmark_type: game
+game: Helldivers 2
+version: '1.001'
+synthetic: true
+driver: 24.2.1
+result:
+- avg_fps: 152.0
+  p1_low: 126.0
+  resolution: 1080p
+  graphics_preset: Ultra

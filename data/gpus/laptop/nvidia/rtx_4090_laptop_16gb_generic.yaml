@@ -1,0 +1,33 @@
+id: rtx_4090_laptop_16gb_generic
+identity:
+  name: GeForce RTX 4090 Laptop
+  codename: AD103
+  gpu_vendor: nvidia
+classification:
+  form_factor: laptop
+  architecture: Ada Lovelace
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 378.6
+  transistors_b: 45.9
+  shader_cores: 9728
+  rt_cores: 76
+  tmus: 304
+  rops: 112
+memory:
+  capacity_gb: 16
+  type: GDDR6
+  bus_width_bits: 256
+  bandwidth_gbs: 576
+clocks:
+  boost_mhz: 2040
+  mem_mhz: 2250
+power:
+  tdp_w: 150
+release:
+  date: '2023-02-08'
+features:
+  dlss: '3.5'
+  fsr: '3.1'
+  av1: encode+decode
+notes: TGP spans 80-150 W plus 25 W Dynamic Boost, so base clocks vary by laptop. No fixed MSRP; pricing depends on the chassis.

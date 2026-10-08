@@ -17,6 +17,8 @@ try:
 except ImportError:
     print("pip install pyyaml"); sys.exit(1)
 
+import checks
+
 try:
     import numpy as np
     HAS_NUMPY=True
@@ -129,16 +131,22 @@ def detect_and_load(path):
 def main():
     p=argparse.ArgumentParser(description="PresentMon/MangoHud -> YAML")
     p.add_argument("csv_file")
-    p.add_argument("--gpu-id", required=True, help="Must exist in gpus.yaml")
+    p.add_argument("--gpu-id", required=True, help="Exact catalog ID, the file name under data/gpus/<form_factor>/<gpu_vendor>/")
     p.add_argument("--game", required=True)
     p.add_argument("--submitted-by", required=True, help="GitHub username of the PR submitter")
     p.add_argument("--resolution", default="1440p")
     p.add_argument("--graphics-preset", default="Ultra")
-    p.add_argument("--form-factor", default="desktop", choices=["desktop","laptop","handheld","igpu"])
+    p.add_argument("--form-factor", default=None, choices=["desktop","laptop","handheld","igpu"], help="Defaults to the catalog value")
     p.add_argument("--driver", default="", help="OPTIONAL - not required for PR approval")
     p.add_argument("--os", default="Windows 11")
     p.add_argument("--output", default="")
     args=p.parse_args()
+
+    catalog={entry["id"]: entry for entry in checks.load_catalog()[0]}
+    if args.gpu_id not in catalog:
+        print(f"Unknown --gpu-id '{args.gpu_id}'. Use the exact file name of a catalog entry under data/gpus/.")
+        sys.exit(1)
+    form_factor=args.form_factor or checks.spec(catalog[args.gpu_id], "classification", "form_factor")
 
     csv_path=Path(args.csv_file)
     result=detect_and_load(csv_path)
@@ -148,7 +156,7 @@ def main():
         "submitted_by": args.submitted_by,
         "benchmark_type": "game",
         "game": args.game,
-        "form_factor": args.form_factor,
+        "form_factor": form_factor,
         "os": args.os,
         "capture_method": result["format"],
         "result": [{
@@ -169,6 +177,8 @@ def main():
         "proof": {"raw_log": str(csv_path.name), "format": result["format"]},
     }
     data["result"][0]={k:v for k,v in data["result"][0].items() if v is not None}
+    if not data["system"]:
+        del data["system"]  # an empty mapping would be written as inline "{}"
 
     if not args.output:
         safe_game=args.game.lower().replace(" ","_").replace(":","")

@@ -12,19 +12,24 @@
     name suffix, API schema 0.5 (`submitted_by`, `contributors`), dashboard
     JSON API panel and GitHub links.
   - Unreleased: API schema 0.6 (nested catalog specs) and the per-card
-    dashboard spec table with sortable columns and expandable rows.
+    dashboard spec table with sortable columns and expandable rows; then
+    schema 0.7: one catalog file per product under `data/gpus/`,
+    product-level IDs with a memory token, `identity.gpu_vendor`, five
+    required catalog fields, shared checks in `scripts/checks.py`, and three
+    separate CI checks.
   - Version history lives in [CHANGELOG.md](../CHANGELOG.md); update its
     `Unreleased` section with every behavioral change.
   - Open follow-ups live in [docs/TODO.md](TODO.md).
 
 ## Current data contract
 
-The static dashboard is built from a GPU-rooted source tree. `data/gpus.yaml`
-is authoritative: every official and community result must be in the folder
-named by its exact catalog ID and must carry the same `gpu_id`.
+The static dashboard is built from a GPU-rooted source tree. The catalog under
+`data/gpus/` is authoritative, one file per product. Every official and
+community result must be in the folder named by its exact catalog ID and must
+carry the same `gpu_id`.
 
 ```text
-data/gpus.yaml
+data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml
 data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
 data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
 data/community/<gpu_id>/raw/**                         optional raw evidence
@@ -56,15 +61,59 @@ record and the per-run `implementations` entries, and a sorted, de-duplicated
 `contributors` list to every grouped summary. The dashboard does not display
 submitters; they are API-only.
 
-Schema `0.6` nests the catalog hardware specs. Each `gpus.yaml` entry keeps
-its `id` at the top level with `identity`, `classification`, `silicon`,
-`memory`, `clocks`, `power`, `release`, and `features` sections. Required
-leaves are the identity trio, form factor plus architecture, memory
-capacity/type/bus/bandwidth, boost clock, and TDP; the build and validator
-reject missing leaves, mistyped values, unquoted dates, unknown vendors,
-and out-of-range TDP (5-600 W) or bus width (32-512 bits). Run records keep
-flat `vram_gb`/`tdp_w` derived from the nested specs, with `vram_gb` null
+Schema `0.6` nests the catalog hardware specs. Each catalog entry keeps its
+`id` at the top level with `identity`, `classification`, `silicon`,
+`memory`, `clocks`, `power`, `release`, and `features` sections. Run records
+keep flat `vram_gb`/`tdp_w` derived from the nested specs, with `vram_gb` null
 for shared-memory handhelds instead of 0.
+
+Schema `0.7` splits the catalog into one file per product and makes IDs
+product-level:
+
+- **Path.** `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`. The file name
+  equals `id`, and the folders equal `classification.form_factor` and
+  `identity.gpu_vendor`. `gpu_vendor` is the GPU chip maker, never the board
+  partner or device OEM.
+- **Memory token.** Every ID has exactly one `<N>gb` token equal to
+  `memory.capacity_gb`. Different memory sizes and board partners are
+  different IDs, which is what keeps them in separate summary groups. No new
+  grouping key was needed.
+- **ID patterns.**
+  - desktop: `<gpu_model>_<vram>gb_<brand>_<product_line>`, with
+    `_fe`/`_reference`/`_le` for the vendor's own card
+  - laptop: `<gpu_model>_<vram>gb_<oem>_<model>`, or a temporary `_generic`
+    that warns
+  - handheld: `<device>_<chip>_<ram>gb`
+
+  Handheld RAM is soldered, so it is part of the ID. Laptop system RAM is
+  upgradeable, so it stays on each run in `system.memory`.
+- **Vendor field.** `identity.vendor` is renamed to `identity.gpu_vendor`.
+  Run records carry `gpu_vendor` instead of `vendor`, and the dashboard
+  reads `record.gpu_vendor`.
+- **Required fields.** Only five are required: `id`, `identity.name`,
+  `identity.gpu_vendor`, `classification.form_factor`, and
+  `memory.capacity_gb`.
+- **Optional fields.** These are still type-checked and range-checked: quoted
+  dates, capacity 1-512 GB, bus width 32-512 bits, TDP 5-600 W. Unknown
+  fields are rejected. Missing values become `null` in the API and `—` on
+  the dashboard.
+- **Ordering.** `gpus.json` lists entries by form factor, then vendor, then ID.
+
+Old-to-new ID map, applied to the result folders as well:
+
+| Old ID | New ID |
+| ------ | ------ |
+| `rtx_4090` | `rtx_4090_24gb_fe` |
+| `rtx_4080_super` | `rtx_4080_super_16gb_fe` |
+| `rtx_4070_super` | `rtx_4070_super_12gb_fe` |
+| `rx_7900_xtx` | `rx_7900_xtx_24gb_reference` |
+| `arc_a770` | `arc_a770_16gb_le` |
+| `rtx_4090_laptop` | `rtx_4090_laptop_16gb_generic` |
+| `rtx_4070_laptop` | `rtx_4070_laptop_8gb_generic` |
+| `arc_a770m` | `arc_a770m_16gb_generic` |
+| `rog_ally_z1_extreme` | `rog_ally_z1_extreme_16gb` |
+| `legion_go` | `legion_go_z1_extreme_16gb` |
+| `steam_deck_oled` | `steam_deck_oled_16gb` |
 
 ## Data rules
 
@@ -80,6 +129,10 @@ for shared-memory handhelds instead of 0.
   case-insensitively. Same-day repeats put a number before the username
   (`..._helldivers_2_mattystacks.yaml`). `validate.py` enforces this; it does
   not compare against the PR author.
+- Different memory sizes, board partners, or handheld RAM configurations are
+  different catalog IDs. Never merge them into one entry.
+- Data files and templates use block-style YAML only (no inline `[ ]` or
+  `{ }`); `checks.py` rejects inline style as `yaml-inline`.
 
 `benchmark_type` defaults to `game`. Game source files need `game` and a
 `result` list whose entries each carry `resolution`, `graphics_preset`,
@@ -92,33 +145,87 @@ entries in per-GPU API data but do not enter dashboard charts.
 
 ```powershell
 python -m pip install pyyaml numpy
+python scripts/validate.py            # or: validate.py catalog / validate.py results
 python scripts/build.py
-python scripts/validate.py
 python scripts/test_build.py
-python -m py_compile scripts\build.py scripts\validate.py scripts\parse.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\test_build.py
 git diff --check
 ```
 
+Every rule lives once in [`scripts/checks.py`](../scripts/checks.py).
+
+- **Shared by both scripts.** `build.py` and `validate.py` both call
+  `load_catalog()` and `load_results()`.
+- **Issues, not exceptions.** Each check appends an
+  `Issue(path, level, rule, message)` instead of raising, so one run reports
+  every problem in every file.
+- **Output format.** Under GitHub Actions, issues print as
+  `::error file=<path>::[rule] message`, which puts annotations on the PR
+  diff. Each message links to the rule's `####` heading in
+  `data/gpus/README.md` (catalog rules) or `docs/COMMUNITY_SUBMISSIONS.md`
+  (result rules).
+- **Build stops on errors.** `build.py` exits 1 before writing any
+  `site/api/` output if any error exists. It prints only errors plus a
+  warning count; `validate.py` prints the warnings.
+- **What `validate.py results` covers.** It checks official **and**
+  community files. Community-only nudges (no proof, no driver, laptop TGP,
+  no baseline) are warnings that apply only to community files. Any other
+  YAML file in a result folder fails as `result-filename`, so it can't be
+  skipped silently.
+
+To add a rule, call `issues.error(path, "<rule-name>", ...)` or
+`issues.warning(...)` in `checks.py`, then add a ``#### `<rule-name>` `` heading
+to the matching doc. `check_rules_are_documented()` in `test_build.py` fails
+until the heading exists. Also add a negative case to `check_catalog_rules()`
+or `check_result_rules()`.
+
+### CI
+
+[`.github/workflows/validate.yml`](../.github/workflows/validate.yml) runs on
+every pull request as three jobs, so the PR shows which part failed:
+
+- **Catalog entries**: `validate.py catalog`
+- **Benchmark results**: `validate.py results`
+- **Build and tests**: `py_compile`, `build.py`, `test_build.py`
+
+There is deliberately no `paths:` filter. A required check that is skipped
+never reports, and that blocks the merge. Each job takes seconds.
+
+[`build.yml`](../.github/workflows/build.yml) runs `validate.py` before
+`build.py`, so `main` cannot deploy bad data.
+
+**Repo setting (manual):** mark the three checks as required status checks in
+the `main` branch protection rules (Settings → Branches).
 [`scripts/parse.py`](../scripts/parse.py) writes converted CSV output directly
 to `data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml`. It
-requires `--submitted-by` and adds `_2`, `_3`, ... before the username rather
-than overwrite an existing file. `scripts/test_build.py` covers aggregation,
-`submitted_by`/`contributors` output, the validator's submitter checks, and
-the catalog specs (required leaves, ranges, negative cases, and the
-nested-spec payload shape).
+requires `--submitted-by`, rejects a `--gpu-id` that isn't in the catalog,
+takes the form factor from the catalog entry, and adds `_2`, `_3`, ... before
+the username rather than overwrite an existing file. `scripts/test_build.py`
+covers:
+
+- aggregation and `submitted_by`/`contributors` output
+- one negative case per check rule, run in temporary data directories
+- that one run reports errors from several files at once
+- that `build.main()` returns 1 and writes nothing on errors
+- that a required-fields-only catalog entry builds
+- that every rule has a doc heading
+- that the `templates/catalog_*.yaml` files pass the catalog checks
+- the generated payload shape
 
 ## Current synthetic fixtures
 
 The repository has 11 catalog GPU entries, 15 official result runs, 10
-community result runs, and 24 combined dashboard summaries. The Arc A770
+community result runs, and 24 combined dashboard summaries. The Arc A770 LE
 fixtures exercise a multi-profile source file and matching-run aggregation.
+The three laptop entries use `_generic` IDs and show `id-generic` warnings.
 Every fixture is marked `synthetic: true`. All community fixtures use
 `submitted_by: MattyStacks`. Catalog specs are real published specs; only the
 benchmark runs are synthetic.
 
 ## Dashboard
 
-`site/index.html` is the whole dashboard. It loads `./api/v1/dashboard.json`
+`site/index.html` is the whole dashboard. It reads `record.gpu_vendor` for the
+vendor column, color, and search. It loads `./api/v1/dashboard.json`
 relative to the page, so it works on GitHub Pages or a future custom domain.
 It also loads `./api/v1/gpus.json` for the per-card spec columns. The
 benchmark table sorts by any column, searches IDs, codenames, and
@@ -138,6 +245,36 @@ fetches it and swaps in a `data:` URI whose media query is forced to match the
 site's ◐ theme toggle, so the tab icon follows the toggle rather than the OS.
 If the fetch fails, the static link still follows the OS. `favicon.ico` and
 `apple-touch-icon.png` are dark-only fallbacks.
+
+## Planned next steps
+
+The approved catalog plan has three more steps, one PR each. Step 1 (catalog
+split, product IDs, shared checks, CI split) is done. They're also listed in
+[TODO.md](TODO.md).
+
+1. **Reference files and `base`.**
+   - `data/gpus/reference/<gpu_vendor>/<ref_id>.yaml` holds shared chip specs.
+     Product files set `base: <ref_id>`, and the build deep-merges the
+     product over the reference: product values win, lists are replaced
+     whole.
+   - Add a `platform` section for handhelds and laptops. It is not allowed on
+     desktop, and its fields are block-style only.
+   - Add `identity.board_partner` and a `skus` list.
+   - Results may never point at a reference ID.
+2. **`sources`.**
+   - A block list of `{url, title, accessed, covers}`. `url` must be https,
+     `accessed` is a quoted date, and `covers` lists section names.
+   - Missing `sources` starts as a warning and becomes an error later.
+3. **OS.**
+   - `system.os` is required on runs (`windows` or `linux`) and becomes a
+     grouping key.
+   - Optional detail fields: `os_detail`, `os_build`, `resizable_bar`,
+     `graphics_api`, `game_mode`, `hags`, `memory_integrity`, `power_plan`,
+     `distro`, `distro_version`, `kernel`, `mesa`, `runtime`, `proton`,
+     `dxvk`, `vkd3d_proton`, `launcher`, `session`, `gamemode`. These are
+     copied to run records and are never grouping keys.
+   - Dashboard: Windows and Linux chips plus an OS badge on each bar, with no
+     per-distro bars. Point readers to the JSON for per-distro charts.
 
 ## Version and deployment
 

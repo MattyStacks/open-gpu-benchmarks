@@ -1,0 +1,11 @@
+gpu_id: rtx_4070_laptop_8gb_generic
+benchmark_type: game
+game: Alan Wake 2
+version: '1.2'
+synthetic: true
+driver: '551.23'
+result:
+- avg_fps: 58.0
+  p1_low: 46.0
+  resolution: 1440p
+  graphics_preset: High

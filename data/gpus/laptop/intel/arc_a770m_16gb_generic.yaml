@@ -6,3 +6,9 @@ identity:
 classification:
   form_factor: laptop
 notes: OEM-only part announced 2022-03-30 with first systems in summer 2022. TGP spans 120-150 W. No fixed launch date or MSRP.
+sources:
+  - url: https://www.intel.com/content/www/us/en/products/sku/228341/intel-arc-a770m-graphics/specifications.html
+    title: Intel Arc A770M Graphics specifications
+    accessed: '2026-10-08'
+    covers:
+      - identity

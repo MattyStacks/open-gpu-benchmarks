@@ -382,8 +382,13 @@ Each product gets one file in the catalog. The full rules are in
    - Handhelds and laptops: add a `platform:` section with the device's own
      specs: maker, CPU, RAM speed, display, and power range. Handheld RAM size
      and type go under `memory`.
-7. **Check it:** `python scripts/validate.py catalog`.
-8. **Open a pull request**, on its own or together with your first result.
+7. **Add sources.** List the pages your values came from under `sources:`,
+   one `- url:` item each, with optional `title`, `accessed` date, and
+   `covers` sections. Use pages anyone can open: the maker's spec page, a
+   PSREF sheet, or TechPowerUp's GPU database. See
+   [Sources](data/gpus/README.md#sources).
+8. **Check it:** `python scripts/validate.py catalog`.
+9. **Open a pull request**, on its own or together with your first result.
 
 ### Worked examples
 

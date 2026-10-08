@@ -30,3 +30,14 @@ features:
   xess: '1.3'
   fsr: '3'
   av1: encode+decode
+sources:
+  - url: https://www.intel.com/content/www/us/en/products/sku/228341/intel-arc-a770m-graphics/specifications.html
+    title: Intel Arc A770M Graphics specifications
+    accessed: '2026-10-08'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power

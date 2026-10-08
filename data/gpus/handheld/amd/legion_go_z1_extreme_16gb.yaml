@@ -14,7 +14,7 @@ platform:
   cpu: Zen 4 8C/16T
   ram_mts: 7500
   os_shipped: Windows 11
-  display: 8.8 in QHD+ 144 Hz
+  display: 8.8 in 2560x1600 144 Hz
   power_min_w: 9
   power_max_w: 30
 release:
@@ -24,3 +24,10 @@ release:
   - date: '2023-10'
     price_usd: 699
 notes: Custom Phoenix APU with 12 CUs and faster LPDDR5X than the Ally. Memory is shared system RAM.
+sources:
+  - url: https://psref.lenovo.com/Product/Legion/Legion_Go_8APU1
+    title: Lenovo PSREF - Legion Go 8APU1
+    accessed: '2026-10-08'
+    covers:
+      - memory
+      - platform

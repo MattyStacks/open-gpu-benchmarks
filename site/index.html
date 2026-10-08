@@ -32,7 +32,7 @@
     .spec-chips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px; } .spec-chip { border:1px solid var(--border); border-radius:7px; padding:3px 8px; font-size:11px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; background:var(--panel); }
     .mini-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; } .mini-stat { border:1px solid var(--border); border-radius:9px; padding:9px 10px; background:var(--panel); } .mini-stat span { display:block; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); } .mini-stat strong { display:block; font-size:12px; margin-top:3px; font-weight:600; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
     .feature-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; } .feature-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:4px 10px; background:var(--panel); font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .feature-chip span { color:var(--muted); font-size:10px; text-transform:uppercase; } .feature-chip b { color:var(--text); font-weight:600; }
-    .spec-notes { color:var(--muted); font-size:12px; line-height:1.55; } .price-list { display:grid; gap:6px; margin:12px 0 18px; } .price-row { display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:8px; padding:7px 10px; background:var(--panel); font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .price-row span:last-child { color:var(--text); font-weight:600; }
+    .spec-notes { color:var(--muted); font-size:12px; line-height:1.55; } .source-list { display:grid; gap:6px; margin:4px 0 0; padding:0; list-style:none; font-size:12px; } .source-list a { color:var(--accent, inherit); word-break:break-word; } .source-list .detail { color:var(--muted); } .price-list { display:grid; gap:6px; margin:12px 0 18px; } .price-row { display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:8px; padding:7px 10px; background:var(--panel); font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .price-row span:last-child { color:var(--text); font-weight:600; }
     .result-meta { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; color:var(--muted); font-size:12px; margin:8px 0 12px; } .run-list { display:grid; gap:8px; margin-bottom:14px; } .run-item { border:1px solid var(--border); border-radius:9px; padding:9px 11px; background:var(--panel); font-size:11px; color:var(--muted); line-height:1.5; } .run-item strong { color:var(--text); font-size:12px; display:block; margin-bottom:2px; }
     .detail-links { display:flex; gap:8px; flex-wrap:wrap; } .detail-links a { text-decoration:none; }
     @media (max-width:900px) { .spec-detail { grid-template-columns:1fr; } .mini-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
@@ -567,6 +567,26 @@
         `<div class="mini-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? MISSING)}</strong></div>`).join("")}</div>`;
     }
 
+    function safeHttpsUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.protocol === "https:" ? url.href : null;
+      } catch { return null; }
+    }
+
+    function formatSources(record) {
+      const sources = specValue(record, "sources");
+      if (!Array.isArray(sources) || !sources.length) return `<p class="spec-notes">No sources recorded yet.</p>`;
+      return `<ul class="source-list">${sources.map((source) => {
+        const href = safeHttpsUrl(source.url);
+        const label = escapeHtml(source.title || source.url || "Source");
+        const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${label}</a>` : label;
+        const meta = [Array.isArray(source.covers) ? source.covers.join(", ") : "",
+          source.accessed ? `accessed ${source.accessed}` : ""].filter(Boolean).join(" · ");
+        return `<li>${link}${meta ? ` <span class="detail">(${escapeHtml(meta)})</span>` : ""}</li>`;
+      }).join("")}</ul>`;
+    }
+
     function formatFeatureChips(record) {
       const features = [["DLSS", specValue(record, "features", "dlss")],
         ["FSR", specValue(record, "features", "fsr")],
@@ -581,7 +601,9 @@
       const history = specValue(record, "release", "msrp_history");
       if (!Array.isArray(history) || !history.length) return `<p class="spec-notes">No price history recorded.</p>`;
       return `<div class="price-list">${history.map((row) => {
-        const label = row.label ? ` · ${escapeHtml(row.label)}` : "";
+        const href = row.source ? safeHttpsUrl(row.source) : null;
+        const label = (row.label ? ` · ${escapeHtml(row.label)}` : "") +
+          (href ? ` · <a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">source</a>` : "");
         return `<div class="price-row"><span>${escapeHtml(row.date)}${label}</span><span>$${Number(row.price_usd).toLocaleString()}</span></div>`;
       }).join("")}</div>`;
     }
@@ -632,6 +654,8 @@
           ${formatPlatform(record)}
           ${formatFeatureChips(record)}
           <p class="spec-notes">${escapeHtml(specValue(record, "notes") || "No notes recorded.")}</p>
+          <p class="section-kicker">Spec sources</p>
+          ${formatSources(record)}
         </div>
         <div>
           <p class="section-kicker">Launch price history</p>

@@ -134,8 +134,29 @@ def check_catalog_rules():
         "reference-field": {TEST_REF_PATH: reference_entry(classification={"form_factor": "desktop"})},
         "field-not-allowed": {base: minimal_entry(platform={"oem": "Test"})},
     }
+    source = {"url": "https://example.com/specs", "title": "Test", "accessed": "2026-10-08", "covers": ["memory"]}
+    bad_sources = {
+        "not a list": "https://example.com",
+        "http url": [{**source, "url": "http://example.com/specs"}],
+        "missing url": [{key: value for key, value in source.items() if key != "url"}],
+        "unknown key": [{**source, "link": "x"}],
+        "unknown section": [{**source, "covers": ["vram"]}],
+        "accessed not a date": [{**source, "accessed": "October 2026"}],
+    }
+    for label, sources in bad_sources.items():
+        cases[f"source-invalid ({label})"] = {base: minimal_entry(sources=sources)}
+    cases["source-invalid (unquoted accessed)"] = {
+        base: dump(minimal_entry()) + "sources:\n  - url: https://example.com/specs\n    accessed: 2026-10-08\n"
+    }
+    cases["source-invalid (msrp source)"] = {
+        base: minimal_entry(release={"msrp_history": [{"date": "2024-01", "price_usd": 1, "source": "ftp://x"}]})
+    }
     for rule, files in cases.items():
-        expect_rule(rule, files)
+        expect_rule(rule.split(" (")[0], files)
+    # A file without sources passes with a warning; a valid sources list passes cleanly.
+    expect_rule("sources-missing", {base: minimal_entry()}, level="warning")
+    issues = run_checks({base: minimal_entry(sources=[source])})
+    assert not issues, [issue.format() for issue in issues]
 
     # Handheld ids end with the RAM size; a handheld id with a suffix is rejected.
     handheld = minimal_entry(id="test_device_16gb_x", classification={"form_factor": "handheld"}, memory={"capacity_gb": 16})
@@ -159,7 +180,7 @@ def check_catalog_rules():
     # _generic is a warning, not an error, on a laptop.
     laptop = minimal_entry(id="test_gpu_laptop_8gb_generic", classification={"form_factor": "laptop"})
     issues = run_checks({"gpus/laptop/nvidia/test_gpu_laptop_8gb_generic.yaml": laptop})
-    assert not issues.errors and {issue.rule for issue in issues.warnings} == {"id-generic"}, issues
+    assert not issues.errors and {issue.rule for issue in issues.warnings} == {"id-generic", "sources-missing"}, issues
 
 
 def check_result_rules():
@@ -227,10 +248,17 @@ def check_minimal_entry_builds():
 
 
 def check_base_merge():
-    product = minimal_entry(base=TEST_REF, clocks={"boost_mhz": 2100}, features={"outputs": ["DP 2.1"]})
+    shared = {"url": "https://example.com/shared", "covers": ["release"]}
+    product = minimal_entry(
+        base=TEST_REF,
+        clocks={"boost_mhz": 2100},
+        features={"outputs": ["DP 2.1"]},
+        sources=[{"url": "https://example.com/board", "covers": ["power"]}, shared],
+    )
+    reference = reference_entry(sources=[{**shared, "covers": ["silicon"]}, {"url": "https://example.com/chip"}])
     with tempfile.TemporaryDirectory() as temp:
         data_dir = Path(temp)
-        for relative, content in {TEST_REF_PATH: reference_entry(), TEST_CATALOG_PATH: product}.items():
+        for relative, content in {TEST_REF_PATH: reference, TEST_CATALOG_PATH: product}.items():
             (data_dir / relative).parent.mkdir(parents=True, exist_ok=True)
             (data_dir / relative).write_text(dump(content), encoding="utf-8")
         catalog, issues = checks.load_catalog(data_dir)
@@ -242,6 +270,10 @@ def check_base_merge():
     assert merged["clocks"] == {"base_mhz": 1500, "boost_mhz": 2100}, "product value wins, siblings kept"
     assert merged["features"]["outputs"] == ["DP 2.1"], "lists are replaced whole"
     assert merged["identity"]["name"] == "Test GPU"
+    assert [source["url"] for source in merged["sources"]] == [
+        "https://example.com/board", "https://example.com/shared", "https://example.com/chip",
+    ], "sources add up, product first, each URL once"
+    assert merged["sources"][1]["covers"] == ["release", "silicon"], "covers combine for a shared URL"
 
 
 def check_templates_are_valid():
@@ -272,7 +304,7 @@ def check_rules_are_documented():
 
 def check_catalog_specs():
     master = load_json(API_DIR / "gpus.json")
-    assert master["metadata"]["schema_version"] == "0.8"
+    assert master["metadata"]["schema_version"] == "0.9"
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
     assert len(by_id) == 11
     for gpu in master["gpus"]:
@@ -293,6 +325,11 @@ def check_catalog_specs():
     assert deck["memory"]["shared"] is True
     assert deck["memory"]["capacity_gb"] == 16
     assert "base" not in deck, "base is optional"
+    for gpu in master["gpus"]:
+        assert gpu.get("sources"), f"{gpu['id']} has no sources"
+        assert all(source["url"].startswith("https://") for source in gpu["sources"])
+    flagship_sources = by_id["rtx_4090_24gb_fe"]["sources"]
+    assert len(flagship_sources) == 1 and "silicon" in flagship_sources[0]["covers"] and "release" in flagship_sources[0]["covers"]
     assert by_id["arc_a770m_16gb_generic"].get("release", {}).get("date") is None
 
     arc_a770 = load_json(API_DIR / "community" / "arc_a770_16gb_le" / "summary.json")

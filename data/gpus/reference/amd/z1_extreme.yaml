@@ -25,3 +25,16 @@ power:
 features:
   fsr: '3.1'
   av1: decode
+sources:
+  - url: https://www.amd.com/en/products/processors/handhelds/ryzen-z-series/z1-series/z1-extreme.html
+    title: AMD Ryzen Z1 Extreme product page
+    accessed: '2026-10-08'
+    covers:
+      - identity
+      - classification
+      - power
+  - url: https://rog.asus.com/us/gaming-handhelds/rog-ally/rog-ally-2023/spec/
+    title: ASUS ROG Ally (2023) RC71L tech specs
+    accessed: '2026-10-08'
+    covers:
+      - clocks

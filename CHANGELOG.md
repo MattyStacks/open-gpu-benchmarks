@@ -13,7 +13,23 @@ a fresh empty `Unreleased` section.
 
 ## Unreleased
 
-_Nothing yet._
+### Added
+- Catalog `sources`: every catalog file lists the pages its specs came from
+  (`url`, `title`, `accessed`, `covers`). Price history items can link their
+  own `source`.
+- Sources for all 20 current catalog files: TechPowerUp's GPU database for the
+  discrete GPUs, and the AMD, Intel, ASUS, Lenovo, and Valve spec pages for
+  the rest.
+- Source links in the dashboard's expanded row.
+- New checks: `source-invalid` (bad URL, field, date, or section name) and a
+  `sources-missing` warning.
+- Templates include a `sources` example.
+
+### Changed
+- API schema `0.9`: `gpus.json` entries carry `sources`. A product's sources
+  are combined with its reference's, and a URL cited by both appears once.
+- The ROG Ally entry gains its 40 Wh battery. The Legion Go display now lists
+  its exact resolution (2560x1600), from Lenovo's spec sheet.
 
 ## 0.5.0 - 2026-10-08
 

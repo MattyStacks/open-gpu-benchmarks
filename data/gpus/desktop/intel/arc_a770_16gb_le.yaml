@@ -20,3 +20,11 @@ features:
   - HDMI 2.1
   - DP 2.0 x3
 notes: Full DG2-512 die. Specs are for the 16 GB Limited Edition; drivers improved substantially through 2023-24.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/arc-a770.c3914
+    title: TechPowerUp GPU Database - Arc A770
+    accessed: '2026-10-08'
+    covers:
+      - release
+      - power
+      - features

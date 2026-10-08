@@ -43,3 +43,13 @@ features:
 # skus:                          # retail names or part numbers with identical specs
 #   - <part number>
 notes: One or two sentences about what makes this card notable.
+# Where this card's own details came from (release, connectors, outputs, price).
+# The reference's sources are added automatically; list only the pages you used.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4070-super.c4186
+    title: TechPowerUp GPU Database - GeForce RTX 4070 SUPER
+    accessed: '2026-10-08'
+    covers:
+      - release
+      - power
+      - features

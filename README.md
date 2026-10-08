@@ -23,7 +23,9 @@ fields are required; anything missing shows as `—`. Specs shared by every
 product built on one GPU live once in a reference file under
 `data/gpus/reference/`. Each product points at it with `base:` and only lists
 what it changes or adds. Handhelds and laptops also carry a `platform`
-section with their device specs, such as RAM speed and power range. ID rules, the field
+section with their device specs, such as RAM speed and power range. Every
+entry lists its `sources`: the pages its specs came from. They're shown as
+links when you expand a row. ID rules, the field
 reference, and the meaning of every check are in
 [data/gpus/README.md](data/gpus/README.md).
 
@@ -71,7 +73,8 @@ Schema `0.6` nests the catalog hardware specs. Schema `0.7` switches to
 product-level IDs and renames the vendor field to `gpu_vendor` (in
 `identity.gpu_vendor` and on every run record). Schema `0.8` adds `base`,
 `identity.board_partner`, `skus`, and `platform` to catalog entries, which
-are always returned already merged with their reference. The
+are always returned already merged with their reference. Schema `0.9` adds
+`sources`. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.

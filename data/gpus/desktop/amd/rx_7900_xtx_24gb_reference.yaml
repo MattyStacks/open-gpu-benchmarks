@@ -23,3 +23,11 @@ features:
   - DP 2.1 x2
   - USB-C
 notes: Chiplet design. The 300 mm2 graphics die pairs with six memory-cache dies carrying Infinity Cache.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/radeon-rx-7900-xtx.c3941
+    title: TechPowerUp GPU Database - Radeon RX 7900 XTX
+    accessed: '2026-10-08'
+    covers:
+      - release
+      - power
+      - features

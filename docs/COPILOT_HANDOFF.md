@@ -139,6 +139,34 @@ Schema `0.8` adds reference files.
 - **Dashboard.** The expanded row shows a "Device" grid from `platform` and
   chips for the board partner and base.
 
+Schema `0.9` (Unreleased) adds `sources`:
+
+- **The field.** Every catalog file can carry a block list of
+  `{url, title, accessed, covers}` items. `url` must be `https://`.
+  `accessed` is a quoted `YYYY-MM-DD`. `covers` lists section names from
+  `CATALOG_FIELDS`. `release.msrp_history` items may carry their own
+  `source` link.
+- **Checks.** A malformed item fails as `source-invalid`. A file with no
+  `sources` warns as `sources-missing`; that becomes an error later.
+- **Merging.** `merge_sources()` in `checks.py` lists the product's sources
+  first, then the reference's. A URL cited by both appears once, with the
+  two `covers` lists combined.
+- **Dashboard.** The expanded row lists the sources as links (https only,
+  via `safeHttpsUrl()`). A price row links its own `source`.
+- **Current data.** Every catalog file has sources (accessed 2026-10-08):
+  - TechPowerUp GPU database pages for the discrete GPUs
+  - Intel's A770M spec page
+  - AMD's Z1 Extreme page
+  - ASUS's ROG Ally spec page
+  - Lenovo's Legion Go PSREF
+  - Valve's Steam Deck OLED tech specs
+- **How they were checked.** TechPowerUp serves scripts a bot check, so its
+  URLs were confirmed by page title and its values through search results.
+  The maintainer plans to re-validate sources by hand.
+  - `covers` only lists sections a page was confirmed to back.
+  - The silicon specs of `z1_extreme` (die size, transistors, shader
+    counts) have no source yet.
+
 Old-to-new ID map, applied to the result folders as well:
 
 | Old ID | New ID |
@@ -290,17 +318,13 @@ If the fetch fails, the static link still follows the OS. `favicon.ico` and
 
 ## Planned next steps
 
-The approved catalog plan has two more steps, one PR each. Steps 1 and 2 are
-done: catalog split, product IDs, shared checks, and the CI split, then
-reference files, `base`, `platform`, `board_partner`, and `skus`. The
-remaining steps are also listed in [TODO.md](TODO.md).
+The approved catalog plan has one more step. Steps 1-3 are done: the
+catalog split, product IDs, shared checks, and the CI split; then reference
+files, `base`, `platform`, `board_partner`, and `skus`; then `sources`. The
+full implementation brief for the remaining step (data contract, code
+changes by function, fixtures, tests, docs) is in [TODO.md](TODO.md).
 
-1. **`sources`.**
-   - Add a block list of `{url, title, accessed, covers}`: `url` must be
-     https, `accessed` is a quoted date, and `covers` lists section names.
-   - A missing `sources` list starts as a warning and becomes an error later.
-   - Reference files and product files each carry their own sources.
-2. **OS.**
+1. **OS.**
    - `system.os` is required on runs (`windows` or `linux`) and becomes a
      grouping key.
    - Optional detail fields: `os_detail`, `os_build`, `resizable_bar`,

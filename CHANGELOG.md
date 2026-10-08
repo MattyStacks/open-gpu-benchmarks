@@ -11,6 +11,10 @@ and date and start a fresh `Unreleased` section.
 
 ## Unreleased
 
+### Added
+- Site favicon (`site/favicons/`): an SVG icon that follows the dashboard's
+  light/dark toggle, with ICO and Apple touch icon fallbacks.
+
 ### Changed
 - Rewrote `CONTRIBUTING.md` around submitting a result: a 5-step flow with a
   diagram, file-name and folder visuals, validated desktop/laptop/handheld/

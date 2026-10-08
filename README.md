@@ -99,7 +99,8 @@ python scripts/parse.py capture.csv --gpu-id rtx_4090 --game "Cyberpunk 2077" --
 ## Site and deployment
 
 `site/index.html` fetches the generated dashboard JSON with relative paths, so
-the site works under any host or custom domain. Links to the GitHub repository,
+the site works under any host or custom domain. Site icons live in
+`site/favicons/`; the SVG favicon follows the dashboard's light/dark toggle. Links to the GitHub repository,
 contributing guide, and issues are absolute and appear in the header and
 footer. The workflow in
 [.github/workflows/build.yml](.github/workflows/build.yml) rebuilds `site/api/`

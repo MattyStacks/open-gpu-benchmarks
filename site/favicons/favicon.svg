@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><style>.bg{fill:#090b10;stroke:#273142}.bgfill{fill:#090b10}.ink{stroke:#60a5fa}.bar{fill:#60a5fa}.top{fill:#34d399}@media (prefers-color-scheme:light){.bg{fill:#f8fafc;stroke:#cbd5e1}.bgfill{fill:#f8fafc}.ink{stroke:#2563eb}.bar{fill:#2563eb}.top{fill:#059669}}</style>
+<rect class="bg" x="8" y="8" width="1008" height="1008" rx="216" stroke-width="16"/>
+<g class="ink" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<line x1="136" y1="216" x2="136" y2="808"/>
+<rect x="392" y="720" width="288" height="64" rx="12"/>
+<rect class="bgfill" x="200" y="256" width="704" height="464" rx="56"/>
+</g>
+<g class="ink" stroke-width="32" stroke-linecap="round" fill="none">
+<rect x="432" y="368" width="240" height="240" rx="36"/>
+<path d="M492 316V336M552 316V336M612 316V336M492 640V660M552 640V660M612 640V660M380 428H400M380 488H400M380 548H400M704 428H724M704 488H724M704 548H724"/>
+</g>
+<rect class="bar" x="468" y="496" width="40" height="72" rx="8"/>
+<rect class="bar" x="532" y="448" width="40" height="120" rx="8"/>
+<rect class="top" x="596" y="400" width="40" height="168" rx="8"/>
+</svg>

@@ -4,6 +4,7 @@ game: Cyberpunk 2077
 version: '2.12'
 synthetic: true
 system:
+  os: windows
   driver: 24.1.1
 proof:
   raw_log: raw/rog_ally_z1_extreme_16gb/cyberpunk_1440p.csv

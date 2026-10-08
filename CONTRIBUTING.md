@@ -115,13 +115,19 @@ python scripts/parse.py capture.csv `
   --game "Cyberpunk 2077" `
   --submitted-by yourname `
   --resolution 1440p `
-  --graphics-preset Ultra
+  --graphics-preset Ultra `
+  --os windows `
+  --os-detail "Windows 11 Pro 24H2"
 ```
 
 This writes the correctly named file for you. It refuses an ID that isn't in
-the catalog and takes the form factor from the catalog entry. It does not know
-your hardware, so open the file afterwards and add the `system:` details (CPU,
-memory, driver, OS) and any extra resolution/preset profiles by hand. Copy your
+the catalog and takes the form factor from the catalog entry. `--os` is
+`windows` or `linux`. If you leave it out, a MangoHud capture means `linux` and a
+PresentMon capture means `windows`, and the script prints which one it picked.
+For MangoHud logs it also copies the kernel and driver from the log header. It
+does not know the rest of your hardware, so open the file afterwards and add the
+`system:` details (CPU, memory, driver, and the OS details such as `distro` or
+`proton`) and any extra resolution/preset profiles by hand. Copy your
 CSV into the product's `raw/` folder and point `proof.raw_log` at it, for
 example `raw/cyberpunk_1440p.csv`.
 
@@ -215,7 +221,9 @@ system:
   power_mode: Performance
   display_mode: direct
   driver: "561.09"
-  os: Windows 11
+  os: windows                    # required: windows or linux, lowercase
+  os_detail: Windows 11 Pro 24H2
+  resizable_bar: true
 proof:
   raw_log: raw/Cyberpunk_4070S_1440p.csv   # relative to this product's folder
   format: presentmon_summary
@@ -250,7 +258,8 @@ system:
   power_mode: Performance
   display_mode: dGPU only        # MUX switch state
   driver: "560.94"
-  os: Windows 11
+  os: windows
+  os_detail: Windows 11 Home 23H2
 proof:
   raw_log: raw/bg3_1080p.csv
   format: presentmon_summary
@@ -274,7 +283,11 @@ result:
     p1_low: 33.0
 system:
   power_mode: 15W
-  os: SteamOS 3.6
+  os: linux                      # SteamOS is Linux; the distro goes in its own field
+  distro: SteamOS
+  distro_version: "3.6"
+  runtime: proton
+  session: gamescope
 proof:
   summary_source: Steam Deck performance overlay, 3-minute run in the market area
 ```
@@ -290,9 +303,11 @@ proof:
 | `result[].resolution`, `graphics_preset`       | **Yes**   | Use `graphics_preset`, never `settings`                 |
 | `result[].avg_fps`, `p1_low`                   | **Yes**   | `p1_low` must be less than or equal to `avg_fps`        |
 | `frame_generation`                             | Must be `false` | Frame generation runs aren't comparable            |
+| `system.os`                                    | **Yes**   | `windows` or `linux`, lowercase; Windows and Linux runs are never averaged together |
 | `gpu_power_w` (laptops)                        | Warning   | Strongly encouraged                                     |
 | `proof.raw_log` or `proof.summary_source`      | Warning   | Raw capture preferred                                   |
-| `system` (CPU, memory, driver, OS, power mode) | Optional  | Encouraged: reviewers and readers use it                |
+| `system` (CPU, memory, driver, power mode)     | Optional  | Encouraged: reviewers and readers use it                |
+| OS details (`os_detail`, `distro`, `kernel`, `mesa`, `proton`, ...) | Optional | Must fit the OS; see [the OS fields](docs/COMMUNITY_SUBMISSIONS.md#operating-system) |
 
 Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 
@@ -310,6 +325,9 @@ Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 | `p1_low` bigger than `avg_fps` | `[result-impossible]` | Check you didn't swap the values |
 | Far from the official result | `[community-outlier]` | Re-check the settings, or explain the difference in the PR |
 | Wrote `[a, b]` or `{}` | `[yaml-inline]` | One `-` line per item; leave empty fields out |
+| No `system.os`, or `os: Windows 11` | `[result-os]` | Set `os: windows` or `os: linux`; put the full name in `os_detail` |
+| `proton:` on a Windows run, or `hags:` on a Linux run | `[result-os-field]` | Remove the field, or fix `system.os` |
+| `hags: yes` or an unquoted `kernel: 6.8` | `[result-os-field]` | Use `true`/`false` for flags; quote version numbers |
 
 Every rule is explained in
 [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md#what-the-checks-mean)

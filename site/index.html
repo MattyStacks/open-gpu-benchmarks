@@ -10,15 +10,15 @@
   <link rel="apple-touch-icon" href="favicons/apple-touch-icon.png">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <style>
-    :root { color-scheme: dark; --bg:#090b10; --panel:#11151d; --panel-strong:#171c27; --text:#f1f5f9; --muted:#8b96a9; --border:#273142; --accent:#60a5fa; --official:#60a5fa; --community:#34d399; --warning:#fbbf24; --form-desktop:#58a6ff; --form-laptop:#bc8cff; --form-handheld:#3fb950; --form-igpu:#f0883e; }
-    :root[data-theme="light"] { color-scheme: light; --bg:#f4f7fb; --panel:#ffffff; --panel-strong:#edf2f7; --text:#152033; --muted:#657287; --border:#d8e0eb; --accent:#2563eb; --official:#2563eb; --community:#059669; --warning:#b45309; --form-desktop:#0550ae; --form-laptop:#8250df; --form-handheld:#1a7f37; --form-igpu:#9a6700; }
+    :root { color-scheme: dark; --bg:#090b10; --panel:#11151d; --panel-strong:#171c27; --text:#f1f5f9; --muted:#8b96a9; --border:#273142; --accent:#60a5fa; --official:#60a5fa; --community:#34d399; --warning:#fbbf24; --form-desktop:#58a6ff; --form-laptop:#bc8cff; --form-handheld:#3fb950; --form-igpu:#f0883e; --os-windows:#38bdf8; --os-linux:#facc15; }
+    :root[data-theme="light"] { color-scheme: light; --bg:#f4f7fb; --panel:#ffffff; --panel-strong:#edf2f7; --text:#152033; --muted:#657287; --border:#d8e0eb; --accent:#2563eb; --official:#2563eb; --community:#059669; --warning:#b45309; --form-desktop:#0550ae; --form-laptop:#8250df; --form-handheld:#1a7f37; --form-igpu:#9a6700; --os-windows:#0369a1; --os-linux:#a16207; }
     * { box-sizing:border-box; } body { margin:0; background:radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 13%, transparent), transparent 34rem),var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     button,input,select { font:inherit; } button { cursor:pointer; } .shell { max-width:1440px; margin:auto; padding:0 24px 40px; } header { position:sticky; top:0; z-index:10; backdrop-filter:blur(18px); background:color-mix(in srgb, var(--bg) 88%, transparent); border-bottom:1px solid var(--border); }
     .header-inner { max-width:1440px; min-height:68px; margin:auto; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:18px; } h1,h2,h3,p { margin:0; } h1 { font-size:21px; letter-spacing:-.04em; } .eyebrow,.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .eyebrow { color:var(--muted); font-size:11px; letter-spacing:.13em; text-transform:uppercase; margin-top:4px; }
     .header-actions,.source-switch,.metrics { display:flex; align-items:center; gap:8px; flex-wrap:wrap; } .version { font-size:11px; color:var(--muted); border-left:1px solid var(--border); padding-left:18px; }
     .button,.chip,.source-switch button { border:1px solid var(--border); color:var(--muted); background:var(--panel); border-radius:999px; padding:7px 11px; font-size:12px; font-weight:650; transition:.16s ease; } .button:hover,.chip:hover,.source-switch button:hover { color:var(--text); border-color:color-mix(in srgb, var(--accent) 55%, var(--border)); } .source-switch button.active { background:var(--text); color:var(--bg); border-color:var(--text); } .icon-button { width:38px; height:38px; padding:0; display:grid; place-items:center; }
     main { padding-top:28px; } .notice { border:1px solid color-mix(in srgb,var(--warning) 45%,var(--border)); background:color-mix(in srgb,var(--warning) 8%,var(--panel)); border-radius:12px; padding:12px 14px; color:var(--text); margin-bottom:18px; font-size:13px; } .hidden { display:none!important; }
-    .toolbar,.panel { background:color-mix(in srgb,var(--panel) 92%,transparent); border:1px solid var(--border); border-radius:16px; } .toolbar { padding:16px; display:grid; grid-template-columns:minmax(180px,1.1fr) minmax(120px,.65fr) minmax(130px,.8fr) 1.5fr auto; gap:14px; align-items:end; } label { color:var(--muted); display:block; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:7px; } select,input[type="search"] { width:100%; color:var(--text); background:var(--panel-strong); border:1px solid var(--border); border-radius:9px; padding:9px 10px; outline:none; } select:focus,input[type="search"]:focus { border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent); }
+    .toolbar,.panel { background:color-mix(in srgb,var(--panel) 92%,transparent); border:1px solid var(--border); border-radius:16px; } .toolbar { padding:16px; display:grid; grid-template-columns:minmax(180px,1.1fr) minmax(120px,.65fr) minmax(130px,.8fr) 1.5fr auto auto; gap:14px; align-items:end; } label { color:var(--muted); display:block; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:7px; } select,input[type="search"] { width:100%; color:var(--text); background:var(--panel-strong); border:1px solid var(--border); border-radius:9px; padding:9px 10px; outline:none; } select:focus,input[type="search"]:focus { border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent); }
     .chip-row { display:flex; flex-wrap:wrap; gap:6px; } .chip.active { background:color-mix(in srgb,var(--accent) 18%,var(--panel)); color:var(--text); border-color:color-mix(in srgb,var(--accent) 65%,var(--border)); } .metric { display:flex; align-items:center; gap:6px; color:var(--text); font-size:12px; white-space:nowrap; } .metric input { accent-color:var(--accent); }
     .grid { display:grid; grid-template-columns:minmax(0,1fr) 310px; gap:18px; margin-top:18px; } .panel { padding:18px; } .panel-heading { display:flex; align-items:start; justify-content:space-between; gap:12px; margin-bottom:14px; } h2 { font-size:15px; letter-spacing:-.02em; } .subtle { color:var(--muted); font-size:12px; margin-top:4px; } #chart { width:100%; height:490px; } .empty { height:340px; display:grid; place-items:center; color:var(--muted); font-size:14px; text-align:center; padding:30px; }
     .summary-list { display:grid; gap:10px; } .summary { padding:12px; background:var(--panel-strong); border:1px solid var(--border); border-radius:11px; } .summary strong { display:block; font-size:18px; letter-spacing:-.04em; } .summary span { color:var(--muted); display:block; font-size:11px; margin-top:3px; } .legend { display:flex; gap:12px; color:var(--muted); font-size:11px; } .legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; } .synthetic { color:var(--warning); font-size:12px; line-height:1.5; }
@@ -28,6 +28,8 @@
     tr.expandable { cursor:pointer; } tr.expanded { background:color-mix(in srgb,var(--accent) 6%,transparent); }
     .gpu-cell { display:flex; align-items:flex-start; gap:8px; } .expander { background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); width:22px; height:22px; line-height:1; padding:0; flex:none; font-size:11px; } .expander:hover { color:var(--text); border-color:var(--accent); }
     .form-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; } .form-desktop { color:var(--form-desktop); border-color:color-mix(in srgb,var(--form-desktop) 45%,var(--border)); background:color-mix(in srgb,var(--form-desktop) 10%,transparent); } .form-laptop { color:var(--form-laptop); border-color:color-mix(in srgb,var(--form-laptop) 45%,var(--border)); background:color-mix(in srgb,var(--form-laptop) 10%,transparent); } .form-handheld { color:var(--form-handheld); border-color:color-mix(in srgb,var(--form-handheld) 45%,var(--border)); background:color-mix(in srgb,var(--form-handheld) 10%,transparent); } .form-igpu { color:var(--form-igpu); border-color:color-mix(in srgb,var(--form-igpu) 45%,var(--border)); background:color-mix(in srgb,var(--form-igpu) 10%,transparent); }
+    .os-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; } .os-windows { color:var(--os-windows); border-color:color-mix(in srgb,var(--os-windows) 45%,var(--border)); background:color-mix(in srgb,var(--os-windows) 10%,transparent); } .os-linux { color:var(--os-linux); border-color:color-mix(in srgb,var(--os-linux) 45%,var(--border)); background:color-mix(in srgb,var(--os-linux) 10%,transparent); }
+    .legend i.striped { border-radius:2px; width:12px; background:repeating-linear-gradient(135deg,var(--muted) 0 2px,transparent 2px 4px); }
     .detail-row td { background:color-mix(in srgb,var(--panel-strong) 55%,transparent); padding:20px; } .spec-detail { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:20px; text-align:left; } .spec-detail h3 { font-size:13px; margin:0 0 4px; } .spec-sub { color:var(--muted); font-size:12px; margin-bottom:12px; }
     .spec-chips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px; } .spec-chip { border:1px solid var(--border); border-radius:7px; padding:3px 8px; font-size:11px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; background:var(--panel); }
     .mini-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; } .mini-stat { border:1px solid var(--border); border-radius:9px; padding:9px 10px; background:var(--panel); } .mini-stat span { display:block; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); } .mini-stat strong { display:block; font-size:12px; margin-top:3px; font-weight:600; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
@@ -83,6 +85,10 @@
         <div class="chip-row" id="factor-filters"></div>
       </div>
       <div>
+        <label>OS</label>
+        <div class="chip-row" id="os-filters"></div>
+      </div>
+      <div>
         <label>Metrics</label>
         <div class="metrics">
           <label class="metric"><input id="avg-toggle" type="checkbox" checked> Avg FPS</label>
@@ -101,6 +107,7 @@
           <div class="legend">
             <span><i style="background:var(--official)"></i>Official</span>
             <span><i style="background:var(--community)"></i>Community</span>
+            <span class="hidden" id="linux-legend"><i class="striped"></i>Striped = Linux</span>
           </div>
         </div>
         <div id="chart" aria-label="GPU benchmark comparison chart"></div>
@@ -145,8 +152,9 @@
       <div class="api-grid">
         <article class="api-card"><h3>dashboard.json</h3><p>The grouped official and community summaries behind this chart, plus the game, resolution, and preset lists.</p><div class="api-actions" data-api-path="api/v1/dashboard.json"></div></article>
         <article class="api-card"><h3>gpus.json</h3><p>The GPU catalog with full hardware specs, each GPU's official and community summaries, and links to its per-GPU files.</p><div class="api-actions" data-api-path="api/v1/gpus.json"></div></article>
-        <article class="api-card"><h3>official.json</h3><p>Every official run, one record per resolution and preset profile.</p><div class="api-actions" data-api-path="api/v1/official.json"></div></article>
+        <article class="api-card"><h3>official.json</h3><p>Every official run, one record per resolution and preset profile, with its OS details.</p><div class="api-actions" data-api-path="api/v1/official.json"></div></article>
         <article class="api-card"><h3>community.json</h3><p>Grouped community summaries, with the exact machine details and GitHub submitter for each run.</p><div class="api-actions" data-api-path="api/v1/community.json"></div></article>
+        <article class="api-card"><h3>Compare distros yourself</h3><p>The chart shows one bar per OS, never one per distro. To compare distros, kernels, or Proton versions, download community.json, official.json, or a per-GPU summary.json: every run carries <span class="mono">os</span>, <span class="mono">distro</span>, <span class="mono">kernel</span>, <span class="mono">mesa</span>, and <span class="mono">proton</span> fields.</p><div class="api-actions" data-api-path="api/v1/community.json"></div></article>
         <article class="api-card"><h3>&lt;source&gt;/&lt;gpu_id&gt;/summary.json</h3><p>One GPU's runs and summaries, for example <span class="mono">official/rtx_4090_24gb_fe</span> or <span class="mono">community/steam_deck_oled_16gb</span>. GPU IDs are listed in gpus.json.</p><div class="api-actions" data-api-path="api/v1/official/rtx_4090_24gb_fe/summary.json"></div></article>
       </div>
       <div class="api-usage">
@@ -238,13 +246,16 @@
   </main>
   <script>
     "use strict";
-    const state = { source: "all", game: "", resolution: "", graphicsPreset: "All", factors: new Set(), search: "", showAvg: true, showP1: true, selected: new Set(), data: null, specs: null, sortKey: "avg_fps", sortDir: "desc", expanded: new Set() };
+    const state = { source: "all", game: "", resolution: "", graphicsPreset: "All", factors: new Set(), oses: new Set(["windows", "linux"]), search: "", showAvg: true, showP1: true, selected: new Set(), data: null, specs: null, sortKey: "avg_fps", sortDir: "desc", expanded: new Set() };
     const factors = ["Desktop", "Laptop", "Handheld", "Igpu"];
+    const oses = ["windows", "linux"];
+    const osLabels = { windows: "Windows", linux: "Linux" };
     const elements = {
       error: document.querySelector("#error-notice"), version: document.querySelector("#build-version"),
       game: document.querySelector("#game-select"), resolution: document.querySelector("#resolution-select"),
       preset: document.querySelector("#preset-select"),
-      factors: document.querySelector("#factor-filters"), avg: document.querySelector("#avg-toggle"),
+      factors: document.querySelector("#factor-filters"), oses: document.querySelector("#os-filters"),
+      linuxLegend: document.querySelector("#linux-legend"), avg: document.querySelector("#avg-toggle"),
       p1: document.querySelector("#p1-toggle"), search: document.querySelector("#search"),
       chart: document.querySelector("#chart"), empty: document.querySelector("#chart-empty"),
       description: document.querySelector("#chart-description"), body: document.querySelector("#results-body"),
@@ -271,6 +282,7 @@
         .filter((record) => state.graphicsPreset === "All" || record.graphics_preset.toLowerCase() === state.graphicsPreset.toLowerCase())
         .filter((record) => state.source === "all" || record.source === state.source)
         .filter((record) => state.factors.size === 0 || state.factors.has(record.form_factor))
+        .filter((record) => state.oses.size === 0 || state.oses.has(record.os))
         .filter(matchesSearch)
         .sort(compareRecords);
     }
@@ -281,6 +293,7 @@
       { key: "gpu", label: "GPU", sortable: true },
       { key: "vendor", label: "Vendor", sortable: true },
       { key: "form", label: "Form", sortable: true },
+      { key: "os", label: "OS", sortable: true },
       { key: "arch", label: "Architecture", sortable: true },
       { key: "vram", label: "VRAM", sortable: true },
       { key: "bus", label: "Bus", sortable: true },
@@ -322,6 +335,7 @@
         case "gpu": return record.gpu_name;
         case "vendor": return record.gpu_vendor;
         case "form": return record.form_factor;
+        case "os": return record.os;
         case "arch": return specValue(record, "classification", "architecture");
         case "vram": return specValue(record, "memory", "capacity_gb");
         case "bus": return specValue(record, "memory", "bus_width_bits");
@@ -359,12 +373,29 @@
       const query = state.search.toLowerCase();
       if (!query) return true;
       return [record.gpu_name, record.gpu_id, record.gpu_vendor, record.form_factor,
+        record.os, record.os_detail, record.distro,
         specValue(record, "classification", "architecture"),
         specValue(record, "identity", "codename")].some((value) => value && String(value).toLowerCase().includes(query));
     }
 
     function formatVendor(record) {
       return record.gpu_vendor ? record.gpu_vendor.toUpperCase() : MISSING;
+    }
+
+    function formatOs(record) {
+      return osLabels[record.os] || MISSING;
+    }
+
+    function mixedOs(records) {
+      return new Set(records.map((record) => record.os)).size > 1;
+    }
+
+    // Name the OS only when both OSes are visible, and then only on Linux bars and
+    // on products shown once per OS, so single-OS views stay uncluttered.
+    function displayName(record, records) {
+      if (!mixedOs(records)) return record.gpu_name;
+      const paired = records.some((other) => other.gpu_id === record.gpu_id && other.os !== record.os);
+      return record.os === "linux" || paired ? `${record.gpu_name} · ${formatOs(record)}` : record.gpu_name;
     }
 
     function formatForm(record) {
@@ -466,28 +497,63 @@
       }));
     }
 
+    function renderOsFilters() {
+      elements.oses.replaceChildren(...oses.map((os) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `chip${state.oses.has(os) ? " active" : ""}`;
+        button.textContent = osLabels[os];
+        button.setAttribute("aria-pressed", String(state.oses.has(os)));
+        button.addEventListener("click", () => {
+          state.oses.has(os) ? state.oses.delete(os) : state.oses.add(os);
+          render();
+        });
+        return button;
+      }));
+    }
+
     function renderChart(records) {
       if (!window.echarts) {
         showError("The chart library could not load. Check your network connection and reload the page.");
         return;
       }
       if (!chart) chart = window.echarts.init(elements.chart, undefined, { renderer: "canvas" });
-      const labels = records.map((record) => record.gpu_name);
+      const mixed = mixedOs(records);
+      const labels = records.map((record) => displayName(record, records));
+      // Linux bars keep the vendor color and add diagonal stripes, only when both OSes are shown.
+      const decalFor = (record) => mixed && record.os === "linux"
+        ? { symbol: "rect", symbolSize: 1, dashArrayX: [1, 0], dashArrayY: [2, 3], rotation: -Math.PI / 4, color: "rgba(0, 0, 0, 0.32)" }
+        : undefined;
       const vendorColors = { nvidia: "#76b900", amd: "#ed1c24", intel: "#0071c5" };
       const colorFor = (record) => vendorColors[record.gpu_vendor] || "#94a3b8";
+      // One bar per GPU: the faded full-length bar is the average, and the solid bar
+      // drawn over it from zero is the 1% low (always at or below the average).
+      // The neutral series color is what the legend swatches show.
+      const overlaid = state.showAvg && state.showP1;
+      const legendColor = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
       const series = [];
-      if (state.showAvg) series.push({ name: "Avg FPS", type: "bar", barMaxWidth: 22, data: records.map((record) => ({ value: record.avg_fps, itemStyle: { color: colorFor(record) } })) });
-      if (state.showP1) series.push({ name: "1% Low", type: "bar", barMaxWidth: 22, data: records.map((record) => ({ value: record.p1_low, itemStyle: { color: colorFor(record), opacity: 0.5 } })) });
+      if (state.showAvg) series.push({ name: "Avg FPS", type: "bar", barMaxWidth: 22, barGap: "-100%", itemStyle: { color: legendColor, opacity: overlaid ? 0.4 : 1 }, data: records.map((record) => ({ value: record.avg_fps, itemStyle: { color: colorFor(record), opacity: overlaid ? 0.4 : 1, decal: decalFor(record) } })) });
+      if (state.showP1) series.push({ name: "1% Low", type: "bar", barMaxWidth: 22, barGap: "-100%", itemStyle: { color: legendColor }, data: records.map((record) => ({ value: record.p1_low, itemStyle: { color: colorFor(record), decal: decalFor(record) } })) });
       chart.setOption({
         animationDuration: 250, backgroundColor: "transparent",
         grid: { left: 15, right: 22, top: 18, bottom: 18, containLabel: true },
-        tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, valueFormatter: (value) => `${value} FPS` },
+        tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (params) => chartTooltip(records, params) },
         legend: { show: series.length > 1, textStyle: { color: getComputedStyle(document.documentElement).getPropertyValue("--muted") } },
         xAxis: { type: "value", axisLabel: { color: getComputedStyle(document.documentElement).getPropertyValue("--muted") }, splitLine: { lineStyle: { color: getComputedStyle(document.documentElement).getPropertyValue("--border") } } },
-        yAxis: { type: "category", inverse: true, data: labels, axisLabel: { color: getComputedStyle(document.documentElement).getPropertyValue("--text"), fontSize: 11 }, axisTick: { show: false }, axisLine: { show: false } },
+        yAxis: { type: "category", inverse: true, data: labels, axisLabel: { color: getComputedStyle(document.documentElement).getPropertyValue("--text"), fontSize: 11, width: Math.max(120, Math.round(elements.chart.clientWidth * 0.42)), overflow: "truncate" }, axisTick: { show: false }, axisLine: { show: false } },
         series
       }, true);
+      // Grow the chart with the bar count so many GPUs don't squash the bars.
+      elements.chart.style.height = `${Math.max(260, records.length * 30 + 70)}px`;
+      elements.linuxLegend.classList.toggle("hidden", !mixed);
       chart.resize();
+    }
+
+    function chartTooltip(records, params) {
+      const record = records[params[0].dataIndex];
+      const os = [formatOs(record), record.distro].filter(Boolean).join(" · ");
+      const lines = params.map((param) => `${param.marker}${escapeHtml(param.seriesName)}: <b>${param.value} FPS</b>`);
+      return `<b>${escapeHtml(record.gpu_name)}</b><br>${escapeHtml(os)} · ${escapeHtml(record.source)}<br>${lines.join("<br>")}`;
     }
 
     function renderTable(records) {
@@ -504,6 +570,7 @@
           <td><div class="gpu-cell"><button type="button" class="expander" aria-expanded="${expanded}" aria-label="${expanded ? "Collapse" : "Expand"} ${escapeHtml(record.gpu_name)} details">${expanded ? "▾" : "▸"}</button><div><div class="name">${escapeHtml(record.gpu_name)}</div><div class="detail mono">${escapeHtml(record.gpu_id)}</div></div></div></td>
           <td class="mono">${escapeHtml(formatVendor(record))}</td>
           <td><span class="form-badge form-${escapeHtml(record.form_factor.toLowerCase())}">${escapeHtml(formatForm(record))}</span></td>
+          <td><span class="os-badge os-${escapeHtml(record.os)}" title="${escapeHtml(record.os_detail || record.distro || "")}">${escapeHtml(formatOs(record))}</span></td>
           <td><div>${escapeHtml(architecture || MISSING)}</div><div class="detail mono">${escapeHtml(codename || "")}</div></td>
           <td class="mono">${escapeHtml(formatMemory(record))}</td>
           <td class="mono">${escapeHtml(formatBus(record))}</td>
@@ -610,7 +677,17 @@
 
     function formatRunLine(run, index) {
       const title = run.implementation_name || `Run ${index + 1}`;
-      const details = [run.cpu, run.memory,
+      const runtime = [run.runtime === "proton" && run.proton ? run.proton : run.runtime,
+        run.dxvk ? `DXVK ${run.dxvk}` : "", run.vkd3d_proton ? `VKD3D-Proton ${run.vkd3d_proton}` : ""].filter(Boolean).join(" + ");
+      const flags = [["resizable_bar", "ReBAR"], ["hags", "HAGS"], ["game_mode", "Game Mode"],
+        ["memory_integrity", "Memory integrity"], ["gamemode", "GameMode"]].filter(([key]) => run[key] === true).map(([, label]) => label);
+      const details = [
+        run.os_detail || [run.distro, run.distro_version].filter(Boolean).join(" ") || osLabels[run.os],
+        run.os_build ? `Build ${run.os_build}` : "",
+        run.kernel ? `Kernel ${run.kernel}` : "",
+        run.mesa && !String(run.driver || "").includes(run.mesa) ? `Mesa ${run.mesa}` : "",
+        runtime, run.graphics_api, run.session, run.launcher, run.power_plan, ...flags,
+        run.cpu, run.memory,
         run.driver ? `Driver ${run.driver}` : "",
         run.gpu_power_w ? `${run.gpu_power_w} W` : "",
         run.power_mode, run.display_mode,
@@ -661,7 +738,7 @@
           <p class="section-kicker">Launch price history</p>
           ${formatPriceHistory(record)}
           <p class="section-kicker">This result</p>
-          <div class="result-meta"><span class="badge ${escapeHtml(record.source)}">${escapeHtml(record.source)}</span><span>${record.run_count || 1} sample${(record.run_count || 1) === 1 ? "" : "s"}</span><span>Avg ${formatRange(record.avg_fps_range, "FPS")}</span><span>1% low ${formatRange(record.p1_low_range, "FPS")}</span><span>By ${escapeHtml(contributors)}</span></div>
+          <div class="result-meta"><span class="badge ${escapeHtml(record.source)}">${escapeHtml(record.source)}</span><span class="os-badge os-${escapeHtml(record.os)}">${escapeHtml(formatOs(record))}</span><span>${record.run_count || 1} sample${(record.run_count || 1) === 1 ? "" : "s"}</span><span>Avg ${formatRange(record.avg_fps_range, "FPS")}</span><span>1% low ${formatRange(record.p1_low_range, "FPS")}</span><span>By ${escapeHtml(contributors)}</span></div>
           <div class="run-list">${implementations.map(formatRunLine).join("") || `<p class="spec-notes">No run details recorded.</p>`}</div>
           <div class="detail-links">
             <a class="button" href="https://github.com/MattyStacks/open-gpu-benchmarks/tree/main/data/${escapeHtml(record.source)}/${escapeHtml(record.gpu_id)}" target="_blank" rel="noreferrer">Result files on GitHub</a>
@@ -752,17 +829,18 @@
       const highest = selected.reduce((best, record) => record.avg_fps > best.avg_fps ? record : best);
       const lowest = selected.reduce((best, record) => record.avg_fps < best.avg_fps ? record : best);
       const difference = ((highest.avg_fps / lowest.avg_fps - 1) * 100).toFixed(0);
-      elements.comparisonText.textContent = `${highest.gpu_name} is ${difference}% ahead of ${lowest.gpu_name} (${highest.avg_fps.toFixed(1)} vs ${lowest.avg_fps.toFixed(1)} FPS).`;
+      elements.comparisonText.textContent = `${displayName(highest, selected)} is ${difference}% ahead of ${displayName(lowest, selected)} (${highest.avg_fps.toFixed(1)} vs ${lowest.avg_fps.toFixed(1)} FPS).`;
     }
 
     function render() {
       renderFactorFilters();
+      renderOsFilters();
       const records = filteredRecords();
       const preset = state.graphicsPreset === "All" ? "All presets" : state.graphicsPreset;
       elements.description.textContent = `${state.game} · ${state.resolution} · ${preset} · ${records.length} results`;
       elements.count.textContent = records.length;
       elements.selection.textContent = state.selected.size;
-      elements.top.textContent = records[0] ? `${records[0].gpu_name} · ${records[0].avg_fps.toFixed(0)} FPS` : "—";
+      elements.top.textContent = records[0] ? `${displayName(records[0], records)} · ${records[0].avg_fps.toFixed(0)} FPS` : "—";
       elements.empty.classList.toggle("hidden", records.length > 0);
       elements.chart.classList.toggle("hidden", records.length === 0);
       if (records.length) renderChart(records);

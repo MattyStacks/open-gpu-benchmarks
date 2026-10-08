@@ -7,7 +7,12 @@
 - Public site: <https://mattystacks.github.io/open-gpu-benchmarks/>
 - Public dashboard API: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/dashboard.json>
 - GPU master API: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/gpus.json>
-- Current version: `v0.5.0` (2026-10-08)
+- Current version: `v0.6.0` (2026-10-08)
+  - v0.6.0: Linux vs Windows (`system.os` required and a grouping key, OS
+    detail fields, `result-os`/`result-os-field`/`result-system-field`
+    checks, OS chips and striped Linux bars), catalog `sources`, one overlaid
+    avg/1% low bar per GPU, and `parse.py` MangoHud/PresentMon fixes. API
+    schema 0.8 → 0.9 → 0.10.
   - v0.5.0: the per-product catalog under `data/gpus/` (one file per product,
     product-level IDs with a memory token, `identity.gpu_vendor`, five
     required fields), reference files with `base` merging, `platform`,
@@ -139,7 +144,7 @@ Schema `0.8` adds reference files.
 - **Dashboard.** The expanded row shows a "Device" grid from `platform` and
   chips for the board partner and base.
 
-Schema `0.9` (Unreleased) adds `sources`:
+Schema `0.9` (v0.6.0) adds `sources`:
 
 - **The field.** Every catalog file can carry a block list of
   `{url, title, accessed, covers}` items. `url` must be `https://`.
@@ -167,6 +172,39 @@ Schema `0.9` (Unreleased) adds `sources`:
   - The silicon specs of `z1_extreme` (die size, transistors, shader
     counts) have no source yet.
 
+Schema `0.10` (v0.6.0) adds the OS:
+
+- **The field.** Game runs (official and community) require `system.os`,
+  `windows` or `linux`, lowercase. A top-level `os:` (written by the old
+  `parse.py`) or free text such as `Windows 11` fails as `result-os`.
+- **Grouping.** `aggregate_game_records()` adds `os` to the group key, and
+  `comparison_policy.group_by` lists it. Windows and Linux runs of one profile
+  are two summaries. The distro is not a grouping key.
+- **Detail fields.** `checks.OS_FIELDS` maps each optional field to the OS it
+  applies to (`both`, `windows`, `linux`) and its kind (`text`, `bool`):
+  - both: `os_detail`, `os_build`, `resizable_bar`, `graphics_api`
+  - windows: `game_mode`, `hags`, `memory_integrity`, `power_plan`
+  - linux: `distro`, `distro_version`, `kernel`, `mesa`, `runtime`
+    (`native`/`proton`/`wine`), `proton`, `dxvk`, `vkd3d_proton`,
+    `launcher`, `session`, `gamemode`
+
+  A wrong type, a bad `runtime`, or a field on the wrong OS fails as
+  `result-os-field`. An unknown `system` key (not in `checks.SYSTEM_FIELDS`)
+  warns as `result-system-field`. `build_record()` copies every detail field
+  (text as `""` when missing, bools as `null`), and they are in each
+  summary's `implementations`.
+- **Outliers.** `official_baseline()` only uses official runs on the same OS,
+  so a Linux community run with only Windows official data gets
+  `result-no-baseline`.
+- **Dashboard.** Windows/Linux chips (`state.oses`, both on by default; none selected shows every run, like the
+  form-factor chips), an OS
+  column and badge, OS details in `formatRunLine()`, and a per-distro note in
+  `#data-api`. When both OSes are visible, `displayName()` adds `· Linux`
+  to Linux bars and `· Windows`/`· Linux` to products shown under both, and
+  Linux bars get an ECharts `decal` stripe plus a legend entry.
+- **Per-distro charts are DIY** from `community.json`, `official.json`, or a
+  per-product `summary.json`.
+
 Old-to-new ID map, applied to the result folders as well:
 
 | Old ID | New ID |
@@ -190,6 +228,9 @@ Old-to-new ID map, applied to the result folders as well:
 - Frame generation must be disabled for comparable game runs.
 - Keep exact machine metadata with each run while charts display grouped
   summaries.
+- Game runs require `system.os` (`windows` or `linux`). The OS is a grouping
+  key; distro, kernel, Mesa, and Proton are per-run details. OS-specific
+  fields must match the OS.
 - Treat raw capture evidence as preferred and preserve its reference when
   correcting or removing a record.
 - Community files require `submitted_by` (the PR author's GitHub username), and
@@ -268,8 +309,12 @@ the `main` branch protection rules (Settings → Branches).
 to `data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml`. It
 requires `--submitted-by`, rejects a `--gpu-id` that isn't in the catalog,
 takes the form factor from the catalog entry, and adds `_2`, `_3`, ... before
-the username rather than overwrite an existing file. `scripts/test_build.py`
-covers:
+the username rather than overwrite an existing file. `--os` is `windows` or
+`linux` and defaults from the capture format (MangoHud means linux,
+PresentMon means windows); it is written to `system.os`, with `--os-detail`
+to `system.os_detail`. MangoHud logs with the `os,cpu,gpu,...,kernel,driver`
+header block fill `system.kernel` and `system.driver`.
+`scripts/test_build.py` covers:
 
 - aggregation and `submitted_by`/`contributors` output
 - one negative case per check rule, run in temporary data directories
@@ -280,12 +325,19 @@ covers:
 - that the `templates/catalog_*.yaml` files pass the catalog checks
   alongside the real reference files
 - `base` merge behavior (inherit, override, and list replacement)
+- OS rules, Windows/Linux summary separation, and OS-aware outlier baselines
+- MangoHud parsing (`check_parse_mangohud()`)
+- that `templates/community_submission.yaml` passes the result checks
 - the generated payload shape
 
 ## Current synthetic fixtures
 
-The repository has 11 catalog GPU entries, 15 official result runs, 10
-community result runs, and 24 combined dashboard summaries. The Arc A770 LE
+The repository has 11 catalog GPU entries, 19 official result runs, 12
+community result runs, and 30 combined dashboard summaries. Six Linux runs pair
+with a Windows run of the same profile: official RX 7900 XTX (Alan Wake 2,
+Baldur's Gate 3, Helldivers 2; CachyOS) and RTX 4090 (Cyberpunk 2077), and
+community ROG Ally (Cyberpunk 2077; Bazzite) and Arc A770 LE (Helldivers 2;
+Fedora). The Steam Deck runs are Linux (SteamOS); every other run is Windows. The Arc A770 LE
 fixtures exercise a multi-profile source file and matching-run aggregation.
 The three laptop entries use `_generic` IDs and show `id-generic` warnings.
 Every fixture is marked `synthetic: true`. All community fixtures use
@@ -297,7 +349,12 @@ benchmark runs are synthetic.
 `site/index.html` is the whole dashboard. It reads `record.gpu_vendor` for the
 vendor column, color, and search. It loads `./api/v1/dashboard.json`
 relative to the page, so it works on GitHub Pages or a future custom domain.
-It also loads `./api/v1/gpus.json` for the per-card spec columns. The
+It also loads `./api/v1/gpus.json` for the per-card spec columns. The chart
+draws one bar per GPU: the average is a faded full-length bar and the 1% low a
+solid bar over it (`barGap: "-100%"`). The legend swatches use a neutral
+series color, and each bar uses its vendor color. The chart grows 30 px per
+GPU from a 260 px minimum, and y-axis labels truncate at 42% of the chart
+width. The
 benchmark table sorts by any column, searches IDs, codenames, and
 architectures, and expands each row into silicon details, price history,
 and the exact runs behind the number.
@@ -318,23 +375,11 @@ If the fetch fails, the static link still follows the OS. `favicon.ico` and
 
 ## Planned next steps
 
-The approved catalog plan has one more step. Steps 1-3 are done: the
-catalog split, product IDs, shared checks, and the CI split; then reference
-files, `base`, `platform`, `board_partner`, and `skus`; then `sources`. The
-full implementation brief for the remaining step (data contract, code
-changes by function, fixtures, tests, docs) is in [TODO.md](TODO.md).
-
-1. **OS.**
-   - `system.os` is required on runs (`windows` or `linux`) and becomes a
-     grouping key.
-   - Optional detail fields: `os_detail`, `os_build`, `resizable_bar`,
-     `graphics_api`, `game_mode`, `hags`, `memory_integrity`, `power_plan`,
-     `distro`, `distro_version`, `kernel`, `mesa`, `runtime`, `proton`,
-     `dxvk`, `vkd3d_proton`, `launcher`, `session`, `gamemode`. These are
-     copied to run records and are never grouping keys.
-   - Dashboard: add Windows and Linux chips plus an OS badge on each bar,
-     with no per-distro bars. Point readers to the JSON for per-distro
-     charts.
+The approved catalog plan is complete. Steps 1-4 are done: the catalog split,
+product IDs, shared checks, and the CI split; reference files, `base`,
+`platform`, `board_partner`, and `skus`; `sources`; and Linux vs Windows
+(`system.os`). Remaining ideas, including a Linux-vs-Windows percentage view,
+are in [TODO.md](TODO.md).
 
 ## Version and deployment
 

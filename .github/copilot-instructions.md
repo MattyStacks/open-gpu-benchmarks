@@ -26,6 +26,11 @@ prepares:
 
 - The source schema uses `graphics_preset`; do not add a `settings` fallback.
 - Desktop and laptop GPU records never share a summary group.
+- Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
+  grouping key, so Windows and Linux runs are never averaged together; the
+  distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
+  keys or extra chart bars. Linux-only fields on a windows run (or the
+  reverse) are errors. Per-distro comparisons are DIY from the JSON.
 - Frame generation must be disabled for comparable benchmark runs.
 - Keep exact machine metadata with each run while charts display grouped
   summaries.

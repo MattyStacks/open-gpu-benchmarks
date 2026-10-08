@@ -11,3 +11,5 @@ result:
   p1_low: 31.0
   resolution: 4K
   graphics_preset: Ultra
+system:
+  os: windows

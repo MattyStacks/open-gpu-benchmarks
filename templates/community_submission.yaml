@@ -33,12 +33,33 @@ result:
     avg_fps: 103.4
     p1_low: 84.7
 system:
+  os: windows # Required: windows or linux, lowercase. Windows and Linux runs are never averaged together.
+  os_detail: Windows 11 Pro 24H2 # Optional; the full OS name and version
   cpu: AMD Ryzen 7 7800X3D
   memory: 32 GB DDR5
   power_mode: Performance
   display_mode: direct
   driver: "561.09" # Optional; encouraged but not required for review
-  os: Windows 11
+  graphics_api: DX12 # Optional; DX12, DX11, or Vulkan
+  resizable_bar: true # Optional
+  # Optional Windows-only fields: game_mode, hags, memory_integrity (true or false), power_plan.
+  #
+  # On Linux, set os: linux and use the Linux-only fields instead, for example:
+  #   os: linux
+  #   os_detail: SteamOS 3.6.19
+  #   distro: SteamOS
+  #   distro_version: "3.6.19"
+  #   kernel: "6.5.0-valve22"
+  #   driver: Mesa 24.1.0
+  #   mesa: "24.1.0"
+  #   runtime: proton # native, proton, or wine
+  #   proton: GE-Proton9-20
+  #   dxvk: "2.4"
+  #   vkd3d_proton: "2.13"
+  #   launcher: Steam
+  #   session: gamescope
+  #   gamemode: true
+  # Windows-only fields on a linux run, or Linux-only fields on a windows run, fail the checks.
 proof:
   # Keep raw captures in this GPU folder, such as
   # data/community/rtx_4070_super_12gb_fe/raw/Cyberpunk_4070S_1440p.csv.

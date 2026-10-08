@@ -1,0 +1,28 @@
+gpu_id: arc_a770_16gb_le
+submitted_by: MattyStacks
+game: Helldivers 2
+version: '1.001'
+synthetic: true
+benchmark_type: game
+result:
+  - avg_fps: 63.0
+    p1_low: 44.0
+    resolution: 1080p
+    graphics_preset: Ultra
+proof:
+  summary_source: Synthetic Linux run paired with the Windows Helldivers 2 runs
+system:
+  os: linux
+  os_detail: Fedora Workstation 40
+  distro: Fedora
+  distro_version: "40"
+  kernel: "6.10.5-200.fc40"
+  driver: Mesa 24.1.6
+  mesa: "24.1.6"
+  graphics_api: Vulkan
+  resizable_bar: true
+  runtime: proton
+  proton: Proton 9.0-3
+  dxvk: "2.4"
+  launcher: Steam
+  session: GNOME Wayland

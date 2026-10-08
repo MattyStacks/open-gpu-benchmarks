@@ -9,3 +9,5 @@ result:
   p1_low: 146.0
   resolution: 1440p
   graphics_preset: Ultra
+system:
+  os: windows

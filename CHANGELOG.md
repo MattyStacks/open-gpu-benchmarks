@@ -13,7 +13,36 @@ a fresh empty `Unreleased` section.
 
 ## Unreleased
 
+## 0.6.0 - 2026-10-08
+
+Linux vs Windows and catalog sources: every run says which OS it ran on, the
+two are charted side by side instead of averaged, and every catalog entry cites
+the pages its specs came from.
+
 ### Added
+- Linux vs Windows (catalog plan step 4): game runs require `system.os`
+  (`windows` or `linux`), and the OS is a grouping key, so the two are never
+  averaged together. Optional OS detail fields (`os_detail`, `os_build`,
+  `resizable_bar`, `graphics_api`, Windows `game_mode`/`hags`/
+  `memory_integrity`/`power_plan`, Linux `distro`/`distro_version`/`kernel`/
+  `mesa`/`runtime`/`proton`/`dxvk`/`vkd3d_proton`/`launcher`/`session`/
+  `gamemode`) are copied to every run record; the distro is never a grouping
+  key.
+- New checks: `result-os` (missing or not `windows`/`linux`),
+  `result-os-field` (wrong type, a bad `runtime`, or a field that doesn't fit
+  the OS), and a `result-system-field` warning for unknown `system` keys.
+- Dashboard: Windows and Linux filter chips (deselecting both shows every
+  run, like the form-factor chips), an OS column and badge in the
+  table, OS details in the run list, and a "compare distros yourself" note in
+  the JSON API panel. When both OSes are on the chart, Linux bars are striped
+  and a product shown under both OSes is labelled by OS.
+- Six synthetic Linux runs, each paired with a Windows run of the same
+  profile (RX 7900 XTX, RTX 4090, ROG Ally on Bazzite, Arc A770 LE).
+- `parse.py --os {windows,linux}` and `--os-detail`, written under `system:`.
+  Without `--os`, MangoHud captures default to `linux` and PresentMon to
+  `windows`. MangoHud logs also fill `system.kernel` and `system.driver`.
+- Tests: OS rule cases, Windows/Linux summary separation, MangoHud parsing,
+  and the community template passing the result checks.
 - Catalog `sources`: every catalog file lists the pages its specs came from
   (`url`, `title`, `accessed`, `covers`). Price history items can link their
   own `source`.
@@ -26,10 +55,25 @@ a fresh empty `Unreleased` section.
 - Templates include a `sources` example.
 
 ### Changed
+- API schema `0.10`: run records, summaries, and `implementations` carry `os`
+  and the OS detail fields; `comparison_policy.group_by` includes `os`.
+- Community outlier checks compare only against official runs on the same OS.
+- The dashboard chart shows one bar per GPU: the 1% low is drawn solid over a
+  faded average bar, instead of two bars side by side. The chart grows 30 px
+  per GPU from a 260 px minimum, and long labels truncate on narrow screens
+  (the tooltip shows the full name, OS, and both values).
+- Templates and contributor docs use `system.os: windows` plus `os_detail`
+  instead of free text such as `os: Windows 11`; existing fixtures migrated
+  (Steam Deck runs are `linux`, SteamOS).
 - API schema `0.9`: `gpus.json` entries carry `sources`. A product's sources
   are combined with its reference's, and a URL cited by both appears once.
 - The ROG Ally entry gains its 40 Wh battery. The Legion Go display now lists
   its exact resolution (2560x1600), from Lenovo's spec sheet.
+
+### Fixed
+- `parse.py` read MangoHud logs and detailed PresentMon captures as 0 FPS: it
+  skipped the header line and treated the first frame as the header. MangoHud
+  logs with the `os,cpu,gpu,...` header block now parse too.
 
 ## 0.5.0 - 2026-10-08
 

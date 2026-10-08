@@ -101,6 +101,45 @@ CATALOG_RANGES = {
     ("platform", "battery_wh"): (1, 200, "Wh"),
 }
 RESULT_ENTRY_REQUIRED = ("resolution", "graphics_preset", "avg_fps", "p1_low")
+RESULT_OSES = ("windows", "linux")
+# Optional OS detail fields under system: (applies to, kind). They are copied to
+# run records but never group runs; only system.os is a grouping key.
+OS_FIELDS = {
+    "os_detail": ("both", "text"),
+    "os_build": ("both", "text"),
+    "resizable_bar": ("both", "bool"),
+    "graphics_api": ("both", "text"),
+    "game_mode": ("windows", "bool"),
+    "hags": ("windows", "bool"),
+    "memory_integrity": ("windows", "bool"),
+    "power_plan": ("windows", "text"),
+    "distro": ("linux", "text"),
+    "distro_version": ("linux", "text"),
+    "kernel": ("linux", "text"),
+    "mesa": ("linux", "text"),
+    "runtime": ("linux", "text"),
+    "proton": ("linux", "text"),
+    "dxvk": ("linux", "text"),
+    "vkd3d_proton": ("linux", "text"),
+    "launcher": ("linux", "text"),
+    "session": ("linux", "text"),
+    "gamemode": ("linux", "bool"),
+}
+RUNTIMES = ("native", "proton", "wine")
+SYSTEM_FIELDS = (
+    "os",
+    "cpu",
+    "memory",
+    "ram",
+    "power_mode",
+    "tdp_mode",
+    "display_mode",
+    "driver",
+    "device_name",
+    "gpu_power_w",
+    "tgp_w",
+    *OS_FIELDS,
+)
 
 
 @dataclass
@@ -584,6 +623,51 @@ def community_warnings(path, run, gpu, issues):
             issues.warning(path, "result-no-proof", "no raw_log or summary_source proof reference")
 
 
+def check_system_os(path, run, issues):
+    """system.os is required on game runs; detail fields must fit the OS and their type."""
+    system = run.get("system")
+    if system is not None and not isinstance(system, dict):
+        issues.error(path, "result-os", "'system' must be a section with indented fields such as 'os: windows'")
+        return
+    system = system or {}
+    os_name = system.get("os")
+    if os_name is None:
+        hint = "; move the top-level 'os' under system:" if "os" in run else ""
+        issues.error(path, "result-os", f"missing system.os; set it to windows or linux{hint}")
+    elif os_name not in RESULT_OSES:
+        lowered = str(os_name).strip().lower()
+        if lowered in RESULT_OSES:
+            hint = f"use lowercase '{lowered}'"
+        elif lowered.startswith(("windows", "linux", "steamos")):
+            hint = "put the full name in os_detail (or distro) and use windows or linux here"
+        else:
+            hint = "only windows and linux are supported"
+        issues.error(path, "result-os", f"system.os '{os_name}' must be windows or linux; {hint}")
+        os_name = None
+
+    for key, value in system.items():
+        if key not in SYSTEM_FIELDS:
+            issues.warning(path, "result-system-field", f"'system.{key}' is not a known system field; check the spelling")
+            continue
+        if key not in OS_FIELDS or value is None:
+            continue
+        applies_to, kind = OS_FIELDS[key]
+        if os_name is not None and applies_to not in ("both", os_name):
+            issues.error(path, "result-os-field", f"'system.{key}' is a {applies_to}-only field, but system.os is {os_name}")
+        if kind == "bool" and not isinstance(value, bool):
+            issues.error(path, "result-os-field", f"'system.{key}' must be true or false, got '{value}'")
+        elif kind == "text" and not is_text(value):
+            hint = f" (quote it: '{value}')" if is_number(value) else ""
+            issues.error(path, "result-os-field", f"'system.{key}' must be text{hint}")
+        elif key == "runtime" and value not in RUNTIMES:
+            issues.error(path, "result-os-field", f"'system.runtime' '{value}' must be one of {', '.join(RUNTIMES)}")
+
+
+def result_os(run):
+    system = run.get("system")
+    return system.get("os") if isinstance(system, dict) else None
+
+
 def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()):
     """Check one result file; return its result entries when they are usable."""
     if not isinstance(run, dict):
@@ -620,6 +704,7 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
         issues.error(path, "result-field", "missing game")
     if run.get("frame_generation", False):
         issues.error(path, "result-frame-generation", "frame generation must be disabled for comparable game runs")
+    check_system_os(path, run, issues)
     if source == "community":
         community_warnings(path, run, gpu, issues)
 
@@ -649,6 +734,7 @@ def official_baseline(run, entry, official_runs):
         float(other_entry["avg_fps"])
         for other, other_entries in official_runs
         if other.get("gpu_id") == run.get("gpu_id") and other.get("game") == run.get("game")
+        and result_os(other) == result_os(run)
         for other_entry in other_entries
         if other_entry.get("resolution") == entry.get("resolution")
         and other_entry.get("graphics_preset") == entry.get("graphics_preset")

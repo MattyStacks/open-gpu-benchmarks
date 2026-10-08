@@ -88,7 +88,7 @@ def detect_and_load(path):
         # Format 2: Detailed PresentMon
         if "msbetweenpresents" in joined:
             fps_vals=[]
-            f.seek(0); f.readline()
+            f.seek(0)
             reader2 = csv.DictReader(f)
             ms_key = next((k for k in reader2.fieldnames if "msbetweenpresents" in k.lower()), None)
             drop_key = next((k for k in reader2.fieldnames if k.lower()=="dropped"), None)
@@ -107,25 +107,33 @@ def detect_and_load(path):
                 "frame_count": len(fps_vals)
             }
 
-        # Format 3: MangoHud
-        if "frametime" in joined:
-            fps_vals=[]
-            f.seek(0); f.readline()
-            reader2 = csv.DictReader(f)
-            ft_key = next((k for k in reader2.fieldnames if "frametime" in k.lower()), None)
-            for row in reader2:
-                try:
-                    ms=float(row[ft_key])
-                    if ms<=0 or ms>500: continue
-                    fps_vals.append(1000.0/ms)
-                except: continue
-            return {
-                "format": "mangohud",
-                "avg": sum(fps_vals)/len(fps_vals) if fps_vals else 0,
-                "p1": percentile(fps_vals,1),
-                "p01": percentile(fps_vals,0.1),
-                "frame_count": len(fps_vals)
-            }
+    # Format 3: MangoHud. Logs start with an os,cpu,gpu,...,kernel,driver preamble
+    # (a header line and a value line) before the frametime header; older logs don't.
+    with open(path, newline='', encoding='utf-8', errors='ignore') as f:
+        rows = list(csv.reader(f))
+    header_index = next((i for i, row in enumerate(rows[:10]) if any(c.strip().lower() == "frametime" for c in row)), None)
+    if header_index is not None:
+        preamble = {}
+        if header_index >= 2:
+            preamble = {k.strip().lower(): v.strip() for k, v in zip(rows[0], rows[1])}
+        header = [c.strip().lower() for c in rows[header_index]]
+        ft_index = header.index("frametime")
+        fps_vals=[]
+        for row in rows[header_index+1:]:
+            try:
+                ms=float(row[ft_index])
+                if ms<=0 or ms>500: continue
+                fps_vals.append(1000.0/ms)
+            except: continue
+        return {
+            "format": "mangohud",
+            "avg": sum(fps_vals)/len(fps_vals) if fps_vals else 0,
+            "p1": percentile(fps_vals,1),
+            "p01": percentile(fps_vals,0.1),
+            "frame_count": len(fps_vals),
+            "kernel": preamble.get("kernel") or None,
+            "driver": preamble.get("driver") or None,
+        }
     raise ValueError(f"Unknown CSV format. Headers: {headers}")
 
 def main():
@@ -138,7 +146,8 @@ def main():
     p.add_argument("--graphics-preset", default="Ultra")
     p.add_argument("--form-factor", default=None, choices=["desktop","laptop","handheld","igpu"], help="Defaults to the catalog value")
     p.add_argument("--driver", default="", help="OPTIONAL - not required for PR approval")
-    p.add_argument("--os", default="Windows 11")
+    p.add_argument("--os", default=None, choices=list(checks.RESULT_OSES), help="Defaults to linux for MangoHud captures, windows for PresentMon")
+    p.add_argument("--os-detail", default="", help="OPTIONAL - full OS name, e.g. 'Windows 11 Pro 24H2' or 'SteamOS 3.6.19'")
     p.add_argument("--output", default="")
     args=p.parse_args()
 
@@ -150,6 +159,16 @@ def main():
 
     csv_path=Path(args.csv_file)
     result=detect_and_load(csv_path)
+    os_name=args.os
+    if os_name is None:
+        os_name="linux" if result["format"]=="mangohud" else "windows"
+        capture="MangoHud" if result["format"]=="mangohud" else "PresentMon"
+        print(f"OS: {os_name} (from the {capture} capture; pass --os to change)")
+    system={"os": os_name}
+    if args.os_detail: system["os_detail"]=args.os_detail
+    driver=args.driver or result.get("driver")
+    if driver: system["driver"]=driver
+    if os_name=="linux" and result.get("kernel"): system["kernel"]=result["kernel"]
 
     data={
         "gpu_id": args.gpu_id,
@@ -157,7 +176,6 @@ def main():
         "benchmark_type": "game",
         "game": args.game,
         "form_factor": form_factor,
-        "os": args.os,
         "capture_method": result["format"],
         "result": [{
             "avg_fps": round(float(result["avg"]),2),
@@ -172,13 +190,11 @@ def main():
             "anim_error_per_sec": result.get("anim_err"),
             "frame_count": result.get("frame_count")
         }],
-        "system": {"driver": args.driver} if args.driver else {},
+        "system": system,
         "overclock": {"is_oc": False, "power_limit_percent": 100},
         "proof": {"raw_log": str(csv_path.name), "format": result["format"]},
     }
     data["result"][0]={k:v for k,v in data["result"][0].items() if v is not None}
-    if not data["system"]:
-        del data["system"]  # an empty mapping would be written as inline "{}"
 
     if not args.output:
         safe_game=args.game.lower().replace(" ","_").replace(":","")

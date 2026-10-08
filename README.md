@@ -3,7 +3,7 @@
 Compare desktop, laptop, handheld, and integrated GPUs in one interactive
 graph. The site is a static GitHub Pages dashboard built from reviewable YAML.
 
-Current version: `v0.5.0`: per-product catalog with reference files, device specs, and checks that report every problem at once. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
+Current version: `v0.6.0`: Linux vs Windows results charted side by side, cited catalog sources, and one overlaid avg/1% low bar per GPU. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
 [docs/TODO.md](docs/TODO.md) for planned follow-ups.
 
 ## GPU-rooted data flow
@@ -49,8 +49,16 @@ dash is required so YAML retains multiple profiles rather than overwriting a
 duplicate key. There are no checked-in source summaries. The build runs every
 check in `scripts/checks.py` first and stops without writing anything if any
 fail. It then expands every list item and derives game summaries by product
-ID, form factor, known power profile, game, resolution, and `graphics_preset`.
-It never groups desktop and laptop GPUs together.
+ID, form factor, known power profile, game, resolution, `graphics_preset`, and
+OS. It never groups desktop and laptop GPUs together, or Windows and Linux runs.
+
+Every game run sets `system.os` to `windows` or `linux`. The dashboard has
+Windows and Linux filter chips, labels a product's bars by OS when both appear,
+and stripes the Linux bars. The distro is not a grouping key: SteamOS, Bazzite,
+and CachyOS runs of one profile share a Linux bar. Distro, kernel, Mesa, Proton,
+and the other OS details are recorded on every run in the JSON. **To compare
+distros, kernels, or Proton versions, download `community.json`,
+`official.json`, or a per-product `summary.json` and chart them yourself.**
 
 [`site/api/v1/gpus.json`](site/api/v1/gpus.json) is the master JSON contract:
 each catalog GPU has `links.official_summary` and
@@ -60,10 +68,12 @@ statistics. The linked per-GPU JSON includes all source runs, grouped game
 summaries, evidence references, and exact machine metadata. Generated API
 files are ignored by Git and appear after running the build.
 
-Current synthetic fixtures: 11 catalog GPUs, 15 official runs, 10 community
-runs, and 24 dashboard summaries. The community fixtures include a
+Current synthetic fixtures: 11 catalog GPUs, 19 official runs, 12 community
+runs, and 30 dashboard summaries. The community fixtures include a
 multi-profile file and two matching Arc A770 LE results that aggregate into one
-1080p summary. The three laptop entries use the temporary `_generic` ID for an
+1080p summary. Six Linux runs (RX 7900 XTX, RTX 4090, ROG Ally on Bazzite, and
+Arc A770 LE) pair with a Windows run of the same profile, and the Steam Deck runs
+are Linux (SteamOS). The three laptop entries use the temporary `_generic` ID for an
 unknown laptop model. All fixture records are marked
 `synthetic: true`, and every community fixture is `submitted_by: MattyStacks`.
 
@@ -74,7 +84,9 @@ product-level IDs and renames the vendor field to `gpu_vendor` (in
 `identity.gpu_vendor` and on every run record). Schema `0.8` adds `base`,
 `identity.board_partner`, `skus`, and `platform` to catalog entries, which
 are always returned already merged with their reference. Schema `0.9` adds
-`sources`. The
+`sources`. Schema `0.10` adds `os` (a grouping key) and the OS detail fields
+(`os_detail`, `distro`, `kernel`, `mesa`, `proton`, ...) to every run record
+and `implementations` entry. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.
@@ -125,8 +137,12 @@ rejects IDs that aren't in the catalog and takes the form factor from the
 catalog entry:
 
 ```powershell
-python scripts/parse.py capture.csv --gpu-id rtx_4090_24gb_fe --game "Cyberpunk 2077" --submitted-by MattyStacks
+python scripts/parse.py capture.csv --gpu-id rtx_4090_24gb_fe --game "Cyberpunk 2077" --submitted-by MattyStacks --os windows
 ```
+
+`--os` is `windows` or `linux` (with an optional `--os-detail`). Without it, a
+MangoHud capture defaults to `linux` and a PresentMon capture to `windows`. The
+OS is written under `system:`.
 
 ## Site and deployment
 

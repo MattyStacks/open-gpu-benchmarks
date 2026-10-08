@@ -1,0 +1,26 @@
+gpu_id: rog_ally_z1_extreme_16gb
+submitted_by: MattyStacks
+game: Cyberpunk 2077
+version: '2.12'
+synthetic: true
+system:
+  os: linux
+  os_detail: Bazzite 40 (Deck image)
+  distro: Bazzite
+  distro_version: "40"
+  kernel: "6.9.12-ba"
+  driver: Mesa 24.1.5
+  mesa: "24.1.5"
+  runtime: proton
+  proton: GE-Proton9-20
+  launcher: Steam
+  session: gamescope
+  power_mode: Turbo
+proof:
+  summary_source: Synthetic Linux run paired with the Windows Cyberpunk 2077 run
+benchmark_type: game
+result:
+- avg_fps: 37.0
+  p1_low: 27.0
+  resolution: 1440p
+  graphics_preset: Ultra

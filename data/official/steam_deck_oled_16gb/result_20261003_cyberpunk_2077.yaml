@@ -11,3 +11,11 @@ result:
   p1_low: 27.0
   resolution: 1280x800
   graphics_preset: Steam Deck
+system:
+  os: linux
+  os_detail: SteamOS 3.6.19
+  distro: SteamOS
+  distro_version: "3.6.19"
+  runtime: proton
+  launcher: Steam
+  session: gamescope

@@ -15,3 +15,5 @@ result:
     graphics_preset: Ultra
 proof:
   summary_source: Average and 1% low manually transcribed by contributor
+system:
+  os: windows

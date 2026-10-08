@@ -9,3 +9,8 @@ result:
   p1_low: 91.0
   resolution: 1440p
   graphics_preset: High
+system:
+  os: windows
+  os_detail: Windows 11 Pro 23H2
+  graphics_api: DX12
+  resizable_bar: true

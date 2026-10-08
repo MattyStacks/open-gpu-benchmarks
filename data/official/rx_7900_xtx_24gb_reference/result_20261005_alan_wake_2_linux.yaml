@@ -1,0 +1,25 @@
+gpu_id: rx_7900_xtx_24gb_reference
+benchmark_type: game
+game: Alan Wake 2
+version: '1.2'
+synthetic: true
+result:
+- avg_fps: 103.0
+  p1_low: 83.0
+  resolution: 1440p
+  graphics_preset: High
+system:
+  os: linux
+  os_detail: CachyOS (rolling, 2026-10)
+  distro: CachyOS
+  kernel: "6.11.2-cachyos"
+  driver: Mesa 24.2.3
+  mesa: "24.2.3"
+  graphics_api: Vulkan
+  resizable_bar: true
+  runtime: proton
+  proton: Proton 9.0-3
+  vkd3d_proton: "2.13"
+  launcher: Steam
+  session: KDE Wayland
+  gamemode: true

@@ -40,7 +40,9 @@ Game records use `benchmark_type: game` (the default when omitted) and require:
 - `game`;
 - a non-empty `result` list, where every entry has `resolution`,
   `graphics_preset`, `avg_fps`, and `p1_low`;
-- `frame_generation: false`.
+- `frame_generation: false`;
+- `system.os`, either `windows` or `linux` (lowercase). See
+  [Operating system](#operating-system).
 
 `result` is a YAML list, so every profile must start with `-`. The dash is
 required: YAML would overwrite duplicate `result:` keys rather than retain two
@@ -52,6 +54,8 @@ gpu_id: arc_a770_16gb_le
 submitted_by: MattyStacks
 game: Helldivers 2
 benchmark_type: game
+system:
+  os: windows
 result:
   - resolution: 1080p
     graphics_preset: Ultra
@@ -67,16 +71,75 @@ The validator checks every list entry for required profile fields, impossible
 FPS values, disabled frame generation, and a matching official-baseline
 outlier. The build expands each entry into an independent run, then groups
 only matching product ID (which already separates memory sizes and board
-partners) and form factor, known laptop TGP/GPU power, game, resolution, and
-`graphics_preset`. Matching entries from multiple files are
-averaged; different profiles remain separate. Game version remains exact-run
-metadata rather than a grouping key. Desktop and laptop GPUs never share a
-group.
+partners) and form factor, known laptop TGP/GPU power, game, resolution,
+`graphics_preset`, and OS. Matching entries from multiple files are
+averaged; different profiles remain separate. Game version, distro, kernel, and
+Proton version remain exact-run metadata rather than grouping keys. Desktop and
+laptop GPUs never share a group, and neither do Windows and Linux runs.
+
+## Operating system
+
+Every game run sets `system.os` to `windows` or `linux`, in lowercase. The OS is
+a grouping key: a Windows run and a Linux run of the same product, game,
+resolution, and preset are two separate chart bars, never one average. The
+distro is **not** a grouping key, so SteamOS, Bazzite, and CachyOS runs of the
+same profile average together into one Linux bar.
+
+Put the full OS name in `os_detail`, not in `os`. These optional fields go under
+`system:` too. They are shown in the run details and carried on every run in the
+JSON API:
+
+| Applies to | Field | Type | Example |
+| ---------- | ----- | ---- | ------- |
+| both | `os_detail` | text | `Windows 11 Pro 24H2`, `SteamOS 3.6.19` |
+| both | `os_build` | text | `"26100.2033"` |
+| both | `driver` | text | `"566.36"`, `Mesa 24.2.3` |
+| both | `resizable_bar` | true/false | `true` |
+| both | `graphics_api` | text | `DX12`, `Vulkan` |
+| windows | `game_mode` | true/false | `true` |
+| windows | `hags` | true/false | hardware-accelerated GPU scheduling |
+| windows | `memory_integrity` | true/false | VBS/HVCI core isolation |
+| windows | `power_plan` | text | `Balanced` |
+| linux | `distro` | text | `SteamOS`, `Bazzite`, `CachyOS` |
+| linux | `distro_version` | text | `"3.6.19"` |
+| linux | `kernel` | text | `"6.11.2-cachyos"` |
+| linux | `mesa` | text | `"24.2.3"` |
+| linux | `runtime` | `native`, `proton`, or `wine` | `proton` |
+| linux | `proton` | text | `GE-Proton9-20` |
+| linux | `dxvk` | text | `"2.4"` |
+| linux | `vkd3d_proton` | text | `"2.13"` |
+| linux | `launcher` | text | `Steam`, `Heroic`, `Lutris` |
+| linux | `session` | text | `gamescope`, `KDE Wayland`, `X11` |
+| linux | `gamemode` | true/false | Feral GameMode |
+
+Quote version numbers so YAML keeps them as text. A Linux-only field on a
+`windows` run, or a Windows-only field on a `linux` run, is an error: it's almost
+always a copy-paste mistake.
+
+```yaml
+system:
+  os: linux
+  os_detail: SteamOS 3.6.19
+  distro: SteamOS
+  distro_version: "3.6.19"
+  kernel: "6.5.0-valve22"
+  driver: Mesa 24.1.0
+  runtime: proton
+  proton: GE-Proton9-20
+  session: gamescope
+```
+
+**Comparing distros, kernels, or Proton versions.** The dashboard deliberately
+shows one bar per OS, never one per distro. To chart distros yourself, download
+`api/v1/community.json`, `api/v1/official.json`, or a per-product
+`api/v1/<source>/<gpu_id>/summary.json`. Every run record, and every entry in a
+summary's `implementations` list, carries `os`, `os_detail`, `distro`, `kernel`,
+`mesa`, `proton`, and the other fields above.
 
 ## Machine details and evidence
 
 Include device or board name, GPU power, overclock status, CPU, memory, power
-mode, display/MUX mode, driver, and operating system whenever known.
+mode, display/MUX mode, driver, and the OS details above whenever known.
 
 PresentMon or another raw capture is strongly preferred. Put optional evidence
 under the same GPU folder, for example:
@@ -102,9 +165,11 @@ accordingly. Raw captures remain in Git but outside browser-facing JSON.
 - comparable game settings
 - frame-generation status
 - impossible FPS values
+- `system.os` and the OS detail fields
 
-When a matching official baseline exists, a community average more than 50%
-different is a validation error. Correct it, explain a materially different
+When a matching official baseline exists (same product, game, resolution,
+preset, and OS), a community average more than 50% different is a validation
+error. Correct it, explain a materially different
 profile, or remove it.
 
 Result files use block-style YAML only: every list item on its own `-` line,
@@ -201,6 +266,33 @@ Use `graphics_preset`, never `settings`.
 Frame generation is on. Re-run with it off. Upscaling is fine; record it in
 `upscaling`.
 
+#### `result-os`
+
+`system.os` is missing or isn't `windows` or `linux`. Set it under `system:`, in
+lowercase. Put a full name such as `Windows 11` or `SteamOS 3.6` in
+`system.os_detail` instead. Files made by an older `parse.py` have a top-level
+`os:`; move it under `system:`. Other operating systems aren't supported yet.
+
+#### `result-os-field`
+
+An OS detail field under `system:` is wrong. One of these happened:
+
+- A Linux-only field such as `proton`, `kernel`, or `distro` is on a `windows`
+  run.
+- A Windows-only field such as `hags` or `game_mode` is on a `linux` run.
+- A true/false field such as `hags` or `resizable_bar` has text like `"yes"`.
+- A text field such as `kernel` has an unquoted number. Quote it: `"6.8"`.
+- `runtime` isn't `native`, `proton`, or `wine`.
+
+See [Operating system](#operating-system) for the fields.
+
+#### `result-system-field`
+
+Warning only. A key under `system:` isn't a known field. Check the spelling
+against [Operating system](#operating-system) and the template. The known
+machine fields are `cpu`, `memory`, `power_mode`, `display_mode`, `driver`,
+`device_name`, and `gpu_power_w`.
+
 #### `community-submitter`
 
 `submitted_by` is missing or isn't a valid GitHub username. Set it to the GitHub
@@ -220,8 +312,8 @@ entry.
 
 #### `result-no-baseline`
 
-Warning only. No official result has the same product, game, resolution, and
-preset to compare against, so a maintainer reviews it by hand.
+Warning only. No official result has the same product, game, resolution,
+preset, and OS to compare against, so a maintainer reviews it by hand.
 
 #### `result-no-driver`
 

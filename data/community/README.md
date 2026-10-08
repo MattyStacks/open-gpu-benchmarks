@@ -29,6 +29,11 @@ Folder rules:
   first or in the same pull request.
 - Use block-style YAML only: one `-` line per list item, and no inline `[ ]` or
   `{ }`.
+- Set `system.os` to `windows` or `linux` (lowercase). Windows and Linux runs
+  are never averaged together, but distros are: put the distro, kernel, Mesa,
+  and Proton details in their own `system` fields (see
+  [Operating system](../../docs/COMMUNITY_SUBMISSIONS.md#operating-system)).
+  Linux-only fields on a Windows run, or the reverse, fail the checks.
 - Each file uses one non-empty `result` list. Keep the leading `-` for every
   resolution/preset profile: it is required YAML list syntax, prevents
   duplicate-key data loss, and lets the validator check each profile

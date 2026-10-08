@@ -1,0 +1,24 @@
+gpu_id: rx_7900_xtx_24gb_reference
+benchmark_type: game
+game: Baldur's Gate 3
+version: '4.1'
+synthetic: true
+result:
+- avg_fps: 123.0
+  p1_low: 98.0
+  resolution: 4K
+  graphics_preset: Ultra
+system:
+  os: linux
+  os_detail: CachyOS (rolling, 2026-10)
+  distro: CachyOS
+  kernel: "6.11.2-cachyos"
+  driver: Mesa 24.2.3
+  mesa: "24.2.3"
+  graphics_api: Vulkan
+  resizable_bar: true
+  runtime: proton
+  proton: Proton 9.0-3
+  launcher: Steam
+  session: KDE Wayland
+  gamemode: true

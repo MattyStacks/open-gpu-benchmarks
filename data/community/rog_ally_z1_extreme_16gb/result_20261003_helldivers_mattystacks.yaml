@@ -11,3 +11,5 @@ result:
   p1_low: 35.0
   resolution: 1080p
   graphics_preset: Ultra
+system:
+  os: windows

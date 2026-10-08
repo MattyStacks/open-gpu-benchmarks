@@ -52,7 +52,7 @@ toolchain beyond Python.
 
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://mattystacks.github.io/open-gpu-benchmarks/>
-- Current development version: `v0.5.0` (`RELEASE_VERSION` in
+- Current development version: `v0.6.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it)
 
 ### Layout
@@ -92,6 +92,11 @@ unless repository policy changes.
 - `result:` is always a YAML list; every resolution/preset profile needs its
   leading `-`. A duplicated `result:` key silently drops data.
 - Desktop and laptop GPU records never share a summary group.
+- Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
+  grouping key, so Windows and Linux runs are never averaged together; the
+  distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
+  keys or extra chart bars. Linux-only fields on a windows run (or the
+  reverse) are errors. Per-distro comparisons are DIY from the JSON.
 - `frame_generation: false` is required for comparable game runs.
 - Catalog specs are nested (`identity`, `classification`, `silicon`,
   `memory`, `clocks`, `power`, `release`, `features`). Only five fields are

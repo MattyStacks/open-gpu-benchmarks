@@ -11,3 +11,11 @@ result:
   p1_low: 19.0
   resolution: 1440p
   graphics_preset: Steam Deck
+system:
+  os: linux
+  os_detail: SteamOS 3.6.19
+  distro: SteamOS
+  distro_version: "3.6.19"
+  runtime: proton
+  launcher: Steam
+  session: gamescope

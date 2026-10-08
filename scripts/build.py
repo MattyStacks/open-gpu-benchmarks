@@ -17,8 +17,8 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 
 OUTPUT_DIR = ROOT / "site" / "api" / "v1"
-SCHEMA_VERSION = "0.9"
-RELEASE_VERSION = "0.5.0"
+SCHEMA_VERSION = "0.10"
+RELEASE_VERSION = "0.6.0"
 
 
 def load_yaml(path):
@@ -50,6 +50,18 @@ def catalog_tdp_w(gpu):
 
 def run_id(source, path, result_index):
     return f"{source}-{path.parent.name}-{path.stem}-{result_index}"
+
+
+def os_details(system):
+    """Copy the optional OS detail fields: text as str or "", bools as bool or None."""
+    details = {}
+    for key, (_, kind) in checks.OS_FIELDS.items():
+        value = system.get(key)
+        if kind == "bool":
+            details[key] = value if isinstance(value, bool) else None
+        else:
+            details[key] = "" if value is None else str(value)
+    return details
 
 
 def build_record(run, result, result_index, source, source_path, gpu_by_id):
@@ -89,6 +101,8 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "memory": str(system.get("memory", system.get("ram", ""))),
         "power_mode": str(system.get("power_mode", system.get("tdp_mode", ""))),
         "display_mode": str(system.get("display_mode", "")),
+        "os": str(system.get("os", "")),
+        **os_details(system),
         "proof_level": "raw-log" if raw_log else "summary-only",
         "proof_reference": raw_log or summary_source or "",
         "source_file": relative_path(source_path),
@@ -122,6 +136,7 @@ def aggregate_game_records(records, id_prefix):
                 record["graphics_preset"],
                 record["form_factor"],
                 record["gpu_power_w"],
+                record["os"],
             )
         ].append(record)
 
@@ -140,6 +155,8 @@ def aggregate_game_records(records, id_prefix):
                     "power_mode",
                     "display_mode",
                     "driver",
+                    "os",
+                    *checks.OS_FIELDS,
                     "submitted_by",
                 )
                 if run[key] not in ("", None)
@@ -229,8 +246,10 @@ def main(data_dir=DATA_DIR):
                 "game",
                 "resolution",
                 "graphics_preset",
+                "os",
             ],
             "game_version_is_not_a_grouping_key": True,
+            "os_detail_is_not_a_grouping_key": True,
             "frame_generation": "off",
             "community_outlier_threshold": 0.5,
         },

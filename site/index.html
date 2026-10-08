@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Compare official and community GPU benchmark summaries.">
   <title>Open GPU Benchmarks</title>
+  <link rel="icon" href="favicons/favicon.ico" sizes="32x32">
+  <link rel="icon" href="favicons/favicon.svg" type="image/svg+xml" id="favicon">
+  <link rel="apple-touch-icon" href="favicons/apple-touch-icon.png">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <style>
     :root { color-scheme: dark; --bg:#090b10; --panel:#11151d; --panel-strong:#171c27; --text:#f1f5f9; --muted:#8b96a9; --border:#273142; --accent:#60a5fa; --official:#60a5fa; --community:#34d399; --warning:#fbbf24; }
@@ -474,10 +477,21 @@
       const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
       document.documentElement.dataset.theme = next;
       localStorage.setItem("open-gpu-benchmarks-theme", next);
+      syncFavicon();
       if (chart) render();
     });
     window.addEventListener("resize", () => chart && chart.resize());
+    // favicon.svg follows the OS color scheme on its own; pin its light/dark styles to the site toggle instead.
+    let faviconSvg;
+    async function syncFavicon() {
+      try {
+        faviconSvg ??= await fetch("favicons/favicon.svg").then((response) => response.ok ? response.text() : Promise.reject());
+        const media = document.documentElement.dataset.theme === "light" ? "@media all" : "@media not all";
+        document.querySelector("#favicon").href = "data:image/svg+xml," + encodeURIComponent(faviconSvg.replace("@media (prefers-color-scheme:light)", media));
+      } catch { /* keep the static OS-following favicon */ }
+    }
     document.documentElement.dataset.theme = localStorage.getItem("open-gpu-benchmarks-theme") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    syncFavicon();
     renderApiLinks();
     initialize();
   </script>

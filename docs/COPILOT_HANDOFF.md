@@ -112,6 +112,14 @@ links stay relative. The **Get the data as JSON** panel (`#data-api`) lists
 each endpoint with Open and Copy URL actions, plus curl/fetch snippets built
 from `location` at runtime, and shows the schema version.
 
+Icons live in `site/favicons/` (committed static files, linked relatively).
+`favicon.svg` is the primary icon and carries its own
+`prefers-color-scheme` light/dark styles. `syncFavicon()` in `index.html`
+fetches it and swaps in a `data:` URI whose media query is forced to match the
+site's ◐ theme toggle, so the tab icon follows the toggle rather than the OS.
+If the fetch fails, the static link still follows the OS. `favicon.ico` and
+`apple-touch-icon.png` are dark-only fallbacks.
+
 ## Version and deployment
 
 The project deploys `site/` using

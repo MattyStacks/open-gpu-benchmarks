@@ -51,6 +51,7 @@ scripts/validate.py                PR validator for source YAML
 scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
+site/favicons/                     site icons (favicon.svg is primary, theme-aware)
 templates/                         starting points for official/community runs
 CHANGELOG.md                       high-level version history (update with every change)
 docs/TODO.md                       deferred work, out of scope until asked

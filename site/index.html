@@ -553,6 +553,20 @@
       return Array.isArray(value) && value.length ? value.join(", ") : MISSING;
     }
 
+    function formatPlatform(record) {
+      const platform = specValue(record, "platform");
+      if (!platform) return "";
+      const low = platform.power_min_w, high = platform.power_max_w;
+      const power = low != null && high != null ? `${low}–${high} W` : high != null ? `${high} W` : null;
+      const stats = [["Maker", platform.oem], ["CPU", platform.cpu],
+        ["RAM speed", platform.ram_mts != null ? `${platform.ram_mts} MT/s` : null],
+        ["Power range", power], ["Display", platform.display],
+        ["Battery", platform.battery_wh != null ? `${platform.battery_wh} Wh` : null],
+        ["Ships with", platform.os_shipped]];
+      return `<p class="section-kicker">Device</p><div class="mini-grid">${stats.map(([label, value]) =>
+        `<div class="mini-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? MISSING)}</strong></div>`).join("")}</div>`;
+    }
+
     function formatFeatureChips(record) {
       const features = [["DLSS", specValue(record, "features", "dlss")],
         ["FSR", specValue(record, "features", "fsr")],
@@ -596,7 +610,10 @@
       const codename = specValue(record, "identity", "codename");
       const process = specValue(record, "silicon", "process");
       const pcie = specValue(record, "power", "pcie");
-      const chips = [[codename, process].filter(Boolean).join(" · "), pcie].filter(Boolean);
+      const partner = specValue(record, "identity", "board_partner");
+      const base = specValue(record, "base");
+      const chips = [[codename, process].filter(Boolean).join(" · "), pcie,
+        partner ? `Board: ${partner}` : "", base ? `Base: ${base}` : ""].filter(Boolean);
       const implementations = Array.isArray(record.implementations) ? record.implementations : [];
       const contributors = Array.isArray(record.contributors) && record.contributors.length
         ? record.contributors.map((name) => `@${name}`).join(", ") : MISSING;
@@ -612,6 +629,7 @@
             <div class="mini-stat"><span>Power conn.</span><strong>${escapeHtml(formatList(record, "power", "connectors"))}</strong></div>
             <div class="mini-stat"><span>Display out</span><strong>${escapeHtml(formatList(record, "features", "outputs"))}</strong></div>
           </div>
+          ${formatPlatform(record)}
           ${formatFeatureChips(record)}
           <p class="spec-notes">${escapeHtml(specValue(record, "notes") || "No notes recorded.")}</p>
         </div>

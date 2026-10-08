@@ -1,0 +1,33 @@
+# Reference specs shared by every product with `base: rtx_4070_super_12gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_4070_super_12gb
+identity:
+  name: GeForce RTX 4070 Super
+  codename: AD104
+  gpu_vendor: nvidia
+classification:
+  architecture: Ada Lovelace
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 294.5
+  transistors_b: 35.8
+  shader_cores: 7168
+  rt_cores: 56
+  tmus: 224
+  rops: 80
+memory:
+  capacity_gb: 12
+  type: GDDR6X
+  bus_width_bits: 192
+  bandwidth_gbs: 504.2
+clocks:
+  base_mhz: 1980
+  boost_mhz: 2475
+  mem_mhz: 1313
+power:
+  tdp_w: 220
+  pcie: 4.0 x16
+features:
+  dlss: '3.5'
+  fsr: '3.1'
+  av1: encode+decode

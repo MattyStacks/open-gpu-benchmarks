@@ -3,8 +3,24 @@
 ## Start here
 
 Read [README.md](../README.md), [docs/COPILOT_HANDOFF.md](../docs/COPILOT_HANDOFF.md),
-and [docs/COMMUNITY_SUBMISSIONS.md](../docs/COMMUNITY_SUBMISSIONS.md) before
-changing the data schema, build logic, validation, or dashboard behavior.
+[docs/COMMUNITY_SUBMISSIONS.md](../docs/COMMUNITY_SUBMISSIONS.md), and
+[data/gpus/README.md](../data/gpus/README.md) before changing the data schema,
+build logic, validation, or dashboard behavior. These rules apply to every AI
+agent, not just Copilot; [AGENTS.md](../AGENTS.md) and [CLAUDE.md](../CLAUDE.md)
+point here.
+
+## Every change: update the changelog and the backlog
+
+These two steps are required, not optional, for every PR an agent or a person
+prepares:
+
+1. **[CHANGELOG.md](../CHANGELOG.md)** — add a line under `Unreleased` for any change to
+   behavior, the data contract, the API schema, the dashboard, the checks, the
+   templates, or the contributor workflow. Data-only result submissions are the
+   only exception. Don't finish a task with an empty `Unreleased` section if
+   you changed any of those.
+2. **[docs/TODO.md](../docs/TODO.md)** (the backlog) — remove items you completed, and
+   add anything you deferred, found broken, or were asked to do later.
 
 ## Data and schema rules
 
@@ -35,6 +51,14 @@ changing the data schema, build logic, validation, or dashboard behavior.
   `memory.capacity_gb` are required; unknown fields are rejected. Quote every
   date and version number.
 - Data and templates use block-style YAML only: no inline `[ ]` or `{ }`.
+- Shared chip specs live in `data/gpus/reference/<gpu_vendor>/<ref_id>.yaml`.
+  Products inherit them with `base: <ref_id>`, deep-merged (product wins,
+  lists replaced whole). References need only `id`, `identity.name`, and
+  `identity.gpu_vendor`, and may not carry `base`, `skus`, `platform`,
+  `identity.board_partner`, or `classification.form_factor`. Results never
+  point at a reference ID.
+- `platform` (device specs) is only for handheld and laptop products;
+  `identity.board_partner` is only for desktop products.
 - Every check rule lives once in `scripts/checks.py` (used by `build.py` and
   `validate.py`). Each rule name needs a ``#### `rule-name` `` heading in
   `data/gpus/README.md` or `docs/COMMUNITY_SUBMISSIONS.md`; `test_build.py`

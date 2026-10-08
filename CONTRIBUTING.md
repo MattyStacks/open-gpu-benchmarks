@@ -363,17 +363,27 @@ Each product gets one file in the catalog. The full rules are in
 
    Lowercase, digits, and underscores only. The memory size must match
    `memory.capacity_gb`.
-4. **Copy the template** for your form factor and name the copy `<id>.yaml`:
+4. **Find the reference file.** Look in `data/gpus/reference/<gpu_vendor>/`
+   for your GPU's shared specs, such as `rtx_5060_ti_16gb.yaml` or
+   `z1_extreme.yaml`. If it's there, set `base:` to its file name and only
+   write what your product changes or adds. If it's missing, copy
+   [catalog_reference.yaml](templates/catalog_reference.yaml) to create it,
+   or skip `base` and fill in every section of your product yourself.
+5. **Copy the template** for your form factor and name the copy `<id>.yaml`:
    [catalog_desktop.yaml](templates/catalog_desktop.yaml),
    [catalog_laptop.yaml](templates/catalog_laptop.yaml), or
    [catalog_handheld.yaml](templates/catalog_handheld.yaml).
-5. **Fill in what you know.** Only five fields are required: `id`,
+6. **Fill in what you know.** Only five fields are required: `id`,
    `identity.name`, `identity.gpu_vendor`, `classification.form_factor`, and
-   `memory.capacity_gb`. Delete optional lines you can't find; the dashboard
-   shows `—` for them. Quote dates (`'2024-01-17'`) and version numbers
-   (`'3.1'`).
-6. **Check it:** `python scripts/validate.py catalog`.
-7. **Open a pull request**, on its own or together with your first result.
+   `memory.capacity_gb`. A product can inherit any of them from its `base`.
+   Delete optional lines you can't find; the dashboard shows `—` for them.
+   Quote dates (`'2024-01-17'`) and version numbers (`'3.1'`).
+   - Desktop cards: add `identity.board_partner` (`MSI`, `ASUS`, ...).
+   - Handhelds and laptops: add a `platform:` section with the device's own
+     specs: maker, CPU, RAM speed, display, and power range. Handheld RAM size
+     and type go under `memory`.
+7. **Check it:** `python scripts/validate.py catalog`.
+8. **Open a pull request**, on its own or together with your first result.
 
 ### Worked examples
 
@@ -383,6 +393,20 @@ Each product gets one file in the catalog. The full rules are in
 gpu_model rtx_5060_ti + vram 16gb + brand msi + line ventus_2x
 → id:   rtx_5060_ti_16gb_msi_ventus_2x
 → file: data/gpus/desktop/nvidia/rtx_5060_ti_16gb_msi_ventus_2x.yaml
+→ base: rtx_5060_ti_16gb   (data/gpus/reference/nvidia/rtx_5060_ti_16gb.yaml)
+```
+
+The file only needs what's specific to this card:
+
+```yaml
+id: rtx_5060_ti_16gb_msi_ventus_2x
+base: rtx_5060_ti_16gb
+identity:
+  name: MSI GeForce RTX 5060 Ti 16G Ventus 2X
+  gpu_vendor: nvidia
+  board_partner: MSI
+classification:
+  form_factor: desktop
 ```
 
 The 8 GB OC version of the same card is a separate product:
@@ -404,7 +428,12 @@ folder is `amd/`, not `asus/`:
 ```text
 → id:   rog_ally_x_z1_extreme_24gb
 → file: data/gpus/handheld/amd/rog_ally_x_z1_extreme_24gb.yaml
+→ base: z1_extreme         (data/gpus/reference/amd/z1_extreme.yaml)
 ```
+
+The chip specs come from `z1_extreme`. The handheld adds its own RAM (`memory`)
+and device specs (`platform`), because those differ between handhelds with the
+same chip. See [templates/catalog_handheld.yaml](templates/catalog_handheld.yaml).
 
 ## Reading a failed check
 
@@ -435,8 +464,10 @@ raw capture, keep it, or say in the PR why it's being removed.
 `data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml`. They don't need
 `submitted_by`. Community results are compared against them.
 
-**Code, dashboard, or workflow changes:** add a line under `Unreleased` in
-[CHANGELOG.md](CHANGELOG.md). Data-only submissions can skip it. Before opening
+**Code, dashboard, catalog-rule, or workflow changes:** add a line under
+`Unreleased` in [CHANGELOG.md](CHANGELOG.md), and update the backlog in
+[docs/TODO.md](docs/TODO.md) if you finished, deferred, or found something.
+Data-only result submissions can skip both. Before opening
 the PR, run:
 
 ```powershell

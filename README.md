@@ -3,7 +3,7 @@
 Compare desktop, laptop, handheld, and integrated GPUs in one interactive
 graph. The site is a static GitHub Pages dashboard built from reviewable YAML.
 
-Current version: `v0.4.0`. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
+Current version: `v0.5.0`: per-product catalog with reference files, device specs, and checks that report every problem at once. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
 [docs/TODO.md](docs/TODO.md) for planned follow-ups.
 
 ## GPU-rooted data flow
@@ -19,7 +19,11 @@ handheld, or iGPU owns its benchmark results and any future card-specific
 metrics. Each entry also carries hardware specs in nested sections
 (`identity`, `classification`, `silicon`, `memory`, `clocks`, `power`,
 `release`, `features`), shown per card in the dashboard table. Only five
-fields are required; anything missing shows as `—`. ID rules, the field
+fields are required; anything missing shows as `—`. Specs shared by every
+product built on one GPU live once in a reference file under
+`data/gpus/reference/`. Each product points at it with `base:` and only lists
+what it changes or adds. Handhelds and laptops also carry a `platform`
+section with their device specs, such as RAM speed and power range. ID rules, the field
 reference, and the meaning of every check are in
 [data/gpus/README.md](data/gpus/README.md).
 
@@ -65,7 +69,9 @@ API schema `0.5` adds `submitted_by` to every generated run record and a
 `contributors` list (unique GitHub usernames) to every grouped summary.
 Schema `0.6` nests the catalog hardware specs. Schema `0.7` switches to
 product-level IDs and renames the vendor field to `gpu_vendor` (in
-`identity.gpu_vendor` and on every run record). The
+`identity.gpu_vendor` and on every run record). Schema `0.8` adds `base`,
+`identity.board_partner`, `skus`, and `platform` to catalog entries, which
+are always returned already merged with their reference. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.

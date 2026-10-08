@@ -3,44 +3,34 @@
 # Save as data/gpus/laptop/<gpu_vendor>/<id>.yaml, for example
 # data/gpus/laptop/nvidia/rtx_4070_laptop_8gb_asus_zephyrus_g14_2023.yaml.
 #
-# The example values are the RTX 4070 Laptop GPU. Replace them all. Only the
-# fields marked "required" must be filled in. Delete any optional line you
-# don't know; the dashboard shows "—" for it. Keep block style: one "-" line
-# per list item, no [ ] or { }. Quote dates and version numbers.
+# The example values are the RTX 4070 Laptop GPU with an unknown laptop model.
+# Replace them all. Only the fields marked "required" must be filled in. Delete
+# any optional line you don't know; the dashboard shows "—" for it. Keep block
+# style: one "-" line per list item, no [ ] or { }. Quote dates and version numbers.
 #
 # id pattern: <gpu_model>_<vram>gb_<oem>_<model>
 #   rtx_4070_laptop_8gb_lenovo_legion_pro_5_gen8
 #   Unknown laptop model (temporary, shows a warning): <gpu_model>_<vram>gb_generic
 # System RAM is not in the id: it is usually upgradeable, so record it on each
 # result under system.memory. GPU power (TGP) also goes on each result.
+#
+# base: the reference file with the mobile GPU's shared specs. Anything you
+# write here wins. Leave base out to fill every section yourself.
 id: rtx_4070_laptop_8gb_generic  # required; also the file name
+base: rtx_4070_laptop_8gb        # optional; a file name under data/gpus/reference/
 identity:
   name: GeForce RTX 4070 Laptop  # required
-  codename: AD106
   gpu_vendor: nvidia             # required; nvidia, amd, or intel (also the folder)
 classification:
   form_factor: laptop            # required
-  architecture: Ada Lovelace
-silicon:
-  process: TSMC 4N
-  shader_cores: 4608
-  rt_cores: 36
-  tmus: 144
-  rops: 48
-memory:
-  capacity_gb: 8                 # required; VRAM, must equal the <N>gb in the id
-  type: GDDR6
-  bus_width_bits: 128
-  bandwidth_gbs: 256
-clocks:
-  boost_mhz: 2175
-  mem_mhz: 2000
-power:
-  tdp_w: 115                     # top of the TGP range
 release:
   date: '2023-02-22'
-features:
-  dlss: '3.5'
-  fsr: '3.1'
-  av1: encode+decode
+# platform:                      # a named laptop's own specs (all optional; example values)
+#   oem: Lenovo
+#   cpu: Intel Core i7-13700HX
+#   display: 16 in 2560x1600 240 Hz
+#   power_min_w: 35              # GPU power (TGP) range this laptop allows
+#   power_max_w: 140
+#   battery_wh: 80
+#   os_shipped: Windows 11
 notes: TGP spans 35-115 W plus 25 W Dynamic Boost, so base clocks vary by laptop.

@@ -17,8 +17,8 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 
 OUTPUT_DIR = ROOT / "site" / "api" / "v1"
-SCHEMA_VERSION = "0.7"
-RELEASE_VERSION = "0.4.0"
+SCHEMA_VERSION = "0.8"
+RELEASE_VERSION = "0.5.0"
 
 
 def load_yaml(path):

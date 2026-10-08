@@ -31,3 +31,15 @@ features:
   xess: '1.3'
   fsr: '3'
   av1: encode+decode
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/arc-a770.c3914
+    title: TechPowerUp GPU Database - Arc A770
+    accessed: '2026-10-08'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features

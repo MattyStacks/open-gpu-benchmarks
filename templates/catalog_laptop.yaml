@@ -34,3 +34,11 @@ release:
 #   battery_wh: 80
 #   os_shipped: Windows 11
 notes: TGP spans 35-115 W plus 25 W Dynamic Boost, so base clocks vary by laptop.
+# Where this laptop's own details came from. The reference's sources are added
+# automatically. For a named laptop, cite the maker's spec page or PSREF sheet.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4070-mobile.c3944
+    title: TechPowerUp GPU Database - GeForce RTX 4070 Mobile
+    accessed: '2026-10-08'
+    covers:
+      - release

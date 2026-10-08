@@ -31,3 +31,15 @@ features:
   dlss: '3.5'
   fsr: '3.1'
   av1: encode+decode
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4080-super.c4182
+    title: TechPowerUp GPU Database - GeForce RTX 4080 SUPER
+    accessed: '2026-10-08'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features

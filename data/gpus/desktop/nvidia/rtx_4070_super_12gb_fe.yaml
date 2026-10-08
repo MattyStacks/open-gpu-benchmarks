@@ -20,3 +20,11 @@ features:
   - HDMI 2.1a
   - DP 1.4a x3
 notes: Largest generational uplift of the Super refresh over the base RTX 4070.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4070-super.c4186
+    title: TechPowerUp GPU Database - GeForce RTX 4070 SUPER
+    accessed: '2026-10-08'
+    covers:
+      - release
+      - power
+      - features

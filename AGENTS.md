@@ -31,6 +31,10 @@ These two steps are required for every PR:
 
 When a rule changes, change it in every file that states it.
 
+Catalog data must be accurate. Cite real pages in `sources`, list in
+`covers` only the sections a page backs, and leave a value out rather than
+guess it.
+
 ## Checks to run before finishing
 
 ```powershell

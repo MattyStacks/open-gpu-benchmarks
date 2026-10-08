@@ -59,6 +59,11 @@ prepares:
   point at a reference ID.
 - `platform` (device specs) is only for handheld and laptop products;
   `identity.board_partner` is only for desktop products.
+- Every catalog file lists `sources`: a block list of `{url, title, accessed,
+  covers}` with `https://` URLs. Only cite pages you actually used, and only
+  list sections in `covers` that the page backs. Never invent a source or a
+  spec value; leave unknown values out. A missing `sources` list is a warning
+  for now.
 - Every check rule lives once in `scripts/checks.py` (used by `build.py` and
   `validate.py`). Each rule name needs a ``#### `rule-name` `` heading in
   `data/gpus/README.md` or `docs/COMMUNITY_SUBMISSIONS.md`; `test_build.py`

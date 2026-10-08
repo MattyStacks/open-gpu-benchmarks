@@ -167,6 +167,10 @@ features:
     - HDMI 2.1a
     - DP 1.4a x3
 notes: Flagship Ada card.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4090.c3889
+    title: TechPowerUp GPU Database - GeForce RTX 4090
+    accessed: '2026-10-08'
 ```
 
 ## Reference files
@@ -286,6 +290,48 @@ platform:
   power_max_w: 30
 ```
 
+## Sources
+
+Every catalog file says where its specs came from, in a `sources` list. Each
+item is one page, written as a `- url:` line with its fields indented below:
+
+```yaml
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4090.c3889
+    title: TechPowerUp GPU Database - GeForce RTX 4090
+    accessed: '2026-10-08'
+    covers:
+      - silicon
+      - memory
+      - clocks
+```
+
+| Field      | Required | Format |
+| ---------- | -------- | ------ |
+| `url`      | yes      | An `https://` link anyone can open. |
+| `title`    | no       | A short description of the page. Avoid `: ` inside it, or quote the whole title. |
+| `accessed` | no       | The day you checked the page, as a quoted `'YYYY-MM-DD'`. |
+| `covers`   | no       | The sections this page backs, one `-` line each: `identity`, `classification`, `silicon`, `memory`, `clocks`, `power`, `release`, `features`, `platform`. |
+
+Guidelines:
+
+- **Prefer pages anyone can check.** Use the maker's spec page, a vendor
+  PSREF or spec sheet, or TechPowerUp's GPU database. Avoid forum posts and
+  pages that need a login.
+- **Cite what you used.** List only the pages the values in this file came
+  from. If a value isn't backed by any source yet, leave it out of every
+  `covers` list rather than guessing.
+- **References and products each cite their own pages.** A product's merged
+  entry in `gpus.json` lists its own sources first, then its reference's. A URL
+  that both cite appears once, with both `covers` lists combined.
+- **Prices can cite their own page.** An item in `release.msrp_history` can
+  carry its own `source:` link, because prices often come from somewhere other
+  than the spec sheet.
+
+A file without `sources` still passes, but the checks warn about it
+(`sources-missing`). That warning will become an error once every entry has
+sources.
+
 ### Field reference
 
 | Section          | Field             | Type                         | Notes |
@@ -294,6 +340,7 @@ platform:
 | (top level)      | `base`            | text                         | Products only. See [Reference files](#reference-files). |
 | (top level)      | `skus`            | list of text                 | Products only. |
 | (top level)      | `notes`           | text                         | One or two sentences. |
+| (top level)      | `sources`         | list                         | Where the specs came from. See [Sources](#sources). |
 | `identity`       | `name`            | text                         | Required. The retail name. |
 | `identity`       | `codename`        | text                         | Chip codename, such as `AD102`. |
 | `identity`       | `gpu_vendor`      | `nvidia`, `amd`, `intel`     | Required. Also the folder name. |
@@ -313,7 +360,7 @@ platform:
 | `power`          | `pcie`            | text                         | Such as `4.0 x16`. |
 | `release`        | `date`            | quoted `'YYYY-MM-DD'`        | |
 | `release`        | `msrp_usd`        | number                       | |
-| `release`        | `msrp_history`    | list                         | Each item has `date` (`'YYYY-MM'` or `'YYYY-MM-DD'`), `price_usd`, and an optional `label`. |
+| `release`        | `msrp_history`    | list                         | Each item has `date` (`'YYYY-MM'` or `'YYYY-MM-DD'`), `price_usd`, and optional `label` and `source` (an `https://` link). |
 | `features`       | `dlss`, `fsr`, `xess`, `av1` | text              | Quote version numbers: `'3.1'`. |
 | `features`       | `outputs`         | list of text                 | One `-` line per output. |
 | `platform`       | see [Device specs](#device-specs-platform) | | Handheld and laptop products only. |
@@ -485,6 +532,26 @@ goes in `platform.oem`.
 A reference file has a field that belongs to a product: `base`, `skus`,
 `platform`, `identity.board_partner`, or `classification.form_factor`. Move it
 to the product files that use this reference.
+
+#### `sources-missing`
+
+This is a warning. The file has no `sources` list. Add the pages its specs came
+from (see [Sources](#sources)). This will become an error once every entry has
+sources.
+
+#### `source-invalid`
+
+A `sources` item, or a `release.msrp_history` item's `source`, is malformed. The
+usual causes are:
+
+- the `url` is missing or isn't `https://`
+- `sources` is written as one line instead of `- url:` items
+- a field other than `url`, `title`, `accessed`, or `covers`
+- an unquoted or wrongly formatted `accessed` date (use `'2026-10-08'`)
+- a `covers` entry that isn't a section name
+
+If a `title` contains `: `, quote the whole title or use ` - ` instead.
+Otherwise YAML reads it as a new field and the file fails as `yaml-invalid`.
 
 #### `base-unknown`
 

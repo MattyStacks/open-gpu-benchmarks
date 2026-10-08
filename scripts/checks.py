@@ -75,7 +75,11 @@ CATALOG_FIELDS = {
         "battery_wh": "number",
     },
 }
-CATALOG_TOP_LEVEL = ("id", "base", "skus", "notes", *CATALOG_FIELDS)
+CATALOG_TOP_LEVEL = ("id", "base", "skus", "notes", "sources", *CATALOG_FIELDS)
+# Section names a source may say it backs, in its "covers" list.
+SOURCE_COVERS = tuple(CATALOG_FIELDS)
+SOURCE_FIELDS = ("url", "title", "accessed", "covers")
+HTTPS_URL = re.compile(r"^https://[^\s/]+\.[^\s]+$")
 PLATFORM_FORM_FACTORS = ("handheld", "laptop")
 # Product-only fields a reference file may not carry; form_factor belongs to the product.
 REFERENCE_FORBIDDEN = (("base",), ("skus",), ("platform",), ("identity", "board_partner"), ("classification", "form_factor"))
@@ -223,8 +227,10 @@ def check_msrp_history(path, issues, label, history):
             issues.error(path, "field-type", f"'{row_label}' must have date and price_usd fields")
             continue
         for key in row:
-            if key not in ("date", "price_usd", "label"):
+            if key not in ("date", "price_usd", "label", "source"):
                 issues.error(path, "field-unknown", f"'{row_label}.{key}' is not a known field")
+        if "source" in row and not (isinstance(row["source"], str) and HTTPS_URL.match(row["source"])):
+            issues.error(path, "source-invalid", f"'{row_label}.source' must be an https:// link")
         row_date = row.get("date")
         if not (isinstance(row_date, str) and MONTH_OR_DATE.match(row_date)):
             issues.error(path, "field-type", f"'{row_label}.date' must be a quoted 'YYYY-MM' or 'YYYY-MM-DD' date")
@@ -255,6 +261,40 @@ def check_catalog_fields(path, entry, issues):
             issues.error(path, "field-type", f"'{key}' must be text")
         elif key == "skus":
             check_value(path, issues, "skus", "string_list", value)
+        elif key == "sources":
+            check_sources(path, value, issues)
+
+
+def check_sources(path, sources, issues):
+    """sources: a block list of {url, title, accessed, covers} items."""
+    if not isinstance(sources, list) or not sources:
+        issues.error(path, "source-invalid", "'sources' must be a list with one '- url: ...' item per source")
+        return
+    for index, source in enumerate(sources):
+        label = f"sources[{index}]"
+        if not isinstance(source, dict):
+            issues.error(path, "source-invalid", f"'{label}' must have a url field, written as '- url: https://...'")
+            continue
+        for key in source:
+            if key not in SOURCE_FIELDS:
+                issues.error(path, "source-invalid", f"'{label}.{key}' is not a source field (use {', '.join(SOURCE_FIELDS)})")
+        url = source.get("url")
+        if not (isinstance(url, str) and HTTPS_URL.match(url)):
+            issues.error(path, "source-invalid", f"'{label}.url' is required and must be an https:// link")
+        if "title" in source and not is_text(source["title"]):
+            issues.error(path, "source-invalid", f"'{label}.title' must be text")
+        accessed = source.get("accessed")
+        if "accessed" in source and not (isinstance(accessed, str) and FULL_DATE.match(accessed)):
+            hint = " (quote it: '2026-10-08')" if isinstance(accessed, (date, datetime)) else ""
+            issues.error(path, "source-invalid", f"'{label}.accessed' must be a quoted 'YYYY-MM-DD' date{hint}")
+        covers = source.get("covers")
+        if "covers" in source:
+            if not isinstance(covers, list) or not covers:
+                issues.error(path, "source-invalid", f"'{label}.covers' must be a list with one section name per '-' line")
+            else:
+                for section in covers:
+                    if section not in SOURCE_COVERS:
+                        issues.error(path, "source-invalid", f"'{label}.covers' has unknown section '{section}' (use {', '.join(SOURCE_COVERS)})")
 
 
 def check_required(path, entry, required, issues):
@@ -340,7 +380,31 @@ def resolve_base(path, entry, references, issues):
     reference_vendor = spec(reference, "identity", "gpu_vendor")
     if product_vendor is not None and product_vendor != reference_vendor:
         issues.error(path, "base-mismatch", f"gpu_vendor '{product_vendor}' differs from base '{base}' ({reference_vendor})")
-    return merge_specs(reference, entry)
+    merged = merge_specs(reference, entry)
+    sources = merge_sources(entry.get("sources"), reference.get("sources"))
+    if sources:
+        merged["sources"] = sources
+    return merged
+
+
+def merge_sources(product_sources, reference_sources):
+    """Sources add up instead of replacing: the product's first, then the reference's.
+    A URL cited by both appears once, with both covers lists combined."""
+    merged, by_url = [], {}
+    for source in [*(product_sources or []), *(reference_sources or [])]:
+        if not isinstance(source, dict):
+            continue
+        url = source.get("url")
+        if url in by_url:
+            existing = by_url[url]
+            covers = [*existing.get("covers", []), *source.get("covers", [])]
+            if covers:
+                existing["covers"] = list(dict.fromkeys(covers))
+            continue
+        copy = dict(source)
+        by_url[url] = copy
+        merged.append(copy)
+    return merged
 
 
 def check_catalog_id(path, entry, issues):
@@ -434,6 +498,8 @@ def load_catalog(data_dir=DATA_DIR):
             issues.error(path, "id-duplicate", f"id '{gpu_id}' is already used by {relative_path(seen[gpu_id])}")
             continue
         seen[gpu_id] = path
+        if "sources" not in entry:
+            issues.warning(path, "sources-missing", "add a sources list saying where these specs came from")
         if is_reference_path(path, gpus_dir):
             check_reference(path, entry, issues)
             check_reference_folder(path, entry, gpus_dir, issues)

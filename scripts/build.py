@@ -17,7 +17,7 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 
 OUTPUT_DIR = ROOT / "site" / "api" / "v1"
-SCHEMA_VERSION = "0.8"
+SCHEMA_VERSION = "0.9"
 RELEASE_VERSION = "0.5.0"
 
 

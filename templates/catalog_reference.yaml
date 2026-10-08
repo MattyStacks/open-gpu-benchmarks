@@ -46,3 +46,18 @@ features:
   dlss: '3.5'
   fsr: '3.1'
   av1: encode+decode
+# Where the specs came from. One "- url:" item per page; covers names the
+# sections that page backs. Use pages anyone can open (vendor spec pages,
+# TechPowerUp's GPU database, vendor PSREF sheets).
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4070-super.c4186
+    title: TechPowerUp GPU Database - GeForce RTX 4070 SUPER   # optional
+    accessed: '2026-10-08'                                     # optional; the day you checked it
+    covers:                                                    # optional
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features

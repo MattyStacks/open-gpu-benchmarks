@@ -8,3 +8,9 @@ classification:
 release:
   date: '2023-02-08'
 notes: TGP spans 80-150 W plus 25 W Dynamic Boost, so base clocks vary by laptop. No fixed MSRP; pricing depends on the chassis.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4090-mobile.c3949
+    title: TechPowerUp GPU Database - GeForce RTX 4090 Mobile
+    accessed: '2026-10-08'
+    covers:
+      - release

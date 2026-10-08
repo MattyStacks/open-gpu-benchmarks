@@ -110,6 +110,9 @@ unless repository policy changes.
   `base: <ref_id>` and the build deep-merges them over the reference.
   Results never point at a reference ID. `platform` is for handhelds and
   laptops only, and `board_partner` is for desktop cards only.
+- Catalog files list `sources` (https URLs, `covers` = sections that page
+  actually backs). Never invent a source or a spec value; leave unknowns out.
+  Quote source titles that contain `: `.
 - Block-style YAML only in data and templates: no inline `[ ]` or `{ }`.
 - Every rule lives once in `scripts/checks.py`. A new rule needs a
   ``#### `rule-name` `` heading in `data/gpus/README.md` or

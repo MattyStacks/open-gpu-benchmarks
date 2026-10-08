@@ -69,6 +69,9 @@ unless repository policy changes.
   leading `-`. A duplicated `result:` key silently drops data.
 - Desktop and laptop GPU records never share a summary group.
 - `frame_generation: false` is required for comparable game runs.
+- Catalog specs in `data/gpus.yaml` are nested (`identity`,
+  `classification`, `silicon`, `memory`, `clocks`, `power`, `release`,
+  `features`); quote every date so YAML keeps it a string.
 - A result folder's name must exactly equal the `gpu_id` inside its files, and
   that ID must exist in `data/gpus.yaml`.
 - Exact machine metadata stays on each run; charts show grouped summaries.

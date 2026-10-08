@@ -16,9 +16,47 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 OUTPUT_DIR = ROOT / "site" / "api" / "v1"
-SCHEMA_VERSION = "0.5"
+SCHEMA_VERSION = "0.6"
 RELEASE_VERSION = "0.4.0"
 RESULT_GLOBS = ("result_*.yaml", "result_*.yml")
+GPU_VENDORS = ("amd", "intel", "nvidia")
+GPU_FORM_FACTORS = ("desktop", "laptop", "handheld", "igpu")
+REQUIRED_SPEC_STRINGS = (
+    ("identity", "name"),
+    ("identity", "codename"),
+    ("identity", "vendor"),
+    ("classification", "form_factor"),
+    ("classification", "architecture"),
+    ("memory", "type"),
+)
+REQUIRED_SPEC_NUMBERS = (
+    ("memory", "capacity_gb"),
+    ("memory", "bus_width_bits"),
+    ("memory", "bandwidth_gbs"),
+    ("clocks", "boost_mhz"),
+    ("power", "tdp_w"),
+)
+OPTIONAL_SPEC_STRINGS = (
+    ("silicon", "process"),
+    ("power", "pcie"),
+    ("release", "date"),
+    ("features", "dlss"),
+    ("features", "fsr"),
+    ("features", "xess"),
+    ("features", "av1"),
+    ("notes",),
+)
+OPTIONAL_SPEC_NUMBERS = (
+    ("silicon", "die_size_mm2"),
+    ("silicon", "transistors_b"),
+    ("silicon", "shader_cores"),
+    ("silicon", "rt_cores"),
+    ("silicon", "tmus"),
+    ("silicon", "rops"),
+    ("clocks", "base_mhz"),
+    ("clocks", "mem_mhz"),
+    ("release", "msrp_usd"),
+)
 
 
 def load_yaml(path):
@@ -28,6 +66,115 @@ def load_yaml(path):
 
 def relative_path(path):
     return path.relative_to(ROOT).as_posix()
+
+
+def catalog_spec(gpu, *path, default=None):
+    value = gpu
+    for key in path:
+        if not isinstance(value, dict) or value.get(key) is None:
+            return default
+        value = value[key]
+    return value
+
+
+def catalog_name(gpu):
+    return catalog_spec(gpu, "identity", "name")
+
+
+def catalog_vendor(gpu):
+    return catalog_spec(gpu, "identity", "vendor")
+
+
+def catalog_form_factor(gpu):
+    return catalog_spec(gpu, "classification", "form_factor")
+
+
+def catalog_vram_gb(gpu):
+    if catalog_spec(gpu, "memory", "shared", default=False):
+        return None
+    return catalog_spec(gpu, "memory", "capacity_gb")
+
+
+def catalog_tdp_w(gpu):
+    return catalog_spec(gpu, "power", "tdp_w")
+
+
+def _is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _is_blank_string(value):
+    return not isinstance(value, str) or not value.strip()
+
+
+def validate_gpu_catalog(gpus):
+    if not isinstance(gpus, list) or not gpus:
+        raise ValueError("data/gpus.yaml: catalog must be a non-empty list")
+    seen_ids = set()
+    for entry in gpus:
+        if not isinstance(entry, dict):
+            raise ValueError("data/gpus.yaml: every catalog entry must be a mapping")
+        gpu_id = entry.get("id")
+        if _is_blank_string(gpu_id):
+            raise ValueError("data/gpus.yaml: every catalog entry needs a string id")
+        if gpu_id in seen_ids:
+            raise ValueError(f"data/gpus.yaml: duplicate gpu id '{gpu_id}'")
+        seen_ids.add(gpu_id)
+        label = f"data/gpus.yaml {gpu_id}"
+        for path in REQUIRED_SPEC_STRINGS:
+            if _is_blank_string(catalog_spec(entry, *path)):
+                raise ValueError(f"{label}: '{'.'.join(path)}' must be a non-empty string")
+        for path in REQUIRED_SPEC_NUMBERS:
+            if not _is_number(catalog_spec(entry, *path)):
+                raise ValueError(f"{label}: '{'.'.join(path)}' must be a number")
+        for path in OPTIONAL_SPEC_STRINGS:
+            value = catalog_spec(entry, *path)
+            if value is not None and _is_blank_string(value):
+                hint = " (quote it: '2022-10-12')" if path[-1] == "date" else ""
+                raise ValueError(f"{label}: '{'.'.join(path)}' must be a string{hint}")
+        for path in OPTIONAL_SPEC_NUMBERS:
+            value = catalog_spec(entry, *path)
+            if value is not None and not _is_number(value):
+                raise ValueError(f"{label}: '{'.'.join(path)}' must be a number")
+        vendor = catalog_vendor(entry)
+        if vendor not in GPU_VENDORS:
+            raise ValueError(f"{label}: vendor '{vendor}' must be one of {', '.join(GPU_VENDORS)}")
+        form_factor = catalog_form_factor(entry)
+        if form_factor not in GPU_FORM_FACTORS:
+            raise ValueError(
+                f"{label}: form_factor '{form_factor}' must be one of {', '.join(GPU_FORM_FACTORS)}"
+            )
+        tdp_w = catalog_tdp_w(entry)
+        if not 5 <= tdp_w <= 600:
+            raise ValueError(f"{label}: power.tdp_w {tdp_w} is outside the 5-600 W range")
+        bus_width = catalog_spec(entry, "memory", "bus_width_bits")
+        if not 32 <= bus_width <= 512:
+            raise ValueError(f"{label}: memory.bus_width_bits {bus_width} is outside 32-512 bits")
+        shared = catalog_spec(entry, "memory", "shared", default=False)
+        if not isinstance(shared, bool):
+            raise ValueError(f"{label}: memory.shared must be true or false")
+        for path in (("power", "connectors"), ("features", "outputs")):
+            value = catalog_spec(entry, *path)
+            if value is not None and (
+                not isinstance(value, list) or not value or any(_is_blank_string(item) for item in value)
+            ):
+                raise ValueError(f"{label}: '{'.'.join(path)}' must be a non-empty list of strings")
+        history = catalog_spec(entry, "release", "msrp_history")
+        if history is not None:
+            if not isinstance(history, list) or not history:
+                raise ValueError(f"{label}: release.msrp_history must be a non-empty list")
+            for row in history:
+                if (
+                    not isinstance(row, dict)
+                    or _is_blank_string(row.get("date"))
+                    or not _is_number(row.get("price_usd"))
+                    or ("label" in row and _is_blank_string(row.get("label")))
+                ):
+                    raise ValueError(
+                        f"{label}: every msrp_history entry needs a date string,"
+                        " a price_usd number, and an optional label string"
+                    )
+    return gpus
 
 
 def result_paths(source):
@@ -75,22 +222,22 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
     implementation_name = run.get(
         "device_name", run.get("implementation_name", system.get("device_name"))
     )
-    form_factor = str(run.get("form_factor", gpu["form_factor"])).lower()
-    if form_factor != gpu["form_factor"]:
+    form_factor = str(run.get("form_factor", catalog_form_factor(gpu))).lower()
+    if form_factor != catalog_form_factor(gpu):
         raise ValueError(
             f"{source_path}: form_factor '{form_factor}' does not match catalog value "
-            f"'{gpu['form_factor']}'"
+            f"'{catalog_form_factor(gpu)}'"
         )
 
     record = {
         "id": run_id(source, source_path, result_index),
         "source": source,
         "gpu_id": gpu_id,
-        "gpu_name": gpu["name"],
-        "vendor": gpu["vendor"],
+        "gpu_name": catalog_name(gpu),
+        "vendor": catalog_vendor(gpu),
         "form_factor": form_factor.title(),
-        "vram_gb": gpu.get("vram_gb"),
-        "tdp_w": gpu.get("tdp_w"),
+        "vram_gb": catalog_vram_gb(gpu),
+        "tdp_w": catalog_tdp_w(gpu),
         "benchmark_type": benchmark_type,
         "metrics": result,
         "game": run.get("game", ""),
@@ -219,7 +366,7 @@ def gpu_summary(source, gpu, records, metadata):
 
 
 def main():
-    gpus = load_yaml(DATA_DIR / "gpus.yaml")
+    gpus = validate_gpu_catalog(load_yaml(DATA_DIR / "gpus.yaml"))
     reviews_source = load_yaml(DATA_DIR / "reviews.yaml")
     gpu_by_id = {gpu["id"]: gpu for gpu in gpus}
     official = source_records("official", gpu_by_id)

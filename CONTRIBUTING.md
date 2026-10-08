@@ -325,9 +325,13 @@ raw capture, keep it, or say in the PR why it's being removed.
 `data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml`. They don't need
 `submitted_by`. Community results are compared against them.
 
-**New GPU:** add an entry to [data/gpus.yaml](data/gpus.yaml) (`id`, `name`,
-`vendor`, `form_factor`, `vram_gb`, `tdp_w`), using the same fields as the
-existing entries.
+**New GPU:** add an entry to [data/gpus.yaml](data/gpus.yaml) following the
+nested spec sections of the existing entries (`identity`, `classification`,
+`silicon`, `memory`, `clocks`, `power`, `release`, `features`). Fill every
+required leaf (name, codename, vendor, form factor, architecture, memory
+capacity/type/bus/bandwidth, boost clock, TDP), quote every date so YAML
+keeps it a string, and run `python scripts/build.py` to validate the specs
+before opening the PR.
 
 **Code, dashboard, or workflow changes:** add a line under `Unreleased` in
 [CHANGELOG.md](CHANGELOG.md). Data-only submissions can skip it. Before opening

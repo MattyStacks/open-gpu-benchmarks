@@ -14,12 +14,26 @@ and date and start a fresh `Unreleased` section.
 ### Added
 - Site favicon (`site/favicons/`): an SVG icon that follows the dashboard's
   light/dark toggle, with ICO and Apple touch icon fallbacks.
+- Expanded GPU catalog: `data/gpus.yaml` now carries full per-card specs in
+  nested sections (`identity`, `classification`, `silicon`, `memory`,
+  `clocks`, `power`, `release`, `features`), backfilled for all 11 cards.
+  The build and validator enforce required fields, types, and ranges.
+- Dashboard benchmark table now shows per-card spec columns (vendor, form,
+  architecture, VRAM, bus, bandwidth, clocks, shaders, RT cores, TDP,
+  process, release, MSRP) next to each result. Columns sort, search covers
+  IDs, codenames, and architectures, and expanding a row reveals a silicon
+  deep dive, price history, and the exact runs behind the number.
 
 ### Changed
 - Rewrote `CONTRIBUTING.md` around submitting a result: a 5-step flow with a
   diagram, file-name and folder visuals, validated desktop/laptop/handheld/
   summary-only examples, a required-fields table, and a common-mistakes table.
   `data/community/README.md` now points to it.
+- API schema `0.6`: catalog GPUs in `gpus.json` and the per-GPU summaries
+  carry nested hardware spec sections instead of flat `name`/`vendor`/
+  `form_factor`/`vram_gb`/`tdp_w` fields. Run records keep their flat
+  `vram_gb`/`tdp_w` values, now derived from the nested specs (`vram_gb` is
+  null for shared-memory handhelds instead of 0).
 
 ## 0.4.0 - 2026-10-03
 

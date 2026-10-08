@@ -36,4 +36,11 @@ release:
 features:
   fsr: '3.1'
   av1: decode
+platform:
+  oem: Valve
+  cpu: Zen 2 4C/8T
+  ram_mts: 6400
+  os_shipped: SteamOS
+  power_min_w: 4
+  power_max_w: 15
 notes: 6 nm shrink of the Aerith APU (Zen 2 4C/8T, 8 CUs) at roughly 20 percent less die area. APU power spans 4-15 W. Memory is shared system RAM.

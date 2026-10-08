@@ -35,7 +35,7 @@ INLINE_STYLE = re.compile(r"""^\s*(?:-\s+)*(?:[^\s#'"][^:#'"]*:\s+)?[\[{]""")
 
 # Every catalog field and its kind. Unknown keys are rejected so typos surface.
 CATALOG_FIELDS = {
-    "identity": {"name": "string", "codename": "string", "gpu_vendor": "string"},
+    "identity": {"name": "string", "codename": "string", "gpu_vendor": "string", "board_partner": "string"},
     "classification": {"form_factor": "string", "architecture": "string"},
     "silicon": {
         "process": "string",
@@ -63,8 +63,23 @@ CATALOG_FIELDS = {
         "av1": "string",
         "outputs": "string_list",
     },
+    # System specs for handhelds and laptops; not allowed on desktop cards.
+    "platform": {
+        "oem": "string",
+        "cpu": "string",
+        "ram_mts": "number",
+        "os_shipped": "string",
+        "display": "string",
+        "power_min_w": "number",
+        "power_max_w": "number",
+        "battery_wh": "number",
+    },
 }
-CATALOG_TOP_LEVEL = ("id", "notes", *CATALOG_FIELDS)
+CATALOG_TOP_LEVEL = ("id", "base", "skus", "notes", *CATALOG_FIELDS)
+PLATFORM_FORM_FACTORS = ("handheld", "laptop")
+# Product-only fields a reference file may not carry; form_factor belongs to the product.
+REFERENCE_FORBIDDEN = (("base",), ("skus",), ("platform",), ("identity", "board_partner"), ("classification", "form_factor"))
+REFERENCE_REQUIRED = (("id",), ("identity", "name"), ("identity", "gpu_vendor"))
 CATALOG_REQUIRED = (
     ("id",),
     ("identity", "name"),
@@ -76,6 +91,10 @@ CATALOG_RANGES = {
     ("memory", "capacity_gb"): (1, 512, "GB"),
     ("memory", "bus_width_bits"): (32, 512, "bits"),
     ("power", "tdp_w"): (5, 600, "W"),
+    ("platform", "ram_mts"): (1000, 20000, "MT/s"),
+    ("platform", "power_min_w"): (1, 600, "W"),
+    ("platform", "power_max_w"): (1, 600, "W"),
+    ("platform", "battery_wh"): (1, 200, "Wh"),
 }
 RESULT_ENTRY_REQUIRED = ("resolution", "graphics_preset", "avg_fps", "p1_low")
 
@@ -216,6 +235,7 @@ def check_msrp_history(path, issues, label, history):
 
 
 def check_catalog_fields(path, entry, issues):
+    """Check the fields written in one file: names, types, and formats."""
     for key, value in entry.items():
         if key not in CATALOG_TOP_LEVEL:
             issues.error(path, "field-unknown", f"'{key}' is not a known catalog field")
@@ -231,16 +251,22 @@ def check_catalog_fields(path, entry, issues):
                     issues.error(path, "field-unknown", f"'{label}' is not a known catalog field")
                 elif field_value is not None:
                     check_value(path, issues, label, CATALOG_FIELDS[key][field], field_value)
-        elif key == "notes" and not is_text(value):
-            issues.error(path, "field-type", "'notes' must be text")
+        elif key in ("notes", "base") and not is_text(value):
+            issues.error(path, "field-type", f"'{key}' must be text")
+        elif key == "skus":
+            check_value(path, issues, "skus", "string_list", value)
 
-    for field_path in CATALOG_REQUIRED:
-        label = ".".join(field_path)
+
+def check_required(path, entry, required, issues):
+    for field_path in required:
         if spec(entry, *field_path) is None and not (
             field_path == ("identity", "gpu_vendor") and spec(entry, "identity", "vendor") is not None
         ):
-            issues.error(path, "field-required", f"'{label}' is required")
+            issues.error(path, "field-required", f"'{'.'.join(field_path)}' is required")
 
+
+def check_catalog_values(path, entry, issues):
+    """Check allowed values and ranges, on the merged entry for products."""
     vendor = spec(entry, "identity", "gpu_vendor")
     if vendor is not None and vendor not in GPU_VENDORS:
         issues.error(path, "field-value", f"gpu_vendor '{vendor}' must be one of {', '.join(GPU_VENDORS)}")
@@ -253,6 +279,68 @@ def check_catalog_fields(path, entry, issues):
         value = spec(entry, *field_path)
         if is_number(value) and not low <= value <= high:
             issues.error(path, "field-range", f"'{'.'.join(field_path)}' {value} is outside {low}-{high} {unit}")
+    power_min, power_max = spec(entry, "platform", "power_min_w"), spec(entry, "platform", "power_max_w")
+    if is_number(power_min) and is_number(power_max) and power_min > power_max:
+        issues.error(path, "field-range", f"'platform.power_min_w' {power_min} is above 'platform.power_max_w' {power_max}")
+
+
+def check_product_sections(path, entry, issues):
+    """Sections that only some form factors may carry."""
+    form_factor = spec(entry, "classification", "form_factor")
+    if "platform" in entry and form_factor not in PLATFORM_FORM_FACTORS:
+        issues.error(path, "field-not-allowed", f"'platform' is only for handheld and laptop entries, not {form_factor}")
+    if spec(entry, "identity", "board_partner") is not None and form_factor != "desktop":
+        issues.error(path, "field-not-allowed", "'identity.board_partner' is only for desktop cards; use 'platform.oem' for devices")
+
+
+def check_reference(path, entry, issues):
+    check_catalog_fields(path, entry, issues)
+    check_required(path, entry, REFERENCE_REQUIRED, issues)
+    check_catalog_values(path, entry, issues)
+    for field_path in REFERENCE_FORBIDDEN:
+        if spec(entry, *field_path) is not None:
+            issues.error(path, "reference-field", f"'{'.'.join(field_path)}' belongs in product files, not reference files")
+    gpu_id = entry["id"]
+    if path.stem != gpu_id or path.suffix != ".yaml":
+        issues.error(path, "id-filename", f"file must be named '{gpu_id}.yaml' to match its id")
+    if not ID_PATTERN.match(gpu_id):
+        issues.error(path, "id-format", f"id '{gpu_id}' may only use lowercase letters, digits, and single underscores")
+        return
+    tokens = [token for token in gpu_id.split("_") if MEMORY_TOKEN.match(token)]
+    capacity = spec(entry, "memory", "capacity_gb")
+    if len(tokens) > 1:
+        issues.error(path, "id-memory-token", f"id '{gpu_id}' may contain at most one memory size token")
+    elif tokens and is_number(capacity) and int(tokens[0][:-2]) != capacity:
+        issues.error(path, "id-memory-token", f"id says {tokens[0]} but memory.capacity_gb is {capacity}")
+
+
+def merge_specs(reference, product):
+    """Deep-merge a product over its reference: product values win, lists are replaced whole."""
+    merged = dict(reference)
+    for key, value in product.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = merge_specs(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def resolve_base(path, entry, references, issues):
+    """Return the product merged over its base reference, or the product unchanged."""
+    base = entry.get("base")
+    if base is None:
+        return entry
+    if not is_text(base):
+        return entry
+    reference = references.get(base)
+    if reference is None:
+        issues.error(path, "base-unknown", f"base '{base}' is not a reference file under data/gpus/reference/")
+        return entry
+    product_vendor = spec(entry, "identity", "gpu_vendor")
+    reference_vendor = spec(reference, "identity", "gpu_vendor")
+    if product_vendor is not None and product_vendor != reference_vendor:
+        issues.error(path, "base-mismatch", f"gpu_vendor '{product_vendor}' differs from base '{base}' ({reference_vendor})")
+    return merge_specs(reference, entry)
 
 
 def check_catalog_id(path, entry, issues):
@@ -307,12 +395,27 @@ def check_catalog_folder(path, entry, gpus_dir, issues):
         issues.error(path, "catalog-folder", f"file belongs at {expected} (data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml)")
 
 
+def is_reference_path(path, gpus_dir):
+    return path.relative_to(gpus_dir).parts[0] == "reference"
+
+
+def check_reference_folder(path, entry, gpus_dir, issues):
+    parts = path.relative_to(gpus_dir).parts
+    vendor = spec(entry, "identity", "gpu_vendor")
+    if len(parts) != 3 or parts[1] != vendor:
+        issues.error(
+            path,
+            "catalog-folder",
+            f"file belongs at data/gpus/reference/{vendor}/{entry['id']}.yaml (data/gpus/reference/<gpu_vendor>/<id>.yaml)",
+        )
+
+
 def load_catalog(data_dir=DATA_DIR):
-    """Return (entries, issues). Entries include every mapping with a string id."""
+    """Return (products, issues). Products are merged over their base reference."""
     issues = Issues()
     gpus_dir = data_dir / "gpus"
-    entries = []
     seen = {}
+    references, products = {}, []
     paths = catalog_paths(data_dir)
     if not paths:
         issues.error(gpus_dir, "catalog-empty", "no catalog entries found under data/gpus/")
@@ -331,10 +434,23 @@ def load_catalog(data_dir=DATA_DIR):
             issues.error(path, "id-duplicate", f"id '{gpu_id}' is already used by {relative_path(seen[gpu_id])}")
             continue
         seen[gpu_id] = path
+        if is_reference_path(path, gpus_dir):
+            check_reference(path, entry, issues)
+            check_reference_folder(path, entry, gpus_dir, issues)
+            references[gpu_id] = entry
+        else:
+            products.append((path, entry))
+
+    entries = []
+    for path, entry in products:
         check_catalog_fields(path, entry, issues)
-        check_catalog_id(path, entry, issues)
-        check_catalog_folder(path, entry, gpus_dir, issues)
-        entries.append(entry)
+        merged = resolve_base(path, entry, references, issues)
+        check_required(path, merged, CATALOG_REQUIRED, issues)
+        check_catalog_values(path, merged, issues)
+        check_product_sections(path, merged, issues)
+        check_catalog_id(path, merged, issues)
+        check_catalog_folder(path, merged, gpus_dir, issues)
+        entries.append(merged)
     entries.sort(
         key=lambda entry: (
             GPU_FORM_FACTORS.index(spec(entry, "classification", "form_factor"))
@@ -402,7 +518,7 @@ def community_warnings(path, run, gpu, issues):
             issues.warning(path, "result-no-proof", "no raw_log or summary_source proof reference")
 
 
-def check_result_file(source, path, run, catalog_by_id, issues):
+def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()):
     """Check one result file; return its result entries when they are usable."""
     if not isinstance(run, dict):
         issues.error(path, "result-not-mapping", "a result file holds fields at the left margin, not an empty file or a '-' list")
@@ -411,7 +527,9 @@ def check_result_file(source, path, run, catalog_by_id, issues):
     if path.parent.name != gpu_id:
         issues.error(path, "result-folder", f"gpu_id '{gpu_id}' must match its folder '{path.parent.name}'")
     gpu = catalog_by_id.get(gpu_id)
-    if gpu is None:
+    if gpu is None and gpu_id in reference_ids:
+        issues.error(path, "result-reference-id", f"gpu_id '{gpu_id}' is a reference file; use the ID of the exact product you tested")
+    elif gpu is None:
         issues.error(path, "result-unknown-gpu", f"gpu_id '{gpu_id}' is not in the catalog under data/gpus/")
     if source == "community":
         submitter_errors(path, run, issues)
@@ -495,6 +613,7 @@ def load_results(catalog, data_dir=DATA_DIR):
     """Return ({source: [(path, run)]}, issues) for every usable result file."""
     issues = Issues()
     catalog_by_id = {entry["id"]: entry for entry in catalog}
+    reference_ids = {path.stem for path in (data_dir / "gpus" / "reference").rglob("*.yaml")}
     runs = {}
     for source in RESULT_SOURCES:
         runs[source] = []
@@ -504,7 +623,7 @@ def load_results(catalog, data_dir=DATA_DIR):
             parsed, run = load_yaml_file(path, issues)
             if not parsed:
                 continue
-            entries = check_result_file(source, path, run, catalog_by_id, issues)
+            entries = check_result_file(source, path, run, catalog_by_id, issues, reference_ids)
             if entries is not None:
                 runs[source].append((path, run, entries))
     official = [(run, entries) for _, run, entries in runs["official"] if run.get("benchmark_type", "game") == "game"]

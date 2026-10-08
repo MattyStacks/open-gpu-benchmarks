@@ -32,9 +32,16 @@ data/gpus/
 │   └── amd/rx_7900_xtx_24gb_reference.yaml
 ├── laptop/
 │   └── nvidia/rtx_4070_laptop_8gb_generic.yaml
-└── handheld/
-    └── amd/rog_ally_z1_extreme_16gb.yaml
+├── handheld/
+│   └── amd/rog_ally_z1_extreme_16gb.yaml
+└── reference/                         shared chip specs, see below
+    ├── nvidia/rtx_4090_24gb.yaml
+    └── amd/z1_extreme.yaml
 ```
+
+The `reference/` folder is different: it holds
+[reference files](#reference-files), not products, and nothing is benchmarked
+against them.
 
 ## Picking the ID
 
@@ -162,15 +169,135 @@ features:
 notes: Flagship Ada card.
 ```
 
+## Reference files
+
+Many products share one GPU. Every RTX 5060 Ti 16 GB board has the same
+shader count, memory bus, and features, and the ROG Ally and Legion Go both
+use the Z1 Extreme. Instead of copying those specs into every product, put
+them once in a **reference file**, and point each product at it with `base`:
+
+```text
+data/gpus/reference/<gpu_vendor>/<ref_id>.yaml
+```
+
+A product with `base: <ref_id>` gets every field from the reference, and any
+field the product writes itself wins. Sections merge field by field, and lists
+(such as `outputs`) are replaced whole. The required fields are checked after
+the merge, so a product can inherit `memory.capacity_gb` from its reference.
+
+```yaml
+# data/gpus/reference/nvidia/rtx_4090_24gb.yaml: the GPU's shared specs
+id: rtx_4090_24gb
+identity:
+  name: GeForce RTX 4090
+  codename: AD102
+  gpu_vendor: nvidia
+classification:
+  architecture: Ada Lovelace
+silicon:
+  shader_cores: 16384
+memory:
+  capacity_gb: 24
+  type: GDDR6X
+clocks:
+  boost_mhz: 2520
+power:
+  tdp_w: 450
+```
+
+```yaml
+# data/gpus/desktop/nvidia/rtx_4090_24gb_fe.yaml: one card built on it
+id: rtx_4090_24gb_fe
+base: rtx_4090_24gb
+identity:
+  name: GeForce RTX 4090 Founders Edition
+  gpu_vendor: nvidia
+  board_partner: NVIDIA
+classification:
+  form_factor: desktop
+power:
+  connectors:
+    - 16-pin 12VHPWR
+release:
+  date: '2022-10-12'
+  msrp_usd: 1599
+```
+
+A factory-overclocked partner card would add only what differs, such as
+`clocks.boost_mhz`.
+
+What goes where:
+
+| In the reference (the GPU)                         | In the product (what you buy)                         |
+| -------------------------------------------------- | ----------------------------------------------------- |
+| `identity.name` (the GPU model), `codename`, `gpu_vendor` | `identity.name` (the retail name), `gpu_vendor`, `board_partner` |
+| `classification.architecture`                      | `classification.form_factor`                          |
+| `silicon`, `clocks`, `power.tdp_w`, `power.pcie`   | Board differences: OC clocks, `power.connectors`      |
+| `memory` (APUs: only `bus_width_bits`, `shared`)   | Handhelds: `memory.capacity_gb`, `type`, `bandwidth_gbs` |
+| `features` except outputs                          | `features.outputs`, `release`, `skus`, `platform`, `notes` |
+
+Rules for reference files:
+
+- **Required:** `id`, `identity.name`, and `identity.gpu_vendor`.
+- **ID:** `<gpu_model>_<vram>gb`, such as `rtx_5060_ti_16gb`. For an APU whose
+  memory comes from the device, use the chip name with no memory token, such as
+  `z1_extreme`.
+- **Product-only fields aren't allowed:** `base`, `skus`, `platform`,
+  `identity.board_partner`, and `classification.form_factor`.
+- **Results never point at a reference.** Always benchmark against the exact
+  product.
+- **`base` is optional.** A product used by only one device can hold every
+  field itself. `steam_deck_oled_16gb` does.
+
+## Product-only fields
+
+| Field                    | For              | What it is |
+| ------------------------ | ---------------- | ---------- |
+| `base`                   | any product      | The reference file name to inherit from. |
+| `identity.board_partner` | desktop only     | Who made the board: `NVIDIA`, `MSI`, `ASUS`, `Sapphire`, ... |
+| `skus`                   | any product      | Retail names or part numbers that share this entry, such as color variants. One `-` line each. |
+| `platform`               | handheld, laptop | The device's own specs. See below. |
+
+### Device specs: `platform`
+
+Handhelds and laptops are judged by their GPU, but the rest of the device
+changes the results too. A handheld with slower RAM, or a lower power limit, is
+slower with the same chip. `platform` records those details. Every field is
+optional:
+
+| Field          | Type   | Example                | Notes |
+| -------------- | ------ | ---------------------- | ----- |
+| `oem`          | text   | `ASUS`                 | The device maker. |
+| `cpu`          | text   | `Zen 4 8C/16T`         | |
+| `ram_mts`      | number | `7500`                 | RAM speed in MT/s, 1000-20000. Handhelds only; laptop RAM goes on each result. |
+| `os_shipped`   | text   | `Windows 11`           | The OS the device ships with. The OS you tested goes on each result. |
+| `display`      | text   | `7 in 1920x1080 120 Hz` | |
+| `power_min_w`, `power_max_w` | number | `9`, `30`    | APU power range (handhelds) or GPU TGP range (laptops), 1-600 W. The minimum can't exceed the maximum. |
+| `battery_wh`   | number | `80`                   | 1-200 Wh. |
+
+```yaml
+platform:
+  oem: Lenovo
+  cpu: Zen 4 8C/16T
+  ram_mts: 7500
+  os_shipped: Windows 11
+  display: 8.8 in QHD+ 144 Hz
+  power_min_w: 9
+  power_max_w: 30
+```
+
 ### Field reference
 
 | Section          | Field             | Type                         | Notes |
 | ---------------- | ----------------- | ---------------------------- | ----- |
 | (top level)      | `id`              | text                         | Required. See [Picking the ID](#picking-the-id). |
+| (top level)      | `base`            | text                         | Products only. See [Reference files](#reference-files). |
+| (top level)      | `skus`            | list of text                 | Products only. |
 | (top level)      | `notes`           | text                         | One or two sentences. |
 | `identity`       | `name`            | text                         | Required. The retail name. |
 | `identity`       | `codename`        | text                         | Chip codename, such as `AD102`. |
 | `identity`       | `gpu_vendor`      | `nvidia`, `amd`, `intel`     | Required. Also the folder name. |
+| `identity`       | `board_partner`   | text                         | Desktop products only. |
 | `classification` | `form_factor`     | `desktop`, `laptop`, `handheld`, `igpu` | Required. Also the folder name. |
 | `classification` | `architecture`    | text                         | Such as `Ada Lovelace` or `RDNA 3`. |
 | `silicon`        | `process`         | text                         | Such as `TSMC 4N`. |
@@ -189,6 +316,7 @@ notes: Flagship Ada card.
 | `release`        | `msrp_history`    | list                         | Each item has `date` (`'YYYY-MM'` or `'YYYY-MM-DD'`), `price_usd`, and an optional `label`. |
 | `features`       | `dlss`, `fsr`, `xess`, `av1` | text              | Quote version numbers: `'3.1'`. |
 | `features`       | `outputs`         | list of text                 | One `-` line per output. |
+| `platform`       | see [Device specs](#device-specs-platform) | | Handheld and laptop products only. |
 
 Any other field is rejected, so a typo can't hide.
 
@@ -225,7 +353,10 @@ date object and `3.1` as a number, and the checks reject both.
 
 The step-by-step walkthrough is in
 [CONTRIBUTING.md](../../CONTRIBUTING.md#adding-a-card-laptop-or-handheld).
-Start from the matching template in [templates/](../../templates/), then run:
+Look for a reference file for your GPU under `reference/`, and create one from
+`templates/catalog_reference.yaml` if it's missing and more than one product
+will use it. Start the product from the matching template in
+[templates/](../../templates/), then run:
 
 ```powershell
 python scripts/validate.py catalog
@@ -258,9 +389,10 @@ Put one entry per file, with `id:` at the left margin and no leading `-`.
 
 #### `catalog-folder`
 
-The file is in the wrong folder. It belongs at
-`data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`, using the values inside the
-file. The message shows the expected path.
+The file is in the wrong folder. A product belongs at
+`data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml` and a reference at
+`data/gpus/reference/<gpu_vendor>/<id>.yaml`, using the values inside the file.
+The message shows the expected path.
 
 #### `id-filename`
 
@@ -282,9 +414,10 @@ with the memory token. See [Picking the ID](#picking-the-id).
 
 #### `id-memory-token`
 
-The ID needs exactly one memory token, such as `16gb`, and it must equal
-`memory.capacity_gb`. A different memory size is a different product, so it gets
-its own file.
+A product ID needs exactly one memory token, such as `16gb`, and it must equal
+`memory.capacity_gb`, including a capacity inherited from `base`. A different
+memory size is a different product, so it gets its own file. A reference ID
+may have no memory token (`z1_extreme`), but no more than one.
 
 #### `id-generic`
 
@@ -327,6 +460,40 @@ A value has the wrong type. The usual causes are:
 
 #### `field-range`
 
-A number is outside its allowed range: `memory.capacity_gb` 1-512,
-`memory.bus_width_bits` 32-512, or `power.tdp_w` 5-600. Check the units. TDP is
-in watts and capacity is in GB.
+A number is outside its allowed range:
+
+| Field | Allowed range |
+| ----- | ------------- |
+| `memory.capacity_gb` | 1-512 GB |
+| `memory.bus_width_bits` | 32-512 bits |
+| `power.tdp_w` | 5-600 W |
+| `platform.ram_mts` | 1000-20000 MT/s |
+| `platform.power_min_w`, `platform.power_max_w` | 1-600 W |
+| `platform.battery_wh` | 1-200 Wh |
+
+The check also fails if `platform.power_min_w` is above `power_max_w`. Check
+the units.
+
+#### `field-not-allowed`
+
+A section is on the wrong kind of product. `platform` is only for handhelds and
+laptops. `identity.board_partner` is only for desktop cards. A device's maker
+goes in `platform.oem`.
+
+#### `reference-field`
+
+A reference file has a field that belongs to a product: `base`, `skus`,
+`platform`, `identity.board_partner`, or `classification.form_factor`. Move it
+to the product files that use this reference.
+
+#### `base-unknown`
+
+`base` doesn't name a file in `data/gpus/reference/`. Check the spelling (it's
+the reference's file name without `.yaml`), or add the reference file. A
+product can't use another product as its base.
+
+#### `base-mismatch`
+
+The product's `identity.gpu_vendor` differs from its reference's. A product
+always has the same GPU vendor as the chip it's built on. Fix whichever one is
+wrong.

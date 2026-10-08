@@ -7,18 +7,19 @@
 - Public site: <https://mattystacks.github.io/open-gpu-benchmarks/>
 - Public dashboard API: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/dashboard.json>
 - GPU master API: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/gpus.json>
-- Current development version: `v0.4.0`
+- Current version: `v0.5.0` (2026-10-08)
+  - v0.5.0: the per-product catalog under `data/gpus/` (one file per product,
+    product-level IDs with a memory token, `identity.gpu_vendor`, five
+    required fields), reference files with `base` merging, `platform`,
+    `identity.board_partner`, `skus`, shared checks in `scripts/checks.py`,
+    three separate CI checks, and the per-card dashboard spec table. API
+    schema 0.6 → 0.7 → 0.8.
   - v0.4.0: community files require `submitted_by` and a `_<github_user>` file
     name suffix, API schema 0.5 (`submitted_by`, `contributors`), dashboard
     JSON API panel and GitHub links.
-  - Unreleased: API schema 0.6 (nested catalog specs) and the per-card
-    dashboard spec table with sortable columns and expandable rows; then
-    schema 0.7: one catalog file per product under `data/gpus/`,
-    product-level IDs with a memory token, `identity.gpu_vendor`, five
-    required catalog fields, shared checks in `scripts/checks.py`, and three
-    separate CI checks.
-  - Version history lives in [CHANGELOG.md](../CHANGELOG.md); update its
-    `Unreleased` section with every behavioral change.
+  - **Every PR updates [CHANGELOG.md](../CHANGELOG.md)** under `Unreleased`
+    when it changes behavior, the data contract, the schema, the dashboard,
+    the checks, or the workflow. This applies to humans and to every AI agent.
   - Open follow-ups live in [docs/TODO.md](TODO.md).
 
 ## Current data contract
@@ -98,6 +99,45 @@ product-level:
   fields are rejected. Missing values become `null` in the API and `—` on
   the dashboard.
 - **Ordering.** `gpus.json` lists entries by form factor, then vendor, then ID.
+
+Schema `0.8` adds reference files.
+
+- **Reference files.** `data/gpus/reference/<gpu_vendor>/<ref_id>.yaml`
+  holds a GPU's shared specs. A product sets `base: <ref_id>`, and
+  `resolve_base()` in `checks.py` deep-merges the product over the
+  reference: product values win, sections merge field by field, and lists
+  are replaced whole.
+- **Checks run in two stages.** Required fields, ranges, the ID memory token,
+  and the folder are checked on the merged entry. Field names and types are
+  checked on each file as written, so errors point at the file that has
+  them.
+- **Reference contents.**
+  - Required: `id`, `identity.name`, `identity.gpu_vendor`.
+  - Not allowed: `base`, `skus`, `platform`, `identity.board_partner`,
+    `classification.form_factor` (rule `reference-field`).
+  - ID: `<gpu_model>_<vram>gb`, or a bare chip name for APUs
+    (`z1_extreme`).
+- **References are never products.** `load_catalog()` returns only merged
+  products, so references never appear in `gpus.json`. A result that
+  points at one fails as `result-reference-id`. `gpus.json` entries carry
+  `base`.
+- **Product-only fields.**
+  - `identity.board_partner`: desktop only.
+  - `skus`: a string list.
+  - `platform`: handheld and laptop only, rule `field-not-allowed`. Its
+    fields are `oem`, `cpu`, `ram_mts`, `os_shipped`, `display`,
+    `power_min_w`, `power_max_w`, and `battery_wh`, each range-checked, and
+    the minimum power can't exceed the maximum.
+- **Current references.** `rtx_4090_24gb`, `rtx_4080_super_16gb`,
+  `rtx_4070_super_12gb`, `rx_7900_xtx_24gb`, `arc_a770_16gb`,
+  `rtx_4090_laptop_16gb`, `rtx_4070_laptop_8gb`, `arc_a770m_16gb`, and
+  `z1_extreme`, shared by the Ally and the Legion Go.
+  - `steam_deck_oled_16gb` deliberately has no `base`.
+  - The merged specs match the pre-split catalog exactly. The only changes
+    are the product names (now "Founders Edition", "Limited Edition", and
+    "(AMD reference)") and the handheld notes, which moved into `platform`.
+- **Dashboard.** The expanded row shows a "Device" grid from `platform` and
+  chips for the board partner and base.
 
 Old-to-new ID map, applied to the result folders as well:
 
@@ -210,6 +250,8 @@ covers:
 - that a required-fields-only catalog entry builds
 - that every rule has a doc heading
 - that the `templates/catalog_*.yaml` files pass the catalog checks
+  alongside the real reference files
+- `base` merge behavior (inherit, override, and list replacement)
 - the generated payload shape
 
 ## Current synthetic fixtures
@@ -248,24 +290,17 @@ If the fetch fails, the static link still follows the OS. `favicon.ico` and
 
 ## Planned next steps
 
-The approved catalog plan has three more steps, one PR each. Step 1 (catalog
-split, product IDs, shared checks, CI split) is done. They're also listed in
-[TODO.md](TODO.md).
+The approved catalog plan has two more steps, one PR each. Steps 1 and 2 are
+done: catalog split, product IDs, shared checks, and the CI split, then
+reference files, `base`, `platform`, `board_partner`, and `skus`. The
+remaining steps are also listed in [TODO.md](TODO.md).
 
-1. **Reference files and `base`.**
-   - `data/gpus/reference/<gpu_vendor>/<ref_id>.yaml` holds shared chip specs.
-     Product files set `base: <ref_id>`, and the build deep-merges the
-     product over the reference: product values win, lists are replaced
-     whole.
-   - Add a `platform` section for handhelds and laptops. It is not allowed on
-     desktop, and its fields are block-style only.
-   - Add `identity.board_partner` and a `skus` list.
-   - Results may never point at a reference ID.
-2. **`sources`.**
-   - A block list of `{url, title, accessed, covers}`. `url` must be https,
-     `accessed` is a quoted date, and `covers` lists section names.
-   - Missing `sources` starts as a warning and becomes an error later.
-3. **OS.**
+1. **`sources`.**
+   - Add a block list of `{url, title, accessed, covers}`: `url` must be
+     https, `accessed` is a quoted date, and `covers` lists section names.
+   - A missing `sources` list starts as a warning and becomes an error later.
+   - Reference files and product files each carry their own sources.
+2. **OS.**
    - `system.os` is required on runs (`windows` or `linux`) and becomes a
      grouping key.
    - Optional detail fields: `os_detail`, `os_build`, `resizable_bar`,
@@ -273,8 +308,9 @@ split, product IDs, shared checks, CI split) is done. They're also listed in
      `distro`, `distro_version`, `kernel`, `mesa`, `runtime`, `proton`,
      `dxvk`, `vkd3d_proton`, `launcher`, `session`, `gamemode`. These are
      copied to run records and are never grouping keys.
-   - Dashboard: Windows and Linux chips plus an OS badge on each bar, with no
-     per-distro bars. Point readers to the JSON for per-distro charts.
+   - Dashboard: add Windows and Linux chips plus an OS badge on each bar,
+     with no per-distro bars. Point readers to the JSON for per-distro
+     charts.
 
 ## Version and deployment
 

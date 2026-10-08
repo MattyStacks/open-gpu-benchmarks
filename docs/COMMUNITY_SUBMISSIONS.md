@@ -165,6 +165,12 @@ it without telling you. Rename it to `result_YYYYMMDD_<game>_<github_user>.yaml`
 product's entry under `data/gpus/`, or add the entry first. Product IDs such as
 `rtx_4090_24gb_fe` replaced the old model-level IDs such as `rtx_4090`.
 
+#### `result-reference-id`
+
+`gpu_id` names a reference file under `data/gpus/reference/`, which holds a
+GPU's shared specs, not a product. Use the ID of the exact card, laptop, or
+handheld you tested, such as `rtx_4090_24gb_fe` rather than `rtx_4090_24gb`.
+
 #### `result-form-factor`
 
 `form_factor` in the result disagrees with the catalog entry. Remove the field so

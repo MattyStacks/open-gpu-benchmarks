@@ -2,6 +2,19 @@
 
 Guidance for Claude Code working in this repository.
 
+## Every change: update the changelog and the backlog
+
+These two steps are required, not optional, for every PR an agent or a person
+prepares:
+
+1. **[CHANGELOG.md](CHANGELOG.md)** — add a line under `Unreleased` for any change to
+   behavior, the data contract, the API schema, the dashboard, the checks, the
+   templates, or the contributor workflow. Data-only result submissions are the
+   only exception. Don't finish a task with an empty `Unreleased` section if
+   you changed any of those.
+2. **[docs/TODO.md](docs/TODO.md)** (the backlog) — remove items you completed, and
+   add anything you deferred, found broken, or were asked to do later.
+
 ## Read these first
 
 Before changing the data schema, build logic, validation, the dashboard, or the
@@ -22,8 +35,11 @@ docs, read:
    layout, ID grammar, field reference, and an explanation of every check rule.
 6. [CHANGELOG.md](CHANGELOG.md) — high-level version history. Add an entry under
    `Unreleased` for every user-visible, schema, or workflow change.
-7. [docs/TODO.md](docs/TODO.md) — deferred work. Do not pull items from it into
-   a session unless asked; add new deferred ideas there instead.
+7. [docs/TODO.md](docs/TODO.md) — the backlog of deferred work. Do not pull
+   items from it into a session unless asked; add new deferred ideas there
+   instead, and remove items when they're done.
+8. [AGENTS.md](AGENTS.md) — the tool-neutral entry point for other AI agents.
+   Keep it in step with this file.
 
 The first five documents overlap on purpose. When a rule changes, it has to change
 in every file that states it, or the next session gets contradictory context.
@@ -36,7 +52,7 @@ toolchain beyond Python.
 
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://mattystacks.github.io/open-gpu-benchmarks/>
-- Current development version: `v0.4.0` (`RELEASE_VERSION` in
+- Current development version: `v0.5.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it)
 
 ### Layout
@@ -44,6 +60,8 @@ toolchain beyond Python.
 ```text
 data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml
                                    authoritative catalog, one file per product
+data/gpus/reference/<gpu_vendor>/<ref_id>.yaml
+                                   shared chip specs products inherit via base:
 data/gpus/README.md                catalog rules, ID grammar, every check explained
 data/reviews.yaml                  optional published-review links
 data/official/<gpu_id>/result_*.yaml
@@ -58,7 +76,8 @@ site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
 templates/                         starting points for runs and catalog entries
 CHANGELOG.md                       high-level version history (update with every change)
-docs/TODO.md                       deferred work, out of scope until asked
+docs/TODO.md                       backlog: deferred work (update with every change)
+AGENTS.md                          tool-neutral agent entry point (keep in step with this file)
 .github/workflows/build.yml        builds site/api and deploys Pages on main
 .github/workflows/validate.yml     three PR checks: Catalog entries, Benchmark results,
                                    Build and tests
@@ -87,6 +106,10 @@ unless repository policy changes.
   run. The catalog folder is `<form_factor>/<gpu_vendor>`, where
   `gpu_vendor` is the GPU chip maker. The field is `identity.gpu_vendor`, not
   `vendor`.
+- `data/gpus/reference/` holds shared chip specs, not products. Products use
+  `base: <ref_id>` and the build deep-merges them over the reference.
+  Results never point at a reference ID. `platform` is for handhelds and
+  laptops only, and `board_partner` is for desktop cards only.
 - Block-style YAML only in data and templates: no inline `[ ]` or `{ }`.
 - Every rule lives once in `scripts/checks.py`. A new rule needs a
   ``#### `rule-name` `` heading in `data/gpus/README.md` or
@@ -127,7 +150,12 @@ conversation. Before you report a task complete, update whatever is now stale:
   [.github/copilot-instructions.md](.github/copilot-instructions.md) if a rule
   changed. Bump `SCHEMA_VERSION` when the generated API payload changes.
 - **Any behavior, schema, dashboard, or workflow change** → add a line under
-  `Unreleased` in [CHANGELOG.md](CHANGELOG.md).
+  `Unreleased` in [CHANGELOG.md](CHANGELOG.md). Always; see the top of this
+  file.
+- **Work finished, deferred, or discovered** → update the backlog in
+  [docs/TODO.md](docs/TODO.md).
+- **Agent instructions changed** → keep `CLAUDE.md`,
+  `.github/copilot-instructions.md`, and `AGENTS.md` consistent.
 - **Version change** → rename `Unreleased` in `CHANGELOG.md` to the new version
   and date, and update `RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py) plus the version references and feature

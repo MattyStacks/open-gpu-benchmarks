@@ -1,33 +1,14 @@
 id: rtx_4080_super_16gb_fe
+base: rtx_4080_super_16gb
 identity:
-  name: GeForce RTX 4080 Super
-  codename: AD103
+  name: GeForce RTX 4080 Super Founders Edition
   gpu_vendor: nvidia
+  board_partner: NVIDIA
 classification:
   form_factor: desktop
-  architecture: Ada Lovelace
-silicon:
-  process: TSMC 4N
-  die_size_mm2: 378.6
-  transistors_b: 45.9
-  shader_cores: 10240
-  rt_cores: 80
-  tmus: 320
-  rops: 112
-memory:
-  capacity_gb: 16
-  type: GDDR6X
-  bus_width_bits: 256
-  bandwidth_gbs: 736.3
-clocks:
-  base_mhz: 2295
-  boost_mhz: 2550
-  mem_mhz: 1438
 power:
-  tdp_w: 320
   connectors:
   - 16-pin 12VHPWR
-  pcie: 4.0 x16
 release:
   date: '2024-01-31'
   msrp_usd: 999
@@ -35,9 +16,6 @@ release:
   - date: '2024-01'
     price_usd: 999
 features:
-  dlss: '3.5'
-  fsr: '3.1'
-  av1: encode+decode
   outputs:
   - HDMI 2.1a
   - DP 1.4a x3

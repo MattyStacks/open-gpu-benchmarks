@@ -1,0 +1,48 @@
+# Reference catalog entry: the specs every product built on one GPU shares.
+# Rules: data/gpus/README.md#reference-files
+#
+# Save as data/gpus/reference/<gpu_vendor>/<id>.yaml, for example
+# data/gpus/reference/nvidia/rtx_5060_ti_16gb.yaml. Products point at it with
+# "base: <id>" and only list what differs.
+#
+# The example values are the RTX 4070 Super. Replace them all. Only the fields
+# marked "required" must be filled in; delete optional lines you don't know.
+# Keep block style: one "-" line per list item, no [ ] or { }.
+#
+# id pattern: <gpu_model>_<vram>gb (rtx_5060_ti_16gb), or just the chip name
+# when memory comes from the device (z1_extreme). Results never use a reference id.
+#
+# Not allowed here, because they describe a product: base, skus, platform,
+# identity.board_partner, and classification.form_factor. Leave the release
+# date and price, power connectors, display outputs, and notes to product files.
+id: rtx_4070_super_12gb          # required; also the file name
+identity:
+  name: GeForce RTX 4070 Super   # required; the GPU model name
+  codename: AD104
+  gpu_vendor: nvidia             # required; nvidia, amd, or intel (also the folder)
+classification:
+  architecture: Ada Lovelace
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 294.5
+  transistors_b: 35.8
+  shader_cores: 7168
+  rt_cores: 56
+  tmus: 224
+  rops: 80
+memory:
+  capacity_gb: 12                # leave out for APUs; the device sets its RAM
+  type: GDDR6X
+  bus_width_bits: 192
+  bandwidth_gbs: 504.2
+clocks:
+  base_mhz: 1980
+  boost_mhz: 2475                # the vendor's reference boost clock
+  mem_mhz: 1313
+power:
+  tdp_w: 220
+  pcie: 4.0 x16
+features:
+  dlss: '3.5'
+  fsr: '3.1'
+  av1: encode+decode

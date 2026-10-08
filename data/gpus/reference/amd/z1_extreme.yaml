@@ -1,0 +1,27 @@
+# Reference specs shared by every product with `base: z1_extreme`.
+# Rules: data/gpus/README.md#reference-files
+id: z1_extreme
+identity:
+  name: Ryzen Z1 Extreme
+  codename: Phoenix
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 3
+silicon:
+  process: TSMC 4nm
+  die_size_mm2: 178
+  transistors_b: 25.0
+  shader_cores: 768
+  rt_cores: 12
+  tmus: 48
+  rops: 32
+memory:
+  bus_width_bits: 128
+  shared: true
+clocks:
+  boost_mhz: 2700
+power:
+  tdp_w: 30
+features:
+  fsr: '3.1'
+  av1: decode

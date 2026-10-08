@@ -1,0 +1,33 @@
+# Reference specs shared by every product with `base: arc_a770_16gb`.
+# Rules: data/gpus/README.md#reference-files
+id: arc_a770_16gb
+identity:
+  name: Intel Arc A770
+  codename: ACM-G10
+  gpu_vendor: intel
+classification:
+  architecture: Alchemist
+silicon:
+  process: TSMC N6
+  die_size_mm2: 406
+  transistors_b: 21.7
+  shader_cores: 4096
+  rt_cores: 32
+  tmus: 256
+  rops: 128
+memory:
+  capacity_gb: 16
+  type: GDDR6
+  bus_width_bits: 256
+  bandwidth_gbs: 560
+clocks:
+  base_mhz: 2100
+  boost_mhz: 2400
+  mem_mhz: 2188
+power:
+  tdp_w: 225
+  pcie: 4.0 x16
+features:
+  xess: '1.3'
+  fsr: '3'
+  av1: encode+decode

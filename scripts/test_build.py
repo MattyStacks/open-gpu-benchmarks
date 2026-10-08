@@ -44,6 +44,23 @@ def minimal_entry(**overrides):
     return entry
 
 
+TEST_REF = "test_ref_8gb"
+TEST_REF_PATH = f"gpus/reference/nvidia/{TEST_REF}.yaml"
+
+
+def reference_entry(**overrides):
+    entry = {
+        "id": TEST_REF,
+        "identity": {"name": "Test Reference", "gpu_vendor": "nvidia"},
+        "silicon": {"shader_cores": 1024},
+        "memory": {"capacity_gb": 8, "type": "GDDR6"},
+        "clocks": {"base_mhz": 1500, "boost_mhz": 2000},
+        "features": {"outputs": ["HDMI 2.1"]},
+    }
+    entry.update(overrides)
+    return entry
+
+
 def result_run(**overrides):
     run = {
         "gpu_id": TEST_ID,
@@ -109,6 +126,13 @@ def check_catalog_rules():
         "field-type": {base: dump(minimal_entry()) + "release:\n  date: 2022-10-12\n"},
         "field-value": {base: minimal_entry(classification={"form_factor": "tablet"})},
         "field-range": {base: minimal_entry(power={"tdp_w": 700})},
+        "base-unknown": {base: minimal_entry(base="missing_ref")},
+        "base-mismatch": {
+            f"gpus/reference/amd/{TEST_REF}.yaml": reference_entry(identity={"name": "Test Reference", "gpu_vendor": "amd"}),
+            base: minimal_entry(base=TEST_REF),
+        },
+        "reference-field": {TEST_REF_PATH: reference_entry(classification={"form_factor": "desktop"})},
+        "field-not-allowed": {base: minimal_entry(platform={"oem": "Test"})},
     }
     for rule, files in cases.items():
         expect_rule(rule, files)
@@ -116,6 +140,22 @@ def check_catalog_rules():
     # Handheld ids end with the RAM size; a handheld id with a suffix is rejected.
     handheld = minimal_entry(id="test_device_16gb_x", classification={"form_factor": "handheld"}, memory={"capacity_gb": 16})
     expect_rule("id-format", {"gpus/handheld/nvidia/test_device_16gb_x.yaml": handheld})
+    # A handheld's platform power range must run low to high.
+    handheld = minimal_entry(
+        id="test_device_16gb",
+        classification={"form_factor": "handheld"},
+        memory={"capacity_gb": 16},
+        platform={"power_min_w": 30, "power_max_w": 9},
+    )
+    expect_rule("field-range", {"gpus/handheld/nvidia/test_device_16gb.yaml": handheld})
+    # A reference in the wrong vendor folder, and board_partner on a laptop.
+    expect_rule("catalog-folder", {f"gpus/reference/amd/{TEST_REF}.yaml": reference_entry()})
+    laptop_partner = minimal_entry(
+        id="test_gpu_laptop_8gb_test_model",
+        classification={"form_factor": "laptop"},
+        identity={"name": "Test", "gpu_vendor": "nvidia", "board_partner": "Test"},
+    )
+    expect_rule("field-not-allowed", {"gpus/laptop/nvidia/test_gpu_laptop_8gb_test_model.yaml": laptop_partner})
     # _generic is a warning, not an error, on a laptop.
     laptop = minimal_entry(id="test_gpu_laptop_8gb_generic", classification={"form_factor": "laptop"})
     issues = run_checks({"gpus/laptop/nvidia/test_gpu_laptop_8gb_generic.yaml": laptop})
@@ -131,6 +171,10 @@ def check_result_rules():
     no_submitter = {key: value for key, value in community_run().items() if key != "submitted_by"}
     cases = {
         "result-folder": {"community/other_gpu_8gb_fe/result_20261003_test_tester.yaml": community_run()},
+        "result-reference-id": {
+            TEST_REF_PATH: reference_entry(),
+            f"community/{TEST_REF}/result_20261003_test_tester.yaml": community_run(gpu_id=TEST_REF),
+        },
         "result-unknown-gpu": {"community/missing_8gb_fe/result_20261003_test_tester.yaml": community_run(gpu_id="missing_8gb_fe")},
         "result-not-mapping": {COMMUNITY_PATH: "- gpu_id: test\n"},
         "result-list": {COMMUNITY_PATH: no_result},
@@ -182,11 +226,36 @@ def check_minimal_entry_builds():
     assert record["tdp_w"] is None and record["vram_gb"] == 8 and record["gpu_vendor"] == "nvidia"
 
 
+def check_base_merge():
+    product = minimal_entry(base=TEST_REF, clocks={"boost_mhz": 2100}, features={"outputs": ["DP 2.1"]})
+    with tempfile.TemporaryDirectory() as temp:
+        data_dir = Path(temp)
+        for relative, content in {TEST_REF_PATH: reference_entry(), TEST_CATALOG_PATH: product}.items():
+            (data_dir / relative).parent.mkdir(parents=True, exist_ok=True)
+            (data_dir / relative).write_text(dump(content), encoding="utf-8")
+        catalog, issues = checks.load_catalog(data_dir)
+    assert not issues.errors, [issue.format() for issue in issues.errors]
+    assert [entry["id"] for entry in catalog] == [TEST_ID], "reference files are not products"
+    merged = catalog[0]
+    assert merged["base"] == TEST_REF
+    assert merged["silicon"]["shader_cores"] == 1024, "inherited from the reference"
+    assert merged["clocks"] == {"base_mhz": 1500, "boost_mhz": 2100}, "product value wins, siblings kept"
+    assert merged["features"]["outputs"] == ["DP 2.1"], "lists are replaced whole"
+    assert merged["identity"]["name"] == "Test GPU"
+
+
 def check_templates_are_valid():
+    """Each catalog template passes the checks alongside the real reference files."""
+    references = {
+        path.relative_to(ROOT / "data").as_posix(): path.read_text(encoding="utf-8")
+        for path in (ROOT / "data" / "gpus" / "reference").rglob("*.yaml")
+    }
     for template in sorted((ROOT / "templates").glob("catalog_*.yaml")):
-        entry = yaml.safe_load(template.read_text(encoding="utf-8"))
-        form, vendor = entry["classification"]["form_factor"], entry["identity"]["gpu_vendor"]
-        issues = run_checks({f"gpus/{form}/{vendor}/{entry['id']}.yaml": template.read_text(encoding="utf-8")})
+        text = template.read_text(encoding="utf-8")
+        entry = yaml.safe_load(text)
+        vendor = entry["identity"]["gpu_vendor"]
+        folder = "reference" if template.stem == "catalog_reference" else entry["classification"]["form_factor"]
+        issues = run_checks({**references, f"gpus/{folder}/{vendor}/{entry['id']}.yaml": text})
         assert not issues.errors, (template.name, [issue.format() for issue in issues.errors])
 
 
@@ -203,7 +272,7 @@ def check_rules_are_documented():
 
 def check_catalog_specs():
     master = load_json(API_DIR / "gpus.json")
-    assert master["metadata"]["schema_version"] == "0.7"
+    assert master["metadata"]["schema_version"] == "0.8"
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
     assert len(by_id) == 11
     for gpu in master["gpus"]:
@@ -214,9 +283,16 @@ def check_catalog_specs():
     assert flagship["silicon"]["shader_cores"] == 16384
     assert flagship["memory"]["bandwidth_gbs"] == 1008
     assert flagship["release"]["msrp_usd"] == 1599
+    assert flagship["base"] == "rtx_4090_24gb" and flagship["identity"]["board_partner"] == "NVIDIA"
+    assert "rtx_4090_24gb" not in by_id, "reference files never appear as catalog products"
+    ally = by_id["rog_ally_z1_extreme_16gb"]
+    assert ally["base"] == "z1_extreme" and ally["silicon"]["shader_cores"] == 768
+    assert ally["memory"]["shared"] is True and ally["memory"]["type"] == "LPDDR5"
+    assert ally["platform"]["ram_mts"] == 6400 and ally["platform"]["oem"] == "ASUS"
     deck = by_id["steam_deck_oled_16gb"]
     assert deck["memory"]["shared"] is True
     assert deck["memory"]["capacity_gb"] == 16
+    assert "base" not in deck, "base is optional"
     assert by_id["arc_a770m_16gb_generic"].get("release", {}).get("date") is None
 
     arc_a770 = load_json(API_DIR / "community" / "arc_a770_16gb_le" / "summary.json")
@@ -236,6 +312,7 @@ def main():
     check_result_rules()
     check_reports_every_error_and_build_stops()
     check_minimal_entry_builds()
+    check_base_merge()
     check_rules_are_documented()
     check_templates_are_valid()
     subprocess.run([sys.executable, "scripts/build.py"], cwd=ROOT, check=True)

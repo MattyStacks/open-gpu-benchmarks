@@ -9,6 +9,8 @@ except ImportError:
     print("pip install pyyaml")
     sys.exit(1)
 
+from build import catalog_form_factor, validate_gpu_catalog
+
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
@@ -39,7 +41,7 @@ def result_entries(data, path):
 
 
 def gpu_catalog():
-    return {gpu["id"]: gpu for gpu in load_yaml(DATA_DIR / "gpus.yaml")}
+    return {gpu["id"]: gpu for gpu in validate_gpu_catalog(load_yaml(DATA_DIR / "gpus.yaml"))}
 
 
 def gpu_power_w(data):
@@ -67,7 +69,7 @@ def official_records(catalog):
                     "game": data.get("game"),
                     "resolution": result.get("resolution"),
                     "graphics_preset": result.get("graphics_preset"),
-                    "form_factor": data.get("form_factor", gpu["form_factor"]),
+                    "form_factor": data.get("form_factor", catalog_form_factor(gpu)),
                     "gpu_power_w": gpu_power_w(data),
                     "avg_fps": result.get("avg_fps"),
                 }
@@ -77,7 +79,7 @@ def official_records(catalog):
 
 def matching_official_baseline(data, result, baselines, catalog):
     gpu = catalog[data["gpu_id"]]
-    form_factor = data.get("form_factor", gpu["form_factor"])
+    form_factor = data.get("form_factor", catalog_form_factor(gpu))
     power = gpu_power_w(data)
     candidates = [
         record
@@ -121,11 +123,11 @@ def validate_file(path, data, catalog):
         return [*errors, f"unknown gpu_id '{gpu_id}'"], warnings, None
     errors.extend(submitter_errors(path, data))
 
-    form_factor = str(data.get("form_factor", catalog[gpu_id]["form_factor"])).lower()
-    if form_factor != catalog[gpu_id]["form_factor"]:
+    form_factor = str(data.get("form_factor", catalog_form_factor(catalog[gpu_id]))).lower()
+    if form_factor != catalog_form_factor(catalog[gpu_id]):
         errors.append(
             f"form_factor '{form_factor}' does not match catalog value "
-            f"'{catalog[gpu_id]['form_factor']}'"
+            f"'{catalog_form_factor(catalog[gpu_id])}'"
         )
     entries, entry_errors = result_entries(data, path)
     errors.extend(entry_errors)

@@ -10,7 +10,10 @@ Current version: `v0.4.0`. See [CHANGELOG.md](CHANGELOG.md) for what changed in 
 
 `data/gpus.yaml` is the authoritative hardware catalog. Every source folder
 uses one of its IDs exactly, so each card, laptop GPU, handheld, or iGPU owns
-its benchmark results and any future card-specific metrics.
+its benchmark results and any future card-specific metrics. Each entry also
+carries full hardware specs in nested sections (`identity`,
+`classification`, `silicon`, `memory`, `clocks`, `power`, `release`,
+`features`), shown per card in the dashboard table.
 
 ```text
 data/gpus.yaml
@@ -36,7 +39,8 @@ groups desktop and laptop GPUs together.
 
 [`site/api/v1/gpus.json`](site/api/v1/gpus.json) is the master JSON contract:
 each catalog GPU has `links.official_summary` and
-`links.community_summary`, plus its generated `official` and `community`
+`links.community_summary`, its nested hardware specs, plus its generated
+`official` and `community`
 statistics. The linked per-GPU JSON includes all source runs, grouped game
 summaries, evidence references, and exact machine metadata. Generated API
 files are ignored by Git and appear after running the build.
@@ -48,7 +52,8 @@ multi-profile file and two matching Arc A770 results that aggregate into one
 `synthetic: true`, and every community fixture is `submitted_by: MattyStacks`.
 
 API schema `0.5` adds `submitted_by` to every generated run record and a
-`contributors` list (unique GitHub usernames) to every grouped summary. The
+`contributors` list (unique GitHub usernames) to every grouped summary.
+Schema `0.6` nests the catalog hardware specs. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.
@@ -98,7 +103,8 @@ python scripts/parse.py capture.csv --gpu-id rtx_4090 --game "Cyberpunk 2077" --
 
 ## Site and deployment
 
-`site/index.html` fetches the generated dashboard JSON with relative paths, so
+`site/index.html` fetches the generated dashboard and GPU catalog JSON with
+relative paths, so
 the site works under any host or custom domain. Site icons live in
 `site/favicons/`; the SVG favicon follows the dashboard's light/dark toggle. Links to the GitHub repository,
 contributing guide, and issues are absolute and appear in the header and

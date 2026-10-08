@@ -11,6 +11,8 @@
   - v0.4.0: community files require `submitted_by` and a `_<github_user>` file
     name suffix, API schema 0.5 (`submitted_by`, `contributors`), dashboard
     JSON API panel and GitHub links.
+  - Unreleased: API schema 0.6 (nested catalog specs) and the per-card
+    dashboard spec table with sortable columns and expandable rows.
   - Version history lives in [CHANGELOG.md](../CHANGELOG.md); update its
     `Unreleased` section with every behavioral change.
   - Open follow-ups live in [docs/TODO.md](TODO.md).
@@ -54,6 +56,16 @@ record and the per-run `implementations` entries, and a sorted, de-duplicated
 `contributors` list to every grouped summary. The dashboard does not display
 submitters; they are API-only.
 
+Schema `0.6` nests the catalog hardware specs. Each `gpus.yaml` entry keeps
+its `id` at the top level with `identity`, `classification`, `silicon`,
+`memory`, `clocks`, `power`, `release`, and `features` sections. Required
+leaves are the identity trio, form factor plus architecture, memory
+capacity/type/bus/bandwidth, boost clock, and TDP; the build and validator
+reject missing leaves, mistyped values, unquoted dates, unknown vendors,
+and out-of-range TDP (5-600 W) or bus width (32-512 bits). Run records keep
+flat `vram_gb`/`tdp_w` derived from the nested specs, with `vram_gb` null
+for shared-memory handhelds instead of 0.
+
 ## Data rules
 
 - The source schema uses `graphics_preset`; do not add a `settings` fallback.
@@ -91,7 +103,9 @@ git diff --check
 to `data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml`. It
 requires `--submitted-by` and adds `_2`, `_3`, ... before the username rather
 than overwrite an existing file. `scripts/test_build.py` covers aggregation,
-`submitted_by`/`contributors` output, and the validator's submitter checks.
+`submitted_by`/`contributors` output, the validator's submitter checks, and
+the catalog specs (required leaves, ranges, negative cases, and the
+nested-spec payload shape).
 
 ## Current synthetic fixtures
 
@@ -99,12 +113,17 @@ The repository has 11 catalog GPU entries, 15 official result runs, 10
 community result runs, and 24 combined dashboard summaries. The Arc A770
 fixtures exercise a multi-profile source file and matching-run aggregation.
 Every fixture is marked `synthetic: true`. All community fixtures use
-`submitted_by: MattyStacks`.
+`submitted_by: MattyStacks`. Catalog specs are real published specs; only the
+benchmark runs are synthetic.
 
 ## Dashboard
 
 `site/index.html` is the whole dashboard. It loads `./api/v1/dashboard.json`
 relative to the page, so it works on GitHub Pages or a future custom domain.
+It also loads `./api/v1/gpus.json` for the per-card spec columns. The
+benchmark table sorts by any column, searches IDs, codenames, and
+architectures, and expands each row into silicon details, price history,
+and the exact runs behind the number.
 The header has **JSON API** (jumps to `#data-api`) and **GitHub** buttons, and
 the footer links to the repository, contributing guide, and issues. GitHub
 links are absolute (`https://github.com/MattyStacks/open-gpu-benchmarks`); API

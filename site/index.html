@@ -10,8 +10,8 @@
   <link rel="apple-touch-icon" href="favicons/apple-touch-icon.png">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <style>
-    :root { color-scheme: dark; --bg:#090b10; --panel:#11151d; --panel-strong:#171c27; --text:#f1f5f9; --muted:#8b96a9; --border:#273142; --accent:#60a5fa; --official:#60a5fa; --community:#34d399; --warning:#fbbf24; }
-    :root[data-theme="light"] { color-scheme: light; --bg:#f4f7fb; --panel:#ffffff; --panel-strong:#edf2f7; --text:#152033; --muted:#657287; --border:#d8e0eb; --accent:#2563eb; --official:#2563eb; --community:#059669; --warning:#b45309; }
+    :root { color-scheme: dark; --bg:#090b10; --panel:#11151d; --panel-strong:#171c27; --text:#f1f5f9; --muted:#8b96a9; --border:#273142; --accent:#60a5fa; --official:#60a5fa; --community:#34d399; --warning:#fbbf24; --form-desktop:#58a6ff; --form-laptop:#bc8cff; --form-handheld:#3fb950; --form-igpu:#f0883e; }
+    :root[data-theme="light"] { color-scheme: light; --bg:#f4f7fb; --panel:#ffffff; --panel-strong:#edf2f7; --text:#152033; --muted:#657287; --border:#d8e0eb; --accent:#2563eb; --official:#2563eb; --community:#059669; --warning:#b45309; --form-desktop:#0550ae; --form-laptop:#8250df; --form-handheld:#1a7f37; --form-igpu:#9a6700; }
     * { box-sizing:border-box; } body { margin:0; background:radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 13%, transparent), transparent 34rem),var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     button,input,select { font:inherit; } button { cursor:pointer; } .shell { max-width:1440px; margin:auto; padding:0 24px 40px; } header { position:sticky; top:0; z-index:10; backdrop-filter:blur(18px); background:color-mix(in srgb, var(--bg) 88%, transparent); border-bottom:1px solid var(--border); }
     .header-inner { max-width:1440px; min-height:68px; margin:auto; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:18px; } h1,h2,h3,p { margin:0; } h1 { font-size:21px; letter-spacing:-.04em; } .eyebrow,.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .eyebrow { color:var(--muted); font-size:11px; letter-spacing:.13em; text-transform:uppercase; margin-top:4px; }
@@ -22,8 +22,20 @@
     .chip-row { display:flex; flex-wrap:wrap; gap:6px; } .chip.active { background:color-mix(in srgb,var(--accent) 18%,var(--panel)); color:var(--text); border-color:color-mix(in srgb,var(--accent) 65%,var(--border)); } .metric { display:flex; align-items:center; gap:6px; color:var(--text); font-size:12px; white-space:nowrap; } .metric input { accent-color:var(--accent); }
     .grid { display:grid; grid-template-columns:minmax(0,1fr) 310px; gap:18px; margin-top:18px; } .panel { padding:18px; } .panel-heading { display:flex; align-items:start; justify-content:space-between; gap:12px; margin-bottom:14px; } h2 { font-size:15px; letter-spacing:-.02em; } .subtle { color:var(--muted); font-size:12px; margin-top:4px; } #chart { width:100%; height:490px; } .empty { height:340px; display:grid; place-items:center; color:var(--muted); font-size:14px; text-align:center; padding:30px; }
     .summary-list { display:grid; gap:10px; } .summary { padding:12px; background:var(--panel-strong); border:1px solid var(--border); border-radius:11px; } .summary strong { display:block; font-size:18px; letter-spacing:-.04em; } .summary span { color:var(--muted); display:block; font-size:11px; margin-top:3px; } .legend { display:flex; gap:12px; color:var(--muted); font-size:11px; } .legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; } .synthetic { color:var(--warning); font-size:12px; line-height:1.5; }
-    .table-panel { margin-top:18px; overflow:hidden; } .table-toolbar { display:flex; justify-content:space-between; align-items:end; gap:16px; flex-wrap:wrap; margin-bottom:14px; } .table-wrap { overflow:auto; border:1px solid var(--border); border-radius:11px; } table { width:100%; border-collapse:collapse; min-width:760px; font-size:13px; } th { background:var(--panel-strong); color:var(--muted); text-align:left; padding:10px 12px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; } td { border-top:1px solid var(--border); padding:11px 12px; } tr.selected { background:color-mix(in srgb,var(--accent) 9%,transparent); } .name { font-weight:700; } .detail { color:var(--muted); font-size:11px; margin-top:3px; } .badge { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); border-radius:999px; padding:3px 7px; font-size:10px; font-weight:700; text-transform:uppercase; } .badge.official { color:var(--official); border-color:color-mix(in srgb,var(--official) 40%,var(--border)); } .badge.community { color:var(--community); border-color:color-mix(in srgb,var(--community) 40%,var(--border)); } .proof { color:var(--muted); font-size:11px; }
+    .table-panel { margin-top:18px; overflow:hidden; } .table-toolbar { display:flex; justify-content:space-between; align-items:end; gap:16px; flex-wrap:wrap; margin-bottom:14px; } .table-wrap { overflow:auto; border:1px solid var(--border); border-radius:11px; } table { width:100%; border-collapse:collapse; min-width:1600px; font-size:13px; } th { background:var(--panel-strong); color:var(--muted); text-align:left; padding:10px 12px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; } td { border-top:1px solid var(--border); padding:11px 12px; } tr.selected { background:color-mix(in srgb,var(--accent) 9%,transparent); } .name { font-weight:700; } .detail { color:var(--muted); font-size:11px; margin-top:3px; } .badge { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); border-radius:999px; padding:3px 7px; font-size:10px; font-weight:700; text-transform:uppercase; } .badge.official { color:var(--official); border-color:color-mix(in srgb,var(--official) 40%,var(--border)); } .badge.community { color:var(--community); border-color:color-mix(in srgb,var(--community) 40%,var(--border)); } .proof { color:var(--muted); font-size:11px; }
     .comparison { margin-top:18px; } .comparison-body { color:var(--muted); font-size:13px; line-height:1.55; } .footer { color:var(--muted); text-align:center; font-size:11px; margin-top:24px; } .footer a { color:var(--accent); }
+    .sort-button { background:none; border:0; padding:0; color:inherit; font:inherit; letter-spacing:inherit; text-transform:inherit; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; } .sort-button:hover { color:var(--text); } .sort-indicator { font-size:9px; opacity:.35; } .sort-indicator.active { opacity:1; color:var(--accent); }
+    tr.expandable { cursor:pointer; } tr.expanded { background:color-mix(in srgb,var(--accent) 6%,transparent); }
+    .gpu-cell { display:flex; align-items:flex-start; gap:8px; } .expander { background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); width:22px; height:22px; line-height:1; padding:0; flex:none; font-size:11px; } .expander:hover { color:var(--text); border-color:var(--accent); }
+    .form-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; } .form-desktop { color:var(--form-desktop); border-color:color-mix(in srgb,var(--form-desktop) 45%,var(--border)); background:color-mix(in srgb,var(--form-desktop) 10%,transparent); } .form-laptop { color:var(--form-laptop); border-color:color-mix(in srgb,var(--form-laptop) 45%,var(--border)); background:color-mix(in srgb,var(--form-laptop) 10%,transparent); } .form-handheld { color:var(--form-handheld); border-color:color-mix(in srgb,var(--form-handheld) 45%,var(--border)); background:color-mix(in srgb,var(--form-handheld) 10%,transparent); } .form-igpu { color:var(--form-igpu); border-color:color-mix(in srgb,var(--form-igpu) 45%,var(--border)); background:color-mix(in srgb,var(--form-igpu) 10%,transparent); }
+    .detail-row td { background:color-mix(in srgb,var(--panel-strong) 55%,transparent); padding:20px; } .spec-detail { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:20px; text-align:left; } .spec-detail h3 { font-size:13px; margin:0 0 4px; } .spec-sub { color:var(--muted); font-size:12px; margin-bottom:12px; }
+    .spec-chips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px; } .spec-chip { border:1px solid var(--border); border-radius:7px; padding:3px 8px; font-size:11px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; background:var(--panel); }
+    .mini-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; } .mini-stat { border:1px solid var(--border); border-radius:9px; padding:9px 10px; background:var(--panel); } .mini-stat span { display:block; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); } .mini-stat strong { display:block; font-size:12px; margin-top:3px; font-weight:600; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
+    .feature-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; } .feature-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:4px 10px; background:var(--panel); font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .feature-chip span { color:var(--muted); font-size:10px; text-transform:uppercase; } .feature-chip b { color:var(--text); font-weight:600; }
+    .spec-notes { color:var(--muted); font-size:12px; line-height:1.55; } .price-list { display:grid; gap:6px; margin:12px 0 18px; } .price-row { display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:8px; padding:7px 10px; background:var(--panel); font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .price-row span:last-child { color:var(--text); font-weight:600; }
+    .result-meta { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; color:var(--muted); font-size:12px; margin:8px 0 12px; } .run-list { display:grid; gap:8px; margin-bottom:14px; } .run-item { border:1px solid var(--border); border-radius:9px; padding:9px 11px; background:var(--panel); font-size:11px; color:var(--muted); line-height:1.5; } .run-item strong { color:var(--text); font-size:12px; display:block; margin-bottom:2px; }
+    .detail-links { display:flex; gap:8px; flex-wrap:wrap; } .detail-links a { text-decoration:none; }
+    @media (max-width:900px) { .spec-detail { grid-template-columns:1fr; } .mini-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     .info-panel { margin-top:18px; } .tip { border-left:3px solid var(--accent); padding-left:12px; margin-top:12px; } .review-list { display:grid; gap:10px; } .review { padding:12px; background:var(--panel-strong); border:1px solid var(--border); border-radius:11px; } .review a { color:var(--accent); font-weight:700; } .review .detail { color:var(--muted); font-size:12px; margin-top:4px; }
     .submission-panel { margin-top:18px; overflow:hidden; } .submission-panel > summary { list-style:none; } .submission-panel > summary::-webkit-details-marker { display:none; } .submission-toggle { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:0; cursor:pointer; } .submission-toggle::after { content:"⌄"; flex:none; color:var(--muted); font-size:22px; line-height:1; transition:transform .16s ease; } .submission-panel[open] .submission-toggle::after { transform:rotate(180deg); } .submission-panel[open] > summary { padding-bottom:18px; border-bottom:1px solid var(--border); margin-bottom:18px; } .submission-intro { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; width:100%; } .submission-intro h2 { display:flex; align-items:center; gap:8px; } .section-kicker { color:var(--accent); font:700 10px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.1em; text-transform:uppercase; margin-bottom:5px; } .workflow { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; } .workflow-step { min-height:148px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--panel-strong); } .step-icon { width:30px; height:30px; display:grid; place-items:center; border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border)); border-radius:9px; color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,var(--panel)); font:700 16px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .workflow-step h3 { margin:12px 0 5px; font-size:13px; } .workflow-step p,.submission-copy,.checklist li { color:var(--muted); font-size:11px; line-height:1.5; } .submission-links a { color:var(--accent); font-weight:700; } .submission-details { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr); gap:18px; margin-top:18px; } .submission-heading { color:var(--text); font:700 11px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.08em; text-transform:uppercase; margin-bottom:9px; } .yaml-example { overflow:auto; margin:0; padding:15px; border:1px solid color-mix(in srgb,var(--accent) 26%,var(--border)); border-radius:12px; background:linear-gradient(145deg,#0b1020,#080b12); color:#d6e4ff; font:11px/1.6 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .yaml-example code { display:block; min-width:max-content; } .yaml-comment { color:#7787a7; } .yaml-key { color:#8ab4ff; } .yaml-string { color:#b9e2a4; } .yaml-number { color:#f5ca8d; } .yaml-boolean { color:#d2a8ff; } .review-guidance { display:grid; gap:12px; } .checklist { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--panel-strong); } .checklist h3 { margin:0 0 7px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; } .checklist ul { margin:0; padding-left:16px; } .checklist li + li { margin-top:4px; } .required { color:var(--community); } .encouraged { color:var(--warning); } .outlier-note { padding:12px 14px; border:1px solid color-mix(in srgb,var(--warning) 42%,var(--border)); border-radius:12px; background:color-mix(in srgb,var(--warning) 8%,var(--panel)); color:var(--text); font-size:12px; line-height:1.5; } .outlier-note strong { color:var(--warning); } .submission-footer { color:var(--muted); font-size:11px; line-height:1.5; }
     .header-link { display:inline-flex; align-items:center; gap:6px; text-decoration:none; } .header-link svg { width:15px; height:15px; fill:currentColor; flex:none; }
@@ -110,13 +122,13 @@
 
     <section class="panel table-panel">
       <div class="table-toolbar">
-        <div><h2>Benchmark summaries</h2><p class="subtle">Select up to six GPUs to pin them to the top of the chart and table.</p></div>
-        <div><label for="search">Search GPU</label><input id="search" type="search" placeholder="e.g. RTX, Deck, Ally"></div>
+        <div><h2>Benchmark summaries</h2><p class="subtle">Select up to six GPUs to pin them to the top of the chart and table. Click a column header to sort, or a row for silicon and run details.</p></div>
+        <div><label for="search">Search GPU</label><input id="search" type="search" placeholder="e.g. RTX, AD102, RDNA 3"></div>
       </div>
-      <p class="tip">Charts show grouped summaries for clean comparisons. Exact machine details, power profiles, sample counts, and observed ranges remain attached to the underlying records for analysis.</p>
+      <p class="tip">Charts show grouped summaries for clean comparisons. Spec columns come from the reviewed GPU catalog; expand a row for silicon details, price history, and the exact runs behind each number.</p>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Compare</th><th>GPU</th><th>Form factor</th><th>Avg FPS</th><th>1% low</th><th>Samples</th><th>Source</th><th>Evidence</th></tr></thead>
+          <thead id="results-head"></thead>
           <tbody id="results-body"></tbody>
         </table>
       </div>
@@ -132,7 +144,7 @@
       </div>
       <div class="api-grid">
         <article class="api-card"><h3>dashboard.json</h3><p>The grouped official and community summaries behind this chart, plus the game, resolution, and preset lists.</p><div class="api-actions" data-api-path="api/v1/dashboard.json"></div></article>
-        <article class="api-card"><h3>gpus.json</h3><p>The GPU catalog, with each GPU's official and community summaries and links to its per-GPU files.</p><div class="api-actions" data-api-path="api/v1/gpus.json"></div></article>
+        <article class="api-card"><h3>gpus.json</h3><p>The GPU catalog with full hardware specs, each GPU's official and community summaries, and links to its per-GPU files.</p><div class="api-actions" data-api-path="api/v1/gpus.json"></div></article>
         <article class="api-card"><h3>official.json</h3><p>Every official run, one record per resolution and preset profile.</p><div class="api-actions" data-api-path="api/v1/official.json"></div></article>
         <article class="api-card"><h3>community.json</h3><p>Grouped community summaries, with the exact machine details and GitHub submitter for each run.</p><div class="api-actions" data-api-path="api/v1/community.json"></div></article>
         <article class="api-card"><h3>&lt;source&gt;/&lt;gpu_id&gt;/summary.json</h3><p>One GPU's runs and summaries, for example <span class="mono">official/rtx_4090</span> or <span class="mono">community/steam_deck_oled</span>. GPU IDs are listed in gpus.json.</p><div class="api-actions" data-api-path="api/v1/official/rtx_4090/summary.json"></div></article>
@@ -226,7 +238,7 @@
   </main>
   <script>
     "use strict";
-    const state = { source: "all", game: "", resolution: "", graphicsPreset: "All", factors: new Set(), search: "", showAvg: true, showP1: true, selected: new Set(), data: null };
+    const state = { source: "all", game: "", resolution: "", graphicsPreset: "All", factors: new Set(), search: "", showAvg: true, showP1: true, selected: new Set(), data: null, specs: null, sortKey: "avg_fps", sortDir: "desc", expanded: new Set() };
     const factors = ["Desktop", "Laptop", "Handheld", "Igpu"];
     const elements = {
       error: document.querySelector("#error-notice"), version: document.querySelector("#build-version"),
@@ -236,6 +248,7 @@
       p1: document.querySelector("#p1-toggle"), search: document.querySelector("#search"),
       chart: document.querySelector("#chart"), empty: document.querySelector("#chart-empty"),
       description: document.querySelector("#chart-description"), body: document.querySelector("#results-body"),
+      head: document.querySelector("#results-head"),
       count: document.querySelector("#result-count"), selection: document.querySelector("#selection-count"),
       top: document.querySelector("#top-result"), comparison: document.querySelector("#comparison"),
       comparisonText: document.querySelector("#comparison-text"), synthetic: document.querySelector("#synthetic-note"),
@@ -258,11 +271,169 @@
         .filter((record) => state.graphicsPreset === "All" || record.graphics_preset.toLowerCase() === state.graphicsPreset.toLowerCase())
         .filter((record) => state.source === "all" || record.source === state.source)
         .filter((record) => state.factors.size === 0 || state.factors.has(record.form_factor))
-        .filter((record) => record.gpu_name.toLowerCase().includes(state.search.toLowerCase()))
-        .sort((left, right) => {
-          const selectedDifference = Number(state.selected.has(right.id)) - Number(state.selected.has(left.id));
-          return selectedDifference || right.avg_fps - left.avg_fps;
-        });
+        .filter(matchesSearch)
+        .sort(compareRecords);
+    }
+
+    const MISSING = "—";
+    const tableColumns = [
+      { key: "compare", label: "Compare", sortable: false },
+      { key: "gpu", label: "GPU", sortable: true },
+      { key: "vendor", label: "Vendor", sortable: true },
+      { key: "form", label: "Form", sortable: true },
+      { key: "arch", label: "Architecture", sortable: true },
+      { key: "vram", label: "VRAM", sortable: true },
+      { key: "bus", label: "Bus", sortable: true },
+      { key: "bandwidth", label: "Bandwidth", sortable: true },
+      { key: "clocks", label: "Base / Boost", sortable: true },
+      { key: "shaders", label: "Shaders", sortable: true },
+      { key: "rt", label: "RT", sortable: true },
+      { key: "tdp", label: "TDP", sortable: true },
+      { key: "process", label: "Process", sortable: true },
+      { key: "release", label: "Release", sortable: true },
+      { key: "msrp", label: "MSRP", sortable: true },
+      { key: "avg_fps", label: "Avg FPS", sortable: true },
+      { key: "p1_low", label: "1% low", sortable: true },
+      { key: "samples", label: "Samples", sortable: true },
+      { key: "source", label: "Source", sortable: true },
+      { key: "evidence", label: "Evidence", sortable: true }
+    ];
+    const numericSortKeys = new Set(["vram", "bus", "bandwidth", "clocks", "shaders", "rt", "tdp", "msrp", "avg_fps", "p1_low", "samples"]);
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    }
+
+    function gpuSpecs(record) {
+      return (state.specs && state.specs[record.gpu_id]) || {};
+    }
+
+    function specValue(record, ...path) {
+      let value = gpuSpecs(record);
+      for (const key of path) {
+        if (!value || typeof value !== "object" || value[key] === undefined || value[key] === null) return null;
+        value = value[key];
+      }
+      return value;
+    }
+
+    function sortValue(record, key) {
+      switch (key) {
+        case "gpu": return record.gpu_name;
+        case "vendor": return record.vendor;
+        case "form": return record.form_factor;
+        case "arch": return specValue(record, "classification", "architecture");
+        case "vram": return specValue(record, "memory", "capacity_gb");
+        case "bus": return specValue(record, "memory", "bus_width_bits");
+        case "bandwidth": return specValue(record, "memory", "bandwidth_gbs");
+        case "clocks": return specValue(record, "clocks", "boost_mhz");
+        case "shaders": return specValue(record, "silicon", "shader_cores");
+        case "rt": return specValue(record, "silicon", "rt_cores");
+        case "tdp": return record.tdp_w;
+        case "process": return specValue(record, "silicon", "process");
+        case "release": return specValue(record, "release", "date");
+        case "msrp": return specValue(record, "release", "msrp_usd");
+        case "avg_fps": return record.avg_fps;
+        case "p1_low": return record.p1_low;
+        case "samples": return record.run_count || 1;
+        case "source": return record.source;
+        case "evidence": return record.proof_level;
+        default: return null;
+      }
+    }
+
+    function compareRecords(left, right) {
+      const selectedDifference = Number(state.selected.has(right.id)) - Number(state.selected.has(left.id));
+      if (selectedDifference) return selectedDifference;
+      const leftValue = sortValue(left, state.sortKey);
+      const rightValue = sortValue(right, state.sortKey);
+      if (leftValue === null || leftValue === undefined) return 1;
+      if (rightValue === null || rightValue === undefined) return -1;
+      const comparison = numericSortKeys.has(state.sortKey)
+        ? leftValue - rightValue
+        : String(leftValue).localeCompare(String(rightValue));
+      return state.sortDir === "asc" ? comparison : -comparison;
+    }
+
+    function matchesSearch(record) {
+      const query = state.search.toLowerCase();
+      if (!query) return true;
+      return [record.gpu_name, record.gpu_id, record.vendor, record.form_factor,
+        specValue(record, "classification", "architecture"),
+        specValue(record, "identity", "codename")].some((value) => value && String(value).toLowerCase().includes(query));
+    }
+
+    function formatVendor(record) {
+      return record.vendor ? record.vendor.toUpperCase() : MISSING;
+    }
+
+    function formatForm(record) {
+      return record.form_factor === "Igpu" ? "iGPU" : record.form_factor;
+    }
+
+    function formatMemory(record) {
+      const capacity = specValue(record, "memory", "capacity_gb");
+      const type = specValue(record, "memory", "type");
+      if (capacity === null || !type) return MISSING;
+      return `${capacity}GB ${type}${specValue(record, "memory", "shared") ? " (shared)" : ""}`;
+    }
+
+    function formatBus(record) {
+      const bus = specValue(record, "memory", "bus_width_bits");
+      return bus === null ? MISSING : `${bus}-bit`;
+    }
+
+    function formatBandwidth(record) {
+      const bandwidth = specValue(record, "memory", "bandwidth_gbs");
+      return bandwidth === null ? MISSING : `${Number(bandwidth).toLocaleString()} GB/s`;
+    }
+
+    function formatClocks(record) {
+      const boost = specValue(record, "clocks", "boost_mhz");
+      if (boost === null) return MISSING;
+      const base = specValue(record, "clocks", "base_mhz");
+      return `${base === null ? MISSING : base} / ${boost} MHz`;
+    }
+
+    function formatCount(value) {
+      return value === null || value === undefined ? MISSING : Number(value).toLocaleString();
+    }
+
+    function formatTdp(record) {
+      return record.tdp_w === null || record.tdp_w === undefined ? MISSING : `${record.tdp_w}W`;
+    }
+
+    function formatMsrp(record) {
+      const msrp = specValue(record, "release", "msrp_usd");
+      return msrp === null ? MISSING : `$${Number(msrp).toLocaleString()}`;
+    }
+
+    function renderTableHead() {
+      const row = document.createElement("tr");
+      tableColumns.forEach((column) => {
+        const cell = document.createElement("th");
+        if (!column.sortable) {
+          cell.textContent = column.label;
+        } else {
+          const active = state.sortKey === column.key;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "sort-button";
+          button.setAttribute("aria-label", `Sort by ${column.label}`);
+          button.innerHTML = `${escapeHtml(column.label)} <span class="sort-indicator${active ? " active" : ""}">${active ? (state.sortDir === "asc" ? "▲" : "▼") : "↕"}</span>`;
+          button.addEventListener("click", () => {
+            if (state.sortKey === column.key) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+            else {
+              state.sortKey = column.key;
+              state.sortDir = numericSortKeys.has(column.key) ? "desc" : "asc";
+            }
+            render();
+          });
+          cell.append(button);
+        }
+        row.append(cell);
+      });
+      elements.head.replaceChildren(row);
     }
 
     function setOptions(select, values, selected) {
@@ -319,21 +490,33 @@
       chart.resize();
     }
 
-    function formatHardware(record) {
-      const vram = record.vram_gb ? `${record.vram_gb} GB` : "Shared";
-      const power = record.gpu_power_w || record.tdp_w;
-      return `${vram} · ${power ? `${power} W` : "Power unknown"}`;
-    }
-
     function renderTable(records) {
-      elements.body.replaceChildren(...records.map((record) => {
-        const row = document.createElement("tr");
-        if (state.selected.has(record.id)) row.classList.add("selected");
+      renderTableHead();
+      elements.body.replaceChildren();
+      records.forEach((record) => {
         const selected = state.selected.has(record.id);
-        row.innerHTML = `<td><input type="checkbox" aria-label="Select ${record.gpu_name}" ${selected ? "checked" : ""}></td>
-          <td><div class="name">${record.gpu_name}</div><div class="detail">${formatHardware(record)}</div></td>
-          <td>${record.form_factor}</td><td>${record.avg_fps.toFixed(1)}</td><td>${record.p1_low.toFixed(1)}</td>
-          <td>${record.run_count || 1}</td><td><span class="badge ${record.source}">${record.source}</span></td>
+        const expanded = state.expanded.has(record.id);
+        const row = document.createElement("tr");
+        row.className = `expandable${selected ? " selected" : ""}${expanded ? " expanded" : ""}`;
+        const architecture = specValue(record, "classification", "architecture");
+        const codename = specValue(record, "identity", "codename");
+        row.innerHTML = `<td><input type="checkbox" aria-label="Select ${escapeHtml(record.gpu_name)}" ${selected ? "checked" : ""}></td>
+          <td><div class="gpu-cell"><button type="button" class="expander" aria-expanded="${expanded}" aria-label="${expanded ? "Collapse" : "Expand"} ${escapeHtml(record.gpu_name)} details">${expanded ? "▾" : "▸"}</button><div><div class="name">${escapeHtml(record.gpu_name)}</div><div class="detail mono">${escapeHtml(record.gpu_id)}</div></div></div></td>
+          <td class="mono">${escapeHtml(formatVendor(record))}</td>
+          <td><span class="form-badge form-${escapeHtml(record.form_factor.toLowerCase())}">${escapeHtml(formatForm(record))}</span></td>
+          <td><div>${escapeHtml(architecture || MISSING)}</div><div class="detail mono">${escapeHtml(codename || "")}</div></td>
+          <td class="mono">${escapeHtml(formatMemory(record))}</td>
+          <td class="mono">${escapeHtml(formatBus(record))}</td>
+          <td class="mono">${escapeHtml(formatBandwidth(record))}</td>
+          <td class="mono">${escapeHtml(formatClocks(record))}</td>
+          <td class="mono">${escapeHtml(formatCount(specValue(record, "silicon", "shader_cores")))}</td>
+          <td class="mono">${escapeHtml(formatCount(specValue(record, "silicon", "rt_cores")))}</td>
+          <td class="mono">${escapeHtml(formatTdp(record))}</td>
+          <td class="mono">${escapeHtml(specValue(record, "silicon", "process") || MISSING)}</td>
+          <td class="mono">${escapeHtml(specValue(record, "release", "date") || MISSING)}</td>
+          <td class="mono">${escapeHtml(formatMsrp(record))}</td>
+          <td>${record.avg_fps.toFixed(1)}</td><td>${record.p1_low.toFixed(1)}</td>
+          <td>${record.run_count || 1}</td><td><span class="badge ${escapeHtml(record.source)}">${escapeHtml(record.source)}</span></td>
           <td class="proof">${record.proof_level === "raw-log" ? "Raw log" : "Summary only"}</td>`;
         row.querySelector("input").addEventListener("change", () => {
           if (state.selected.has(record.id)) state.selected.delete(record.id);
@@ -341,8 +524,111 @@
           else showError("You can compare up to six GPUs at a time.");
           render();
         });
-        return row;
-      }));
+        const toggle = () => {
+          state.expanded.has(record.id) ? state.expanded.delete(record.id) : state.expanded.add(record.id);
+          render();
+        };
+        row.querySelector(".expander").addEventListener("click", (event) => { event.stopPropagation(); toggle(); });
+        row.addEventListener("click", (event) => {
+          if (event.target.closest("input, a, button")) return;
+          toggle();
+        });
+        elements.body.append(row);
+        if (expanded) elements.body.append(renderDetailRow(record));
+      });
+    }
+
+    function formatDie(record) {
+      const die = specValue(record, "silicon", "die_size_mm2");
+      return die === null ? MISSING : `${die} mm²`;
+    }
+
+    function formatTransistors(record) {
+      const transistors = specValue(record, "silicon", "transistors_b");
+      return transistors === null ? MISSING : `${transistors}B`;
+    }
+
+    function formatList(record, ...path) {
+      const value = specValue(record, ...path);
+      return Array.isArray(value) && value.length ? value.join(", ") : MISSING;
+    }
+
+    function formatFeatureChips(record) {
+      const features = [["DLSS", specValue(record, "features", "dlss")],
+        ["FSR", specValue(record, "features", "fsr")],
+        ["XeSS", specValue(record, "features", "xess")],
+        ["AV1", specValue(record, "features", "av1")]].filter(([, value]) => value);
+      if (!features.length) return `<p class="spec-notes">No feature data recorded.</p>`;
+      return `<div class="feature-row">${features.map(([label, value]) =>
+        `<span class="feature-chip"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></span>`).join("")}</div>`;
+    }
+
+    function formatPriceHistory(record) {
+      const history = specValue(record, "release", "msrp_history");
+      if (!Array.isArray(history) || !history.length) return `<p class="spec-notes">No price history recorded.</p>`;
+      return `<div class="price-list">${history.map((row) => {
+        const label = row.label ? ` · ${escapeHtml(row.label)}` : "";
+        return `<div class="price-row"><span>${escapeHtml(row.date)}${label}</span><span>$${Number(row.price_usd).toLocaleString()}</span></div>`;
+      }).join("")}</div>`;
+    }
+
+    function formatRunLine(run, index) {
+      const title = run.implementation_name || `Run ${index + 1}`;
+      const details = [run.cpu, run.memory,
+        run.driver ? `Driver ${run.driver}` : "",
+        run.gpu_power_w ? `${run.gpu_power_w} W` : "",
+        run.power_mode, run.display_mode,
+        run.overclocked ? "Overclocked" : "",
+        run.submitted_by ? `@${run.submitted_by}` : ""].filter(Boolean);
+      return `<div class="run-item"><strong>${escapeHtml(title)}</strong>${escapeHtml(details.join(" · ") || "No machine details recorded.")}</div>`;
+    }
+
+    function formatRange(range, unit) {
+      if (!Array.isArray(range) || range.length !== 2) return MISSING;
+      return range[0] === range[1] ? `${Number(range[0]).toFixed(1)} ${unit}` : `${Number(range[0]).toFixed(1)}–${Number(range[1]).toFixed(1)} ${unit}`;
+    }
+
+    function renderDetailRow(record) {
+      const row = document.createElement("tr");
+      row.className = "detail-row";
+      const cell = document.createElement("td");
+      cell.colSpan = tableColumns.length;
+      const codename = specValue(record, "identity", "codename");
+      const process = specValue(record, "silicon", "process");
+      const pcie = specValue(record, "power", "pcie");
+      const chips = [[codename, process].filter(Boolean).join(" · "), pcie].filter(Boolean);
+      const implementations = Array.isArray(record.implementations) ? record.implementations : [];
+      const contributors = Array.isArray(record.contributors) && record.contributors.length
+        ? record.contributors.map((name) => `@${name}`).join(", ") : MISSING;
+      cell.innerHTML = `<div class="spec-detail">
+        <div>
+          <p class="section-kicker">Silicon deep dive</p>
+          <h3>${escapeHtml(record.gpu_name)}</h3>
+          <p class="spec-sub">${escapeHtml(specValue(record, "classification", "architecture") || "Architecture unknown")}</p>
+          ${chips.length ? `<div class="spec-chips">${chips.map((chip) => `<span class="spec-chip">${escapeHtml(chip)}</span>`).join("")}</div>` : ""}
+          <div class="mini-grid">
+            <div class="mini-stat"><span>Die size</span><strong>${escapeHtml(formatDie(record))}</strong></div>
+            <div class="mini-stat"><span>Transistors</span><strong>${escapeHtml(formatTransistors(record))}</strong></div>
+            <div class="mini-stat"><span>Power conn.</span><strong>${escapeHtml(formatList(record, "power", "connectors"))}</strong></div>
+            <div class="mini-stat"><span>Display out</span><strong>${escapeHtml(formatList(record, "features", "outputs"))}</strong></div>
+          </div>
+          ${formatFeatureChips(record)}
+          <p class="spec-notes">${escapeHtml(specValue(record, "notes") || "No notes recorded.")}</p>
+        </div>
+        <div>
+          <p class="section-kicker">Launch price history</p>
+          ${formatPriceHistory(record)}
+          <p class="section-kicker">This result</p>
+          <div class="result-meta"><span class="badge ${escapeHtml(record.source)}">${escapeHtml(record.source)}</span><span>${record.run_count || 1} sample${(record.run_count || 1) === 1 ? "" : "s"}</span><span>Avg ${formatRange(record.avg_fps_range, "FPS")}</span><span>1% low ${formatRange(record.p1_low_range, "FPS")}</span><span>By ${escapeHtml(contributors)}</span></div>
+          <div class="run-list">${implementations.map(formatRunLine).join("") || `<p class="spec-notes">No run details recorded.</p>`}</div>
+          <div class="detail-links">
+            <a class="button" href="https://github.com/MattyStacks/open-gpu-benchmarks/tree/main/data/${escapeHtml(record.source)}/${escapeHtml(record.gpu_id)}" target="_blank" rel="noreferrer">Result files on GitHub</a>
+            <a class="button" href="./api/v1/${escapeHtml(record.source)}/${escapeHtml(record.gpu_id)}/summary.json" target="_blank" rel="noreferrer">Per-GPU JSON</a>
+          </div>
+        </div>
+      </div>`;
+      row.append(cell);
+      return row;
     }
 
     function renderReviews() {
@@ -448,6 +734,9 @@
         const response = await fetch("./api/v1/dashboard.json", { cache: "no-cache" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         state.data = await response.json();
+        const gpuResponse = await fetch("./api/v1/gpus.json", { cache: "no-cache" });
+        if (!gpuResponse.ok) throw new Error(`HTTP ${gpuResponse.status}`);
+        state.specs = Object.fromEntries((((await gpuResponse.json()).gpus) || []).map((gpu) => [gpu.id, gpu]));
         if (!Array.isArray(state.data.records) || !state.data.records.length) throw new Error("The dashboard dataset contains no benchmark records.");
         state.game = state.data.games[0];
         refreshResolutionOptions();

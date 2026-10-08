@@ -18,6 +18,10 @@ changing the data schema, build logic, validation, or dashboard behavior.
 - Community result files require `submitted_by` (the submitter's GitHub
   username) and must be named `result_YYYYMMDD_<game>_<github_user>.yaml`;
   same-day repeats put a number before the username.
+- Catalog specs live in nested `data/gpus.yaml` sections (`identity`,
+  `classification`, `silicon`, `memory`, `clocks`, `power`, `release`,
+  `features`); new GPUs must fill every required leaf and quote every date
+  so YAML keeps it a string.
 - Dashboard links to GitHub are absolute; API links stay relative so the site
   works on a custom domain.
 

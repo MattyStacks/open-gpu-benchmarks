@@ -68,13 +68,21 @@ statistics. The linked per-GPU JSON includes all source runs, grouped game
 summaries, evidence references, and exact machine metadata. Generated API
 files are ignored by Git and appear after running the build.
 
-Current synthetic fixtures: 11 catalog GPUs, 19 official runs, 12 community
-runs, and 30 dashboard summaries. The community fixtures include a
+Published data: 11 catalog GPUs and no benchmark runs yet. Until the first run
+is merged, the dashboard says so instead of showing a chart.
+
+`data/` holds only real data, because it's what the site deploys. The synthetic
+test data lives in [`tests/fixtures/data/`](tests/fixtures/data/), a
+self-contained copy of the same layout with its own catalog snapshot.
+`test_build.py` builds it into a temporary folder, never into `site/api/`, and
+fails if a `synthetic: true` run ever appears in `data/`. The fixtures hold
+11 catalog GPUs, 19 official runs, 12 community runs, and 30 dashboard
+summaries. They include a
 multi-profile file and two matching Arc A770 LE results that aggregate into one
 1080p summary. Six Linux runs (RX 7900 XTX, RTX 4090, ROG Ally on Bazzite, and
 Arc A770 LE) pair with a Windows run of the same profile, and the Steam Deck runs
 are Linux (SteamOS). The three laptop entries use the temporary `_generic` ID for an
-unknown laptop model. All fixture records are marked
+unknown laptop model. All fixture runs are marked
 `synthetic: true`. Every community fixture is `submitted_by: MattyStacks`
 except the Steam Deck Cyberpunk 2077 run, which is anonymous.
 
@@ -154,6 +162,14 @@ python -m http.server 8000 --directory site
 
 Open <http://localhost:8000>. Press `Ctrl+C` to stop the server when you're
 done.
+
+To preview the dashboard with the full synthetic test data, build the fixtures
+instead (`validate.py` takes the same flag). Run `python scripts/build.py`
+again afterwards to go back to the real data:
+
+```powershell
+python scripts/build.py --data-dir tests/fixtures/data
+```
 
 To leave the virtual environment, run `deactivate` (same on every OS) or close
 the terminal. In a new terminal, only re-run the activate line; the install

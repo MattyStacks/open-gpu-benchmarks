@@ -522,7 +522,7 @@ to look:
 | ---------- | -------------- | -------------- | ------------------ |
 | **Catalog entries** | `data/gpus/**` | `python scripts/validate.py catalog` | [data/gpus/README.md](data/gpus/README.md#what-the-checks-mean) |
 | **Benchmark results** | `data/official/**`, `data/community/**` | `python scripts/validate.py results` | [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md#what-the-checks-mean) |
-| **Build and tests** | the generated API and regression tests | `python scripts/build.py` then `python scripts/test_build.py` | the error output |
+| **Build and tests** | the generated API and regression tests, including the synthetic fixtures in `tests/fixtures/data/` | `python scripts/build.py` then `python scripts/test_build.py` | the error output |
 
 Open the failed check's log on GitHub. Every problem is listed with its rule
 name in brackets, such as `[id-memory-token]`, and errors are also marked on the
@@ -585,6 +585,10 @@ python -m http.server 8000 --directory site
 
 Open <http://localhost:8000/>. Press `Ctrl+C` to stop the server, then run
 `deactivate` to leave the virtual environment.
+
+To see the dashboard full of the synthetic test data instead, build
+`python scripts/build.py --data-dir tests/fixtures/data`. Those runs are for
+testing only: never copy them into `data/`, which is what the site publishes.
 
 </details>
 

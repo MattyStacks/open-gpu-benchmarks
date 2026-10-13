@@ -67,9 +67,10 @@ data/reviews.yaml                  optional published-review links
 data/official/<gpu_id>/result_*.yaml
 data/community/<gpu_id>/result_*.yaml
 data/community/<gpu_id>/raw/**     optional raw capture evidence
+tests/fixtures/data/               synthetic test data (same layout, never deployed)
 scripts/checks.py                  every catalog and result rule, written once
-scripts/build.py                   YAML source -> site/api/v1/** JSON (runs checks first)
-scripts/validate.py                PR validator: validate.py [catalog|results]
+scripts/build.py                   YAML source -> site/api/v1/** JSON (runs checks first; --data-dir)
+scripts/validate.py                PR validator: validate.py [catalog|results] [--data-dir]
 scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
@@ -90,6 +91,11 @@ unless repository policy changes.
 
 ### Non-obvious rules that bite
 
+- `data/` holds only real data, because it's what deploys. Synthetic test runs
+  live in `tests/fixtures/data/` (same layout, its own catalog snapshot);
+  `test_build.py` builds them into a temp folder, never `site/api/`, and fails
+  if a `synthetic: true` run appears in `data/`. Preview them with
+  `python scripts/build.py --data-dir tests/fixtures/data`.
 - Source files use `graphics_preset`. Never add a `settings` fallback.
 - `result:` is always a YAML list; every resolution/preset profile needs its
   leading `-`. A duplicated `result:` key silently drops data.
@@ -207,9 +213,11 @@ is now stale:
   and date, and update `RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py) plus the version references and feature
   summary in `README.md` and `docs/COPILOT_HANDOFF.md`.
-- **Fixtures added/removed** → refresh the fixture counts (catalog GPUs,
-  official runs, community runs, dashboard summaries) in `README.md` and
-  `docs/COPILOT_HANDOFF.md`. These counts are quoted in both files and go wrong
+- **Fixtures or published runs added/removed** → refresh the counts (catalog
+  GPUs, official runs, community runs, dashboard summaries) in `README.md` and
+  `docs/COPILOT_HANDOFF.md`, for the published `data/` and the
+  `tests/fixtures/data/` fixtures separately, and the fixture numbers asserted
+  in `scripts/test_build.py`. These counts are quoted in both files and go wrong
   easily.
 - **Submission or validation rules changed** → update `CONTRIBUTING.md`,
   `docs/COMMUNITY_SUBMISSIONS.md`, `data/community/README.md`,

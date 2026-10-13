@@ -22,7 +22,7 @@ These two steps are required for every PR:
 - [.github/copilot-instructions.md](.github/copilot-instructions.md): the
   binding data rules and the release checklist.
 - [docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md): architecture, data
-  contract, and fixture counts.
+  contract, and the published and fixture counts.
 - [data/gpus/README.md](data/gpus/README.md): the catalog layout, ID rules, and
   every check rule.
 - [CONTRIBUTING.md](CONTRIBUTING.md) and
@@ -30,6 +30,11 @@ These two steps are required for every PR:
   submission rules.
 
 When a rule changes, change it in every file that states it.
+
+Data: `data/` holds only real data, because it's what deploys. Synthetic test
+runs live in `tests/fixtures/data/` (same layout, its own catalog snapshot),
+and `test_build.py` fails if a `synthetic: true` run appears in `data/`.
+Preview them with `python scripts/build.py --data-dir tests/fixtures/data`.
 
 Results: game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
 grouping key, so Windows and Linux runs are never averaged together; the

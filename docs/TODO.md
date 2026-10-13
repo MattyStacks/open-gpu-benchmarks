@@ -29,6 +29,13 @@ The four-step catalog plan is complete. These items finish it off.
 
 Follow-ups to average-only results and `proof.method` (PR #13).
 
+- [ ] **Publish the first real runs.** `data/` has no benchmark runs since the
+  synthetic ones moved to `tests/fixtures/data/`, so the live dashboard shows
+  "No benchmarks published yet". Add real official runs first, so community
+  runs get a baseline instead of `result-no-baseline`, then update the
+  published counts in `README.md` and `docs/COPILOT_HANDOFF.md`. With only a
+  few runs, check that the game/resolution defaults and the empty-filter
+  message still read well.
 - [ ] **Add the RTX 5080 and the first Steel Nomad run.** The catalog has no
   RTX 5080 entry yet. Add one (with sources), then add the maintainer's Steel
   Nomad run (8603 score, 86.03 FPS) as community data with its 3DMark result
@@ -190,6 +197,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **Unreleased (branch `chore/test-fixtures`, 2026-10-13)**
+  - Synthetic runs moved to `tests/fixtures/data/` (with a catalog snapshot);
+    `data/` holds only real data. `--data-dir` on `build.py` and
+    `validate.py`, fixture builds in a temp folder, a no-synthetic-in-`data/`
+    test, and a "No benchmarks published yet" dashboard state.
 - **Unreleased (branch `feature/anonymous-submissions`, 2026-10-13)**
   - Anonymous community submissions: optional `submitted_by`, username-free
     file names, and only five required fields.

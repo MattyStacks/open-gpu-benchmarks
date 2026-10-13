@@ -24,6 +24,11 @@ prepares:
 
 ## Data and schema rules
 
+- `data/` holds only real data, because it's what deploys. Synthetic test runs
+  live in `tests/fixtures/data/` (same layout, its own catalog snapshot);
+  `test_build.py` builds them into a temp folder, never `site/api/`, and fails
+  if a `synthetic: true` run appears in `data/`. Preview them with
+  `python scripts/build.py --data-dir tests/fixtures/data`.
 - The source schema uses `graphics_preset`; do not add a `settings` fallback.
 - Desktop and laptop GPU records never share a summary group.
 - Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
@@ -112,7 +117,7 @@ For a versioned dashboard change:
    a fresh empty `Unreleased` section.
 2. Update `RELEASE_VERSION` in `scripts/build.py`.
 3. Increment `SCHEMA_VERSION` when the generated API payload changes.
-4. Update the current-version references, fixture counts, and feature summary
+4. Update the current-version references, published and fixture counts, and feature summary
    in `README.md` and `docs/COPILOT_HANDOFF.md`.
 5. Run, inside the activated `.venv` (create it once with
    `python -m venv .venv`):

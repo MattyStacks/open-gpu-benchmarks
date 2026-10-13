@@ -52,8 +52,12 @@ guess it.
 
 ## Checks to run before finishing
 
+Run the checks inside the project's virtual environment, never the global
+Python. Create it once with `python -m venv .venv`; after that, only activate it.
+
 ```powershell
-python -m pip install pyyaml numpy
+.venv\Scripts\Activate.ps1               # macOS/Linux: source .venv/bin/activate
+python -m pip install -r requirements.txt
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
@@ -61,4 +65,11 @@ python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scri
 git diff --check
 ```
 
-Don't commit generated `site/api/` files. Create Git tags only when asked.
+Don't commit generated `site/api/` files or `.venv/`. Create Git tags only
+when asked.
+
+## Clean up before finishing
+
+Before you report a task complete, stop every server or background process
+you started (for example the `python -m http.server 8000 --directory site`
+preview), then run `deactivate` to leave the `.venv` virtual environment.

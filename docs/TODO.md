@@ -167,16 +167,16 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   SteamOS/distro `os` value to `system.distro`.
 - [ ] **Changelog check in CI.** Fail or warn on a PR that changes `scripts/`,
   `site/`, `templates/`, or catalog rules without touching `CHANGELOG.md`.
-- [ ] **Python setup.** `.gitignore` already ignores `.venv/`. Still to do:
-  add a `requirements.txt` for `pyyaml` and `numpy`, use it in both CI
-  workflows (they run `pip install pyyaml numpy` today), and document
-  `python -m venv .venv` and activation in `README.md` and `CONTRIBUTING.md`.
 - [ ] **Branch protection** (manual repo setting): mark the three PR checks
   (Catalog entries, Benchmark results, Build and tests) as required on
   `main`. Checked 2026-10-13: `main` has no protection or rulesets.
 
 ## Recently completed
 
+- **Unreleased (branch `chore/python-venv`, 2026-10-13)**
+  - Python setup: `requirements.txt`, CI installs from it, and `.venv`
+    create/activate/deactivate documented; agents stop servers and
+    `deactivate` before finishing.
 - **Unreleased (merged in PR #13, 2026-10-13)**
   - Average-FPS-only results (`p1_low` optional) and 3DMark Steel Nomad runs,
     with a template.

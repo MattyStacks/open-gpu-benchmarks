@@ -75,6 +75,8 @@ scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
 templates/                         starting points for runs and catalog entries
+requirements.txt                   Python dependencies (pyyaml, numpy); CI and .venv use it
+.venv/                             local virtual environment (gitignored, never committed)
 CHANGELOG.md                       high-level version history (update with every change)
 docs/TODO.md                       backlog: deferred work (update with every change)
 AGENTS.md                          tool-neutral agent entry point (keep in step with this file)
@@ -149,8 +151,12 @@ unless repository policy changes.
 
 ## Checks to run before finishing
 
+Run the checks inside the project's virtual environment, never the global
+Python. Create it once with `python -m venv .venv`; after that, only activate it.
+
 ```powershell
-python -m pip install pyyaml numpy
+.venv\Scripts\Activate.ps1               # macOS/Linux: source .venv/bin/activate
+python -m pip install -r requirements.txt
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
@@ -159,14 +165,20 @@ git diff --check
 ```
 
 Preview the site with `python -m http.server 8000 --directory site` and open
-<http://localhost:8000>.
+<http://localhost:8000>. Stop the server when you're done with it, and run
+`deactivate` at the end of the session (see "Wrapping up a session").
 
 Create a Git tag only when explicitly asked, after the commit is reviewed.
 
 ## Wrapping up a session
 
 Context for the next session lives in the instruction files, not in this
-conversation. Before you report a task complete, update whatever is now stale:
+conversation. Before you report a task complete, clean up and update whatever
+is now stale:
+
+- **Clean up your environment** → stop every server or background process you
+  started (for example the `python -m http.server 8000 --directory site`
+  preview), then run `deactivate` to leave the `.venv` virtual environment.
 
 - **Data contract, schema, or build-output change** → update
   [docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md),

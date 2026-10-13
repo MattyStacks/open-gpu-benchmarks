@@ -15,7 +15,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install pyyaml numpy
+          cache: pip
+      - run: pip install -r requirements.txt
       - run: python scripts/validate.py catalog
 
   results:
@@ -26,7 +27,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install pyyaml numpy
+          cache: pip
+      - run: pip install -r requirements.txt
       - run: python scripts/validate.py results
 
   build:
@@ -37,7 +39,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install pyyaml numpy
+          cache: pip
+      - run: pip install -r requirements.txt
       - run: python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/test_build.py
       - run: python scripts/build.py
       - run: python scripts/test_build.py

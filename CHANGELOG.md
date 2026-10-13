@@ -17,8 +17,17 @@ a fresh empty `Unreleased` section.
 - `community-outlier` threshold tightened from 50% to 25% away from the
   matching official average (`checks.OUTLIER_RATIO`, also reported as
   `comparison_policy.community_outlier_threshold`).
+- Contributor docs now state Python 3.11+ (was 3.10+), matching CI and
+  `build.py`'s use of `datetime.UTC`.
+- Agent instructions (`CLAUDE.md`, `AGENTS.md`, Copilot instructions) require
+  running checks in `.venv` and, before finishing, stopping any started
+  servers and running `deactivate`.
 
 ### Added
+- `requirements.txt` lists the Python dependencies (`pyyaml`, `numpy`). Local
+  setup now uses a `.venv` virtual environment (create, activate, install,
+  `deactivate`), documented in `README.md` and `CONTRIBUTING.md`. Both CI
+  workflows install from `requirements.txt` with a pip cache.
 - Average-FPS-only results: `p1_low` is now optional, so 3DMark (Steel Nomad)
   and in-game benchmark runs that report no 1% low can be submitted. Without
   one, the run and its summary carry `p1_low: null`, the dashboard shows a dash,

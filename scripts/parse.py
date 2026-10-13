@@ -15,7 +15,7 @@ from pathlib import Path
 try:
     import yaml
 except ImportError:
-    print("pip install pyyaml"); sys.exit(1)
+    print("pip install -r requirements.txt"); sys.exit(1)
 
 import checks
 

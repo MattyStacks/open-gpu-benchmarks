@@ -120,8 +120,19 @@ with a rule name that links to its explanation. See
 
 ## Local development
 
+You need Python 3.11+. Dependencies live in
+[requirements.txt](requirements.txt); install them into a project virtual
+environment (`.venv`, already gitignored) rather than your global Python:
+
 ```powershell
-python -m pip install pyyaml numpy
+python -m venv .venv                     # once, creates the .venv folder
+.venv\Scripts\Activate.ps1               # macOS/Linux: source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+With the environment active (your prompt starts with `(.venv)`):
+
+```powershell
 python scripts/validate.py            # or: validate.py catalog / validate.py results
 python scripts/build.py
 python scripts/test_build.py
@@ -129,7 +140,15 @@ python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scri
 python -m http.server 8000 --directory site
 ```
 
-Open <http://localhost:8000>.
+Open <http://localhost:8000>. Press `Ctrl+C` to stop the server when you're
+done.
+
+To leave the virtual environment, run `deactivate` (same on every OS) or close
+the terminal. In a new terminal, only re-run the activate line; the install
+step is needed again only when `requirements.txt` changes. To remove the
+environment completely, delete the `.venv` folder. If PowerShell refuses to
+run `Activate.ps1`, run
+`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
 
 Use `scripts/parse.py` to convert PresentMon or MangoHud CSV data directly
 into `data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml`

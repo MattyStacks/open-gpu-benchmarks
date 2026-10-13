@@ -27,7 +27,7 @@ flowchart LR
     F -- "approved" --> G["Merged: site<br/>rebuilds itself"]
 ```
 
-You need Git, Python 3.10+, and a GitHub account. No other tooling.
+You need Git, Python 3.11+, and a GitHub account. No other tooling.
 
 ### Step 1: Fork and clone
 
@@ -37,8 +37,17 @@ Fork the repository on GitHub, clone your fork, and create a branch:
 git clone https://github.com/<your-github-username>/open-gpu-benchmarks.git
 cd open-gpu-benchmarks
 git checkout -b add-rtx-4070-super-cyberpunk
-python -m pip install pyyaml numpy
+python -m venv .venv
+.venv\Scripts\Activate.ps1               # macOS/Linux: source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
+
+This creates a project-only Python environment in `.venv` (gitignored) so the
+dependencies don't touch your global Python. Your prompt shows `(.venv)` while
+it's active. Next time, open a terminal in the repo and run only the activate
+line. When you're done, run `deactivate` (same on every OS) or close the
+terminal. If PowerShell refuses to run `Activate.ps1`, run
+`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
 
 ### Step 2: Find your `gpu_id`
 
@@ -504,7 +513,7 @@ raw capture, keep it, or say in the PR why it's being removed.
 `Unreleased` in [CHANGELOG.md](CHANGELOG.md), and update the backlog in
 [docs/TODO.md](docs/TODO.md) if you finished, deferred, or found something.
 Data-only result submissions can skip both. Before opening
-the PR, run:
+the PR, run with `.venv` activated:
 
 ```powershell
 python scripts/validate.py
@@ -538,7 +547,8 @@ python scripts/build.py
 python -m http.server 8000 --directory site
 ```
 
-Open <http://localhost:8000/>.
+Open <http://localhost:8000/>. Press `Ctrl+C` to stop the server, then run
+`deactivate` to leave the virtual environment.
 
 </details>
 

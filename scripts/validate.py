@@ -12,7 +12,7 @@ import sys
 try:
     import yaml  # noqa: F401
 except ImportError:
-    print("pip install pyyaml")
+    print("pip install -r requirements.txt")
     sys.exit(1)
 
 import checks

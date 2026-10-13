@@ -282,14 +282,26 @@ entries in per-GPU API data but do not enter dashboard charts.
 
 ## Build and validation
 
+Dependencies are listed once in [`requirements.txt`](../requirements.txt)
+(`pyyaml`, plus `numpy` for `parse.py` percentiles). Local work runs inside a
+`.venv` virtual environment (gitignored); CI installs the same file into the
+runner's Python with `pip install -r requirements.txt` and a pip cache.
+
 ```powershell
-python -m pip install pyyaml numpy
+python -m venv .venv                     # once
+.venv\Scripts\Activate.ps1               # each terminal; macOS/Linux: source .venv/bin/activate
+python -m pip install -r requirements.txt
 python scripts/validate.py            # or: validate.py catalog / validate.py results
 python scripts/build.py
 python scripts/test_build.py
 python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\test_build.py
 git diff --check
+deactivate                               # when done
 ```
+
+Agents clean up before reporting a task complete: stop any server they
+started (such as the `python -m http.server` preview), then `deactivate`.
+The scripts need Python 3.11+ (`build.py` uses `datetime.UTC`); CI pins 3.11.
 
 Every rule lives once in [`scripts/checks.py`](../scripts/checks.py).
 

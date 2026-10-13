@@ -105,9 +105,12 @@ For a versioned dashboard change:
 3. Increment `SCHEMA_VERSION` when the generated API payload changes.
 4. Update the current-version references, fixture counts, and feature summary
    in `README.md` and `docs/COPILOT_HANDOFF.md`.
-5. Run:
+5. Run, inside the activated `.venv` (create it once with
+   `python -m venv .venv`):
 
    ```powershell
+   .venv\Scripts\Activate.ps1            # macOS/Linux: source .venv/bin/activate
+   python -m pip install -r requirements.txt
    python scripts/validate.py
    python scripts/build.py
    python scripts/test_build.py
@@ -118,3 +121,12 @@ For a versioned dashboard change:
 6. Do not commit generated `site/api/` files unless repository policy changes.
 7. Create a Git tag only when explicitly requested after the commit is
    reviewed.
+
+## Python environment and cleanup
+
+- Dependencies are listed once in `requirements.txt`. Run every script inside
+  the project's `.venv` virtual environment, not the global Python; never
+  commit `.venv/`.
+- Before you report a task complete, stop every server or background process
+  you started (for example the `python -m http.server 8000 --directory site`
+  preview), then run `deactivate` to leave the virtual environment.

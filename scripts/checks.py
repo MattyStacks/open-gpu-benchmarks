@@ -26,6 +26,8 @@ RESULT_SOURCES = ("official", "community")
 RESULT_GLOBS = ("result_*.yaml", "result_*.yml")
 OUTLIER_RATIO = 0.25
 GITHUB_USER_PATTERN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$")
+# result_YYYYMMDD_<game>, with optional _2, _3 repeats; older files also end in a username.
+COMMUNITY_FILENAME = re.compile(r"^result_\d{8}_[a-z0-9]+(?:[_-][a-z0-9]+)*$", re.IGNORECASE)
 ID_PATTERN = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 MEMORY_TOKEN = re.compile(r"^(\d+)gb$")
 FULL_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -104,6 +106,8 @@ RESULT_ENTRY_REQUIRED = ("resolution", "graphics_preset", "avg_fps")
 # Optional numeric fields on a result entry. p1_low is optional because some
 # sources (3DMark, many in-game benchmarks) report an average only.
 RESULT_ENTRY_NUMBERS = ("avg_fps", "p1_low", "score")
+# Upscaling is off by default. These values (or leaving the field out) mean off.
+UPSCALING_OFF = ("", "off", "none", "native", "false")
 # How the numbers were captured (proof.method, required on every game run).
 # PresentMon is the recommended default; the rest are accepted alternatives.
 # Frame-time tools report a 1% low, so their runs must include p1_low.
@@ -615,20 +619,21 @@ def gpu_power_w(run):
 
 
 def submitter_errors(path, run, issues):
-    submitted_by = run.get("submitted_by")
-    if not submitted_by:
-        issues.error(path, "community-submitter", "missing submitted_by; set it to your GitHub username")
-        return
-    submitted_by = str(submitted_by)
-    if not GITHUB_USER_PATTERN.match(submitted_by):
-        issues.error(path, "community-submitter", f"submitted_by '{submitted_by}' is not a valid GitHub username")
-        return
-    expected = rf"^result_\d{{8}}_.+_{re.escape(submitted_by.lower())}$"
-    if not re.match(expected, path.stem.lower()):
+    """Community results are anonymous by default; submitted_by is optional."""
+    if not COMMUNITY_FILENAME.match(path.stem):
         issues.error(
             path,
             "community-filename",
-            f"file name '{path.name}' must follow result_YYYYMMDD_<game>_{submitted_by.lower()}{path.suffix}",
+            f"file name '{path.name}' must follow result_YYYYMMDD_<game>{path.suffix}, such as result_20261003_cyberpunk{path.suffix}",
+        )
+    submitted_by = run.get("submitted_by")
+    if submitted_by is None:
+        return
+    if not GITHUB_USER_PATTERN.match(str(submitted_by)):
+        issues.error(
+            path,
+            "community-submitter",
+            f"submitted_by '{submitted_by}' is not a valid GitHub username; fix it or remove the line to stay anonymous",
         )
 
 
@@ -636,23 +641,40 @@ def is_https(value):
     return is_text(value) and value.startswith("https://")
 
 
-def credit_errors(path, run, issues):
-    """Check the optional credit block for results submitted on someone else's behalf."""
+def credit_errors(path, run, issues, source="community"):
+    """Check the optional credit block for results someone else measured.
+
+    A found community result only has to say where it came from (source_url) so
+    a reviewer can check it. Permission is optional, and stands in for a source
+    when the numbers aren't published anywhere, such as a friend's run.
+    Official runs are verified by the maintainer, so an official credit only
+    needs the name of whoever ran it.
+    """
     if "credit" not in run:
         return
     credit = run["credit"]
     if not isinstance(credit, dict):
-        issues.error(path, "community-credit", "'credit' must be a section with indented fields such as 'name:'")
+        issues.error(path, "community-credit", "'credit' must be a section with indented fields such as 'source_url:'")
         return
-    if not is_text(credit.get("name")) or not credit["name"].strip():
-        issues.error(path, "community-credit", "credit.name is required: the person or channel the results came from")
+    if credit.get("name") is not None and (not is_text(credit["name"]) or not credit["name"].strip()):
+        issues.error(path, "community-credit", "credit.name must be text: the person or channel the results came from")
     for key in ("url", "source_url"):
         if credit.get(key) is not None and not is_https(credit[key]):
             issues.error(path, "community-credit", f"credit.{key} must be an https:// URL")
 
     permission = credit.get("permission")
+    if source == "official" and not credit.get("name") and not credit.get("source_url"):
+        issues.error(path, "community-credit", "credit.name is required on an official run: who ran it")
+    if permission is None:
+        if source == "community" and credit.get("source_url") is None:
+            issues.error(
+                path,
+                "community-credit",
+                "credit.source_url is required: the https:// link where you found these results, so a reviewer can check them",
+            )
+        return
     if not isinstance(permission, dict):
-        issues.error(path, "community-permission", "credit.permission is required, with a url, screenshot, or note showing permission")
+        issues.error(path, "community-permission", "credit.permission must be a section with a url, screenshot, or note")
         return
     if not any(permission.get(key) for key in ("url", "screenshot", "note")):
         issues.error(path, "community-permission", "credit.permission needs at least one of url, screenshot, or note")
@@ -674,14 +696,15 @@ def credit_errors(path, run, issues):
 def community_warnings(path, run, gpu, issues):
     if gpu is not None and spec(gpu, "classification", "form_factor") == "laptop" and gpu_power_w(run) is None:
         issues.warning(path, "result-laptop-tgp", "laptop submission has no TGP; add gpu_power_w when discoverable")
-    if not (run.get("system") or {}).get("driver") and not run.get("driver"):
-        issues.warning(path, "result-no-driver", "missing optional driver; add it when available")
-    proof = run.get("proof") or {}
-    if not proof.get("raw_log"):
-        if proof.get("summary_source"):
-            issues.warning(path, "result-no-proof", "summary-only submission; raw proof is encouraged")
-        else:
-            issues.warning(path, "result-no-proof", "no raw_log or summary_source proof reference")
+    if not proof_reference(run):
+        issues.warning(path, "result-no-proof", "no evidence; add proof.raw_log, proof.summary_source, or credit.source_url")
+
+
+def proof_reference(run):
+    """The best evidence a run points at: a raw log, a summary source, or where a found result came from."""
+    proof = run.get("proof") if isinstance(run.get("proof"), dict) else {}
+    credit = run.get("credit") if isinstance(run.get("credit"), dict) else {}
+    return proof.get("raw_log") or proof.get("summary_source") or credit.get("source_url") or ""
 
 
 def check_system_os(path, run, issues):
@@ -744,9 +767,7 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
         issues.error(path, "result-unknown-gpu", f"gpu_id '{gpu_id}' is not in the catalog under data/gpus/")
     if source == "community":
         submitter_errors(path, run, issues)
-        credit_errors(path, run, issues)
-    elif "credit" in run:
-        issues.error(path, "community-credit", "credit is only for community files submitted on someone else's behalf")
+    credit_errors(path, run, issues, source)
 
     entries = run.get("result")
     if not isinstance(entries, list) or not entries:
@@ -808,7 +829,32 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
             issues.error(path, "result-impossible", f"{label} p1_low {entry['p1_low']} > avg_fps {entry['avg_fps']} is impossible")
         if entry.get("frame_generation", False):
             issues.error(path, "result-frame-generation", f"{label} must disable frame generation for comparable game runs")
+        check_upscaling(path, run, entry, label, issues)
     return entries if usable else None
+
+
+def upscaling(run, entry):
+    """The upscaler a result entry ran with, or "" when it was off (the default)."""
+    value = entry.get("upscaling", run.get("upscaling"))
+    if value is None or value is False or str(value).strip().lower() in UPSCALING_OFF:
+        return ""
+    return str(value).strip()
+
+
+def check_upscaling(path, run, entry, label, issues):
+    """Upscaling stays off unless the graphics preset itself turns it on."""
+    from_preset = entry.get("preset_upscaling", run.get("preset_upscaling"))
+    if from_preset is not None and not isinstance(from_preset, bool):
+        issues.error(path, "result-upscaling", f"{label} preset_upscaling must be true or false")
+        return
+    value = upscaling(run, entry)
+    if value and not from_preset:
+        issues.error(
+            path,
+            "result-upscaling",
+            f"{label} has upscaling '{value}'; re-run with upscaling off, or add preset_upscaling: true "
+            f"if the '{entry.get('graphics_preset')}' preset turns it on by itself",
+        )
 
 
 def official_baseline(run, entry, official_runs):
@@ -821,6 +867,7 @@ def official_baseline(run, entry, official_runs):
         for other_entry in other_entries
         if other_entry.get("resolution") == entry.get("resolution")
         and other_entry.get("graphics_preset") == entry.get("graphics_preset")
+        and upscaling(other, other_entry) == upscaling(run, entry)
         and (power is None or gpu_power_w(other) in (None, power))
     ]
     return sum(matches) / len(matches) if matches else None

@@ -1,0 +1,40 @@
+# A result someone else measured: numbers you found in a video, review, or
+# post. You don't need the creator's permission, but you do need to say where
+# you found the numbers so a reviewer can check them.
+#
+# Save as data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml, using today's
+# date, for example
+# data/community/rtx_4070_super_12gb_fe/result_20261013_cyberpunk.yaml.
+# The folder name and gpu_id must exactly match a catalog ID: the exact product
+# the source tested, including memory size.
+#
+# Copy only what the source states. Leave out anything it doesn't say rather
+# than guessing. The names and links below are placeholders, not real people.
+gpu_id: rtx_4070_super_12gb_fe # Required
+game: Cyberpunk 2077 # Required
+credit:
+  source_url: https://example.com/example-creator/gpu-review # Required; the video, review, or post with the numbers
+  name: Example Creator # Optional; who measured them. The dashboard shows the site name if you leave it out.
+  url: https://example.com/example-creator # Optional; their channel or profile
+  # Numbers that aren't published anywhere, such as a friend's run? Remove
+  # source_url and say how they gave you permission instead (any one of these):
+  # permission:
+  #   note: Describe how and when they said yes
+  #   screenshot: raw/permission_example.png # A file in this GPU folder
+  #   url: https://example.com/permission
+result: # Required; one "-" item per resolution/preset the source tested
+  - resolution: 1440p # Required
+    graphics_preset: Ultra # Required
+    avg_fps: 74.0 # Required
+    p1_low: 58.0 # Optional; add it if the source shows a 1% low
+system:
+  os: windows # Required: windows or linux. Most reviews test on Windows.
+  # Optional, if the source says: cpu, memory, driver, os_detail.
+proof:
+  # Required. The tool the source used, if it says. Use in_game_benchmark for
+  # a game's built-in benchmark, or other when the source doesn't say. A tool
+  # that records every frame (such as presentmon) needs p1_low.
+  method: other
+#
+# Optional:
+# submitted_by: your-github-username # Your GitHub username. Leave it out to stay anonymous.

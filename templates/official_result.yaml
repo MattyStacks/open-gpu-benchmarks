@@ -11,10 +11,13 @@ frame_generation: false
 result:
   - resolution: 1440p
     graphics_preset: Ultra RT
-    upscaling: DLSS Quality
     avg_fps: 122.4
     p1_low: 98.1
+    # Upscaling is off by default. Only when the preset turns it on by itself, add
+    # upscaling: DLSS Quality and preset_upscaling: true to this item.
 system:
+  os: windows # Required: windows or linux
   driver: "561.09"
 proof:
+  method: presentmon # Required; see templates/community_submission.yaml for the tools
   summary_source: Curated official benchmark result

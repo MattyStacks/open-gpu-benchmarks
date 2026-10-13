@@ -17,7 +17,7 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 
 OUTPUT_DIR = ROOT / "site" / "api" / "v1"
-SCHEMA_VERSION = "0.11"
+SCHEMA_VERSION = "0.12"
 RELEASE_VERSION = "0.6.0"
 
 
@@ -72,7 +72,7 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
     proof = run.get("proof") or {}
     credit = run.get("credit") or {}
     raw_log = proof.get("raw_log")
-    summary_source = proof.get("summary_source")
+    proof_reference = checks.proof_reference(run)
     gpu_power_w = checks.gpu_power_w(run)
     implementation_name = run.get(
         "device_name", run.get("implementation_name", system.get("device_name"))
@@ -92,7 +92,8 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "game_version": str(run.get("version", "")),
         "resolution": result.get("resolution", ""),
         "graphics_preset": result.get("graphics_preset", ""),
-        "upscaling": result.get("upscaling", run.get("upscaling", "")),
+        # "" when upscaling was off, the default; a grouping key, so it never averages with native runs.
+        "upscaling": checks.upscaling(run, result),
         "frame_generation": bool(result.get("frame_generation", run.get("frame_generation", False))),
         "driver": str(system.get("driver", run.get("driver", ""))),
         "implementation_name": implementation_name or "",
@@ -105,12 +106,16 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "os": str(system.get("os", "")),
         **os_details(system),
         "capture_method": str(proof.get("method", "")),
-        "proof_level": "raw-log" if raw_log else "summary-only",
-        "proof_reference": raw_log or summary_source or "",
+        # Official runs are verified by the maintainer even without linked evidence;
+        # "none" marks an unverified community run: no raw log, summary source, or found-at link.
+        "proof_level": "raw-log" if raw_log else "summary-only" if proof_reference
+        else "maintainer-verified" if source == "official" else "none",
+        "proof_reference": proof_reference,
         "source_file": relative_path(source_path),
+        # Empty for anonymous runs: community results don't need a username.
         "submitted_by": str(run.get("submitted_by", "")),
-        # Results submitted on someone else's behalf credit that source first.
-        # The permission proof stays in Git, like raw captures.
+        # Results someone else measured credit that source first, by name or
+        # by where they were found. Any permission proof stays in Git.
         "credit_name": str(credit.get("name", "")),
         "credit_url": str(credit.get("url", "")),
         "credit_source_url": str(credit.get("source_url", "")),
@@ -141,6 +146,7 @@ def aggregate_game_records(records, id_prefix):
                 record["game"],
                 record["resolution"],
                 record["graphics_preset"],
+                record["upscaling"],
                 record["form_factor"],
                 record["gpu_power_w"],
                 record["os"],
@@ -155,6 +161,7 @@ def aggregate_game_records(records, id_prefix):
                 key: run[key]
                 for key in (
                     "implementation_name",
+                    "upscaling",
                     "gpu_power_w",
                     "overclocked",
                     "cpu",
@@ -166,6 +173,7 @@ def aggregate_game_records(records, id_prefix):
                     *checks.OS_FIELDS,
                     "capture_method",
                     "credit_name",
+                    "credit_source_url",
                     "submitted_by",
                 )
                 if run[key] not in ("", None)
@@ -192,10 +200,14 @@ def aggregate_game_records(records, id_prefix):
                     key=str.lower,
                 ),
                 "credits": [
-                    {"name": name, "url": url}
-                    for name, url in sorted(
-                        {(run["credit_name"], run["credit_url"]) for run in runs if run["credit_name"]},
-                        key=lambda credit: credit[0].lower(),
+                    {"name": name, "url": url, "source_url": source_url}
+                    for name, url, source_url in sorted(
+                        {
+                            (run["credit_name"], run["credit_url"], run["credit_source_url"])
+                            for run in runs
+                            if run["credit_name"] or run["credit_source_url"]
+                        },
+                        key=lambda credit: (credit[0].lower(), credit[2]),
                     )
                 ],
             }
@@ -261,11 +273,13 @@ def main(data_dir=DATA_DIR):
                 "game",
                 "resolution",
                 "graphics_preset",
+                "upscaling",
                 "os",
             ],
             "game_version_is_not_a_grouping_key": True,
             "os_detail_is_not_a_grouping_key": True,
             "frame_generation": "off",
+            "upscaling": "off unless the graphics preset turns it on",
             "community_outlier_threshold": checks.OUTLIER_RATIO,
         },
     }

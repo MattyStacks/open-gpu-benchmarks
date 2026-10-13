@@ -1,6 +1,8 @@
 # 3DMark Steel Nomad. Save as
-# data/community/<gpu_id>/result_YYYYMMDD_steel_nomad_<github_username>.yaml,
-# for example data/community/rtx_4070_super_12gb_fe/result_20261013_steel_nomad_mattystacks.yaml.
+# data/community/<gpu_id>/result_YYYYMMDD_steel_nomad.yaml,
+# for example data/community/rtx_4070_super_12gb_fe/result_20261013_steel_nomad.yaml.
+# Only gpu_id, game, result, system.os, and proof.method are required; the
+# rest is optional, and you don't have to give your name.
 # The folder name and gpu_id must exactly match a catalog ID, and it must be the
 # GPU that ran the test. 3DMark lists every GPU in the machine under System
 # information, so check that the first card is the one you mean.
@@ -14,7 +16,7 @@
 # (such as Time Spy), enter the graphics-test FPS shown on the results page, not
 # the overall score divided by 100.
 gpu_id: rtx_4070_super_12gb_fe
-submitted_by: your-github-username # Required; GitHub user opening the pull request
+# submitted_by: your-github-username # Optional; leave it out to stay anonymous
 benchmark_type: game
 game: 3DMark Steel Nomad
 version: "1.0" # The benchmark version shown on the results page
@@ -29,7 +31,7 @@ result:
     avg_fps: 71.0 # "Graphics test" FPS on the results page
     score: 7100 # Optional; the Steel Nomad score
 system:
-  os: windows
+  os: windows # Required: windows or linux
   os_detail: Windows 11 Pro 24H2
   cpu: AMD Ryzen 7 7800X3D
   memory: 32 GB DDR5
@@ -39,5 +41,5 @@ proof:
   # Required. Keep synthetic_benchmark for 3DMark and similar. For a game, see
   # community_submission.yaml for the capture tools you can pick from.
   method: synthetic_benchmark
-  # The link to your 3DMark result page.
+  # Optional, but it's the easiest evidence: the link to your 3DMark result page.
   summary_source: https://www.3dmark.com/sn/1234567

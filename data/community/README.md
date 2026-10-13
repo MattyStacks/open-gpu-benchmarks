@@ -6,27 +6,33 @@ Each community submission lives in the folder whose name exactly matches its
 memory size, such as `rtx_4090_24gb_fe` or `steam_deck_oled_16gb`:
 
 ```text
-data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
 data/community/<gpu_id>/raw/<capture>.csv          (optional evidence)
-data/community/<gpu_id>/raw/permission_<name>.png  (permission proof, third-party results)
+data/community/<gpu_id>/raw/permission_<name>.png  (optional permission proof, unpublished third-party results)
 ```
 
 **New here? Follow the step-by-step guide with examples in
 [CONTRIBUTING.md](../../CONTRIBUTING.md).** Start from
-[`templates/community_submission.yaml`](../../templates/community_submission.yaml).
+[`templates/community_submission.yaml`](../../templates/community_submission.yaml),
+or [`templates/community_found_result.yaml`](../../templates/community_found_result.yaml)
+for a result you found in a video or review.
 
 Folder rules:
 
-- Every file sets `submitted_by` to the GitHub username of the person opening
-  the pull request, and the file name ends with that username (compared
-  case-insensitively; lowercase is conventional). For a second file with the
-  same date and game, add a number before the username, such as
-  `result_20261003_cyberpunk_2_mattystacks.yaml`.
-- Submitting someone else's results (with their permission)? Keep your own
-  username in `submitted_by` and the file name, and add a `credit` block with
-  proof of permission. A permission screenshot lives in this folder too, such
-  as `raw/permission_example_creator.png`. See
-  [Submitting someone else's results](../../docs/COMMUNITY_SUBMISSIONS.md#submitting-someone-elses-results).
+- Files are anonymous by default and named `result_YYYYMMDD_<game>.yaml`. For
+  a second file with the same date and game, add a number, such as
+  `result_20261003_cyberpunk_2.yaml`. `submitted_by` (your GitHub username) is
+  optional; see
+  [Anonymous by default](../../docs/COMMUNITY_SUBMISSIONS.md#anonymous-by-default).
+- Found a result in a video, review, or post? Add it with a `credit` block whose
+  `source_url` links where you found it. No permission is needed. Only
+  unpublished numbers, such as a friend's, use `credit.permission` instead; a
+  permission screenshot lives in this folder, such as
+  `raw/permission_example_friend.png`. See
+  [Submitting a result you found](../../docs/COMMUNITY_SUBMISSIONS.md#submitting-a-result-you-found).
+- Benchmark with upscaling off. Set `upscaling` only with
+  `preset_upscaling: true`, when the graphics preset turns it on (see
+  [Upscaling](../../docs/COMMUNITY_SUBMISSIONS.md#upscaling)).
 - Set `proof.method` to the capture tool you used. PresentMon is recommended;
   tools that record every frame must include `p1_low` (see
   [Capture methods](../../docs/COMMUNITY_SUBMISSIONS.md#capture-methods)).

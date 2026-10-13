@@ -85,25 +85,31 @@ Create **one file per game run** in your product's folder:
 data/
 └── community/
     └── rtx_4070_super_12gb_fe/                      <- folder name = gpu_id
-        ├── result_20261003_cyberpunk_mattystacks.yaml   <- your file
+        ├── result_20261003_cyberpunk.yaml          <- your file
         └── raw/
             └── cyberpunk_1440p.csv                  <- optional capture (recommended)
 ```
 
-The file name has four parts:
+The file name has three parts. It doesn't include your name:
 
 ```text
-result_20261003_cyberpunk_2_mattystacks.yaml
-       └──┬───┘ └───┬────┘ ┬ └────┬─────┘
-       date run   game   repeat  your GitHub username
-       (YYYYMMDD) (no     (only   (lowercase is fine;
-                  spaces) if you  must match
-                          already submitted_by)
-                          have a
-                          file for
-                          that day
-                          and game)
+result_20261003_cyberpunk_2.yaml
+       └──┬───┘ └───┬────┘ ┬
+       date run   game   repeat
+       (YYYYMMDD) (no     (only if you already
+                  spaces) have a file for that
+                          day and game)
 ```
+
+Your username is optional. Add `submitted_by: yourname` to the file if you want
+the dashboard to show "@yourname"; leave it out and the run shows as
+"Anonymous". The data then carries no name, but GitHub still shows who opened
+the pull request; see
+[Anonymous by default](docs/COMMUNITY_SUBMISSIONS.md#anonymous-by-default).
+
+Found the result in a video, review, or post instead? That's welcome too. Start
+from `templates/community_found_result.yaml` and say where you found it; see
+[Submitting a result you found](docs/COMMUNITY_SUBMISSIONS.md#submitting-a-result-you-found).
 
 Pick **one** way to create the file:
 
@@ -111,7 +117,7 @@ Pick **one** way to create the file:
 
 ```powershell
 Copy-Item templates/community_submission.yaml `
-  data/community/rtx_4070_super_12gb_fe/result_20261003_cyberpunk_yourname.yaml
+  data/community/rtx_4070_super_12gb_fe/result_20261003_cyberpunk.yaml
 ```
 
 Then edit the values. The examples below show what to fill in.
@@ -122,7 +128,6 @@ Then edit the values. The examples below show what to fill in.
 python scripts/parse.py capture.csv `
   --gpu-id rtx_4070_super_12gb_fe `
   --game "Cyberpunk 2077" `
-  --submitted-by yourname `
   --resolution 1440p `
   --graphics-preset Ultra `
   --os windows `
@@ -187,28 +192,56 @@ touch `site/api/`, which is generated.
 
 ### Minimal file (only what's required)
 
-This is the smallest file that passes validation. It warns about the missing
-driver and proof, so prefer the fuller examples below.
+This is the smallest file that passes validation, and it's anonymous. It warns
+that there's no evidence, and the dashboard labels it "Unverified", so add a
+raw capture or a summary link when you can.
 
 ```yaml
 gpu_id: rtx_4070_super_12gb_fe   # must equal the folder name
-submitted_by: mattystacks        # your GitHub username
 game: Cyberpunk 2077
-frame_generation: false          # must be false for comparable runs
 result:
   - resolution: 1440p
     graphics_preset: Ultra
     avg_fps: 98.4
     p1_low: 77.1                 # 1% low; can't be higher than avg_fps
+system:
+  os: windows                    # windows or linux
+proof:
+  method: presentmon             # the capture tool you used
+```
+
+Frame generation and upscaling are off unless you say otherwise. Leave them off
+when you benchmark; see [Upscaling](docs/COMMUNITY_SUBMISSIONS.md#upscaling).
+
+### Result you found in a video or review
+
+You don't need permission, only the link. The names and links here are
+placeholders.
+
+```yaml
+gpu_id: rtx_4070_super_12gb_fe
+game: Cyberpunk 2077
+credit:
+  source_url: https://example.com/example-creator/gpu-review   # required
+  name: Example Creator                                        # optional
+result:
+  - resolution: 1440p
+    graphics_preset: Ultra
+    avg_fps: 74.0
+system:
+  os: windows
+proof:
+  method: other                  # or the tool the source says it used
 ```
 
 ### Desktop with raw capture (recommended)
 
-One run, two profiles. Each profile starts with its own `-`.
+One run, two profiles. Each profile starts with its own `-`. This one adds the
+optional username and machine details.
 
 ```yaml
 gpu_id: rtx_4070_super_12gb_fe
-submitted_by: mattystacks
+submitted_by: mattystacks        # optional; shown as @mattystacks
 benchmark_type: game
 game: Cyberpunk 2077
 version: "2.12"
@@ -218,13 +251,11 @@ overclocked: false
 result:
   - resolution: 1440p            # first profile
     graphics_preset: Ultra RT
-    upscaling: DLSS Quality
     avg_fps: 79.1
     p1_low: 65.0
     p5_low: 68.2                 # optional, from PresentMon
   - resolution: 1080p            # second profile: new dash, same indent
     graphics_preset: Ultra RT
-    upscaling: DLSS Quality
     avg_fps: 103.4
     p1_low: 84.7
 system:
@@ -253,7 +284,6 @@ it can usually be upgraded.
 
 ```yaml
 gpu_id: rtx_4070_laptop_8gb_generic
-submitted_by: mattystacks
 game: Baldur's Gate 3
 version: "4.1.1"
 frame_generation: false
@@ -286,7 +316,6 @@ dashboard labels these as summary-only.
 
 ```yaml
 gpu_id: steam_deck_oled_16gb
-submitted_by: mattystacks
 game: Cyberpunk 2077
 version: "2.12"
 frame_generation: false
@@ -312,19 +341,21 @@ proof:
 | Field                                          | Required? | Notes                                                   |
 | ---------------------------------------------- | --------- | ------------------------------------------------------- |
 | `gpu_id`                                       | **Yes**   | Must match the folder name and a catalog file name under `data/gpus/` |
-| `submitted_by`                                 | **Yes**   | Your GitHub username; file name must end with it        |
 | `game`                                         | **Yes**   | Free text, keep spelling consistent for grouping        |
 | `result` list                                  | **Yes**   | At least one entry; every entry starts with `-`         |
 | `result[].resolution`, `graphics_preset`       | **Yes**   | Use `graphics_preset`, never `settings`                 |
 | `result[].avg_fps`                             | **Yes**   | Average FPS                                             |
 | `result[].p1_low`                              | Depends   | 1% low; can't exceed `avg_fps`. Required for PresentMon, CapFrameX, FrameView, MSI Afterburner, MangoHud, and OCAT; optional for AMD Adrenalin, in-game benchmarks, 3DMark, and other |
-| `credit` with `credit.permission`              | Only for someone else's results | Name the source and show permission (link, screenshot, or note); see [submitting someone else's results](docs/COMMUNITY_SUBMISSIONS.md#submitting-someone-elses-results) |
+| `credit.source_url`                            | Only for a result you found | The `https://` link where you found it; see [submitting a result you found](docs/COMMUNITY_SUBMISSIONS.md#submitting-a-result-you-found) |
 | `proof.method`                                 | **Yes**   | The capture tool: `presentmon` (recommended), `capframex`, `frameview`, `msi_afterburner`, `amd_adrenalin`, `mangohud`, `ocat`, `in_game_benchmark`, `synthetic_benchmark`, or `other`; see [capture methods](docs/COMMUNITY_SUBMISSIONS.md#capture-methods) |
-| `frame_generation`                             | Must be `false` | Frame generation runs aren't comparable            |
+| `frame_generation`                             | Off       | `false` is the default; frame generation runs aren't comparable |
+| `upscaling`                                    | Off       | Off by default; set it only with `preset_upscaling: true` when the preset turns it on; see [upscaling](docs/COMMUNITY_SUBMISSIONS.md#upscaling) |
 | `system.os`                                    | **Yes**   | `windows` or `linux`, lowercase; Windows and Linux runs are never averaged together |
 | `gpu_power_w` (laptops)                        | Warning   | Strongly encouraged                                     |
-| `proof.raw_log` or `proof.summary_source`      | Warning   | Raw capture preferred                                   |
-| `system` (CPU, memory, driver, power mode)     | Optional  | Encouraged: reviewers and readers use it                |
+| `proof.raw_log` or `proof.summary_source`      | Warning   | Raw capture preferred; without any evidence the run shows as "Unverified" |
+| `submitted_by`                                 | Optional  | Your GitHub username, shown as @you; leave it out to stay anonymous |
+| `credit.name`, `credit.url`                    | Optional  | Who measured a result you found, and their channel      |
+| `system` (CPU, memory, driver, power mode)     | Optional  | Share it if you like: reviewers and readers use it      |
 | OS details (`os_detail`, `distro`, `kernel`, `mesa`, `proton`, ...) | Optional | Must fit the OS; see [the OS fields](docs/COMMUNITY_SUBMISSIONS.md#operating-system) |
 
 Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
@@ -335,15 +366,17 @@ Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 | ------- | --------------- | --- |
 | Folder doesn't match `gpu_id` | `[result-folder]` | Move the file, or correct `gpu_id` |
 | Old or made-up ID such as `rtx_4090` | `[result-unknown-gpu]` | Use the exact catalog file name, such as `rtx_4090_24gb_fe` |
-| File name doesn't end with your username | `[community-filename]` | Rename the file; keep `submitted_by` identical |
+| File name isn't `result_YYYYMMDD_<game>.yaml` | `[community-filename]` | Rename the file, such as `result_20261003_cyberpunk.yaml` |
+| `submitted_by` with spaces or other characters a GitHub username can't have | `[community-submitter]` | Fix it, or remove the line to stay anonymous |
 | File not named `result_...` | `[result-filename]` | Rename it, or the build would skip it |
 | Forgot the `-` or repeated `result:` | `[result-field]` or lost entries | One `result:` key, one `-` per profile |
 | Used `settings:` | `[result-field] ... missing graphics_preset` | Rename to `graphics_preset` |
-| Ran with DLSS/FSR Frame Gen | `[result-frame-generation]` | Re-run with frame generation off (upscaling is fine, record it in `upscaling`) |
+| Ran with DLSS/FSR Frame Gen | `[result-frame-generation]` | Re-run with frame generation off |
+| Ran with DLSS, FSR, or XeSS upscaling | `[result-upscaling]` | Re-run with upscaling off, or add `preset_upscaling: true` if the preset turned it on |
 | `p1_low` bigger than `avg_fps` | `[result-impossible]` | Check you didn't swap the values |
 | No `p1_low` from PresentMon, Afterburner, or another frame-time tool | `[result-p1-low-required]` | Copy the 1% low from the tool's summary |
 | No `p1_low` from an in-game benchmark or Adrenalin | `[result-no-p1-low]` (warning) | Fine if your tool didn't report one |
-| Someone else's results without proof of permission | `[community-permission]` | Add `credit.permission` with a link, screenshot, or note |
+| A result you found, with no link to where | `[community-credit]` | Add `credit.source_url` |
 | No `proof.method`, or an unknown one such as `screenshot` | `[result-proof-method]` | Add `proof.method` with the tool you used (list in the template); use `other` if yours isn't listed |
 | Far from the official result | `[community-outlier]` | Re-check the settings, or explain the difference in the PR |
 | Wrote `[a, b]` or `{}` | `[yaml-inline]` | One `-` line per item; leave empty fields out |
@@ -507,7 +540,10 @@ raw capture, keep it, or say in the PR why it's being removed.
 
 **Official results** use `templates/official_result.yaml` and live at
 `data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml`. They don't need
-`submitted_by`. Community results are compared against them.
+`submitted_by`. Community results are compared against them. Official runs are
+verified by the maintainer, either run by them or by someone they know ran a
+valid result, so they show as "Verified" even without a linked capture. A run
+entered on someone else's behalf adds `credit` with that person's `name`.
 
 **Code, dashboard, catalog-rule, or workflow changes:** add a line under
 `Unreleased` in [CHANGELOG.md](CHANGELOG.md), and update the backlog in

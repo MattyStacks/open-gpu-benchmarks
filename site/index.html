@@ -153,7 +153,7 @@
         <article class="api-card"><h3>dashboard.json</h3><p>The grouped official and community summaries behind this chart, plus the game, resolution, and preset lists.</p><div class="api-actions" data-api-path="api/v1/dashboard.json"></div></article>
         <article class="api-card"><h3>gpus.json</h3><p>The GPU catalog with full hardware specs, each GPU's official and community summaries, and links to its per-GPU files.</p><div class="api-actions" data-api-path="api/v1/gpus.json"></div></article>
         <article class="api-card"><h3>official.json</h3><p>Every official run, one record per resolution and preset profile, with its OS details.</p><div class="api-actions" data-api-path="api/v1/official.json"></div></article>
-        <article class="api-card"><h3>community.json</h3><p>Grouped community summaries, with the exact machine details and GitHub submitter for each run.</p><div class="api-actions" data-api-path="api/v1/community.json"></div></article>
+        <article class="api-card"><h3>community.json</h3><p>Grouped community summaries, with each run's machine details, credit, and submitter when they chose to give one.</p><div class="api-actions" data-api-path="api/v1/community.json"></div></article>
         <article class="api-card"><h3>Compare distros yourself</h3><p>The chart shows one bar per OS, never one per distro. To compare distros, kernels, or Proton versions, download community.json, official.json, or a per-GPU summary.json: every run carries <span class="mono">os</span>, <span class="mono">distro</span>, <span class="mono">kernel</span>, <span class="mono">mesa</span>, and <span class="mono">proton</span> fields.</p><div class="api-actions" data-api-path="api/v1/community.json"></div></article>
         <article class="api-card"><h3>&lt;source&gt;/&lt;gpu_id&gt;/summary.json</h3><p>One GPU's runs and summaries, for example <span class="mono">official/rtx_4090_24gb_fe</span> or <span class="mono">community/steam_deck_oled_16gb</span>. GPU IDs are listed in gpus.json.</p><div class="api-actions" data-api-path="api/v1/official/rtx_4090_24gb_fe/summary.json"></div></article>
       </div>
@@ -175,7 +175,7 @@
       </summary>
       <div class="workflow" aria-label="Community submission workflow">
         <article class="workflow-step"><span class="step-icon" aria-hidden="true">&lt;/&gt;</span><h3>Fork and prepare</h3><p>Fork the repository and use the submission template as a starting point.</p></article>
-        <article class="workflow-step"><span class="step-icon" aria-hidden="true">+</span><h3>Add profiles</h3><p>Create <span class="mono">result_YYYYMMDD_&lt;game&gt;_&lt;github_user&gt;.yaml</span> in <span class="mono">data/community/&lt;gpu_id&gt;/</span>, set <span class="mono">submitted_by</span> to your GitHub username, and add each resolution/preset as a dashed <span class="mono">result</span> entry.</p></article>
+        <article class="workflow-step"><span class="step-icon" aria-hidden="true">+</span><h3>Add profiles</h3><p>Create <span class="mono">result_YYYYMMDD_&lt;game&gt;.yaml</span> in <span class="mono">data/community/&lt;gpu_id&gt;/</span> and add each resolution/preset as a dashed <span class="mono">result</span> entry. Your username is optional, and a result you found online only needs a link to where you found it.</p></article>
         <article class="workflow-step"><span class="step-icon" aria-hidden="true">&#10003;</span><h3>Validate locally</h3><p>Run the build and validator before opening your pull request.</p></article>
         <article class="workflow-step"><span class="step-icon" aria-hidden="true">&#8981;</span><h3>Review evidence</h3><p>Maintainers check the capture, profile, machine details, and significant outliers.</p></article>
         <article class="workflow-step"><span class="step-icon" aria-hidden="true">&#8599;</span><h3>Approve and group</h3><p>Merged runs are grouped into generated summaries for that GPU.</p></article>
@@ -189,41 +189,29 @@
       <div class="submission-details">
         <div>
           <h3 class="submission-heading">Community YAML example</h3>
-          <pre class="yaml-example"><code><span class="yaml-comment"># data/community/rtx_4070_super_12gb_fe/result_20261003_cyberpunk_mattystacks.yaml</span>
+          <pre class="yaml-example"><code><span class="yaml-comment"># data/community/rtx_4070_super_12gb_fe/result_20261003_cyberpunk.yaml</span>
+<span class="yaml-comment"># Required fields only. Everything else is optional.</span>
 <span class="yaml-key">gpu_id</span>: <span class="yaml-string">rtx_4070_super_12gb_fe</span> <span class="yaml-comment"># catalog file name in data/gpus/</span>
-<span class="yaml-key">submitted_by</span>: <span class="yaml-string">MattyStacks</span> <span class="yaml-comment"># your GitHub username</span>
-<span class="yaml-key">benchmark_type</span>: <span class="yaml-string">game</span>
 <span class="yaml-key">game</span>: <span class="yaml-string">Cyberpunk 2077</span>
-<span class="yaml-key">frame_generation</span>: <span class="yaml-boolean">false</span>
-<span class="yaml-key">form_factor</span>: <span class="yaml-string">desktop</span>
-<span class="yaml-key">device_name</span>: <span class="yaml-string">Ryzen 7 7800X3D test bench</span>
-<span class="yaml-key">gpu_power_w</span>: <span class="yaml-number">220</span>
-<span class="yaml-key">overclocked</span>: <span class="yaml-boolean">false</span>
 <span class="yaml-key">result</span>:
   <span class="yaml-list">-</span> <span class="yaml-key">resolution</span>: <span class="yaml-string">1440p</span>
     <span class="yaml-key">graphics_preset</span>: <span class="yaml-string">Ultra RT</span>
-    <span class="yaml-key">upscaling</span>: <span class="yaml-string">DLSS Quality</span>
     <span class="yaml-key">avg_fps</span>: <span class="yaml-number">79.1</span>
-    <span class="yaml-key">p1_low</span>: <span class="yaml-number">65.0</span>
-  <span class="yaml-list">-</span> <span class="yaml-key">resolution</span>: <span class="yaml-string">1080p</span>
-    <span class="yaml-key">graphics_preset</span>: <span class="yaml-string">Ultra RT</span>
-    <span class="yaml-key">avg_fps</span>: <span class="yaml-number">103.4</span>
-    <span class="yaml-key">p1_low</span>: <span class="yaml-number">84.7</span>
+    <span class="yaml-key">p1_low</span>: <span class="yaml-number">65.0</span> <span class="yaml-comment"># when your tool reports it</span>
 <span class="yaml-key">system</span>:
-  <span class="yaml-key">cpu</span>: <span class="yaml-string">AMD Ryzen 7 7800X3D</span>
-  <span class="yaml-key">memory</span>: <span class="yaml-string">32 GB DDR5</span>
-  <span class="yaml-key">power_mode</span>: <span class="yaml-string">Performance</span>
-  <span class="yaml-key">driver</span>: <span class="yaml-string">"561.09"</span>
+  <span class="yaml-key">os</span>: <span class="yaml-string">windows</span> <span class="yaml-comment"># windows or linux</span>
 <span class="yaml-key">proof</span>:
-  <span class="yaml-key">method</span>: <span class="yaml-string">presentmon</span>
-  <span class="yaml-key">raw_log</span>: <span class="yaml-string">raw/cyberpunk_1440p.csv</span></code></pre>
+  <span class="yaml-key">method</span>: <span class="yaml-string">presentmon</span> <span class="yaml-comment"># the capture tool</span>
+<span class="yaml-comment"># Found it in a video or review? Say where:</span>
+<span class="yaml-comment"># credit:</span>
+<span class="yaml-comment">#   source_url: https://example.com/gpu-review</span></code></pre>
         </div>
         <div class="review-guidance">
           <div>
             <h3 class="submission-heading">Review checklist</h3>
             <div class="checklist">
-              <div><h3 class="required">Required</h3><ul><li>GitHub username in <span class="mono">submitted_by</span> and the file name</li><li>GPU and form factor</li><li>Game, resolution, and settings</li><li>Avg FPS (1% low when your tool reports it)</li><li>Frame generation off</li><li>Capture tool (<span class="mono">proof.method</span>)</li><li>Evidence reference</li></ul></div>
-              <div><h3 class="encouraged">Strongly encouraged</h3><ul><li>Raw PresentMon capture (recommended)</li><li>Laptop TGP or GPU power</li><li>Exact card or device name</li><li>CPU, memory, and power mode</li><li>Driver and display mode</li></ul></div>
+              <div><h3 class="required">Required</h3><ul><li>GPU (the catalog ID)</li><li>Game, resolution, and settings</li><li>Avg FPS (1% low when your tool reports it)</li><li>Operating system (<span class="mono">system.os</span>)</li><li>Capture tool (<span class="mono">proof.method</span>)</li><li>Frame generation off (the default)</li><li>For a result you found: where you found it (<span class="mono">credit.source_url</span>)</li></ul></div>
+              <div><h3 class="encouraged">Optional, if you want to share it</h3><ul><li>Raw PresentMon capture or a summary link</li><li>Laptop TGP or GPU power</li><li>Your GitHub username</li><li>Exact card or device name</li><li>CPU, memory, driver, and power mode</li></ul></div>
             </div>
           </div>
           <p class="outlier-note"><strong>Validate every profile:</strong> the leading dash makes <span class="mono">result</span> a YAML list. Every profile is checked independently and only matching GPU, power, game, resolution, and preset entries are averaged. A submission more than 25% away from a matching official baseline must be corrected, explained by a different profile, or removed during review.</p>
@@ -586,7 +574,7 @@
           <td class="mono">${escapeHtml(formatMsrp(record))}</td>
           <td>${record.avg_fps.toFixed(1)}</td><td>${record.p1_low === null || record.p1_low === undefined ? MISSING : record.p1_low.toFixed(1)}</td>
           <td>${record.run_count || 1}</td><td><span class="badge ${escapeHtml(record.source)}">${escapeHtml(record.source)}</span></td>
-          <td class="proof">${record.proof_level === "raw-log" ? "Raw log" : "Summary only"}</td>`;
+          <td class="proof">${proofLabels[record.proof_level] || "Unverified"}</td>`;
         row.querySelector("input").addEventListener("change", () => {
           if (state.selected.has(record.id)) state.selected.delete(record.id);
           else if (state.selected.size < 6) state.selected.add(record.id);
@@ -635,6 +623,8 @@
       return `<p class="section-kicker">Device</p><div class="mini-grid">${stats.map(([label, value]) =>
         `<div class="mini-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? MISSING)}</strong></div>`).join("")}</div>`;
     }
+
+    const proofLabels = { "raw-log": "Raw log", "summary-only": "Summary only", "maintainer-verified": "Verified", none: "Unverified" };
 
     function safeHttpsUrl(value) {
       try {
@@ -688,29 +678,42 @@
         run.os_build ? `Build ${run.os_build}` : "",
         run.kernel ? `Kernel ${run.kernel}` : "",
         run.mesa && !String(run.driver || "").includes(run.mesa) ? `Mesa ${run.mesa}` : "",
+        run.upscaling ? `Upscaling ${run.upscaling} (set by preset)` : "",
         runtime, run.graphics_api, run.session, run.launcher, run.power_plan, ...flags,
         run.cpu, run.memory,
         run.driver ? `Driver ${run.driver}` : "",
         run.gpu_power_w ? `${run.gpu_power_w} W` : "",
         run.power_mode, run.display_mode,
         run.overclocked ? "Overclocked" : "",
-        run.credit_name ? `${run.credit_name}${run.submitted_by ? ` (via @${run.submitted_by})` : ""}`
+        creditName(run) ? `${creditName(run)}${run.submitted_by ? ` (via @${run.submitted_by})` : ""}`
           : run.submitted_by ? `@${run.submitted_by}` : ""].filter(Boolean);
       return `<div class="run-item"><strong>${escapeHtml(title)}</strong>${escapeHtml(details.join(" · ") || "No machine details recorded.")}</div>`;
     }
 
-    // Returns escaped HTML. Results submitted on someone else's behalf credit
-    // the source first, linked when it has an https URL: "Name (via @user)".
+    // Who a found result came from: its credit name, or the site it was found on.
+    function creditName(run) {
+      if (run.credit_name) return run.credit_name;
+      const href = run.credit_source_url ? safeHttpsUrl(run.credit_source_url) : null;
+      return href ? new URL(href).hostname.replace(/^www\./, "") : "";
+    }
+
+    // Returns escaped HTML. Results someone else measured credit the source
+    // first, linked when it has an https URL: "Name (via @user)". Community
+    // runs with no credit and no username are "Anonymous".
     function formatContributors(record, implementations) {
-      const urls = new Map((Array.isArray(record.credits) ? record.credits : []).map((credit) => [credit.name, credit.url]));
+      const credits = Array.isArray(record.credits) ? record.credits : [];
       const labels = new Set();
       implementations.forEach((run) => {
-        if (run.credit_name) {
-          const href = urls.get(run.credit_name) ? safeHttpsUrl(urls.get(run.credit_name)) : null;
-          const name = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${escapeHtml(run.credit_name)}</a>` : escapeHtml(run.credit_name);
-          labels.add(run.submitted_by ? `${name} (via @${escapeHtml(run.submitted_by)})` : name);
+        const name = creditName(run);
+        if (name) {
+          const credit = credits.find((item) => item.name === (run.credit_name || "") && item.source_url === (run.credit_source_url || "")) || {};
+          const href = safeHttpsUrl(credit.url || run.credit_source_url || "");
+          const label = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${escapeHtml(name)}</a>` : escapeHtml(name);
+          labels.add(run.submitted_by ? `${label} (via @${escapeHtml(run.submitted_by)})` : label);
         } else if (run.submitted_by) {
           labels.add(`@${escapeHtml(run.submitted_by)}`);
+        } else if (record.source === "community") {
+          labels.add("Anonymous");
         }
       });
       if (!labels.size && Array.isArray(record.contributors)) record.contributors.forEach((name) => labels.add(`@${escapeHtml(name)}`));

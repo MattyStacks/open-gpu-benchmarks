@@ -74,7 +74,7 @@ scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
-templates/                         starting points for runs and catalog entries
+templates/                         starting points for runs (incl. community_found_result.yaml) and catalog entries
 requirements.txt                   Python dependencies (pyyaml, numpy); CI and .venv use it
 .venv/                             local virtual environment (gitignored, never committed)
 CHANGELOG.md                       high-level version history (update with every change)
@@ -138,14 +138,25 @@ unless repository policy changes.
 - Exact machine metadata stays on each run; charts show grouped summaries.
 - Raw capture evidence is preferred; preserve its reference when correcting or
   removing a record.
-- Community files need `submitted_by: <github_user>` and the name
-  `result_YYYYMMDD_<game>_<github_user>.yaml` (case-insensitive match; same-day
-  repeats use `_<game>_2_<github_user>`). Official files don't need it.
-- Results measured by someone else keep the PR author in `submitted_by` and add
-  a `credit` block (`name`, optional https `url`/`source_url`, and
-  `permission` with at least one of `url`, `screenshot`, `note`). The
-  dashboard shows "Name (via @user)". Example credits use made-up names and
+- Community files are anonymous by default. Only `gpu_id`, `game`, the
+  `result` list, `system.os`, and `proof.method` are required. `submitted_by`
+  is optional (a valid GitHub username when set), and the file name is
+  `result_YYYYMMDD_<game>.yaml` (same-day repeats `_<game>_2`; older names
+  ending in a username still pass). Runs with no evidence show as
+  "Unverified" (`proof_level: none`). Official runs are maintainer-verified
+  by definition (`maintainer-verified`, "Verified") and may carry a `credit`
+  with just a `name` for a run entered on someone's behalf.
+- A result someone else measured (a video, review, or post) adds a `credit`
+  block with an https `source_url` saying where it was found; no permission
+  is needed. Unpublished numbers, such as a friend's, give `permission` (at
+  least one of `url`, `screenshot`, `note`) instead. `name` and `url` are
+  optional. The dashboard shows "Name (via @user)", the source's site when
+  there's no name, or "Anonymous". Example credits use made-up names and
   `example.com` URLs, never a real creator or channel.
+- Upscaling is off by default. `upscaling` is allowed only with
+  `preset_upscaling: true` (the graphics preset turned it on), otherwise
+  `result-upscaling` fails. It is a grouping key, so upscaled runs never
+  average with native ones.
 - The dashboard may move to a custom domain: keep GitHub links absolute and
   API/data links relative to the page.
 

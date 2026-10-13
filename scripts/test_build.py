@@ -68,6 +68,7 @@ def result_run(**overrides):
         "game": "Test Game",
         "result": [{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 100, "p1_low": 80}],
         "system": {"os": "windows"},
+        "proof": {"method": "presentmon"},
     }
     run.update(overrides)
     return run
@@ -259,6 +260,118 @@ def check_os_grouping():
     assert linux_summary["distro"] == "CachyOS" and linux_summary["implementations"][0]["distro"] == "CachyOS"
 
 
+def check_average_only_runs():
+    """A run with no 1% low (3DMark, some in-game benchmarks) passes and aggregates."""
+    catalog = {TEST_CATALOG_PATH: minimal_entry()}
+    avg_only = [{"resolution": "1440p", "graphics_preset": "Default", "avg_fps": 86.03, "score": 8603}]
+    nomad = community_run(game="3DMark Steel Nomad", result=avg_only, proof={"method": "synthetic_benchmark", "summary_source": "https://www.3dmark.com/sn/1"})
+    issues = run_checks({**catalog, COMMUNITY_PATH: nomad})
+    assert not issues.errors, [issue.format() for issue in issues.errors]
+    assert "result-no-p1-low" not in {issue.rule for issue in issues.warnings}, "synthetic benchmarks never report a 1% low"
+    # Tools that may report only an average get a warning, never an error.
+    for method in ("in_game_benchmark", "amd_adrenalin", "other"):
+        issues = run_checks({**catalog, COMMUNITY_PATH: community_run(result=avg_only, proof={"method": method})})
+        assert not issues.errors and "result-no-p1-low" in {issue.rule for issue in issues.warnings}, method
+    # Frame-time tools always report a 1% low, so it is required with them.
+    for method in checks.P1_LOW_METHODS:
+        expect_rule("result-p1-low-required", {**catalog, COMMUNITY_PATH: community_run(result=avg_only, proof={"method": method})})
+    assert set(checks.PROOF_METHODS) == {*checks.P1_LOW_METHODS, *checks.AVERAGE_ONLY_METHODS}
+    expect_rule("result-proof-method", {**catalog, COMMUNITY_PATH: community_run(proof={"method": "screenshot"})})
+    # proof.method is required, and every listed capture tool is accepted.
+    no_method = {key: value for key, value in community_run().items() if key != "proof"}
+    expect_rule("result-proof-method", {**catalog, COMMUNITY_PATH: no_method})
+    expect_rule("result-proof-method", {**catalog, COMMUNITY_PATH: community_run(proof={"raw_log": "raw/a.csv"})})
+    for method in checks.PROOF_METHODS:
+        issues = run_checks({**catalog, COMMUNITY_PATH: community_run(proof={"method": method})})
+        assert not issues.errors, (method, [issue.format() for issue in issues.errors])
+    expect_rule("result-field", {**catalog, COMMUNITY_PATH: community_run(result=[{**avg_only[0], "score": "high"}])})
+
+    # Averages still include every run; the 1% low only counts the runs that have one.
+    gpu = minimal_entry()
+    with_low = result_run()
+    without_low = result_run(result=[{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 110}])
+    without_low["result"][0]["avg_fps"] = 110
+    records = [
+        build.build_record(run, run["result"][0], 0, "official", Path(f"official/{TEST_ID}/result_{name}.yaml"), {TEST_ID: gpu})
+        for name, run in (("a", with_low), ("b", without_low))
+    ]
+    assert records[1]["p1_low"] is None
+    (summary,) = build.aggregate_game_records(records, "official-summary")
+    assert summary["avg_fps"] == 105.0 and summary["p1_low"] == 80.0 and summary["p1_low_range"] == [80.0, 80.0]
+    (only_avg,) = build.aggregate_game_records(records[1:], "official-summary")
+    assert only_avg["p1_low"] is None and only_avg["p1_low_range"] is None and only_avg["avg_fps"] == 110.0
+
+
+def check_outlier_limit():
+    """A community average more than 25% from the official average is an error."""
+    assert checks.OUTLIER_RATIO == 0.25
+    catalog = {TEST_CATALOG_PATH: minimal_entry()}
+    official = {f"official/{TEST_ID}/result_20261003_test.yaml": result_run()}  # 100 FPS
+
+    def run_at(avg_fps):
+        entry = {"resolution": "1080p", "graphics_preset": "High", "avg_fps": avg_fps, "p1_low": avg_fps * 0.8}
+        return run_checks({**catalog, **official, COMMUNITY_PATH: community_run(result=[entry])})
+
+    for avg_fps in (80, 120):
+        assert "community-outlier" not in {issue.rule for issue in run_at(avg_fps).errors}, f"{avg_fps} FPS is within 25%"
+    for avg_fps in (70, 130):
+        assert "community-outlier" in {issue.rule for issue in run_at(avg_fps).errors}, f"{avg_fps} FPS is more than 25% off"
+
+
+def check_third_party_credit():
+    """Someone else's results need a credit block with proof of permission."""
+    catalog = {TEST_CATALOG_PATH: minimal_entry()}
+    folder = f"community/{TEST_ID}"
+    screenshot = {f"{folder}/raw/permission_example_creator.png": "placeholder image"}
+
+    def credit(**permission):
+        return {
+            "name": "Example Creator",
+            "url": "https://example.com/example-creator",
+            "source_url": "https://example.com/example-creator/gpu-review",
+            "permission": permission,
+        }
+
+    for proof in (
+        {"url": "https://example.com/example-creator/permission"},
+        {"screenshot": "raw/permission_example_creator.png"},
+        {"note": "Example note describing how permission was given"},
+    ):
+        issues = run_checks({**catalog, **screenshot, COMMUNITY_PATH: community_run(credit=credit(**proof))})
+        assert not issues.errors, (proof, [issue.format() for issue in issues.errors])
+
+    no_permission = {key: value for key, value in credit().items() if key != "permission"}
+    cases = {
+        "community-credit (not a section)": community_run(credit="Example Creator"),
+        "community-credit (no name)": community_run(credit={**credit(note="ok"), "name": ""}),
+        "community-credit (http url)": community_run(credit={**credit(note="ok"), "url": "http://example.com"}),
+        "community-permission (missing)": community_run(credit=no_permission),
+        "community-permission (empty)": community_run(credit=credit()),
+        "community-permission (http url)": community_run(credit=credit(url="http://example.com/permission")),
+        "community-permission (missing file)": community_run(credit=credit(screenshot="raw/missing.png")),
+        "community-permission (outside folder)": community_run(credit=credit(screenshot="../other_gpu_8gb_fe/raw/permission.png")),
+    }
+    for label, run in cases.items():
+        expect_rule(label.split(" (")[0], {**catalog, **screenshot, COMMUNITY_PATH: run})
+    official_credit = result_run(credit=credit(note="ok"))
+    expect_rule("community-credit", {**catalog, f"official/{TEST_ID}/result_20261003_test.yaml": official_credit})
+
+    # The build credits the source on the run and lists it once on the summary.
+    gpu = minimal_entry()
+    credited = community_run(credit=credit(note="ok"))
+    own = result_run(submitted_by="someone")
+    records = [
+        build.build_record(run, run["result"][0], 0, "community", Path(f"community/{TEST_ID}/result_{name}.yaml"), {TEST_ID: gpu})
+        for name, run in (("a", credited), ("b", own))
+    ]
+    assert records[0]["credit_name"] == "Example Creator" and records[0]["credit_url"] == "https://example.com/example-creator"
+    assert records[1]["credit_name"] == "" and "permission" not in records[0]
+    (summary,) = build.aggregate_game_records(records, "community-summary")
+    assert summary["credits"] == [{"name": "Example Creator", "url": "https://example.com/example-creator"}]
+    assert summary["contributors"] == ["someone", "tester"]
+    assert [run.get("credit_name") for run in summary["implementations"]] == ["Example Creator", None]
+
+
 def check_parse_mangohud():
     """MangoHud logs with the os/kernel/driver preamble parse to real FPS, not 0."""
     import parse
@@ -357,11 +470,11 @@ def check_templates_are_valid():
         path.relative_to(ROOT / "data").as_posix(): path.read_text(encoding="utf-8")
         for path in (ROOT / "data" / "gpus").rglob("*.yaml")
     }
-    text = (ROOT / "templates" / "community_submission.yaml").read_text(encoding="utf-8")
-    text = text.replace("your-github-username", "tester")
-    gpu_id = yaml.safe_load(text)["gpu_id"]
-    issues = run_checks({**catalog, f"community/{gpu_id}/result_20261003_cyberpunk_tester.yaml": text})
-    assert not issues.errors, ("community_submission.yaml", [issue.format() for issue in issues.errors])
+    for template in sorted((ROOT / "templates").glob("community_*.yaml")):
+        text = template.read_text(encoding="utf-8").replace("your-github-username", "tester")
+        gpu_id = yaml.safe_load(text)["gpu_id"]
+        issues = run_checks({**catalog, f"community/{gpu_id}/result_20261003_template_tester.yaml": text})
+        assert not issues.errors, (template.name, [issue.format() for issue in issues.errors])
 
 
 def check_rules_are_documented():
@@ -377,7 +490,7 @@ def check_rules_are_documented():
 
 def check_catalog_specs():
     master = load_json(API_DIR / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.10"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.11"
     assert "os" in master["metadata"]["comparison_policy"]["group_by"]
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
     assert len(by_id) == 11
@@ -429,6 +542,9 @@ def main():
     check_catalog_rules()
     check_result_rules()
     check_os_grouping()
+    check_average_only_runs()
+    check_outlier_limit()
+    check_third_party_credit()
     check_parse_mangohud()
     check_reports_every_error_and_build_stops()
     check_minimal_entry_builds()

@@ -215,17 +215,18 @@
   <span class="yaml-key">power_mode</span>: <span class="yaml-string">Performance</span>
   <span class="yaml-key">driver</span>: <span class="yaml-string">"561.09"</span>
 <span class="yaml-key">proof</span>:
+  <span class="yaml-key">method</span>: <span class="yaml-string">presentmon</span>
   <span class="yaml-key">raw_log</span>: <span class="yaml-string">raw/cyberpunk_1440p.csv</span></code></pre>
         </div>
         <div class="review-guidance">
           <div>
             <h3 class="submission-heading">Review checklist</h3>
             <div class="checklist">
-              <div><h3 class="required">Required</h3><ul><li>GitHub username in <span class="mono">submitted_by</span> and the file name</li><li>GPU and form factor</li><li>Game, resolution, and settings</li><li>Avg FPS and 1% low</li><li>Frame generation off</li><li>Evidence reference</li></ul></div>
-              <div><h3 class="encouraged">Strongly encouraged</h3><ul><li>Raw PresentMon capture</li><li>Laptop TGP or GPU power</li><li>Exact card or device name</li><li>CPU, memory, and power mode</li><li>Driver and display mode</li></ul></div>
+              <div><h3 class="required">Required</h3><ul><li>GitHub username in <span class="mono">submitted_by</span> and the file name</li><li>GPU and form factor</li><li>Game, resolution, and settings</li><li>Avg FPS (1% low when your tool reports it)</li><li>Frame generation off</li><li>Capture tool (<span class="mono">proof.method</span>)</li><li>Evidence reference</li></ul></div>
+              <div><h3 class="encouraged">Strongly encouraged</h3><ul><li>Raw PresentMon capture (recommended)</li><li>Laptop TGP or GPU power</li><li>Exact card or device name</li><li>CPU, memory, and power mode</li><li>Driver and display mode</li></ul></div>
             </div>
           </div>
-          <p class="outlier-note"><strong>Validate every profile:</strong> the leading dash makes <span class="mono">result</span> a YAML list. Every profile is checked independently and only matching GPU, power, game, resolution, and preset entries are averaged. A submission more than 50% away from a matching official baseline must be corrected, explained by a different profile, or removed during review.</p>
+          <p class="outlier-note"><strong>Validate every profile:</strong> the leading dash makes <span class="mono">result</span> a YAML list. Every profile is checked independently and only matching GPU, power, game, resolution, and preset entries are averaged. A submission more than 25% away from a matching official baseline must be corrected, explained by a different profile, or removed during review.</p>
         </div>
       </div>
       <p class="submission-footer">Desktop and laptop GPUs never share a group. Game version remains as metadata, while matching summaries use GPU, form factor, known power profile, game, resolution, and graphics settings.</p>
@@ -533,7 +534,7 @@
       const legendColor = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
       const series = [];
       if (state.showAvg) series.push({ name: "Avg FPS", type: "bar", barMaxWidth: 22, barGap: "-100%", itemStyle: { color: legendColor, opacity: overlaid ? 0.4 : 1 }, data: records.map((record) => ({ value: record.avg_fps, itemStyle: { color: colorFor(record), opacity: overlaid ? 0.4 : 1, decal: decalFor(record) } })) });
-      if (state.showP1) series.push({ name: "1% Low", type: "bar", barMaxWidth: 22, barGap: "-100%", itemStyle: { color: legendColor }, data: records.map((record) => ({ value: record.p1_low, itemStyle: { color: colorFor(record), decal: decalFor(record) } })) });
+      if (state.showP1) series.push({ name: "1% Low", type: "bar", barMaxWidth: 22, barGap: "-100%", itemStyle: { color: legendColor }, data: records.map((record) => ({ value: record.p1_low ?? "-", itemStyle: { color: colorFor(record), decal: decalFor(record) } })) });
       chart.setOption({
         animationDuration: 250, backgroundColor: "transparent",
         grid: { left: 15, right: 22, top: 18, bottom: 18, containLabel: true },
@@ -552,7 +553,8 @@
     function chartTooltip(records, params) {
       const record = records[params[0].dataIndex];
       const os = [formatOs(record), record.distro].filter(Boolean).join(" · ");
-      const lines = params.map((param) => `${param.marker}${escapeHtml(param.seriesName)}: <b>${param.value} FPS</b>`);
+      // A run without a 1% low (for example 3DMark) has no value for that series.
+      const lines = params.map((param) => `${param.marker}${escapeHtml(param.seriesName)}: <b>${typeof param.value === "number" ? `${param.value} FPS` : "not reported"}</b>`);
       return `<b>${escapeHtml(record.gpu_name)}</b><br>${escapeHtml(os)} · ${escapeHtml(record.source)}<br>${lines.join("<br>")}`;
     }
 
@@ -582,7 +584,7 @@
           <td class="mono">${escapeHtml(specValue(record, "silicon", "process") || MISSING)}</td>
           <td class="mono">${escapeHtml(specValue(record, "release", "date") || MISSING)}</td>
           <td class="mono">${escapeHtml(formatMsrp(record))}</td>
-          <td>${record.avg_fps.toFixed(1)}</td><td>${record.p1_low.toFixed(1)}</td>
+          <td>${record.avg_fps.toFixed(1)}</td><td>${record.p1_low === null || record.p1_low === undefined ? MISSING : record.p1_low.toFixed(1)}</td>
           <td>${record.run_count || 1}</td><td><span class="badge ${escapeHtml(record.source)}">${escapeHtml(record.source)}</span></td>
           <td class="proof">${record.proof_level === "raw-log" ? "Raw log" : "Summary only"}</td>`;
         row.querySelector("input").addEventListener("change", () => {
@@ -692,8 +694,27 @@
         run.gpu_power_w ? `${run.gpu_power_w} W` : "",
         run.power_mode, run.display_mode,
         run.overclocked ? "Overclocked" : "",
-        run.submitted_by ? `@${run.submitted_by}` : ""].filter(Boolean);
+        run.credit_name ? `${run.credit_name}${run.submitted_by ? ` (via @${run.submitted_by})` : ""}`
+          : run.submitted_by ? `@${run.submitted_by}` : ""].filter(Boolean);
       return `<div class="run-item"><strong>${escapeHtml(title)}</strong>${escapeHtml(details.join(" · ") || "No machine details recorded.")}</div>`;
+    }
+
+    // Returns escaped HTML. Results submitted on someone else's behalf credit
+    // the source first, linked when it has an https URL: "Name (via @user)".
+    function formatContributors(record, implementations) {
+      const urls = new Map((Array.isArray(record.credits) ? record.credits : []).map((credit) => [credit.name, credit.url]));
+      const labels = new Set();
+      implementations.forEach((run) => {
+        if (run.credit_name) {
+          const href = urls.get(run.credit_name) ? safeHttpsUrl(urls.get(run.credit_name)) : null;
+          const name = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${escapeHtml(run.credit_name)}</a>` : escapeHtml(run.credit_name);
+          labels.add(run.submitted_by ? `${name} (via @${escapeHtml(run.submitted_by)})` : name);
+        } else if (run.submitted_by) {
+          labels.add(`@${escapeHtml(run.submitted_by)}`);
+        }
+      });
+      if (!labels.size && Array.isArray(record.contributors)) record.contributors.forEach((name) => labels.add(`@${escapeHtml(name)}`));
+      return labels.size ? [...labels].join(", ") : MISSING;
     }
 
     function formatRange(range, unit) {
@@ -714,8 +735,7 @@
       const chips = [[codename, process].filter(Boolean).join(" · "), pcie,
         partner ? `Board: ${partner}` : "", base ? `Base: ${base}` : ""].filter(Boolean);
       const implementations = Array.isArray(record.implementations) ? record.implementations : [];
-      const contributors = Array.isArray(record.contributors) && record.contributors.length
-        ? record.contributors.map((name) => `@${name}`).join(", ") : MISSING;
+      const contributors = formatContributors(record, implementations);
       cell.innerHTML = `<div class="spec-detail">
         <div>
           <p class="section-kicker">Silicon deep dive</p>
@@ -738,7 +758,7 @@
           <p class="section-kicker">Launch price history</p>
           ${formatPriceHistory(record)}
           <p class="section-kicker">This result</p>
-          <div class="result-meta"><span class="badge ${escapeHtml(record.source)}">${escapeHtml(record.source)}</span><span class="os-badge os-${escapeHtml(record.os)}">${escapeHtml(formatOs(record))}</span><span>${record.run_count || 1} sample${(record.run_count || 1) === 1 ? "" : "s"}</span><span>Avg ${formatRange(record.avg_fps_range, "FPS")}</span><span>1% low ${formatRange(record.p1_low_range, "FPS")}</span><span>By ${escapeHtml(contributors)}</span></div>
+          <div class="result-meta"><span class="badge ${escapeHtml(record.source)}">${escapeHtml(record.source)}</span><span class="os-badge os-${escapeHtml(record.os)}">${escapeHtml(formatOs(record))}</span><span>${record.run_count || 1} sample${(record.run_count || 1) === 1 ? "" : "s"}</span><span>Avg ${formatRange(record.avg_fps_range, "FPS")}</span><span>1% low ${formatRange(record.p1_low_range, "FPS")}</span><span>By ${contributors}</span></div>
           <div class="run-list">${implementations.map(formatRunLine).join("") || `<p class="spec-notes">No run details recorded.</p>`}</div>
           <div class="detail-links">
             <a class="button" href="https://github.com/MattyStacks/open-gpu-benchmarks/tree/main/data/${escapeHtml(record.source)}/${escapeHtml(record.gpu_id)}" target="_blank" rel="noreferrer">Result files on GitHub</a>

@@ -10,6 +10,7 @@ result:
     resolution: 1080p
     graphics_preset: Ultra
 proof:
+  method: other
   summary_source: Second synthetic run used to verify grouped averaging
 system:
   os: windows

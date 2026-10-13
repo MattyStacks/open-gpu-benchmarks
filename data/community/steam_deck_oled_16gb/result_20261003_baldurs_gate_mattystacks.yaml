@@ -4,6 +4,7 @@ game: Baldur's Gate 3
 version: '4.1'
 synthetic: true
 proof:
+  method: other
   raw_log: raw/steam_deck_oled_16gb/baldurs_gate_3_4k.csv
 benchmark_type: game
 result:

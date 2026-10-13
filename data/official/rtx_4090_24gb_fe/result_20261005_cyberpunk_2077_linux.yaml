@@ -22,3 +22,5 @@ system:
   launcher: Steam
   session: KDE Wayland
   gamemode: true
+proof:
+  method: other

@@ -24,7 +24,7 @@ GPU_VENDORS = ("amd", "intel", "nvidia")
 GPU_FORM_FACTORS = ("desktop", "laptop", "handheld", "igpu")
 RESULT_SOURCES = ("official", "community")
 RESULT_GLOBS = ("result_*.yaml", "result_*.yml")
-OUTLIER_RATIO = 0.5
+OUTLIER_RATIO = 0.25
 GITHUB_USER_PATTERN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$")
 ID_PATTERN = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 MEMORY_TOKEN = re.compile(r"^(\d+)gb$")
@@ -100,7 +100,29 @@ CATALOG_RANGES = {
     ("platform", "power_max_w"): (1, 600, "W"),
     ("platform", "battery_wh"): (1, 200, "Wh"),
 }
-RESULT_ENTRY_REQUIRED = ("resolution", "graphics_preset", "avg_fps", "p1_low")
+RESULT_ENTRY_REQUIRED = ("resolution", "graphics_preset", "avg_fps")
+# Optional numeric fields on a result entry. p1_low is optional because some
+# sources (3DMark, many in-game benchmarks) report an average only.
+RESULT_ENTRY_NUMBERS = ("avg_fps", "p1_low", "score")
+# How the numbers were captured (proof.method, required on every game run).
+# PresentMon is the recommended default; the rest are accepted alternatives.
+# Frame-time tools report a 1% low, so their runs must include p1_low.
+P1_LOW_METHODS = (
+    "presentmon",
+    "capframex",
+    "frameview",
+    "msi_afterburner",
+    "mangohud",
+    "ocat",
+)
+# These may report only an average; p1_low is optional.
+AVERAGE_ONLY_METHODS = (
+    "amd_adrenalin",
+    "in_game_benchmark",
+    "synthetic_benchmark",
+    "other",
+)
+PROOF_METHODS = (*P1_LOW_METHODS, *AVERAGE_ONLY_METHODS)
 RESULT_OSES = ("windows", "linux")
 # Optional OS detail fields under system: (applies to, kind). They are copied to
 # run records but never group runs; only system.os is a grouping key.
@@ -610,6 +632,45 @@ def submitter_errors(path, run, issues):
         )
 
 
+def is_https(value):
+    return is_text(value) and value.startswith("https://")
+
+
+def credit_errors(path, run, issues):
+    """Check the optional credit block for results submitted on someone else's behalf."""
+    if "credit" not in run:
+        return
+    credit = run["credit"]
+    if not isinstance(credit, dict):
+        issues.error(path, "community-credit", "'credit' must be a section with indented fields such as 'name:'")
+        return
+    if not is_text(credit.get("name")) or not credit["name"].strip():
+        issues.error(path, "community-credit", "credit.name is required: the person or channel the results came from")
+    for key in ("url", "source_url"):
+        if credit.get(key) is not None and not is_https(credit[key]):
+            issues.error(path, "community-credit", f"credit.{key} must be an https:// URL")
+
+    permission = credit.get("permission")
+    if not isinstance(permission, dict):
+        issues.error(path, "community-permission", "credit.permission is required, with a url, screenshot, or note showing permission")
+        return
+    if not any(permission.get(key) for key in ("url", "screenshot", "note")):
+        issues.error(path, "community-permission", "credit.permission needs at least one of url, screenshot, or note")
+    if permission.get("url") is not None and not is_https(permission["url"]):
+        issues.error(path, "community-permission", "credit.permission.url must be an https:// URL")
+    if permission.get("note") is not None and not is_text(permission["note"]):
+        issues.error(path, "community-permission", "credit.permission.note must be text")
+    screenshot = permission.get("screenshot")
+    if screenshot is not None:
+        relative = Path(str(screenshot))
+        if relative.is_absolute() or ".." in relative.parts or not (path.parent / relative).is_file():
+            issues.error(
+                path,
+                "community-permission",
+                f"credit.permission.screenshot '{screenshot}' must be a file inside this GPU folder, such as raw/permission.png",
+            )
+
+
 def community_warnings(path, run, gpu, issues):
     if gpu is not None and spec(gpu, "classification", "form_factor") == "laptop" and gpu_power_w(run) is None:
         issues.warning(path, "result-laptop-tgp", "laptop submission has no TGP; add gpu_power_w when discoverable")
@@ -683,6 +744,9 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
         issues.error(path, "result-unknown-gpu", f"gpu_id '{gpu_id}' is not in the catalog under data/gpus/")
     if source == "community":
         submitter_errors(path, run, issues)
+        credit_errors(path, run, issues)
+    elif "credit" in run:
+        issues.error(path, "community-credit", "credit is only for community files submitted on someone else's behalf")
 
     entries = run.get("result")
     if not isinstance(entries, list) or not entries:
@@ -705,6 +769,12 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
     if run.get("frame_generation", False):
         issues.error(path, "result-frame-generation", "frame generation must be disabled for comparable game runs")
     check_system_os(path, run, issues)
+    proof = run.get("proof")
+    method = proof.get("method") if isinstance(proof, dict) else None
+    if method is None:
+        issues.error(path, "result-proof-method", f"missing proof.method; set it to one of {', '.join(PROOF_METHODS)}")
+    elif method not in PROOF_METHODS:
+        issues.error(path, "result-proof-method", f"proof.method '{method}' must be one of {', '.join(PROOF_METHODS)}")
     if source == "community":
         community_warnings(path, run, gpu, issues)
 
@@ -716,12 +786,25 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
             if entry.get(field) is None:
                 issues.error(path, "result-field", f"{label} missing {field}")
                 entry_ok = False
-        for field in ("avg_fps", "p1_low"):
+        for field in RESULT_ENTRY_NUMBERS:
             if entry.get(field) is not None and not is_number(entry[field]):
                 issues.error(path, "result-field", f"{label} {field} must be a number")
                 entry_ok = False
         usable = usable and entry_ok
-        if entry_ok and float(entry["p1_low"]) > float(entry["avg_fps"]):
+        if entry_ok and entry.get("p1_low") is None:
+            if method in P1_LOW_METHODS:
+                issues.error(
+                    path,
+                    "result-p1-low-required",
+                    f"{label} has no p1_low, but {method} reports a 1% low; add it, or fix proof.method if the numbers came from elsewhere",
+                )
+            elif method in AVERAGE_ONLY_METHODS and method != "synthetic_benchmark":
+                issues.warning(
+                    path,
+                    "result-no-p1-low",
+                    f"{label} has no p1_low; that's fine if your tool doesn't report one, but add it when it does",
+                )
+        if entry_ok and entry.get("p1_low") is not None and float(entry["p1_low"]) > float(entry["avg_fps"]):
             issues.error(path, "result-impossible", f"{label} p1_low {entry['p1_low']} > avg_fps {entry['avg_fps']} is impossible")
         if entry.get("frame_generation", False):
             issues.error(path, "result-frame-generation", f"{label} must disable frame generation for comparable game runs")

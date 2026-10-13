@@ -4,6 +4,7 @@ game: Cyberpunk 2077
 version: '2.12'
 synthetic: true
 proof:
+  method: other
   summary_source: Manual benchmark summary supplied by contributor
 benchmark_type: game
 result:

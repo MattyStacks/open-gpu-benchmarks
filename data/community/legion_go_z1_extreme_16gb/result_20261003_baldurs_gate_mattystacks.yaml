@@ -4,6 +4,7 @@ game: Baldur's Gate 3
 version: '4.1'
 synthetic: true
 proof:
+  method: other
   summary_source: Manual benchmark summary supplied by contributor
 benchmark_type: game
 result:

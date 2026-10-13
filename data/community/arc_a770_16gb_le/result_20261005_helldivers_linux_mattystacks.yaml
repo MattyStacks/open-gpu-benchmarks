@@ -10,6 +10,7 @@ result:
     resolution: 1080p
     graphics_preset: Ultra
 proof:
+  method: other
   summary_source: Synthetic Linux run paired with the Windows Helldivers 2 runs
 system:
   os: linux

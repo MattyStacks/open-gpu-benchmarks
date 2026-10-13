@@ -14,6 +14,7 @@ result:
     resolution: 1440p
     graphics_preset: Ultra
 proof:
+  method: other
   summary_source: Average and 1% low manually transcribed by contributor
 system:
   os: windows

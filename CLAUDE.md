@@ -98,6 +98,17 @@ unless repository policy changes.
   keys or extra chart bars. Linux-only fields on a windows run (or the
   reverse) are errors. Per-distro comparisons are DIY from the JSON.
 - `frame_generation: false` is required for comparable game runs.
+- `avg_fps` is required; `p1_low` is optional (3DMark and in-game benchmarks
+  report none) and is `null` in the API when missing. `proof.method` is
+  required on every game run and says which tool captured it
+  (`checks.PROOF_METHODS`: PresentMon, CapFrameX, FrameView, MSI Afterburner,
+  AMD Adrenalin, MangoHud, OCAT, in-game benchmark, synthetic benchmark, or
+  other); PresentMon is the recommended default and the method is never a
+  grouping key. Frame-time tools (`checks.P1_LOW_METHODS`) must include
+  `p1_low` (`result-p1-low-required`); the rest only warn. A 3DMark run is a normal game run with the
+  graphics-test FPS as `avg_fps` and its result URL as `proof.summary_source`.
+- A community average more than 25% from the matching official average fails
+  `community-outlier` (`OUTLIER_RATIO` in `scripts/checks.py`).
 - Catalog specs are nested (`identity`, `classification`, `silicon`,
   `memory`, `clocks`, `power`, `release`, `features`). Only five fields are
   required (`id`, `identity.name`, `identity.gpu_vendor`,
@@ -128,6 +139,11 @@ unless repository policy changes.
 - Community files need `submitted_by: <github_user>` and the name
   `result_YYYYMMDD_<game>_<github_user>.yaml` (case-insensitive match; same-day
   repeats use `_<game>_2_<github_user>`). Official files don't need it.
+- Results measured by someone else keep the PR author in `submitted_by` and add
+  a `credit` block (`name`, optional https `url`/`source_url`, and
+  `permission` with at least one of `url`, `screenshot`, `note`). The
+  dashboard shows "Name (via @user)". Example credits use made-up names and
+  `example.com` URLs, never a real creator or channel.
 - The dashboard may move to a custom domain: keep GitHub links absolute and
   API/data links relative to the page.
 

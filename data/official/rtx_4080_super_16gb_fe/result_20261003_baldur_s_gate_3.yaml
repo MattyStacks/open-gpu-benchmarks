@@ -11,3 +11,5 @@ result:
   graphics_preset: Ultra
 system:
   os: windows
+proof:
+  method: other

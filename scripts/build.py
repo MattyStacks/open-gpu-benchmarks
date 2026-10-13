@@ -17,7 +17,7 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 
 OUTPUT_DIR = ROOT / "site" / "api" / "v1"
-SCHEMA_VERSION = "0.10"
+SCHEMA_VERSION = "0.11"
 RELEASE_VERSION = "0.6.0"
 
 
@@ -70,6 +70,7 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
     benchmark_type = run.get("benchmark_type", "game")
     system = run.get("system") or {}
     proof = run.get("proof") or {}
+    credit = run.get("credit") or {}
     raw_log = proof.get("raw_log")
     summary_source = proof.get("summary_source")
     gpu_power_w = checks.gpu_power_w(run)
@@ -103,15 +104,21 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "display_mode": str(system.get("display_mode", "")),
         "os": str(system.get("os", "")),
         **os_details(system),
+        "capture_method": str(proof.get("method", "")),
         "proof_level": "raw-log" if raw_log else "summary-only",
         "proof_reference": raw_log or summary_source or "",
         "source_file": relative_path(source_path),
         "submitted_by": str(run.get("submitted_by", "")),
+        # Results submitted on someone else's behalf credit that source first.
+        # The permission proof stays in Git, like raw captures.
+        "credit_name": str(credit.get("name", "")),
+        "credit_url": str(credit.get("url", "")),
+        "credit_source_url": str(credit.get("source_url", "")),
         "synthetic": bool(run.get("synthetic", False)),
     }
     if benchmark_type == "game":
         record["avg_fps"] = round(float(result["avg_fps"]), 2)
-        record["p1_low"] = round(float(result["p1_low"]), 2)
+        record["p1_low"] = round(float(result["p1_low"]), 2) if result.get("p1_low") is not None else None
     return record
 
 
@@ -157,32 +164,40 @@ def aggregate_game_records(records, id_prefix):
                     "driver",
                     "os",
                     *checks.OS_FIELDS,
+                    "capture_method",
+                    "credit_name",
                     "submitted_by",
                 )
                 if run[key] not in ("", None)
             }
             for run in runs
         ]
+        # Runs without a 1% low (3DMark, many in-game benchmarks) only count toward the average.
+        lows = [run["p1_low"] for run in runs if run["p1_low"] is not None]
         summaries.append(
             {
                 **first,
                 "id": f"{id_prefix}-{first['id']}",
                 "run_count": len(runs),
                 "avg_fps": round(sum(run["avg_fps"] for run in runs) / len(runs), 2),
-                "p1_low": round(sum(run["p1_low"] for run in runs) / len(runs), 2),
+                "p1_low": round(sum(lows) / len(lows), 2) if lows else None,
                 "avg_fps_range": [
                     min(run["avg_fps"] for run in runs),
                     max(run["avg_fps"] for run in runs),
                 ],
-                "p1_low_range": [
-                    min(run["p1_low"] for run in runs),
-                    max(run["p1_low"] for run in runs),
-                ],
+                "p1_low_range": [min(lows), max(lows)] if lows else None,
                 "implementations": implementations,
                 "contributors": sorted(
                     {run["submitted_by"] for run in runs if run["submitted_by"]},
                     key=str.lower,
                 ),
+                "credits": [
+                    {"name": name, "url": url}
+                    for name, url in sorted(
+                        {(run["credit_name"], run["credit_url"]) for run in runs if run["credit_name"]},
+                        key=lambda credit: credit[0].lower(),
+                    )
+                ],
             }
         )
     return summaries
@@ -251,7 +266,7 @@ def main(data_dir=DATA_DIR):
             "game_version_is_not_a_grouping_key": True,
             "os_detail_is_not_a_grouping_key": True,
             "frame_generation": "off",
-            "community_outlier_threshold": 0.5,
+            "community_outlier_threshold": checks.OUTLIER_RATIO,
         },
     }
 

@@ -39,8 +39,11 @@ Game records use `benchmark_type: game` (the default when omitted) and require:
 
 - `game`;
 - a non-empty `result` list, where every entry has `resolution`,
-  `graphics_preset`, `avg_fps`, and `p1_low`;
+  `graphics_preset`, and `avg_fps`. `p1_low` (1% low) is optional, but
+  recommended; see [Capture methods](#capture-methods);
 - `frame_generation: false`;
+- `proof.method`, the capture tool you used (see
+  [Capture methods](#capture-methods));
 - `system.os`, either `windows` or `linux` (lowercase). See
   [Operating system](#operating-system).
 
@@ -76,6 +79,93 @@ partners) and form factor, known laptop TGP/GPU power, game, resolution,
 averaged; different profiles remain separate. Game version, distro, kernel, and
 Proton version remain exact-run metadata rather than grouping keys. Desktop and
 laptop GPUs never share a group, and neither do Windows and Linux runs.
+
+## Capture methods
+
+**`proof.method` is required on every game run.** It records which tool the
+numbers came from. **PresentMon is the recommended way to capture a game run**:
+it's free, and its raw CSV can go in `raw/` as evidence. Any of the tools below
+is accepted, so use whichever you already have:
+
+| `proof.method` | Tool | `p1_low` |
+| -------------- | ---- | -------- |
+| `presentmon` | PresentMon (recommended) | Required |
+| `capframex` | CapFrameX | Required |
+| `frameview` | NVIDIA FrameView | Required |
+| `msi_afterburner` | MSI Afterburner / RivaTuner (RTSS) benchmark | Required |
+| `mangohud` | MangoHud (Linux) | Required |
+| `ocat` | OCAT | Required |
+| `amd_adrenalin` | AMD Software: Adrenalin Edition performance metrics | Optional |
+| `in_game_benchmark` | The game's built-in benchmark tool | Optional |
+| `synthetic_benchmark` | 3DMark and similar | Optional |
+| `other` | Anything else; name the tool in the pull request | Optional |
+
+The tools marked Required record every frame, so they always give a 1% low,
+and we want it. The others may report only an average.
+
+The method is run detail, not a grouping key, so runs from different tools for
+the same product, game, resolution, preset, and OS are averaged together.
+Built-in benchmark scenes are often lighter or heavier than real gameplay, so
+say which scene you used in the pull request. A tool that isn't listed but
+should be is a one-line change to `PROOF_METHODS` in `scripts/checks.py`.
+
+A run with no `p1_low` still counts toward the average FPS. Its summary averages
+the 1% low over only the runs that have one, and shows no 1% low when none do.
+Leaving `p1_low` out of a Required tool's run is the `result-p1-low-required`
+error. Leaving it out of an `amd_adrenalin`, `in_game_benchmark`, or `other`
+run raises the `result-no-p1-low` warning, which is fine to ignore if your tool
+didn't report one. `synthetic_benchmark` runs never warn.
+
+## Submitting someone else's results
+
+Anyone can submit results that another person measured, such as a creator's
+published video or a friend's numbers, **as long as they gave permission and you
+can show it**. You still open the pull request, so `submitted_by` and the file
+name stay your own GitHub username. Add a `credit` block naming the source and
+showing the permission:
+
+```yaml
+submitted_by: your-github-username
+credit:
+  name: Example Creator
+  url: https://example.com/example-creator
+  source_url: https://example.com/example-creator/gpu-review
+  permission:
+    url: https://example.com/example-creator/permission
+    screenshot: raw/permission_example_creator.png
+    note: Describe how and when permission was given
+```
+
+The names and links above are placeholders.
+
+- `name` is required: who the results came from.
+- `url` (their profile or channel) and `source_url` (the video or post with the
+  numbers) are optional `https://` links.
+- `permission` is required, with at least one of:
+  - `url`: an `https://` link showing permission, such as a comment, a public
+    post, or the creator's published reuse policy;
+  - `screenshot`: an image of the permission (for example a message), saved in
+    the same GPU folder, such as
+    `data/community/<gpu_id>/raw/permission_example_creator.png`;
+  - `note`: a short description of how and when permission was given.
+
+A maintainer checks the permission before merging. The dashboard credits the
+source first and links it when `url` is set: "Example Creator (via
+@your-github-username)". The API carries `credit_name`, `credit_url`, and
+`credit_source_url` on every run, and a `credits` list on each summary. The
+permission proof stays in Git, like raw captures. `credit` is only for community
+files.
+
+**3DMark.** Name the benchmark in `game` (for example `3DMark Steel Nomad`), put
+its version in `version`, and use the fixed resolution and preset it runs at.
+Steel Nomad has one graphics test, so its score is the graphics-test FPS times
+100 (a score of 8603 is 86.03 FPS). Copy `avg_fps` from the "Graphics test" box on
+the results page, and add `score` if you like. For a benchmark with more than one
+graphics test, such as Time Spy, enter the graphics-test FPS from the results
+page, never the overall score divided by 100. Use the link to your 3DMark result
+page as `proof.summary_source`. 3DMark lists every GPU in the machine, so make
+sure the `gpu_id` is the card that ran the test. Start from
+[`templates/community_steel_nomad.yaml`](../templates/community_steel_nomad.yaml).
 
 ## Operating system
 
@@ -165,10 +255,11 @@ accordingly. Raw captures remain in Git but outside browser-facing JSON.
 - comparable game settings
 - frame-generation status
 - impossible FPS values
+- `proof.method`
 - `system.os` and the OS detail fields
 
 When a matching official baseline exists (same product, game, resolution,
-preset, and OS), a community average more than 50% different is a validation
+preset, and OS), a community average more than 25% different is a validation
 error. Correct it, explain a materially different
 profile, or remove it.
 
@@ -251,15 +342,37 @@ item per resolution/preset profile.
 One of these is wrong:
 
 - the result is missing `game`
-- a `result` item is missing `resolution`, `graphics_preset`, `avg_fps`, or
-  `p1_low`
-- an FPS value isn't a number
+- a `result` item is missing `resolution`, `graphics_preset`, or `avg_fps`
+- `avg_fps`, `p1_low`, or `score` isn't a number
 
 Use `graphics_preset`, never `settings`.
 
 #### `result-impossible`
 
 `p1_low` is higher than `avg_fps`. Check that the two values aren't swapped.
+
+#### `result-proof-method`
+
+`proof.method` is missing, or isn't one of the listed capture tools
+(`presentmon`, `capframex`, `frameview`, `msi_afterburner`, `amd_adrenalin`,
+`mangohud`, `ocat`, `in_game_benchmark`, `synthetic_benchmark`, or `other`).
+Add it under `proof:` and pick the tool you used; see
+[Capture methods](#capture-methods).
+
+#### `result-p1-low-required`
+
+A result entry has no `p1_low`, but its `proof.method` is a tool that always
+reports a 1% low (`presentmon`, `capframex`, `frameview`, `msi_afterburner`,
+`mangohud`, or `ocat`). Add the 1% low from the tool's summary. If the numbers
+actually came from somewhere else, such as the game's own benchmark, fix
+`proof.method` instead. See [Capture methods](#capture-methods).
+
+#### `result-no-p1-low`
+
+Warning only. A result entry has no `p1_low`, and its `proof.method` is
+`amd_adrenalin`, `in_game_benchmark`, or `other`. That's fine if your tool
+didn't report a 1% low; add it when it does. It isn't raised for
+`synthetic_benchmark` runs, which never report one.
 
 #### `result-frame-generation`
 
@@ -302,11 +415,33 @@ username that opens the pull request.
 
 The file name doesn't end with the `submitted_by` username. Rename it to
 `result_YYYYMMDD_<game>_<github_user>.yaml`. For repeats on the same day and
-game, add `_2`, `_3`, and so on before the username.
+game, add `_2`, `_3`, and so on before the username. When you submit someone
+else's results, the file name still ends with your own username; credit them
+in `credit`.
+
+#### `community-credit`
+
+The `credit` block is wrong. One of these happened:
+
+- `credit` isn't a section with indented fields.
+- `credit.name` is missing.
+- `credit.url` or `credit.source_url` isn't an `https://` link.
+- `credit` is in an official file. It's only for community files submitted on
+  someone else's behalf.
+
+See [Submitting someone else's results](#submitting-someone-elses-results).
+
+#### `community-permission`
+
+The results credit someone else, but the permission isn't shown. Add
+`credit.permission` with at least one of `url` (an `https://` link), `screenshot`
+(an image file inside this GPU folder, such as `raw/permission.png`), or `note`.
+A screenshot path must exist and can't point outside the folder.
 
 #### `community-outlier`
 
-The average FPS is more than 50% away from the matching official result. Re-check
+The average FPS is more than 25% away from the matching official result (the gap is measured
+against the official average). Re-check
 the settings, explain the profile difference in the pull request, or remove the
 entry.
 

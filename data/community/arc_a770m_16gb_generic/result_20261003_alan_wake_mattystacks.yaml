@@ -4,6 +4,7 @@ game: Alan Wake 2
 version: '1.2'
 synthetic: true
 proof:
+  method: other
   summary_source: Screenshot of PresentMon summary supplied by contributor
 benchmark_type: game
 result:

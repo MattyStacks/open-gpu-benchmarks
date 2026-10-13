@@ -25,18 +25,11 @@ The four-step catalog plan is complete. These items finish it off.
 
 ## Data and submissions
 
-- [ ] **Permission-based third-party submissions.** Let a maintainer add
-  benchmarks on behalf of someone else, such as a YouTube channel or another
-  user who has given permission. Today `submitted_by` must be the GitHub user
-  opening the PR, and the file name must end with that username. This needs:
-  - a way to credit the original source: name, channel or profile URL, and a
-    link to the video or post
-  - a record that permission was given
-  - check and file-name rules that allow the PR author and the credited source
-    to differ
-  - updated contributor docs: `CONTRIBUTING.md`,
-    `docs/COMMUNITY_SUBMISSIONS.md`, and `data/community/README.md`
-  - dashboard and API attribution for the credited source
+- [ ] **Parsers for more capture tools (separate PR).** `parse.py` reads only
+  PresentMon and MangoHud CSVs. Add CapFrameX, NVIDIA FrameView, MSI
+  Afterburner/RTSS, and AMD Adrenalin exports, writing the matching
+  `proof.method`. Needs real sample exports from each tool to test against;
+  don't guess the formats.
 - [ ] **Simple benchmark submission flow (no PRs).** PRs are too complex for
   most people. Build a low-friction way to get benchmarks in.
   - Goal: a contributor with a PresentMon/MangoHud capture (or typed-in
@@ -79,6 +72,23 @@ The four-step catalog plan is complete. These items finish it off.
     `scripts/test_build.py`, and document the policy for what "official"
     means (who may add them, required raw evidence, test-bench spec).
   - Also grow the set of official runs per game and GPU.
+- [ ] **Add the RTX 5080 and the first Steel Nomad run.** The catalog has no
+  RTX 5080 entry yet. Add one (with sources), then add the maintainer's Steel
+  Nomad run (8603 score, 86.03 FPS) as community data with its 3DMark result URL
+  as `proof.summary_source`. Also add an official Steel Nomad baseline per
+  catalog GPU, since without one the run only gets `result-no-baseline`.
+- [ ] **Confirm 3DMark fixed settings.** Check the fixed render resolution and
+  preset for Steel Nomad, Steel Nomad Light, and the other benchmarks people
+  will submit, and list them in `docs/COMMUNITY_SUBMISSIONS.md`. Consider a
+  check that rejects a 3DMark `game` with the wrong resolution.
+- [ ] **Tune the outlier limit.** `OUTLIER_RATIO` is 25% from the official
+  average (`scripts/checks.py`). Revisit it with real data: a retail card's
+  run-to-run spread on one benchmark is far smaller than 25%, so 3DMark runs
+  could use a tighter limit than games. Also decide whether the gap should be
+  measured against the best known score for the hardware.
+- [ ] **Multi-GPU machines.** 3DMark and PresentMon captures can come from a
+  machine with an iGPU or a second card. Consider a `system.gpu` field to record
+  the GPU name the tool reported, and a check against the catalog entry.
 - [ ] **Custom graphics presets.** Let people submit runs with their own
   settings instead of only the standard presets.
   - Decide the data shape: for example `graphics_preset: custom` plus a
@@ -157,6 +167,14 @@ The four-step catalog plan is complete. These items finish it off.
   `main`.
 
 ## Recently completed
+
+- **Unreleased (feature/avg-fps-only-3dmark)**
+  - Permission-based third-party submissions: the `credit` block with proof of
+    permission, its checks, API fields, and "Name (via @user)" on the
+    dashboard.
+  - Average-FPS-only results, a required `proof.method`, and 1% low rules
+    by capture tool.
+  - Community outlier limit set to 25%.
 
 - **v0.5.0 (2026-10-08)**
   - Catalog plan step 1: per-product catalog files, product-level IDs, shared

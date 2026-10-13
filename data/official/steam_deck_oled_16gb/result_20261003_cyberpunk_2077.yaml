@@ -19,3 +19,5 @@ system:
   runtime: proton
   launcher: Steam
   session: gamescope
+proof:
+  method: other

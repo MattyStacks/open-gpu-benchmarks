@@ -11,3 +11,5 @@ result:
   graphics_preset: High
 system:
   os: windows
+proof:
+  method: other

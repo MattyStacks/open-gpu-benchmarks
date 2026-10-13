@@ -244,8 +244,38 @@ Old-to-new ID map, applied to the result folders as well:
   `{ }`); `checks.py` rejects inline style as `yaml-inline`.
 
 `benchmark_type` defaults to `game`. Game source files need `game` and a
-`result` list whose entries each carry `resolution`, `graphics_preset`,
-`avg_fps`, and `p1_low`. Each entry is independently validated and expanded.
+`result` list whose entries each carry `resolution`, `graphics_preset`, and
+`avg_fps`; `p1_low` is optional (schema `0.11`), so 3DMark and in-game
+benchmark runs that report only an average are valid. A run record's `p1_low`
+is `null` when missing; a summary averages `p1_low` over only the runs that have
+one, and is `null` (with a `null` `p1_low_range`) when none do. `proof.method`
+is required on every game run and must be one of `checks.PROOF_METHODS`
+(`presentmon`, `capframex`, `frameview`, `msi_afterburner`, `amd_adrenalin`,
+`mangohud`, `ocat`, `in_game_benchmark`, `synthetic_benchmark`, `other`; add a
+tool by editing that tuple and the table in `docs/COMMUNITY_SUBMISSIONS.md`). It
+is run detail, copied to `capture_method` on every record and
+`implementations` entry, and never a grouping key. PresentMon is the
+recommended method. The existing synthetic fixtures use `other`. The tuple is
+split: `P1_LOW_METHODS` (frame-time tools; a missing `p1_low` is the
+`result-p1-low-required` error) and `AVERAGE_ONLY_METHODS` (a missing
+`p1_low` is the `result-no-p1-low` warning, silent for
+`synthetic_benchmark`). The community outlier limit is 25%
+(`OUTLIER_RATIO`), pinned by a test.
+
+Third-party results: a community file may carry a `credit` block (`name`,
+optional https `url` and `source_url`, required `permission` with at least one
+of an https `url`, a `screenshot` file inside the GPU folder, or a `note`),
+checked by `credit_errors()` as `community-credit` and `community-permission`.
+`submitted_by` and the file name still name the PR author. Run records gain
+`credit_name`, `credit_url`, `credit_source_url`; `implementations` entries
+gain `credit_name`; summaries gain `credits` (unique `{name, url}`). The
+permission proof is not copied into the API. The dashboard's "By" line shows
+"Name (via @user)" through `formatContributors()`. Examples always use made-up
+names and `example.com` URLs. A 3DMark run is
+an ordinary game run (`game: 3DMark Steel Nomad`, its fixed resolution, a fixed
+preset, `avg_fps` from the "Graphics test" FPS, optional `score`, and the result
+URL as `proof.summary_source`); see `templates/community_steel_nomad.yaml`.
+Each entry is independently validated and expanded.
 The build averages matching entries from one or several files, while different
 resolution/preset profiles remain distinct. Other types retain their `result`
 entries in per-GPU API data but do not enter dashboard charts.

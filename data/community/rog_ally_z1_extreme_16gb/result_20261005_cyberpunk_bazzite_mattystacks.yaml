@@ -17,6 +17,7 @@ system:
   session: gamescope
   power_mode: Turbo
 proof:
+  method: other
   summary_source: Synthetic Linux run paired with the Windows Cyberpunk 2077 run
 benchmark_type: game
 result:

@@ -7,6 +7,7 @@ system:
   os: windows
   driver: 24.1.1
 proof:
+  method: other
   raw_log: raw/legion_go_z1_extreme_16gb/alan_wake_2_1440p.csv
 benchmark_type: game
 result:

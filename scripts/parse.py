@@ -146,6 +146,7 @@ def main():
     p.add_argument("--graphics-preset", default="Ultra")
     p.add_argument("--form-factor", default=None, choices=["desktop","laptop","handheld","igpu"], help="Defaults to the catalog value")
     p.add_argument("--driver", default="", help="OPTIONAL - not required for PR approval")
+    p.add_argument("--method", default=None, choices=list(checks.PROOF_METHODS), help="Capture tool, written to proof.method. Defaults to presentmon or mangohud from the CSV format; pass it when another tool (for example capframex) made the CSV")
     p.add_argument("--os", default=None, choices=list(checks.RESULT_OSES), help="Defaults to linux for MangoHud captures, windows for PresentMon")
     p.add_argument("--os-detail", default="", help="OPTIONAL - full OS name, e.g. 'Windows 11 Pro 24H2' or 'SteamOS 3.6.19'")
     p.add_argument("--output", default="")
@@ -176,7 +177,6 @@ def main():
         "benchmark_type": "game",
         "game": args.game,
         "form_factor": form_factor,
-        "capture_method": result["format"],
         "result": [{
             "avg_fps": round(float(result["avg"]),2),
             "p1_low": round(float(result["p1"]),2),
@@ -192,7 +192,11 @@ def main():
         }],
         "system": system,
         "overclock": {"is_oc": False, "power_limit_percent": 100},
-        "proof": {"raw_log": str(csv_path.name), "format": result["format"]},
+        "proof": {
+            "method": args.method or ("mangohud" if result["format"]=="mangohud" else "presentmon"),
+            "raw_log": str(csv_path.name),
+            "format": result["format"],
+        },
     }
     data["result"][0]={k:v for k,v in data["result"][0].items() if v is not None}
 

@@ -13,6 +13,39 @@ a fresh empty `Unreleased` section.
 
 ## Unreleased
 
+### Changed
+- `community-outlier` threshold tightened from 50% to 25% away from the
+  matching official average (`checks.OUTLIER_RATIO`, also reported as
+  `comparison_policy.community_outlier_threshold`).
+
+### Added
+- Average-FPS-only results: `p1_low` is now optional, so 3DMark (Steel Nomad)
+  and in-game benchmark runs that report no 1% low can be submitted. Without
+  one, the run and its summary carry `p1_low: null`, the dashboard shows a dash,
+  and the check raises the `result-no-p1-low` warning (not raised for
+  `synthetic_benchmark`). Schema `0.11`.
+- Required `proof.method` records which tool captured a game run: `presentmon`
+  (recommended), `capframex`, `frameview`, `msi_afterburner`, `amd_adrenalin`,
+  `mangohud`, `ocat`, `in_game_benchmark`, `synthetic_benchmark`, or `other`.
+  It is exposed as `capture_method` and is never a grouping key. New
+  `result-proof-method` check; the existing synthetic fixtures use `other`.
+  `parse.py` writes it (with a new `--method` option) in place of the old
+  top-level `capture_method`.
+- 1% low by capture tool: frame-time tools (PresentMon, CapFrameX, FrameView,
+  MSI Afterburner, MangoHud, OCAT) must include `p1_low` (new
+  `result-p1-low-required` error). For AMD Adrenalin, in-game benchmarks, and
+  other, a missing 1% low is a warning that says it's fine if the tool
+  didn't report one.
+- Third-party submissions: a community file can credit someone else's results
+  with a `credit` block (name, optional links, and proof of permission as a
+  link, screenshot, or note). New `community-credit` and `community-permission`
+  checks; `credit_name`, `credit_url`, `credit_source_url` on run records,
+  `credits` on summaries; the dashboard shows "Name (via @user)".
+- A test pins the 25% outlier limit.
+- Optional `score` on a result entry (for example the 3DMark score).
+- `templates/community_steel_nomad.yaml`: a 3DMark Steel Nomad submission
+  template that links the 3DMark result page as `proof.summary_source`.
+
 ## 0.6.0 - 2026-10-08
 
 Linux vs Windows and catalog sources: every run says which OS it ran on, the

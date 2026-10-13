@@ -8,6 +8,7 @@ memory size, such as `rtx_4090_24gb_fe` or `steam_deck_oled_16gb`:
 ```text
 data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
 data/community/<gpu_id>/raw/<capture>.csv          (optional evidence)
+data/community/<gpu_id>/raw/permission_<name>.png  (permission proof, third-party results)
 ```
 
 **New here? Follow the step-by-step guide with examples in
@@ -21,6 +22,14 @@ Folder rules:
   case-insensitively; lowercase is conventional). For a second file with the
   same date and game, add a number before the username, such as
   `result_20261003_cyberpunk_2_mattystacks.yaml`.
+- Submitting someone else's results (with their permission)? Keep your own
+  username in `submitted_by` and the file name, and add a `credit` block with
+  proof of permission. A permission screenshot lives in this folder too, such
+  as `raw/permission_example_creator.png`. See
+  [Submitting someone else's results](../../docs/COMMUNITY_SUBMISSIONS.md#submitting-someone-elses-results).
+- Set `proof.method` to the capture tool you used. PresentMon is recommended;
+  tools that record every frame must include `p1_low` (see
+  [Capture methods](../../docs/COMMUNITY_SUBMISSIONS.md#capture-methods)).
 - `python scripts/validate.py results` checks all `result_*.yaml` and
   `result_*.yml` files here. It also rejects any other YAML file in a GPU
   folder, so files can't be skipped silently. The build creates

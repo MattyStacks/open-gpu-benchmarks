@@ -32,13 +32,29 @@ prepares:
   keys or extra chart bars. Linux-only fields on a windows run (or the
   reverse) are errors. Per-distro comparisons are DIY from the JSON.
 - Frame generation must be disabled for comparable benchmark runs.
+- `avg_fps` is required on every result entry; `p1_low` is optional (3DMark
+  and in-game benchmarks report none) and is `null` in the API when missing.
+  `proof.method` is required on every game run and says which tool captured it
+  (`checks.PROOF_METHODS`: PresentMon, CapFrameX, FrameView, MSI Afterburner,
+  AMD Adrenalin, MangoHud, OCAT, in-game benchmark, synthetic benchmark, or
+  other); PresentMon is the recommended default, and the method is never a
+  grouping key. Frame-time tools (`checks.P1_LOW_METHODS`) must include
+  `p1_low` (`result-p1-low-required`); the rest only warn. A 3DMark run is
+  a normal game run (`game: 3DMark Steel Nomad`) with the graphics-test FPS as
+  `avg_fps` and the result URL as `proof.summary_source`.
+- A community average more than 25% from the matching official average fails
+  `community-outlier` (`OUTLIER_RATIO` in `scripts/checks.py`).
 - Keep exact machine metadata with each run while charts display grouped
   summaries.
 - Treat raw capture evidence as preferred and preserve its reference when
   correcting or removing a record.
 - Community result files require `submitted_by` (the submitter's GitHub
   username) and must be named `result_YYYYMMDD_<game>_<github_user>.yaml`;
-  same-day repeats put a number before the username.
+  same-day repeats put a number before the username. Results measured by
+  someone else keep the PR author in `submitted_by` and add a `credit` block
+  (`name`, optional https `url`/`source_url`, and `permission` with at least
+  one of `url`, `screenshot`, `note`). Example credits use made-up names and
+  `example.com` URLs, never a real creator.
 - The catalog is one file per product at
   `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`; the file name equals `id`
   and the folders equal `classification.form_factor` and

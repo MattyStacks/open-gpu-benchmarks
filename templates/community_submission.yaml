@@ -12,6 +12,18 @@
 # YAML keys. Every list item is validated and aggregated independently.
 gpu_id: rtx_4070_super_12gb_fe
 submitted_by: your-github-username # Required; GitHub user opening the pull request
+# Submitting someone else's results (a creator or a friend who said yes)?
+# Keep submitted_by as yourself, and add a credit block with proof of permission.
+# The dashboard shows "Example Creator (via @your-github-username)".
+# The names and links below are placeholders, not real people.
+# credit:
+#   name: Example Creator # Required; who the results came from
+#   url: https://example.com/example-creator # Optional; their profile or channel
+#   source_url: https://example.com/example-creator/gpu-review # Optional; the video or post
+#   permission: # Required; at least one of url, screenshot, or note
+#     url: https://example.com/example-creator/permission # A comment, post, or reuse policy
+#     screenshot: raw/permission_example_creator.png # A file in this GPU folder
+#     note: Describe how and when permission was given
 benchmark_type: game
 game: Cyberpunk 2077
 version: "2.12"
@@ -61,6 +73,20 @@ system:
   #   gamemode: true
   # Windows-only fields on a linux run, or Linux-only fields on a windows run, fail the checks.
 proof:
+  # Required. How the numbers were captured. Pick the tool you used.
+  # These report a 1% low, so p1_low is required with them:
+  #   presentmon          PresentMon (recommended)
+  #   capframex           CapFrameX
+  #   frameview           NVIDIA FrameView
+  #   msi_afterburner     MSI Afterburner / RivaTuner (RTSS) benchmark
+  #   mangohud            MangoHud (Linux)
+  #   ocat                OCAT
+  # These may report only an average, so p1_low is optional (add it if you have it):
+  #   amd_adrenalin       AMD Software: Adrenalin Edition performance metrics
+  #   in_game_benchmark   the game's own benchmark tool
+  #   synthetic_benchmark 3DMark and similar (see community_steel_nomad.yaml)
+  #   other               anything else; name it in the pull request
+  method: presentmon
   # Keep raw captures in this GPU folder, such as
   # data/community/rtx_4070_super_12gb_fe/raw/Cyberpunk_4070S_1440p.csv.
   raw_log: raw/Cyberpunk_4070S_1440p.csv

@@ -164,7 +164,10 @@ Open the pull request on GitHub and include:
 - [ ] Product, game, and game version
 - [ ] Resolution and graphics preset(s) you ran
 - [ ] Anything unusual (overclock, undervolt, power limit, mods)
-- [ ] How you captured the numbers (PresentMon, MangoHud, in-game benchmark)
+- [ ] How you captured the numbers, as `proof.method` (PresentMon is
+  recommended; CapFrameX, FrameView, MSI Afterburner, AMD Adrenalin, MangoHud,
+  OCAT, an in-game benchmark, or a 3DMark result link are also accepted, and
+  3DMark runs can start from `templates/community_steel_nomad.yaml`)
 
 GitHub runs the same checks you just ran, as three separate checks (see
 [Reading a failed check](#reading-a-failed-check)). A maintainer then reviews
@@ -225,6 +228,7 @@ system:
   os_detail: Windows 11 Pro 24H2
   resizable_bar: true
 proof:
+  method: presentmon                       # required: the capture tool you used
   raw_log: raw/Cyberpunk_4070S_1440p.csv   # relative to this product's folder
   format: presentmon_summary
 ```
@@ -261,6 +265,7 @@ system:
   os: windows
   os_detail: Windows 11 Home 23H2
 proof:
+  method: presentmon
   raw_log: raw/bg3_1080p.csv
   format: presentmon_summary
 ```
@@ -289,6 +294,7 @@ system:
   runtime: proton
   session: gamescope
 proof:
+  method: other
   summary_source: Steam Deck performance overlay, 3-minute run in the market area
 ```
 
@@ -301,7 +307,10 @@ proof:
 | `game`                                         | **Yes**   | Free text, keep spelling consistent for grouping        |
 | `result` list                                  | **Yes**   | At least one entry; every entry starts with `-`         |
 | `result[].resolution`, `graphics_preset`       | **Yes**   | Use `graphics_preset`, never `settings`                 |
-| `result[].avg_fps`, `p1_low`                   | **Yes**   | `p1_low` must be less than or equal to `avg_fps`        |
+| `result[].avg_fps`                             | **Yes**   | Average FPS                                             |
+| `result[].p1_low`                              | Depends   | 1% low; can't exceed `avg_fps`. Required for PresentMon, CapFrameX, FrameView, MSI Afterburner, MangoHud, and OCAT; optional for AMD Adrenalin, in-game benchmarks, 3DMark, and other |
+| `credit` with `credit.permission`              | Only for someone else's results | Name the source and show permission (link, screenshot, or note); see [submitting someone else's results](docs/COMMUNITY_SUBMISSIONS.md#submitting-someone-elses-results) |
+| `proof.method`                                 | **Yes**   | The capture tool: `presentmon` (recommended), `capframex`, `frameview`, `msi_afterburner`, `amd_adrenalin`, `mangohud`, `ocat`, `in_game_benchmark`, `synthetic_benchmark`, or `other`; see [capture methods](docs/COMMUNITY_SUBMISSIONS.md#capture-methods) |
 | `frame_generation`                             | Must be `false` | Frame generation runs aren't comparable            |
 | `system.os`                                    | **Yes**   | `windows` or `linux`, lowercase; Windows and Linux runs are never averaged together |
 | `gpu_power_w` (laptops)                        | Warning   | Strongly encouraged                                     |
@@ -323,6 +332,10 @@ Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 | Used `settings:` | `[result-field] ... missing graphics_preset` | Rename to `graphics_preset` |
 | Ran with DLSS/FSR Frame Gen | `[result-frame-generation]` | Re-run with frame generation off (upscaling is fine, record it in `upscaling`) |
 | `p1_low` bigger than `avg_fps` | `[result-impossible]` | Check you didn't swap the values |
+| No `p1_low` from PresentMon, Afterburner, or another frame-time tool | `[result-p1-low-required]` | Copy the 1% low from the tool's summary |
+| No `p1_low` from an in-game benchmark or Adrenalin | `[result-no-p1-low]` (warning) | Fine if your tool didn't report one |
+| Someone else's results without proof of permission | `[community-permission]` | Add `credit.permission` with a link, screenshot, or note |
+| No `proof.method`, or an unknown one such as `screenshot` | `[result-proof-method]` | Add `proof.method` with the tool you used (list in the template); use `other` if yours isn't listed |
 | Far from the official result | `[community-outlier]` | Re-check the settings, or explain the difference in the PR |
 | Wrote `[a, b]` or `{}` | `[yaml-inline]` | One `-` line per item; leave empty fields out |
 | No `system.os`, or `os: Windows 11` | `[result-os]` | Set `os: windows` or `os: linux`; put the full name in `os_detail` |

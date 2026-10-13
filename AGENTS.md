@@ -37,6 +37,15 @@ distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
 keys or extra chart bars. Linux-only fields on a windows run (or the
 reverse) are errors. Per-distro comparisons are DIY from the JSON.
 
+`avg_fps` is required; `p1_low` is optional (3DMark and in-game benchmarks
+report none). `proof.method` is required on every game run and names the
+capture tool (`checks.PROOF_METHODS`); PresentMon is the recommended default,
+and the method is never a grouping key. Frame-time tools must include
+`p1_low`. Results measured by someone else keep the PR author in
+`submitted_by` and add a `credit` block with proof of permission; example
+credits use made-up names, never a real creator. A community average
+more than 25% from the official average fails `community-outlier`.
+
 Catalog data must be accurate. Cite real pages in `sources`, list in
 `covers` only the sections a page backs, and leave a value out rather than
 guess it.

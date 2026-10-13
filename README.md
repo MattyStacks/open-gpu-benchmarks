@@ -86,7 +86,8 @@ product-level IDs and renames the vendor field to `gpu_vendor` (in
 are always returned already merged with their reference. Schema `0.9` adds
 `sources`. Schema `0.10` adds `os` (a grouping key) and the OS detail fields
 (`os_detail`, `distro`, `kernel`, `mesa`, `proton`, ...) to every run record
-and `implementations` entry. The
+and `implementations` entry. Schema `0.11` makes `p1_low` optional (it is `null`
+on runs and summaries without one) and adds `capture_method`. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.

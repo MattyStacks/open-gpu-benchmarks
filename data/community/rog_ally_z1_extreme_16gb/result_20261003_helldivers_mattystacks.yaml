@@ -4,6 +4,7 @@ game: Helldivers 2
 version: '1.001'
 synthetic: true
 proof:
+  method: other
   raw_log: raw/rog_ally_z1_extreme_16gb/helldivers_2_1080p.csv
 benchmark_type: game
 result:

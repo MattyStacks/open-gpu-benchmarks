@@ -37,7 +37,7 @@ carry the same `gpu_id`.
 ```text
 data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml
 data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
-data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
 data/community/<gpu_id>/raw/**                         optional raw evidence
                  |
                  v
@@ -64,8 +64,19 @@ run and game-summary data plus links to the generated per-GPU summary JSON.
 
 Schema `0.5` adds `submitted_by` (string, empty for official runs) to every run
 record and the per-run `implementations` entries, and a sorted, de-duplicated
-`contributors` list to every grouped summary. The dashboard does not display
-submitters; they are API-only.
+`contributors` list to every grouped summary.
+
+Schema `0.12` makes community submissions anonymous by default: `submitted_by`
+is optional and empty when left out, `proof_level` is `raw-log`,
+`summary-only`, `maintainer-verified` (an official run with no linked
+evidence; official runs are verified by the maintainer by definition, and the
+dashboard says "Verified"), or `none` (a community run with no raw log,
+summary source, or `credit.source_url`; the dashboard says "Unverified"), and
+`checks.proof_reference()` picks the evidence. Official files may carry a
+`credit` block (the maintainer entering a run on someone's behalf) that needs
+only `name`. `upscaling` is normalized by `checks.upscaling()` to `""` when off and
+is a grouping key. Summary `credits` entries are `{name, url, source_url}`, and
+`implementations` entries carry `credit_source_url` and `upscaling`.
 
 Schema `0.6` nests the catalog hardware specs. Each catalog entry keeps its
 `id` at the top level with `identity`, `classification`, `silicon`,
@@ -233,11 +244,16 @@ Old-to-new ID map, applied to the result folders as well:
   fields must match the OS.
 - Treat raw capture evidence as preferred and preserve its reference when
   correcting or removing a record.
-- Community files require `submitted_by` (the PR author's GitHub username), and
-  the file name must be `result_YYYYMMDD_<game>_<github_user>.yaml`, matched
-  case-insensitively. Same-day repeats put a number before the username
-  (`..._helldivers_2_mattystacks.yaml`). `validate.py` enforces this; it does
-  not compare against the PR author.
+- Community files are anonymous by default. `submitted_by` is optional; when
+  set it must be a valid GitHub username (`community-submitter`). The file
+  name is `result_YYYYMMDD_<game>.yaml`, with `_2`, `_3` for same-day repeats
+  (`COMMUNITY_FILENAME`, `community-filename`). Older files that end in a
+  username still match. Nothing compares the name to the PR author.
+- Upscaling is off by default (missing, `off`, `none`, `native`, or `false`).
+  A result entry (or the run) may set `upscaling` only with
+  `preset_upscaling: true`, meaning the graphics preset turned it on;
+  otherwise `result-upscaling` fails. Upscaling is a grouping key and part of
+  the official-baseline match.
 - Different memory sizes, board partners, or handheld RAM configurations are
   different catalog IDs. Never merge them into one entry.
 - Data files and templates use block-style YAML only (no inline `[ ]` or
@@ -262,16 +278,20 @@ split: `P1_LOW_METHODS` (frame-time tools; a missing `p1_low` is the
 `synthetic_benchmark`). The community outlier limit is 25%
 (`OUTLIER_RATIO`), pinned by a test.
 
-Third-party results: a community file may carry a `credit` block (`name`,
-optional https `url` and `source_url`, required `permission` with at least one
-of an https `url`, a `screenshot` file inside the GPU folder, or a `note`),
-checked by `credit_errors()` as `community-credit` and `community-permission`.
-`submitted_by` and the file name still name the PR author. Run records gain
-`credit_name`, `credit_url`, `credit_source_url`; `implementations` entries
-gain `credit_name`; summaries gain `credits` (unique `{name, url}`). The
-permission proof is not copied into the API. The dashboard's "By" line shows
-"Name (via @user)" through `formatContributors()`. Examples always use made-up
-names and `example.com` URLs. A 3DMark run is
+Found results: anyone may submit a result someone else measured (a video, a
+review, a post) with a `credit` block. It needs an https `source_url` (where
+it was found, so a reviewer can check it) or, for unpublished numbers such as
+a friend's run, a `permission` block with at least one of an https `url`, a
+`screenshot` file inside the GPU folder, or a `note`. `name` and `url` are
+optional. `credit_errors()` reports `community-credit` and, when `permission`
+is given, `community-permission`. Run records carry `credit_name`,
+`credit_url`, `credit_source_url`; summaries carry `credits`. Permission proof
+is not copied into the API. The dashboard's "By" line, built by
+`formatContributors()` and `creditName()`, shows "Name (via @user)", the
+source's host name when there's no `name`, and "Anonymous" for a community run
+with neither credit nor username. `templates/community_found_result.yaml` is
+the starting point. Examples always use made-up names and `example.com`
+URLs. A 3DMark run is
 an ordinary game run (`game: 3DMark Steel Nomad`, its fixed resolution, a fixed
 preset, `avg_fps` from the "Graphics test" FPS, optional `score`, and the result
 URL as `proof.summary_source`); see `templates/community_steel_nomad.yaml`.
@@ -348,10 +368,11 @@ never reports, and that blocks the merge. Each job takes seconds.
 **Repo setting (manual):** mark the three checks as required status checks in
 the `main` branch protection rules (Settings → Branches).
 [`scripts/parse.py`](../scripts/parse.py) writes converted CSV output directly
-to `data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml`. It
-requires `--submitted-by`, rejects a `--gpu-id` that isn't in the catalog,
-takes the form factor from the catalog entry, and adds `_2`, `_3`, ... before
-the username rather than overwrite an existing file. `--os` is `windows` or
+to `data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml`, with the game
+name slugified. `--submitted-by` is optional and only written when given. It
+rejects a `--gpu-id` that isn't in the catalog, takes the form factor from the
+catalog entry, and adds `_2`, `_3`, ... rather than overwrite an existing
+file. `--os` is `windows` or
 `linux` and defaults from the capture format (MangoHud means linux,
 PresentMon means windows); it is written to `system.os`, with `--os-detail`
 to `system.os_detail`. MangoHud logs with the `os,cpu,gpu,...,kernel,driver`
@@ -359,6 +380,9 @@ header block fill `system.kernel` and `system.driver`.
 `scripts/test_build.py` covers:
 
 - aggregation and `submitted_by`/`contributors` output
+- anonymous submissions, file names, and `proof_level` (`check_anonymous_submissions()`)
+- found results with a source or permission (`check_third_party_credit()`)
+- upscaling rules and grouping (`check_upscaling()`)
 - one negative case per check rule, run in temporary data directories
 - that one run reports errors from several files at once
 - that `build.main()` returns 1 and writes nothing on errors
@@ -369,7 +393,7 @@ header block fill `system.kernel` and `system.driver`.
 - `base` merge behavior (inherit, override, and list replacement)
 - OS rules, Windows/Linux summary separation, and OS-aware outlier baselines
 - MangoHud parsing (`check_parse_mangohud()`)
-- that `templates/community_submission.yaml` passes the result checks
+- that every `templates/community_*.yaml` passes the result checks as written
 - the generated payload shape
 
 ## Current synthetic fixtures
@@ -383,7 +407,8 @@ Fedora). The Steam Deck runs are Linux (SteamOS); every other run is Windows. Th
 fixtures exercise a multi-profile source file and matching-run aggregation.
 The three laptop entries use `_generic` IDs and show `id-generic` warnings.
 Every fixture is marked `synthetic: true`. All community fixtures use
-`submitted_by: MattyStacks`. Catalog specs are real published specs; only the
+`submitted_by: MattyStacks`, except the anonymous Steam Deck Cyberpunk 2077 run
+(`result_20261003_cyberpunk.yaml`). Catalog specs are real published specs; only the
 benchmark runs are synthetic.
 
 ## Dashboard

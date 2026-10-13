@@ -48,13 +48,22 @@ prepares:
   summaries.
 - Treat raw capture evidence as preferred and preserve its reference when
   correcting or removing a record.
-- Community result files require `submitted_by` (the submitter's GitHub
-  username) and must be named `result_YYYYMMDD_<game>_<github_user>.yaml`;
-  same-day repeats put a number before the username. Results measured by
-  someone else keep the PR author in `submitted_by` and add a `credit` block
-  (`name`, optional https `url`/`source_url`, and `permission` with at least
-  one of `url`, `screenshot`, `note`). Example credits use made-up names and
-  `example.com` URLs, never a real creator.
+- Community result files are anonymous by default and named
+  `result_YYYYMMDD_<game>.yaml` (same-day repeats add `_2`, `_3`).
+  `submitted_by` is optional and must be a valid GitHub username when set.
+  Only `gpu_id`, `game`, the `result` list, `system.os`, and `proof.method`
+  are required; community runs with no evidence get `proof_level: none`
+  ("Unverified"). Official runs are maintainer-verified by definition
+  (`maintainer-verified`, "Verified") and may carry a `credit` with just a
+  `name` for a run entered on someone's behalf.
+  A result someone else measured adds a `credit` block with an https
+  `source_url` saying where it was found (no permission needed); unpublished
+  numbers give `permission` (at least one of `url`, `screenshot`, `note`)
+  instead. `name` and `url` are optional. Example credits use made-up names
+  and `example.com` URLs, never a real creator.
+- Upscaling is off by default. `upscaling` is allowed only with
+  `preset_upscaling: true` (the graphics preset turned it on); otherwise
+  `result-upscaling` fails. Upscaling is a grouping key.
 - The catalog is one file per product at
   `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`; the file name equals `id`
   and the folders equal `classification.form_factor` and

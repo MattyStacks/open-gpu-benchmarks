@@ -6,13 +6,13 @@ catalog entry, `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`. Then add one
 result file to its folder:
 
 ```text
-data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
 ```
 
 For example:
 
 ```text
-data/community/rtx_4090_24gb_fe/result_20261003_cyberpunk_mattystacks.yaml
+data/community/rtx_4090_24gb_fe/result_20261003_cyberpunk.yaml
 ```
 
 The ID names one exact product, including its memory size. An 8 GB and a 16 GB
@@ -22,11 +22,30 @@ its catalog entry first or in the same pull request (see
 [`data/gpus/README.md`](../data/gpus/README.md)). Results can't point at an ID
 that doesn't exist.
 
-Every community file sets `submitted_by` to the GitHub username of the person
-opening the pull request, and the file name ends with that username
-(compared case-insensitively; lowercase is conventional). For a second file
-with the same date and game, add a number before the username, such as
-`result_20261003_cyberpunk_2_mattystacks.yaml`.
+For a second file with the same date and game, add a number:
+`result_20261003_cyberpunk_2.yaml`.
+
+## Anonymous by default
+
+You only have to share the result itself. A community run needs the product
+(`gpu_id`), the `game`, the `result` numbers, `system.os`, and `proof.method`
+(see [Comparable game runs](#comparable-game-runs)). Everything else, including
+your name, CPU, driver, and raw captures, is optional. Add what you're happy to
+share; more detail makes a run easier to review and compare.
+
+- `submitted_by` is optional. Set it to your GitHub username if you want the
+  dashboard to show "@you". Leave it out and the run shows as "Anonymous". If
+  you set it, it must be a valid GitHub username.
+- The file name doesn't include a username. Older files that end in one are
+  still accepted.
+- The data is anonymous, but a pull request isn't: GitHub shows the account
+  that opened it, and each commit records an author name and email. To keep
+  your email private, use GitHub's
+  [noreply address](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/setting-your-commit-email-address).
+- Raw captures can contain your PC name, Windows username, or file paths.
+  Check a log before you commit it.
+- A run with no evidence (no `proof.raw_log`, `proof.summary_source`, or
+  `credit.source_url`) is accepted, but the dashboard labels it "Unverified".
 
 The folder name and `gpu_id` in the YAML must match. On a merged pull request,
 the build includes that run in
@@ -41,7 +60,10 @@ Game records use `benchmark_type: game` (the default when omitted) and require:
 - a non-empty `result` list, where every entry has `resolution`,
   `graphics_preset`, and `avg_fps`. `p1_low` (1% low) is optional, but
   recommended; see [Capture methods](#capture-methods);
-- `frame_generation: false`;
+- frame generation off: `frame_generation: false`, which is the default when
+  the field is left out;
+- upscaling off, also the default, unless the preset turns it on (see
+  [Upscaling](#upscaling));
 - `proof.method`, the capture tool you used (see
   [Capture methods](#capture-methods));
 - `system.os`, either `windows` or `linux` (lowercase). See
@@ -54,11 +76,11 @@ resolution/preset combinations:
 
 ```yaml
 gpu_id: arc_a770_16gb_le
-submitted_by: MattyStacks
 game: Helldivers 2
-benchmark_type: game
 system:
   os: windows
+proof:
+  method: presentmon
 result:
   - resolution: 1080p
     graphics_preset: Ultra
@@ -71,14 +93,38 @@ result:
 ```
 
 The validator checks every list entry for required profile fields, impossible
-FPS values, disabled frame generation, and a matching official-baseline
-outlier. The build expands each entry into an independent run, then groups
-only matching product ID (which already separates memory sizes and board
-partners) and form factor, known laptop TGP/GPU power, game, resolution,
-`graphics_preset`, and OS. Matching entries from multiple files are
+FPS values, disabled frame generation, upscaling, and a matching
+official-baseline outlier. The build expands each entry into an independent
+run, then groups only matching product ID (which already separates memory sizes
+and board partners) and form factor, known laptop TGP/GPU power, game,
+resolution, `graphics_preset`, upscaling, and OS. Matching entries from multiple files are
 averaged; different profiles remain separate. Game version, distro, kernel, and
 Proton version remain exact-run metadata rather than grouping keys. Desktop and
 laptop GPUs never share a group, and neither do Windows and Linux runs.
+
+## Upscaling
+
+Benchmark with upscaling (DLSS, FSR, XeSS) **off**. That's the default: leave
+`upscaling` out, or write `off`, `none`, or `native`. An upscaled run renders
+fewer pixels than its resolution says, so its FPS isn't comparable with native
+runs.
+
+The one exception is a graphics preset that turns upscaling on by itself. Then
+record the upscaler on that result item and say the preset set it:
+
+```yaml
+result:
+  - resolution: 1440p
+    graphics_preset: Example RT Preset
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 79.1
+```
+
+`upscaling` without `preset_upscaling: true` is the `result-upscaling` error.
+Upscaling is a grouping key, so an upscaled run is never averaged with native
+runs of the same preset, and it's only outlier-checked against official runs
+with the same upscaling.
 
 ## Capture methods
 
@@ -104,7 +150,7 @@ The tools marked Required record every frame, so they always give a 1% low,
 and we want it. The others may report only an average.
 
 The method is run detail, not a grouping key, so runs from different tools for
-the same product, game, resolution, preset, and OS are averaged together.
+the same product, game, resolution, preset, upscaling, and OS are averaged together.
 Built-in benchmark scenes are often lighter or heavier than real gameplay, so
 say which scene you used in the pull request. A tool that isn't listed but
 should be is a one-line change to `PROOF_METHODS` in `scripts/checks.py`.
@@ -116,45 +162,64 @@ error. Leaving it out of an `amd_adrenalin`, `in_game_benchmark`, or `other`
 run raises the `result-no-p1-low` warning, which is fine to ignore if your tool
 didn't report one. `synthetic_benchmark` runs never warn.
 
-## Submitting someone else's results
+## Submitting a result you found
 
-Anyone can submit results that another person measured, such as a creator's
-published video or a friend's numbers, **as long as they gave permission and you
-can show it**. You still open the pull request, so `submitted_by` and the file
-name stay your own GitHub username. Add a `credit` block naming the source and
-showing the permission:
+The result doesn't have to be yours. If a YouTube video, review, or forum post
+shows a benchmark, you can add it. You don't need the creator's permission, but
+you do need to say where you found it, so a reviewer can check the numbers.
+Start from
+[`templates/community_found_result.yaml`](../templates/community_found_result.yaml)
+and add a `credit` block:
 
 ```yaml
-submitted_by: your-github-username
 credit:
+  source_url: https://example.com/example-creator/gpu-review
   name: Example Creator
   url: https://example.com/example-creator
-  source_url: https://example.com/example-creator/gpu-review
-  permission:
-    url: https://example.com/example-creator/permission
-    screenshot: raw/permission_example_creator.png
-    note: Describe how and when permission was given
 ```
 
 The names and links above are placeholders.
 
-- `name` is required: who the results came from.
-- `url` (their profile or channel) and `source_url` (the video or post with the
-  numbers) are optional `https://` links.
-- `permission` is required, with at least one of:
-  - `url`: an `https://` link showing permission, such as a comment, a public
-    post, or the creator's published reuse policy;
-  - `screenshot`: an image of the permission (for example a message), saved in
-    the same GPU folder, such as
-    `data/community/<gpu_id>/raw/permission_example_creator.png`;
-  - `note`: a short description of how and when permission was given.
+- `source_url` is required: an `https://` link to the video, review, or post
+  with the numbers. Link to the exact video or article, not just a channel.
+- `name` (who measured them) and `url` (their channel or profile) are optional.
+  Without a name, the dashboard shows the site, such as "example.com".
+- `submitted_by` stays optional, the same as for your own runs.
 
-A maintainer checks the permission before merging. The dashboard credits the
-source first and links it when `url` is set: "Example Creator (via
-@your-github-username)". The API carries `credit_name`, `credit_url`, and
-`credit_source_url` on every run, and a `credits` list on each summary. The
-permission proof stays in Git, like raw captures. `credit` is only for community
-files.
+Copy only what the source states. Use the product ID, resolution, and preset
+it tested, and leave out details it doesn't give rather than guessing. Set
+`proof.method` to the tool the source used, `in_game_benchmark` for a game's
+built-in benchmark, or `other` when it doesn't say.
+
+**Numbers that aren't published anywhere**, such as a friend's run, have no
+`source_url`. Show that they agreed instead, with a `permission` block holding
+at least one of:
+
+```yaml
+credit:
+  name: Example Friend
+  permission:
+    note: Describe how and when they said yes
+    screenshot: raw/permission_example_friend.png
+    url: https://example.com/permission
+```
+
+- `note`: a short description of how and when they agreed;
+- `screenshot`: an image (for example a message), saved in the same GPU folder,
+  such as `data/community/<gpu_id>/raw/permission_example_friend.png`;
+- `url`: an `https://` link showing permission.
+
+A maintainer checks the source or the permission before merging. The dashboard
+credits the source first and links it: "Example Creator (via @you)", or just
+"Example Creator" when you leave out `submitted_by`. The API carries
+`credit_name`, `credit_url`, and `credit_source_url` on every run, and a
+`credits` list (`name`, `url`, `source_url`) on each summary. Any permission
+proof stays in Git, like raw captures.
+
+**Official runs** can carry a `credit` block too, when the maintainer enters a
+run on someone else's behalf. Official runs are verified by the maintainer, so
+an official credit only needs `name` (who ran it); `source_url` and
+`permission` are optional.
 
 **3DMark.** Name the benchmark in `game` (for example `3DMark Steel Nomad`), put
 its version in `version`, and use the fixed resolution and preset it runs at.
@@ -228,19 +293,27 @@ summary's `implementations` list, carries `os`, `os_detail`, `distro`, `kernel`,
 
 ## Machine details and evidence
 
-Include device or board name, GPU power, overclock status, CPU, memory, power
-mode, display/MUX mode, driver, and the OS details above whenever known.
+Everything in this section is optional. Device or board name, GPU power,
+overclock status, CPU, memory, power mode, display/MUX mode, driver, and the OS
+details above all help a reviewer, so add whatever you know and are happy to
+share. Laptop GPU power is the one worth adding: laptop runs are grouped by it.
 
-PresentMon or another raw capture is strongly preferred. Put optional evidence
-under the same GPU folder, for example:
+A raw PresentMon capture is the best evidence. Put it under the same GPU
+folder, for example:
 
 ```text
 data/community/rtx_4090_24gb_fe/raw/cyberpunk_1440p.csv
 ```
 
-Reference it with `proof.raw_log: raw/cyberpunk_1440p.csv`. Summary-only
-submissions must provide `proof.summary_source`; the dashboard labels them
-accordingly. Raw captures remain in Git but outside browser-facing JSON.
+Reference it with `proof.raw_log: raw/cyberpunk_1440p.csv`. Without a raw log,
+link a screenshot or published summary in `proof.summary_source`, or the page
+you found the result on in `credit.source_url`. The dashboard's evidence column
+shows "Raw log", "Summary only", or, for a community run with no evidence at
+all, "Unverified". The API carries the same as `proof_level`: `raw-log`,
+`summary-only`, or `none`. Official runs are verified by the maintainer, so an
+official run with no linked evidence is `maintainer-verified` and shows as
+"Verified", never "Unverified".
+Raw captures remain in Git but outside browser-facing JSON.
 
 ## Review and validation
 
@@ -249,8 +322,8 @@ accordingly. Raw captures remain in Git but outside browser-facing JSON.
 `result` list entry. It verifies:
 
 - folder and catalog identity
-- that `submitted_by` is a valid GitHub username matching the end of the file
-  name (community only)
+- the community file name format, and `submitted_by` when it's given
+- the `credit` block, when it's given
 - list shape
 - comparable game settings
 - frame-generation status
@@ -259,7 +332,7 @@ accordingly. Raw captures remain in Git but outside browser-facing JSON.
 - `system.os` and the OS detail fields
 
 When a matching official baseline exists (same product, game, resolution,
-preset, and OS), a community average more than 25% different is a validation
+preset, upscaling, and OS), a community average more than 25% different is a validation
 error. Correct it, explain a materially different
 profile, or remove it.
 
@@ -307,8 +380,8 @@ start at the left margin. Only the items under `result:` start with `-`.
 #### `result-filename`
 
 A YAML file in a GPU folder doesn't start with `result_`, so the build would skip
-it without telling you. Rename it to `result_YYYYMMDD_<game>_<github_user>.yaml`
-(community) or `result_YYYYMMDD_<benchmark>.yaml` (official).
+it without telling you. Rename it to `result_YYYYMMDD_<game>.yaml` (community)
+or `result_YYYYMMDD_<benchmark>.yaml` (official).
 
 #### `result-folder`
 
@@ -376,8 +449,15 @@ didn't report a 1% low; add it when it does. It isn't raised for
 
 #### `result-frame-generation`
 
-Frame generation is on. Re-run with it off. Upscaling is fine; record it in
-`upscaling`.
+Frame generation is on. Re-run with it off.
+
+#### `result-upscaling`
+
+A result entry has `upscaling` set (such as `DLSS Quality`) without
+`preset_upscaling: true`. Upscaling is off by default, so re-run with it off, or
+remove the field if it was off. If the graphics preset turns upscaling on by
+itself, keep `upscaling` and add `preset_upscaling: true`, which must be `true`
+or `false`. See [Upscaling](#upscaling).
 
 #### `result-os`
 
@@ -408,35 +488,37 @@ machine fields are `cpu`, `memory`, `power_mode`, `display_mode`, `driver`,
 
 #### `community-submitter`
 
-`submitted_by` is missing or isn't a valid GitHub username. Set it to the GitHub
-username that opens the pull request.
+`submitted_by` is set, but it isn't a valid GitHub username. Fix it, or remove
+the line: `submitted_by` is optional, and runs without it show as "Anonymous".
 
 #### `community-filename`
 
-The file name doesn't end with the `submitted_by` username. Rename it to
-`result_YYYYMMDD_<game>_<github_user>.yaml`. For repeats on the same day and
-game, add `_2`, `_3`, and so on before the username. When you submit someone
-else's results, the file name still ends with your own username; credit them
-in `credit`.
+The file name isn't `result_YYYYMMDD_<game>.yaml`: an eight-digit date, then the
+game, in letters, numbers, `_`, or `-`. For repeats on the same day and game,
+add `_2`, `_3`, and so on. Older files that also end in a username are fine.
 
 #### `community-credit`
 
 The `credit` block is wrong. One of these happened:
 
 - `credit` isn't a section with indented fields.
-- `credit.name` is missing.
+- `credit` has neither `source_url` nor `permission`. Add `source_url`: the
+  link where you found the results. Only unpublished numbers, such as a
+  friend's, use `permission` instead.
+- `credit.name` is set but empty, or isn't text.
 - `credit.url` or `credit.source_url` isn't an `https://` link.
-- `credit` is in an official file. It's only for community files submitted on
-  someone else's behalf.
+- An official run's `credit` has neither `name` nor `source_url`. Official runs
+  are maintainer-verified, so the name of whoever ran it is enough.
 
-See [Submitting someone else's results](#submitting-someone-elses-results).
+See [Submitting a result you found](#submitting-a-result-you-found).
 
 #### `community-permission`
 
-The results credit someone else, but the permission isn't shown. Add
-`credit.permission` with at least one of `url` (an `https://` link), `screenshot`
-(an image file inside this GPU folder, such as `raw/permission.png`), or `note`.
-A screenshot path must exist and can't point outside the folder.
+`credit.permission` is set, but it's wrong. It needs at least one of `url` (an
+`https://` link), `screenshot` (an image file inside this GPU folder, such as
+`raw/permission.png`), or `note`. A screenshot path must exist and can't point
+outside the folder. Permission is optional when `credit.source_url` says where
+the results were published.
 
 #### `community-outlier`
 
@@ -448,15 +530,13 @@ entry.
 #### `result-no-baseline`
 
 Warning only. No official result has the same product, game, resolution,
-preset, and OS to compare against, so a maintainer reviews it by hand.
-
-#### `result-no-driver`
-
-Warning only. Add `system.driver` when you know it.
+preset, upscaling, and OS to compare against, so a maintainer reviews it by hand.
 
 #### `result-no-proof`
 
-Warning only. Add `proof.raw_log` (preferred), or at least `proof.summary_source`.
+Warning only. The run points at no evidence, so the dashboard labels it
+"Unverified". Add `proof.raw_log` (preferred), `proof.summary_source`, or, for a
+result you found, `credit.source_url`.
 
 #### `result-laptop-tgp`
 

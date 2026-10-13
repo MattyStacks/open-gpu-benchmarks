@@ -65,10 +65,15 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     the PR on the submitter's behalf; or a static web form on the dashboard
     that generates the result YAML (using `parse.py` logic) for download or
     prefilled issue.
-  - Must keep: `submitted_by` set from the issue author, correct file name
-    `result_YYYYMMDD_<game>_<github_user>.yaml`, required `system.os` and
-    `proof.method`, `frame_generation: false`, an optional `credit` block for
-    someone else's results, and raw capture attachments preserved under
+  - Anonymity: submissions are anonymous by default, so don't copy the issue
+    author into `submitted_by` unless they ask. A bot that commits issue-form
+    results also keeps the submitter out of the commit history, which a PR
+    can't (GitHub shows the PR author and commit email). Consider a
+    "Submit a result you found" form that asks for `credit.source_url`.
+  - Must keep: file name `result_YYYYMMDD_<game>.yaml`, required `system.os`
+    and `proof.method`, frame generation and upscaling off (or
+    `preset_upscaling: true`), an optional `credit` block for found results,
+    and raw capture attachments preserved under
     `data/community/<gpu_id>/raw/`.
   - Feedback: post validation errors back on the issue in plain language.
   - Docs: update `CONTRIBUTING.md`, `docs/COMMUNITY_SUBMISSIONS.md`,
@@ -114,6 +119,18 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     payload changes.
   - Docs: `docs/COMMUNITY_SUBMISSIONS.md`, `docs/COPILOT_HANDOFF.md`,
     `.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`.
+
+- [ ] **Scrub raw captures for personal data.** Raw PresentMon and MangoHud
+  logs can contain a PC name, Windows username, or file paths. The docs now
+  warn about it; consider having `parse.py` or a check flag user-folder paths
+  in files under `raw/`.
+- [ ] **Show upscaling in chart labels.** Upscaling is now a grouping key, but
+  only the run details show it. A preset-upscaled bar and a native bar of the
+  same preset look alike in the chart and table.
+- [ ] **Report a bad result.** Add an issue template for flagging a wrong
+  community or official result, and an `excluded: true` plus
+  `excluded_reason` field that drops a run from summaries but keeps the file
+  (see the official cross-check item above).
 
 ## Dashboard
 
@@ -173,6 +190,13 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **Unreleased (branch `feature/anonymous-submissions`, 2026-10-13)**
+  - Anonymous community submissions: optional `submitted_by`, username-free
+    file names, and only five required fields.
+  - Found results with a `credit.source_url` and no permission needed, plus
+    a template.
+  - Upscaling off by default (`preset_upscaling: true` to allow it), now a
+    grouping key; `proof_level: none` ("Unverified"); schema 0.12.
 - **Unreleased (branch `chore/python-venv`, 2026-10-13)**
   - Python setup: `requirements.txt`, CI installs from it, and `.venv`
     create/activate/deactivate documented; agents stop servers and

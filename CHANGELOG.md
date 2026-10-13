@@ -22,6 +22,44 @@ a fresh empty `Unreleased` section.
 - Agent instructions (`CLAUDE.md`, `AGENTS.md`, Copilot instructions) require
   running checks in `.venv` and, before finishing, stopping any started
   servers and running `deactivate`.
+- Community submissions are anonymous by default. `submitted_by` is optional
+  (still checked as a GitHub username when given), and community files are
+  named `result_YYYYMMDD_<game>.yaml` with no username; older names still
+  pass. Only `gpu_id`, `game`, the `result` list, `system.os`, and
+  `proof.method` are required. The dashboard shows "Anonymous" for runs with
+  no name, and its submission guide lists everything else as optional.
+- Found results: a `credit` block now needs only `source_url`, the link where
+  the result was found, so anyone can add a benchmark from a video or review
+  without the creator's permission. `credit.name` is optional (the dashboard
+  falls back to the source's site name), and `permission` is only needed for
+  unpublished numbers with no source. New
+  `templates/community_found_result.yaml`.
+- Upscaling is off by default. Setting `upscaling` now requires
+  `preset_upscaling: true`, meaning the graphics preset turned it on; new
+  `result-upscaling` check. `upscaling` is a grouping key and part of the
+  official-baseline match, so upscaled runs never average with native ones.
+  The templates and contributor examples no longer use DLSS.
+- Evidence: `proof_level` is `none` (shown as "Unverified") when a community
+  run has no raw log, summary source, or `credit.source_url`.
+  `result-no-proof` now warns only in that case, and a `credit.source_url`
+  counts as evidence. Official runs are verified by the maintainer: one with
+  no linked evidence is `maintainer-verified` and shows as "Verified" (it was
+  "Summary only").
+- Official runs may carry a `credit` block, for a run the maintainer enters on
+  someone else's behalf. It needs only `name`; it was an error before.
+- `parse.py`: `--submitted-by` is optional, and output file names leave out the
+  username and slugify the game name.
+- API schema `0.12`: optional `submitted_by`, `upscaling` in `group_by` and on
+  `implementations`, `proof_level` `none` and `maintainer-verified`,
+  `source_url` on summary `credits`,
+  and `credit_source_url` on `implementations`.
+- One synthetic fixture (Steam Deck, Cyberpunk 2077) is now anonymous.
+- `templates/official_result.yaml` now includes the required `system.os` and
+  `proof.method`, and CONTRIBUTING's minimal example is a valid anonymous run.
+
+### Removed
+- The `result-no-driver` warning. A driver version is still welcome but never
+  asked for.
 
 ### Added
 - `requirements.txt` lists the Python dependencies (`pyyaml`, `numpy`). Local

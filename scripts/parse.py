@@ -9,7 +9,7 @@ Supports:
 Driver is OPTIONAL for community PRs per your request.
 form_factor supported: desktop, laptop, handheld, igpu
 """
-import argparse, csv, sys
+import argparse, csv, re, sys
 from datetime import datetime
 from pathlib import Path
 try:
@@ -141,7 +141,7 @@ def main():
     p.add_argument("csv_file")
     p.add_argument("--gpu-id", required=True, help="Exact catalog ID, the file name under data/gpus/<form_factor>/<gpu_vendor>/")
     p.add_argument("--game", required=True)
-    p.add_argument("--submitted-by", required=True, help="GitHub username of the PR submitter")
+    p.add_argument("--submitted-by", default="", help="OPTIONAL - your GitHub username; leave it out to stay anonymous")
     p.add_argument("--resolution", default="1440p")
     p.add_argument("--graphics-preset", default="Ultra")
     p.add_argument("--form-factor", default=None, choices=["desktop","laptop","handheld","igpu"], help="Defaults to the catalog value")
@@ -173,7 +173,6 @@ def main():
 
     data={
         "gpu_id": args.gpu_id,
-        "submitted_by": args.submitted_by,
         "benchmark_type": "game",
         "game": args.game,
         "form_factor": form_factor,
@@ -199,16 +198,17 @@ def main():
         },
     }
     data["result"][0]={k:v for k,v in data["result"][0].items() if v is not None}
+    if args.submitted_by:
+        data={"gpu_id": data.pop("gpu_id"), "submitted_by": args.submitted_by, **data}
 
     if not args.output:
-        safe_game=args.game.lower().replace(" ","_").replace(":","")
+        safe_game=re.sub(r"[^a-z0-9]+", "_", args.game.lower()).strip("_")
         date = datetime.now().strftime("%Y%m%d")
-        handle = args.submitted_by.lower()
         folder = Path(f"data/community/{args.gpu_id}")
-        out = folder / f"result_{date}_{safe_game}_{handle}.yaml"
+        out = folder / f"result_{date}_{safe_game}.yaml"
         repeat = 2
         while out.exists():
-            out = folder / f"result_{date}_{safe_game}_{repeat}_{handle}.yaml"
+            out = folder / f"result_{date}_{safe_game}_{repeat}.yaml"
             repeat += 1
     else:
         out=Path(args.output)

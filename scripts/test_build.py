@@ -75,10 +75,11 @@ def result_run(**overrides):
 
 
 def community_run(**overrides):
-    return result_run(submitted_by="tester", **overrides)
+    """An anonymous community run: no submitted_by, and no username in the file name."""
+    return result_run(**overrides)
 
 
-COMMUNITY_PATH = f"community/{TEST_ID}/result_20261003_test_tester.yaml"
+COMMUNITY_PATH = f"community/{TEST_ID}/result_20261003_test.yaml"
 
 
 def dump(value):
@@ -192,7 +193,6 @@ def check_result_rules():
     no_result = {key: value for key, value in community_run().items() if key != "result"}
     no_avg = community_run(result=[{"resolution": "1080p", "graphics_preset": "High", "p1_low": 80}])
     impossible = community_run(result=[{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 60, "p1_low": 80}])
-    no_submitter = {key: value for key, value in community_run().items() if key != "submitted_by"}
     cases = {
         "result-folder": {"community/other_gpu_8gb_fe/result_20261003_test_tester.yaml": community_run()},
         "result-reference-id": {
@@ -207,8 +207,8 @@ def check_result_rules():
         "result-frame-generation": {COMMUNITY_PATH: community_run(frame_generation=True)},
         "result-form-factor": {COMMUNITY_PATH: community_run(form_factor="laptop")},
         "result-filename": {f"{folder}/cyberpunk.yaml": community_run()},
-        "community-submitter": {COMMUNITY_PATH: no_submitter},
-        "community-filename": {f"{folder}/result_20261003_test_someone_else.yaml": community_run()},
+        "community-submitter": {COMMUNITY_PATH: community_run(submitted_by="not a username")},
+        "community-filename": {f"{folder}/result_test.yaml": community_run()},
         "community-outlier": {
             f"official/{TEST_ID}/result_20261003_test.yaml": result_run(),
             COMMUNITY_PATH: community_run(result=[{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 10, "p1_low": 8}]),
@@ -318,8 +318,69 @@ def check_outlier_limit():
         assert "community-outlier" in {issue.rule for issue in run_at(avg_fps).errors}, f"{avg_fps} FPS is more than 25% off"
 
 
+def check_anonymous_submissions():
+    """submitted_by is optional; a valid one may still be given, with or without it in the file name."""
+    catalog = {TEST_CATALOG_PATH: minimal_entry()}
+    folder = f"community/{TEST_ID}"
+    for name, run in (
+        ("result_20261003_test.yaml", community_run()),
+        ("result_20261003_test_2.yaml", community_run()),
+        ("result_20261003_test.yaml", community_run(submitted_by="tester")),
+        ("result_20261003_test_tester.yaml", community_run(submitted_by="tester")),
+    ):
+        issues = run_checks({**catalog, f"{folder}/{name}": run})
+        assert not issues.errors, (name, [issue.format() for issue in issues.errors])
+
+    # A driver is never asked for; a run with no evidence at all still gets a warning.
+    issues = run_checks({**catalog, COMMUNITY_PATH: community_run()})
+    warnings = {issue.rule for issue in issues.warnings if issue.rule.startswith(("result-", "community-"))}
+    assert warnings == {"result-no-baseline", "result-no-proof"}, [issue.format() for issue in issues]
+    found = community_run(credit={"source_url": "https://example.com/review"})
+    issues = run_checks({**catalog, COMMUNITY_PATH: found})
+    assert "result-no-proof" not in {issue.rule for issue in issues.warnings}, "a found-at link counts as evidence"
+
+    gpu = minimal_entry()
+    record = build.build_record(community_run(), community_run()["result"][0], 0, "community", Path(COMMUNITY_PATH), {TEST_ID: gpu})
+    assert record["submitted_by"] == "" and record["proof_level"] == "none" and record["proof_reference"] == ""
+    record = build.build_record(found, found["result"][0], 0, "community", Path(COMMUNITY_PATH), {TEST_ID: gpu})
+    assert record["proof_level"] == "summary-only" and record["proof_reference"] == "https://example.com/review"
+
+
+def check_upscaling():
+    """Upscaling is off by default; it's allowed only when the preset turns it on, and never averages with native."""
+    catalog = {TEST_CATALOG_PATH: minimal_entry()}
+
+    def entry(**fields):
+        return {"resolution": "1080p", "graphics_preset": "High", "avg_fps": 100, "p1_low": 80, **fields}
+
+    for item in (entry(), entry(upscaling="off"), entry(upscaling="Native"), entry(upscaling=False),
+                 entry(upscaling="DLSS Quality", preset_upscaling=True)):
+        issues = run_checks({**catalog, COMMUNITY_PATH: community_run(result=[item])})
+        assert not issues.errors, (item, [issue.format() for issue in issues.errors])
+    for item in (entry(upscaling="DLSS Quality"), entry(upscaling="FSR", preset_upscaling="yes")):
+        expect_rule("result-upscaling", {**catalog, COMMUNITY_PATH: community_run(result=[item])})
+    # A top-level upscaling applies to every entry.
+    expect_rule("result-upscaling", {**catalog, COMMUNITY_PATH: community_run(upscaling="XeSS Quality")})
+
+    gpu = minimal_entry()
+    native = community_run(result=[entry(upscaling="off")])
+    upscaled = community_run(result=[entry(upscaling="DLSS Quality", preset_upscaling=True, avg_fps=140, p1_low=100)])
+    records = [
+        build.build_record(run, run["result"][0], 0, "community", Path(COMMUNITY_PATH), {TEST_ID: gpu})
+        for run in (native, upscaled)
+    ]
+    assert [record["upscaling"] for record in records] == ["", "DLSS Quality"]
+    summaries = build.aggregate_game_records(records, "community-summary")
+    assert sorted(summary["avg_fps"] for summary in summaries) == [100, 140], "upscaled runs never average with native"
+
+    # An upscaled community run is not outlier-checked against a native official run.
+    official = {f"official/{TEST_ID}/result_20261003_test.yaml": result_run()}
+    issues = run_checks({**catalog, **official, COMMUNITY_PATH: upscaled})
+    assert "community-outlier" not in {issue.rule for issue in issues.errors}
+
+
 def check_third_party_credit():
-    """Someone else's results need a credit block with proof of permission."""
+    """A found result says where it came from; permission is optional."""
     catalog = {TEST_CATALOG_PATH: minimal_entry()}
     folder = f"community/{TEST_ID}"
     screenshot = {f"{folder}/raw/permission_example_creator.png": "placeholder image"}
@@ -332,20 +393,30 @@ def check_third_party_credit():
             "permission": permission,
         }
 
-    for proof in (
-        {"url": "https://example.com/example-creator/permission"},
-        {"screenshot": "raw/permission_example_creator.png"},
-        {"note": "Example note describing how permission was given"},
-    ):
-        issues = run_checks({**catalog, **screenshot, COMMUNITY_PATH: community_run(credit=credit(**proof))})
-        assert not issues.errors, (proof, [issue.format() for issue in issues.errors])
+    def found(**fields):
+        return {"source_url": "https://example.com/example-creator/gpu-review", **fields}
 
-    no_permission = {key: value for key, value in credit().items() if key != "permission"}
+    passing = (
+        found(),
+        found(name="Example Creator"),
+        found(name="Example Creator", url="https://example.com/example-creator"),
+        credit(url="https://example.com/example-creator/permission"),
+        credit(screenshot="raw/permission_example_creator.png"),
+        credit(note="Example note describing how permission was given"),
+        # Unpublished numbers, such as a friend's run, give permission instead of a source.
+        {"name": "Example Friend", "permission": {"note": "Example note describing how permission was given"}},
+    )
+    for block in passing:
+        issues = run_checks({**catalog, **screenshot, COMMUNITY_PATH: community_run(credit=block)})
+        assert not issues.errors, (block, [issue.format() for issue in issues.errors])
+
     cases = {
         "community-credit (not a section)": community_run(credit="Example Creator"),
-        "community-credit (no name)": community_run(credit={**credit(note="ok"), "name": ""}),
-        "community-credit (http url)": community_run(credit={**credit(note="ok"), "url": "http://example.com"}),
-        "community-permission (missing)": community_run(credit=no_permission),
+        "community-credit (no source or permission)": community_run(credit={"name": "Example Creator"}),
+        "community-credit (empty name)": community_run(credit=found(name="")),
+        "community-credit (http source)": community_run(credit={"source_url": "http://example.com/review"}),
+        "community-credit (http url)": community_run(credit=found(url="http://example.com")),
+        "community-permission (not a section)": community_run(credit=found(permission="yes")),
         "community-permission (empty)": community_run(credit=credit()),
         "community-permission (http url)": community_run(credit=credit(url="http://example.com/permission")),
         "community-permission (missing file)": community_run(credit=credit(screenshot="raw/missing.png")),
@@ -353,23 +424,36 @@ def check_third_party_credit():
     }
     for label, run in cases.items():
         expect_rule(label.split(" (")[0], {**catalog, **screenshot, COMMUNITY_PATH: run})
-    official_credit = result_run(credit=credit(note="ok"))
-    expect_rule("community-credit", {**catalog, f"official/{TEST_ID}/result_20261003_test.yaml": official_credit})
+    # Official runs are maintainer-verified: a credit only needs who ran it.
+    official_path = f"official/{TEST_ID}/result_20261003_test.yaml"
+    issues = run_checks({**catalog, official_path: result_run(credit={"name": "Example Friend"})})
+    assert not issues.errors, [issue.format() for issue in issues.errors]
+    expect_rule("community-credit", {**catalog, official_path: result_run(credit={"url": "https://example.com/friend"})})
+    official = result_run()
+    record = build.build_record(official, official["result"][0], 0, "official", Path(official_path), {TEST_ID: minimal_entry()})
+    assert record["proof_level"] == "maintainer-verified", record["proof_level"]
 
-    # The build credits the source on the run and lists it once on the summary.
+    # The build credits the source on the run and lists each one once on the summary.
     gpu = minimal_entry()
     credited = community_run(credit=credit(note="ok"))
+    unnamed = community_run(credit=found(), submitted_by="finder")
     own = result_run(submitted_by="someone")
+    anonymous = community_run()
     records = [
         build.build_record(run, run["result"][0], 0, "community", Path(f"community/{TEST_ID}/result_{name}.yaml"), {TEST_ID: gpu})
-        for name, run in (("a", credited), ("b", own))
+        for name, run in (("a", credited), ("b", unnamed), ("c", own), ("d", anonymous))
     ]
     assert records[0]["credit_name"] == "Example Creator" and records[0]["credit_url"] == "https://example.com/example-creator"
-    assert records[1]["credit_name"] == "" and "permission" not in records[0]
+    assert records[1]["credit_name"] == "" and records[1]["credit_source_url"] == "https://example.com/example-creator/gpu-review"
+    assert records[2]["credit_name"] == "" and "permission" not in records[0]
     (summary,) = build.aggregate_game_records(records, "community-summary")
-    assert summary["credits"] == [{"name": "Example Creator", "url": "https://example.com/example-creator"}]
-    assert summary["contributors"] == ["someone", "tester"]
-    assert [run.get("credit_name") for run in summary["implementations"]] == ["Example Creator", None]
+    assert summary["credits"] == [
+        {"name": "", "url": "", "source_url": "https://example.com/example-creator/gpu-review"},
+        {"name": "Example Creator", "url": "https://example.com/example-creator", "source_url": "https://example.com/example-creator/gpu-review"},
+    ], summary["credits"]
+    assert summary["contributors"] == ["finder", "someone"]
+    assert [run.get("credit_name") for run in summary["implementations"]] == ["Example Creator", None, None, None]
+    assert [run.get("credit_source_url") for run in summary["implementations"]][1] == "https://example.com/example-creator/gpu-review"
 
 
 def check_parse_mangohud():
@@ -465,15 +549,15 @@ def check_templates_are_valid():
         issues = run_checks({**references, f"gpus/{folder}/{vendor}/{entry['id']}.yaml": text})
         assert not issues.errors, (template.name, [issue.format() for issue in issues.errors])
 
-    # The community template passes the result checks once the placeholder username is filled in.
+    # Each community template passes the result checks as written, anonymously.
     catalog = {
         path.relative_to(ROOT / "data").as_posix(): path.read_text(encoding="utf-8")
         for path in (ROOT / "data" / "gpus").rglob("*.yaml")
     }
     for template in sorted((ROOT / "templates").glob("community_*.yaml")):
-        text = template.read_text(encoding="utf-8").replace("your-github-username", "tester")
+        text = template.read_text(encoding="utf-8")
         gpu_id = yaml.safe_load(text)["gpu_id"]
-        issues = run_checks({**catalog, f"community/{gpu_id}/result_20261003_template_tester.yaml": text})
+        issues = run_checks({**catalog, f"community/{gpu_id}/result_20261003_template.yaml": text})
         assert not issues.errors, (template.name, [issue.format() for issue in issues.errors])
 
 
@@ -490,8 +574,8 @@ def check_rules_are_documented():
 
 def check_catalog_specs():
     master = load_json(API_DIR / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.11"
-    assert "os" in master["metadata"]["comparison_policy"]["group_by"]
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.12"
+    assert {"os", "upscaling"} <= set(master["metadata"]["comparison_policy"]["group_by"])
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
     assert len(by_id) == 11
     for gpu in master["gpus"]:
@@ -544,6 +628,8 @@ def main():
     check_os_grouping()
     check_average_only_runs()
     check_outlier_limit()
+    check_anonymous_submissions()
+    check_upscaling()
     check_third_party_credit()
     check_parse_mangohud()
     check_reports_every_error_and_build_stops()

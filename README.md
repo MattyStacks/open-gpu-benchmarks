@@ -32,7 +32,7 @@ reference, and the meaning of every check are in
 ```text
 data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml
 data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
-data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
 data/community/<gpu_id>/raw/**                         optional raw evidence
                     ↓
 python scripts/build.py
@@ -75,7 +75,8 @@ multi-profile file and two matching Arc A770 LE results that aggregate into one
 Arc A770 LE) pair with a Windows run of the same profile, and the Steam Deck runs
 are Linux (SteamOS). The three laptop entries use the temporary `_generic` ID for an
 unknown laptop model. All fixture records are marked
-`synthetic: true`, and every community fixture is `submitted_by: MattyStacks`.
+`synthetic: true`. Every community fixture is `submitted_by: MattyStacks`
+except the Steam Deck Cyberpunk 2077 run, which is anonymous.
 
 API schema `0.5` adds `submitted_by` to every generated run record and a
 `contributors` list (unique GitHub usernames) to every grouped summary.
@@ -87,7 +88,13 @@ are always returned already merged with their reference. Schema `0.9` adds
 `sources`. Schema `0.10` adds `os` (a grouping key) and the OS detail fields
 (`os_detail`, `distro`, `kernel`, `mesa`, `proton`, ...) to every run record
 and `implementations` entry. Schema `0.11` makes `p1_low` optional (it is `null`
-on runs and summaries without one) and adds `capture_method`. The
+on runs and summaries without one) and adds `capture_method`. Schema `0.12`
+makes `submitted_by` optional (empty for anonymous runs), adds `upscaling` as a
+grouping key (empty when off), adds `none` ("Unverified", community only) and
+`maintainer-verified` (official runs with no linked evidence) to `proof_level`,
+and
+adds `source_url` to each summary `credits` entry and `credit_source_url` to
+`implementations`. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.
@@ -98,21 +105,26 @@ Copy [templates/community_submission.yaml](templates/community_submission.yaml)
 to the folder matching its `gpu_id`, for example:
 
 ```text
-data/community/rtx_4090_24gb_fe/result_20261003_cyberpunk_mattystacks.yaml
+data/community/rtx_4090_24gb_fe/result_20261003_cyberpunk.yaml
 ```
 
-Every community file sets `submitted_by` to the GitHub username of the person
-opening the pull request, and the file name ends with that username
-(compared case-insensitively; lowercase is conventional). For a second file
-with the same date and game, add a number before the username, such as
-`result_20261003_cyberpunk_2_mattystacks.yaml`.
+Submissions are anonymous by default. A run needs only the product, game,
+resolution, preset, average FPS, `system.os`, and `proof.method`; your
+username (`submitted_by`), machine details, and evidence are optional. For a
+second file with the same date and game, add a number, such as
+`result_20261003_cyberpunk_2.yaml`. The result doesn't have to be yours: to add
+one from a video or review, start from
+[templates/community_found_result.yaml](templates/community_found_result.yaml)
+and link where you found it in `credit.source_url`. Upscaling is off unless the
+graphics preset turns it on (`preset_upscaling: true`).
 
 Pull requests run three separate checks so it's clear which part failed:
 **Catalog entries** (`validate.py catalog`), **Benchmark results**
 (`validate.py results`), and **Build and tests**. The result check covers
 official and community `result_*.yaml` and `result_*.yml` files. It enforces
-the game benchmark contract, requires frame generation to be disabled, checks
-catalog/folder identity and the `submitted_by`/file-name match, and compares
+the game benchmark contract, requires frame generation and upscaling to be
+off, checks catalog/folder identity, the file name, and any `submitted_by` or
+`credit`, and compares
 matching game runs with official baselines. Every problem is reported at once
 with a rule name that links to its explanation. See
 [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md) and
@@ -151,13 +163,13 @@ run `Activate.ps1`, run
 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
 
 Use `scripts/parse.py` to convert PresentMon or MangoHud CSV data directly
-into `data/community/<gpu_id>/result_YYYYMMDD_<game>_<github_user>.yaml`
-(it adds `_2`, `_3`, ... before the username instead of overwriting). It
+into `data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml` (it adds `_2`,
+`_3`, ... instead of overwriting; `--submitted-by` is optional). It
 rejects IDs that aren't in the catalog and takes the form factor from the
 catalog entry:
 
 ```powershell
-python scripts/parse.py capture.csv --gpu-id rtx_4090_24gb_fe --game "Cyberpunk 2077" --submitted-by MattyStacks --os windows
+python scripts/parse.py capture.csv --gpu-id rtx_4090_24gb_fe --game "Cyberpunk 2077" --os windows
 ```
 
 `--os` is `windows` or `linux` (with an optional `--os-detail`). Without it, a

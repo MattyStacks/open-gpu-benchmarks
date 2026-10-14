@@ -3,8 +3,48 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Compare official and community GPU benchmark summaries.">
-  <title>Open GPU Benchmarks</title>
+  <title>Open GPU Benchmarks: FPS for desktop, laptop, handheld, and integrated GPUs</title>
+  <meta name="description" content="Open, reviewable GPU benchmarks. Compare average FPS and 1% lows for desktop, laptop, handheld, and integrated GPUs by game, resolution, preset, and OS, from official and community runs, with a free JSON API.">
+  <!-- One canonical origin for every host (Cloudflare, GitHub Pages, pages.dev); test_build.py checks it matches build.SITE_URL. -->
+  <link rel="canonical" href="https://opengpubenchmarks.com/">
+  <link rel="alternate" type="text/html" href="benchmarks/" title="Benchmark tables (no JavaScript)">
+  <link rel="alternate" type="text/plain" href="llms-full.txt" title="Benchmark summaries for AI tools">
+  <meta name="robots" content="index, follow, max-snippet:-1">
+  <meta name="theme-color" content="#090b10">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Open GPU Benchmarks">
+  <meta property="og:title" content="Open GPU Benchmarks">
+  <meta property="og:description" content="Compare average FPS and 1% lows for desktop, laptop, handheld, and integrated GPUs from official and community runs.">
+  <meta property="og:url" content="https://opengpubenchmarks.com/">
+  <meta property="og:image" content="https://opengpubenchmarks.com/favicons/icon-512.png">
+  <meta name="twitter:card" content="summary">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://opengpubenchmarks.com/#website",
+        "name": "Open GPU Benchmarks",
+        "url": "https://opengpubenchmarks.com/"
+      },
+      {
+        "@type": "Dataset",
+        "name": "Open GPU Benchmarks",
+        "description": "Average FPS and 1% low summaries for desktop, laptop, handheld, and integrated GPUs, grouped by GPU, game, resolution, graphics preset, upscaling, and OS. Official runs are maintainer-verified; community runs are reviewed in pull requests.",
+        "url": "https://opengpubenchmarks.com/",
+        "sameAs": "https://github.com/MattyStacks/open-gpu-benchmarks",
+        "isAccessibleForFree": true,
+        "keywords": ["GPU benchmarks", "FPS", "1% low", "graphics cards", "laptop GPUs", "handheld gaming PCs", "integrated graphics"],
+        "distribution": [
+          { "@type": "DataDownload", "encodingFormat": "application/json", "contentUrl": "https://opengpubenchmarks.com/api/v1/dashboard.json" },
+          { "@type": "DataDownload", "encodingFormat": "application/json", "contentUrl": "https://opengpubenchmarks.com/api/v1/gpus.json" },
+          { "@type": "DataDownload", "encodingFormat": "text/markdown", "contentUrl": "https://opengpubenchmarks.com/llms-full.txt" }
+        ]
+      }
+    ]
+  }
+  </script>
   <link rel="icon" href="favicons/favicon.ico" sizes="32x32">
   <link rel="icon" href="favicons/favicon.svg" type="image/svg+xml" id="favicon">
   <link rel="apple-touch-icon" href="favicons/apple-touch-icon.png">
@@ -66,6 +106,7 @@
     </div>
   </header>
   <main class="shell">
+    <noscript><p class="notice">The interactive dashboard needs JavaScript. Every summary is also on the <a href="benchmarks/">plain benchmark tables</a> page and in <a href="llms-full.txt">llms-full.txt</a>.</p></noscript>
     <p class="notice hidden" id="error-notice" role="alert"></p>
     <section class="toolbar" aria-label="Benchmark filters">
       <div>
@@ -229,6 +270,7 @@
         <a href="https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer">Contributing guide</a>
         <a href="https://github.com/MattyStacks/open-gpu-benchmarks/issues" target="_blank" rel="noreferrer">Report an issue</a>
         <a href="#data-api">JSON API</a>
+        <a href="benchmarks/">Plain-text tables</a>
       </nav>
       <p>Source YAML is reviewed in pull requests. Raw capture files remain in the repository and are not sent to every visitor.</p>
     </footer>

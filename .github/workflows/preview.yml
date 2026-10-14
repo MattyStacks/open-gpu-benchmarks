@@ -1,0 +1,66 @@
+name: Preview
+# Cloudflare Pages preview deploys, for the repository owner's own pull requests
+# only. Everyone else's PRs (and every fork) skip this job, so nobody can spam
+# deployments; the three Validate checks still run for them. Plain pull_request
+# (never pull_request_target), so fork code never runs with the secrets.
+# Cloudflare sends X-Robots-Tag: noindex on preview deployments.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Cloudflare preview
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/build.py
+      - name: Deploy preview to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=open-gpu-benchmarks --branch=${{ github.head_ref }} --commit-hash=${{ github.event.pull_request.head.sha }}
+      - name: Comment the preview URL
+        uses: actions/github-script@v7
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+          ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+          COMMIT: ${{ github.event.pull_request.head.sha }}
+        with:
+          script: |
+            const marker = "<!-- cf-preview -->";
+            const lines = [
+              marker,
+              "**Cloudflare Pages preview**",
+              "",
+              `- This commit (${process.env.COMMIT.slice(0, 7)}): ${process.env.DEPLOYMENT_URL}`,
+            ];
+            if (process.env.ALIAS_URL) lines.push(`- Latest on this branch: ${process.env.ALIAS_URL}`);
+            const body = lines.join("\n");
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

@@ -4,9 +4,12 @@
 
 - Repository: `MattyStacks/open-gpu-benchmarks`
 - Default branch: `main`
-- Public site: <https://mattystacks.github.io/open-gpu-benchmarks/>
-- Public dashboard API: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/dashboard.json>
-- GPU master API: <https://mattystacks.github.io/open-gpu-benchmarks/api/v1/gpus.json>
+- Public site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical)
+- Mirror: <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
+- Public dashboard API: <https://opengpubenchmarks.com/api/v1/dashboard.json>
+- GPU master API: <https://opengpubenchmarks.com/api/v1/gpus.json>
+- Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
+  <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Current version: `v0.6.0` (2026-10-08)
   - v0.6.0: Linux vs Windows (`system.os` required and a grouping key, OS
     detail fields, `result-os`/`result-os-field`/`result-system-field`
@@ -477,7 +480,72 @@ are in [TODO.md](TODO.md).
 
 The project deploys `site/` using
 [.github/workflows/build.yml](../.github/workflows/build.yml). Generated
-`site/api/` files are ignored and recreated in CI.
+`site/api/` files, and the generated pages below, are ignored and recreated in CI.
+
+### Hosts
+
+`build.yml` builds once on every push to `main`. The `deploy` job then publishes
+to GitHub Pages, and `deploy-cloudflare` publishes the same files to the
+Cloudflare Pages project `open-gpu-benchmarks` with
+`cloudflare/wrangler-action@v3` (`pages deploy site --branch=main`). The
+custom domain opengpubenchmarks.com is attached to that project. Both hosts
+stay live.
+
+[`preview.yml`](../.github/workflows/preview.yml) runs `build.py` and deploys a
+Cloudflare **preview** for a pull request only when the PR comes from this
+repository (not a fork) **and** its author is `github.repository_owner`. Every
+other PR skips the job, so nobody else can trigger deployments. It uses
+`pull_request`, never `pull_request_target`, so fork code never runs with
+secrets. It posts or updates one PR comment (marker `<!-- cf-preview -->`)
+with the commit URL and the branch alias URL. Cloudflare adds
+`X-Robots-Tag: noindex` to preview deployments. The preview is not a required
+check.
+
+Secrets: `CLOUDFLARE_API_TOKEN` (Account > Cloudflare Pages > Edit) and
+`CLOUDFLARE_ACCOUNT_ID`.
+
+### SEO and AI crawlers
+
+- Canonical origin: `build.SITE_URL = "https://opengpubenchmarks.com/"`.
+  `site/index.html` has the canonical link, `og:url`, OG/Twitter tags, and
+  `WebSite` + `Dataset` JSON-LD with the JSON endpoints as `DataDownload`. The
+  same canonical on every host (github.io, `*.pages.dev`) makes search engines
+  treat the mirrors as copies of the custom domain instead of competing
+  duplicates. The mirrors deliberately get no `noindex`, since a canonical
+  plus noindex is a mixed signal. The dashboard still fetches data relative
+  to the page.
+- `build.main(..., site_dir=SITE_DIR)` (the CLI passes it, tests pass a temp
+  folder) also writes `benchmarks/index.html`, `llms.txt`, `llms-full.txt`, and
+  `sitemap.xml` from the dashboard records, because most AI crawlers don't
+  run JavaScript. They are listed in `build.SITE_PAGES` and gitignored.
+- `site/robots.txt` (committed) allows everything, names the major AI
+  crawlers explicitly, and sets
+  `Content-Signal: search=yes, ai-input=yes, ai-train=yes`. `site/_headers` is
+  read by Cloudflare only (CORS on `/api/*`, short caching, `nosniff`).
+- `test_build.check_site_seo()` checks that the canonical, `og:url`, robots
+  sitemap line, sitemap, and generated pages agree on `SITE_URL`, that
+  robots.txt has no `Disallow`, and that every fixture summary appears in
+  `benchmarks/index.html` and `llms-full.txt`. The page lives in a folder
+  because Cloudflare Pages 308-redirects `*.html` to the bare path, and a
+  canonical URL must not redirect.
+
+### Cloudflare Pages (manual setup)
+
+1. Workers & Pages > Create > Pages > **Direct Upload** project
+   `open-gpu-benchmarks`, production branch `main`. Do not connect Git: that
+   would build every branch and can't filter by PR author.
+2. Custom domains: `opengpubenchmarks.com` and `www.opengpubenchmarks.com`.
+3. Redirect Rule: `www.opengpubenchmarks.com/*` to `https://opengpubenchmarks.com/${1}` (301).
+4. Bulk Redirect: `open-gpu-benchmarks.pages.dev` to `https://opengpubenchmarks.com`
+   (301, preserve path and query, subdomain matching off so previews keep working).
+5. Repo secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+6. Security > Bots: **Block AI bots off**, Bot Fight Mode off. AI Crawl
+   Control: allow the crawlers, and turn off the managed robots.txt so ours is
+   served unchanged.
+7. Google Search Console Domain property (DNS TXT through Cloudflare); submit
+   `https://opengpubenchmarks.com/sitemap.xml`. Optionally Bing Webmaster Tools.
+
+### Versioned changes
 
 For a versioned dashboard payload change:
 

@@ -69,6 +69,22 @@ a fresh empty `Unreleased` section.
   asked for.
 
 ### Added
+- Cloudflare Pages hosting at <https://opengpubenchmarks.com> (the canonical
+  site). `build.yml` deploys the same build to Cloudflare (Wrangler Direct
+  Upload) and GitHub Pages; GitHub Pages stays live as a mirror.
+- `preview.yml`: Cloudflare preview deploys with a sticky PR comment, only for
+  the repository owner's own same-repo pull requests. Other PRs and forks skip
+  the job.
+- SEO: every host declares `https://opengpubenchmarks.com/` as canonical, plus
+  Open Graph tags, a better title and description, and `WebSite`/`Dataset`
+  JSON-LD.
+- Crawler and AI access: `build.py` writes JavaScript-free copies of every
+  dashboard summary (`site/benchmarks/index.html`, `site/llms.txt`,
+  `site/llms-full.txt`) and a `site/sitemap.xml`. `site/robots.txt` allows all
+  crawlers, including named AI crawlers, with `Content-Signal: search=yes,
+  ai-input=yes, ai-train=yes`. `site/_headers` sets Cloudflare response headers.
+  `test_build.py` checks that the canonical URLs agree and that the pages
+  carry every summary.
 - `--data-dir` on `build.py` and `validate.py`, for example
   `python scripts/build.py --data-dir tests/fixtures/data` to preview the
   dashboard with the synthetic fixtures.

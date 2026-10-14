@@ -645,6 +645,8 @@ def main():
     check_real_data()
     with tempfile.TemporaryDirectory() as temp:
         check_fixture_build(Path(temp))
+    with tempfile.TemporaryDirectory() as temp:
+        check_site_seo(Path(temp))
     print("Catalog rules, result rules, aggregation, submitter, and catalog spec checks passed")
 
 
@@ -677,6 +679,34 @@ def check_fixture_build(api_dir):
     dashboard = load_json(api_dir / "dashboard.json")
     assert len(dashboard["records"]) == 30
     check_catalog_specs(api_dir)
+
+
+def check_site_seo(site_dir):
+    """Every host must name the same canonical origin, and the plain pages must carry every summary."""
+    origin = build.SITE_URL
+    index = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    assert f'<link rel="canonical" href="{origin}">' in index, "index.html canonical must equal build.SITE_URL"
+    assert f'<meta property="og:url" content="{origin}">' in index, "og:url must equal the canonical"
+    robots = (ROOT / "site" / "robots.txt").read_text(encoding="utf-8")
+    assert f"Sitemap: {origin}sitemap.xml" in robots
+    assert not re.search(r"^\s*Disallow:\s*\S", robots, re.MULTILINE), "robots.txt must not block crawlers"
+
+    # Build the fixtures with pages on, into a temp site folder.
+    assert build.main(FIXTURES_DIR, site_dir / "api" / "v1", site_dir) == 0
+    for name in build.SITE_PAGES:
+        assert (site_dir / name).is_file(), f"build must write site/{name}"
+    sitemap = (site_dir / "sitemap.xml").read_text(encoding="utf-8")
+    assert f"<loc>{origin}</loc>" in sitemap and f"<loc>{origin}benchmarks/</loc>" in sitemap
+    page = (site_dir / "benchmarks" / "index.html").read_text(encoding="utf-8")
+    full = (site_dir / "llms-full.txt").read_text(encoding="utf-8")
+    assert "<script" not in page, "benchmarks/index.html must work without JavaScript"
+    assert f'<link rel="canonical" href="{origin}benchmarks/">' in page
+    records = load_json(site_dir / "api" / "v1" / "dashboard.json")["records"]
+    for record in records:
+        row = "| " + " | ".join(build.summary_row(record)) + " |"
+        assert row in full, f"llms-full.txt is missing {record['id']}"
+        cells = "".join(f"<td>{build.html.escape(cell)}</td>" for cell in build.summary_row(record))
+        assert cells in page, f"benchmarks/index.html is missing {record['id']}"
 
 
 if __name__ == "__main__":

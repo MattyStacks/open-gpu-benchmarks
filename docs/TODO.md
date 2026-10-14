@@ -179,6 +179,24 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   - Keep GitHub links absolute and site links relative so a custom domain
     works.
 
+## Hosting and SEO
+
+- [ ] **Finish the Cloudflare setup (manual).** See "Cloudflare Pages" in
+  `docs/COPILOT_HANDOFF.md`: Direct Upload project, custom domains, www and
+  pages.dev redirects, API token secrets, AI-bot blocking off, and Search
+  Console plus the sitemap.
+- [ ] **Add a LICENSE** for the code and the data, then add `license` to the
+  `Dataset` JSON-LD in `site/index.html`. AI tools and Google Dataset Search
+  treat unlicensed data as less reusable.
+- [ ] **A 1200x630 social share image** for `og:image` (it uses the 512 px
+  icon now), and `twitter:card` `summary_large_image`.
+- [ ] **Per-GPU crawlable pages** (`/gpu/<id>.html`) once real runs exist, so
+  searches like "RTX 4090 Cyberpunk 1440p FPS" land on a specific page. Add
+  them to the sitemap.
+- [ ] **Optional fixture-data preview.** PR previews build the real `data/`,
+  which has no runs yet. A second preview built with
+  `--data-dir tests/fixtures/data` would help with functional testing.
+
 ## Tooling and bugs
 
 - [ ] **Clear stale build output.** `build.py` never deletes old files under
@@ -197,6 +215,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **Unreleased (branch `feature/cloudflare-pages`, 2026-10-13)**
+  - Cloudflare Pages deploy and the opengpubenchmarks.com canonical domain,
+    owner-only PR previews, SEO meta and JSON-LD, robots.txt allowing AI
+    crawlers, and generated `benchmarks/index.html`, `llms.txt`, `llms-full.txt`,
+    and `sitemap.xml`.
 - **Unreleased (branch `chore/test-fixtures`, 2026-10-13)**
   - Synthetic runs moved to `tests/fixtures/data/` (with a catalog snapshot);
     `data/` holds only real data. `--data-dir` on `build.py` and

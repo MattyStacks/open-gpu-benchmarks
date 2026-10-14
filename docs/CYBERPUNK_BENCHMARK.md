@@ -1,13 +1,37 @@
 # Submitting Cyberpunk 2077 benchmark runs
 
 Cyberpunk 2077 has a built-in benchmark, and every run saves its results to
-your computer. `scripts/import_cyberpunk.py` reads those results and writes the
-result files for you. You don't have to type any numbers or copy files into the
-repository; your benchmark folder stays where it is.
+your computer. [`scripts/import_cyberpunk.py`](../scripts/import_cyberpunk.py)
+reads those results and writes the result files for you. You don't type any
+numbers or copy any files into the repository; your benchmark folder stays
+where it is.
 
 You can run the script again whenever you like. It remembers which runs it has
-already turned into result files and only adds new ones, so you can benchmark a
-few more presets later and run the same command again.
+already imported and only adds new ones, so you can benchmark a few more
+presets later and run the same command again.
+
+**Quick start**, once the repository is set up (steps 2 and 3):
+
+```powershell
+python scripts/import_cyberpunk.py --gpu-id <your_gpu_id> --dry-run   # preview
+python scripts/import_cyberpunk.py --gpu-id <your_gpu_id>             # write the files
+python scripts/validate.py                                            # check everything
+```
+
+## Contents
+
+1. [Run the benchmark](#1-run-the-benchmark)
+2. [Set up the repository (once)](#2-set-up-the-repository-once)
+3. [Find your GPU's catalog ID](#3-find-your-gpus-catalog-id)
+4. [Preview, then import](#4-preview-then-import)
+5. [Review and open a pull request](#5-review-and-open-a-pull-request)
+6. [Running it again later](#running-it-again-later)
+7. [Command reference](#command-reference)
+8. [The result file](#the-result-file)
+9. [How settings are named](#how-settings-are-named)
+10. [Runs the script skips](#runs-the-script-skips)
+11. [Troubleshooting](#troubleshooting)
+12. [For maintainers](#for-maintainers)
 
 ## 1. Run the benchmark
 
@@ -21,7 +45,8 @@ few more presets later and run the same command again.
 5. Repeat for every preset and resolution you want to share.
 
 Every run is saved as its own folder, such as
-`benchmark_2026-10-13_18-44-57`, which holds a `summary.json`.
+`benchmark_2026-10-13_18-44-57`, which holds a `summary.json` and a
+`frames.csv`. The script reads only `summary.json`.
 
 ### Presets and upscaling
 
@@ -38,93 +63,272 @@ A Custom run with an upscaler still on is skipped. Use a named preset for those.
 ## 2. Set up the repository (once)
 
 Follow [CONTRIBUTING.md](../CONTRIBUTING.md) to fork and clone the repository
-and create the virtual environment. Then activate it:
+and create the virtual environment. The script needs Python 3.11 or newer and
+the packages in `requirements.txt`. Activate the environment in every new
+terminal:
 
 ```powershell
 .venv\Scripts\Activate.ps1          # macOS/Linux: source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
+Run the commands below from the repository's top folder.
+
 ## 3. Find your GPU's catalog ID
 
 The ID is the file name of your card's entry under `data/gpus/`, for example
 `rtx_5080_16gb_fe` for the GeForce RTX 5080 Founders Edition. Pick the exact
 product you own, including the board partner. If your card isn't listed yet,
-add it first (see [data/gpus/README.md](../data/gpus/README.md)).
+add it first (see [data/gpus/README.md](../data/gpus/README.md)). An unknown ID
+makes the script list every catalog ID and stop.
 
 ## 4. Preview, then import
 
 ```powershell
 python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --dry-run
+```
+
+The dry run reads every run, shows what it would do with each one, and writes
+nothing. Each row says `new` with the file the run would go into, or `skipped`
+with the reason:
+
+```text
+status   run                            resolution  preset              upscaling         avg fps  file or reason
+new      benchmark_2026-10-13_18-44-57  4K          Ray Tracing: Ultra  DLSS Auto         88.5     result_20261013_cyberpunk_2077.yaml
+new      benchmark_2026-10-13_18-50-40  4K          Steam Deck          FSR 2.1 Balanced  165.6    result_20261013_cyberpunk_2077.yaml
+skipped  benchmark_2026-10-13_20-12-15  1080p       Custom              FSR 2.1 Quality   189.6    Custom preset with upscaling on; re-run with upscaling off or on a named preset
+new      benchmark_2026-10-13_20-21-40  4K          High                                  91.5     result_20261013_cyberpunk_2077.yaml
+
+3 would import, 1 skipped, 0 already imported earlier
+```
+
+When it looks right, run it again without `--dry-run`:
+
+```powershell
 python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
 ```
 
-The dry run lists every run it found and what it would do with each one,
-without writing anything. The second command writes the runs to
-`data/community/<gpu_id>/`, one file per day with one `result` item per run,
-for example `result_20261013_cyberpunk_2077.yaml`. Each item's
-`benchmark_run` names the folder it came from. It then checks the new files.
+This writes the runs to `data/community/<gpu_id>/`, one file per day with one
+`result` item per run, for example
+`data/community/rtx_5080_16gb_fe/result_20261013_cyberpunk_2077.yaml`. It then
+runs the checks on the files it wrote and prints any errors.
 
-If you run it again later the same day, new runs are added to that day's file.
-Runs on another day go in a new file. So do runs after a driver or game
-update, named `_2`, `_3`, and so on, because the driver, game version, CPU,
-memory, and OS apply to the whole file.
-
-Useful options:
-
-| Option | What it does |
-|---|---|
-| `--submitted-by <github-username>` | Shows your username with the runs. Leave it out to stay anonymous. |
-| `--custom-preset High` | The name to use for every Custom-preset run, instead of answering a question for each one. |
-| `--input <folder>` | The `benchmarkResults` folder, if the script can't find it. |
-| `--os linux` | The OS the runs were on. It defaults to the OS you run the script on. |
-| `--source official` | Maintainers only: writes to `data/official/`. |
-
-The script looks for the benchmark folder here:
-
-- **Windows:** `Documents\CD Projekt Red\Cyberpunk 2077\benchmarkResults`. It
-  also finds a Documents folder that OneDrive has moved.
-- **Linux (Steam with Proton):**
-  `~/.local/share/Steam/steamapps/compatdata/1091500/pfx/drive_c/users/steamuser/Documents/CD Projekt Red/Cyberpunk 2077/benchmarkResults`.
-  It checks `~/.steam/steam` and Flatpak Steam too. For other launchers, pass
-  `--input`.
+If a run used the Custom preset and you didn't pass `--custom-preset`, the
+script asks for the preset's name, one run at a time. Press Enter to reuse your
+previous answer, or type `s` to skip that run.
 
 ## 5. Review and open a pull request
 
-Open a few of the new files and check the GPU, the resolution, and the preset.
-Then run the checks and open a pull request as described in
+Open the new file and check the GPU, the resolutions, and the presets. Then run
+the checks and open a pull request as described in
 [CONTRIBUTING.md](../CONTRIBUTING.md):
 
 ```powershell
 python scripts/validate.py
 ```
 
-## What gets recorded
+Each imported run shows one `result-no-p1-low` warning; that's expected (see
+[The result file](#the-result-file)). Errors must be fixed before the pull
+request can be merged.
 
-Each file holds:
+## Running it again later
 
-- **The run:** the game version, resolution, preset, and upscaler.
-- **Performance:** average FPS, plus minimum and maximum FPS, the run time, and
-  the frame count.
-- **Your system:** CPU, system memory, GPU driver, and OS, plus each run's
-  display mode (fullscreen or borderless).
+Run the same command again whenever you've benchmarked more:
 
-Everything comes from `summary.json`. The proof method is `in_game_benchmark`.
+- Runs that are already in a result file are skipped. The script finds them by
+  each result item's `benchmark_run`, which names the run's folder.
+- New runs from a day that already has a file are added to that file.
+- Runs from a new day go in a new file for that day.
+- Runs after a driver or game update, or on a different CPU, memory amount, or
+  OS, go in a separate file for the same day: `..._2.yaml`, `..._3.yaml`. The
+  game version and everything under `system:` apply to every run in a file,
+  so runs that differ there can't share one.
+- Skipped runs aren't remembered. Fix the cause (or answer the Custom preset
+  question) and run the script again to pick them up.
 
-`summary.json` has no 1% low, so these runs have none. The checks print a
-`result-no-p1-low` warning for each file, which is expected. If you want 1%
-lows, capture the run with PresentMon instead, as described in
-[COMMUNITY_SUBMISSIONS.md](COMMUNITY_SUBMISSIONS.md).
+When the script adds runs to an existing file, it rewrites the whole file, so
+any comments you added to it by hand are lost. The runs and values are kept.
+
+## Command reference
+
+```text
+python scripts/import_cyberpunk.py --gpu-id <id> [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--gpu-id <id>` | **Required.** The catalog ID of the GPU that ran the benchmarks. Runs from a different GPU are skipped. |
+| `--dry-run` | Shows what would be imported and writes nothing. |
+| `--custom-preset <name>` | The preset name to use for every Custom-preset run, for example `High`, instead of being asked for each one. |
+| `--submitted-by <github-username>` | Shows your GitHub username with the runs. Leave it out to stay anonymous. Community runs only. |
+| `--input <folder>` | The `benchmarkResults` folder, if the script can't find it on its own. |
+| `--os windows` or `--os linux` | The OS the benchmarks ran on. It defaults to the OS you run the script on. |
+| `--source community` or `--source official` | Where the files go. `community` (`data/community/`) is the default; `official` (`data/official/`) is for maintainers. |
+| `-h`, `--help` | Shows the options. |
+
+The script looks for the benchmark folder here, in order:
+
+- **Windows:** `Documents\CD Projekt Red\Cyberpunk 2077\benchmarkResults`,
+  using Windows' own Documents location, so a Documents folder moved by
+  OneDrive is found too. Then `%USERPROFILE%\Documents` and
+  `%USERPROFILE%\OneDrive\Documents`.
+- **Linux (Steam with Proton):** the game's Proton prefix,
+  `steamapps/compatdata/1091500/pfx/drive_c/users/steamuser/Documents/CD Projekt Red/Cyberpunk 2077/benchmarkResults`,
+  under `~/.steam/steam`, `~/.local/share/Steam`, and Flatpak Steam
+  (`~/.var/app/com.valvesoftware.Steam/.local/share/Steam`). For other
+  launchers, such as Heroic, pass `--input`.
+
+The script exits with code 0 when it finishes (even if it skipped runs) and 1
+when the benchmark folder can't be found, the GPU ID or username is wrong, or
+the files it wrote fail the checks.
+
+## The result file
+
+This is the start of a file the script wrote; the full file has one `result`
+item per run:
+
+```yaml
+# Imported by scripts/import_cyberpunk.py from Cyberpunk 2077's built-in
+# benchmark. Each benchmark_run is a folder in the game's benchmarkResults;
+# re-running the script skips runs listed here and adds new ones.
+gpu_id: rtx_5080_16gb_fe
+benchmark_type: game
+game: Cyberpunk 2077
+version: '2.31'
+frame_generation: false
+result:
+  - benchmark_run: benchmark_2026-10-13_18-44-57
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 88.52
+    min_fps: 79.67
+    max_fps: 99.79
+    duration: 64.25
+    frame_count: 5687
+    display_mode: Borderless windowed
+system:
+  os: windows
+  os_detail: Windows 11 Pro
+  os_build: 10.0.26300
+  cpu: AMD Ryzen 9 9950X3D 16-Core Processor
+  memory: 64 GB
+  driver: '617.14'
+  graphics_api: DX12
+proof:
+  method: in_game_benchmark
+  format: cyberpunk_summary_json
+```
+
+Where each value comes from in `summary.json`:
+
+| Field | From | Notes |
+|---|---|---|
+| `version` | `gameVersion` | Same for every run in the file. |
+| `result[].benchmark_run` | the run's folder name | How re-runs recognize imported runs. Don't edit it. |
+| `result[].resolution` | `renderWidth` x `renderHeight` | See [How settings are named](#how-settings-are-named). |
+| `result[].graphics_preset` | `presetName` | The in-game name, or your name for a Custom preset. |
+| `result[].upscaling`, `preset_upscaling` | the upscaler settings | Only when the preset turned an upscaler on. |
+| `result[].avg_fps` | `averageFps` | Rounded to two decimals. This is the number the dashboard charts. |
+| `result[].min_fps`, `max_fps` | `minFps`, `maxFps` | Extra detail; not charted. |
+| `result[].duration`, `frame_count` | `time`, `frameNumber` | Seconds and frames rendered. |
+| `result[].display_mode` | `windowMode` | Per run, because it can change between runs. |
+| `system.os` | `--os` | `windows` or `linux`. |
+| `system.os_detail`, `os_build` | `osName`, `osVersion` | Windows only. On Linux, `os_detail` comes from `/etc/os-release`, because Proton reports a Windows version. |
+| `system.cpu` | `cpuName` | |
+| `system.memory` | `systemMemory` | Converted from MB, for example `64 GB`. |
+| `system.driver` | `gpuDriverVersion` | NVIDIA's `Nvidia v 61714 [r617_07]` becomes `617.14`; other drivers are kept as written. |
+| `system.graphics_api` | | Always `DX12`, the game's only API. |
+| `proof.method` | | Always `in_game_benchmark`. |
+
+`summary.json` has no 1% low, so these runs have none and the dashboard shows
+only their average. The checks print a `result-no-p1-low` warning for each
+run, which is expected. If you want 1% lows, capture the run with PresentMon
+instead, as described in [COMMUNITY_SUBMISSIONS.md](COMMUNITY_SUBMISSIONS.md).
+
+Nothing else from your computer is recorded: no user name, computer name, or
+file paths.
+
+## How settings are named
+
+The dashboard only averages runs whose GPU, resolution, preset, upscaler, and
+OS match exactly, so the script always writes the same names.
+
+**Resolution:** 1920x1080 is `1080p`, 2560x1440 is `1440p`, and 3840x2160 is
+`4K`. Any other size is written as width x height, such as `3440x1440`.
+
+**Preset:** the name the game shows in its menu.
+
+| `presetName` in summary.json | Written as |
+|---|---|
+| `Low`, `Medium`, `High`, `Ultra` | the same |
+| `Steam Deck` | `Steam Deck` |
+| `RayTracingLow` | `Ray Tracing: Low` |
+| `RayTracingMedium` | `Ray Tracing: Medium` |
+| `RayTracingUltra` | `Ray Tracing: Ultra` |
+| `RayTracingOverdrive` | `Ray Tracing: Overdrive` |
+| `Custom` | the name you give (`--custom-preset` or the prompt) |
+
+**Upscaler:** the upscaler, then its quality mode: `DLSS Auto`,
+`DLSS Quality`, `FSR 2.1 Quality`, `FSR 2.1 Balanced`, and so on. DLSS and FSR
+2.1 use the game's menu order: Auto, Quality, Balanced, Performance, Ultra
+Performance. FSR 3, FSR 4, XeSS, and FSR 1.0 are written with the game's mode
+number, such as `XeSS (mode 2)`, until their names are confirmed. DLAA and
+dynamic resolution are written as `DLAA` and `Dynamic resolution`.
+
+**Display mode:** `windowMode` 0 is `Windowed`, 1 is `Borderless windowed`, and
+2 is `Fullscreen`. Any other value is left out.
 
 ## Runs the script skips
 
-| Reason | What to do |
+| Reason shown | What to do |
 |---|---|
-| Frame generation was on | Run it again with frame generation off. |
-| V-Sync or an FPS limit was on | Run it again uncapped. |
-| A different GPU than `--gpu-id` | Import it with that GPU's ID. The script compares the GPU name and memory size in `summary.json` with the catalog entry. |
-| Custom preset with upscaling on | Run it again on a named preset, or with upscaling off. |
-| Custom preset with no name given | Run the script again and answer the question, or pass `--custom-preset`. |
+| `frame generation was on` | Run it again with frame generation off. |
+| `V-Sync or an FPS limit was on` | Run it again uncapped. |
+| `GPU is '...', not <id>` or `GPU has ... GB, but <id> has ... GB` | The run came from a different GPU. Import it with that GPU's `--gpu-id`. The script compares the GPU name and memory size in `summary.json` with the catalog entry. |
+| `Custom preset with upscaling on` | Run it again on a named preset, or with upscaling off. |
+| `Custom preset needs a name` | Run the script again and answer the question, or pass `--custom-preset`. |
+| `unknown preset '...'` | A preset the script doesn't know yet, perhaps from a game update. Open an issue with the name. |
+| `unreadable summary.json` | The run didn't finish or the file is damaged. Run the benchmark again. |
 
-Skipped runs aren't remembered, so once you fix the cause, running the script
-again picks them up.
+## Troubleshooting
+
+**"Couldn't find Cyberpunk 2077's benchmarkResults folder"**: the script lists
+every place it looked. Find the folder yourself (it's next to the game's save
+games, under `CD Projekt Red\Cyberpunk 2077`) and pass it with `--input`.
+
+**"Unknown --gpu-id"**: the script lists the catalog IDs. Use one exactly as
+listed, or add your card to the catalog first.
+
+**"isn't a valid GitHub username"**: check `--submitted-by`, or leave it out to
+stay anonymous.
+
+**"0 imported, ... already imported earlier"**: every run is already in a
+result file. Benchmark something new first.
+
+**The checks fail on the new file**: the script prints each error with a link
+to the rule. Fix the cause, delete the new file, and run the script again; it
+recreates the file from your benchmark folder.
+
+**Wrong preset name for a Custom run**: edit `graphics_preset` in the file, or
+delete the file and import again with the right `--custom-preset`.
+
+## For maintainers
+
+- Official runs: add `--source official` to write to `data/official/`.
+- The code is in [`scripts/import_cyberpunk.py`](../scripts/import_cyberpunk.py).
+  The preset, upscaler, and display mode names are the `PRESETS`,
+  `QUALITY_MODES`, and `WINDOW_MODES` tables at the top. Changing a name
+  splits dashboard groups, so update existing result files in the same pull
+  request.
+- `SETUP_KEYS` lists the file-level fields that must match for runs to share a
+  file.
+- `check_import_cyberpunk()` in [`scripts/test_build.py`](../scripts/test_build.py)
+  imports synthetic runs into a temporary folder. It covers the field mapping,
+  skips, appending same-day runs, the `_2` file after a driver change, and
+  display mode per run. The hidden `--data-dir` option points the script at
+  that folder.
+- Design notes are in [COPILOT_HANDOFF.md](COPILOT_HANDOFF.md); open questions
+  (unconfirmed mode names, an optional 1% low from `frames.csv`) are in
+  [TODO.md](TODO.md).

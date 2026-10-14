@@ -218,7 +218,7 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - **Unreleased (branch `feature/cloudflare-pages`, 2026-10-13)**
   - Cloudflare Pages deploy and the opengpubenchmarks.com canonical domain,
     owner-only PR previews, SEO meta and JSON-LD, robots.txt allowing AI
-    crawlers, and generated `benchmarks.html`, `llms.txt`, `llms-full.txt`,
+    crawlers, and generated `benchmarks/index.html`, `llms.txt`, `llms-full.txt`,
     and `sitemap.xml`.
 - **Unreleased (branch `chore/test-fixtures`, 2026-10-13)**
   - Synthetic runs moved to `tests/fixtures/data/` (with a catalog snapshot);

@@ -8,7 +8,7 @@
 - Mirror: <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
 - Public dashboard API: <https://opengpubenchmarks.com/api/v1/dashboard.json>
 - GPU master API: <https://opengpubenchmarks.com/api/v1/gpus.json>
-- Crawlable summaries: <https://opengpubenchmarks.com/benchmarks.html>,
+- Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Current version: `v0.6.0` (2026-10-08)
   - v0.6.0: Linux vs Windows (`system.os` required and a grouping key, OS
@@ -515,7 +515,7 @@ Secrets: `CLOUDFLARE_API_TOKEN` (Account > Cloudflare Pages > Edit) and
   plus noindex is a mixed signal. The dashboard still fetches data relative
   to the page.
 - `build.main(..., site_dir=SITE_DIR)` (the CLI passes it, tests pass a temp
-  folder) also writes `benchmarks.html`, `llms.txt`, `llms-full.txt`, and
+  folder) also writes `benchmarks/index.html`, `llms.txt`, `llms-full.txt`, and
   `sitemap.xml` from the dashboard records, because most AI crawlers don't
   run JavaScript. They are listed in `build.SITE_PAGES` and gitignored.
 - `site/robots.txt` (committed) allows everything, names the major AI
@@ -525,7 +525,9 @@ Secrets: `CLOUDFLARE_API_TOKEN` (Account > Cloudflare Pages > Edit) and
 - `test_build.check_site_seo()` checks that the canonical, `og:url`, robots
   sitemap line, sitemap, and generated pages agree on `SITE_URL`, that
   robots.txt has no `Disallow`, and that every fixture summary appears in
-  `benchmarks.html` and `llms-full.txt`.
+  `benchmarks/index.html` and `llms-full.txt`. The page lives in a folder
+  because Cloudflare Pages 308-redirects `*.html` to the bare path, and a
+  canonical URL must not redirect.
 
 ### Cloudflare Pages (manual setup)
 

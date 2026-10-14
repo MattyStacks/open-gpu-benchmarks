@@ -110,7 +110,7 @@ prepares:
   pages, are the only absolute site URLs, and `test_build.py` checks they
   agree. robots.txt never disallows crawlers: AI tools are meant to use the
   site.
-- `build.py` writes `benchmarks.html`, `llms.txt`, `llms-full.txt`, and
+- `build.py` writes `benchmarks/index.html`, `llms.txt`, `llms-full.txt`, and
   `sitemap.xml` into `site/` from the dashboard summaries (gitignored, like
   `site/api/`). Keep them in step with any dashboard field change.
 - Deploys: `build.yml` publishes `main` to GitHub Pages and Cloudflare Pages.

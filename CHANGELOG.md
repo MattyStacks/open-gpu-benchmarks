@@ -79,7 +79,7 @@ a fresh empty `Unreleased` section.
   Open Graph tags, a better title and description, and `WebSite`/`Dataset`
   JSON-LD.
 - Crawler and AI access: `build.py` writes JavaScript-free copies of every
-  dashboard summary (`site/benchmarks.html`, `site/llms.txt`,
+  dashboard summary (`site/benchmarks/index.html`, `site/llms.txt`,
   `site/llms-full.txt`) and a `site/sitemap.xml`. `site/robots.txt` allows all
   crawlers, including named AI crawlers, with `Content-Signal: search=yes,
   ai-input=yes, ai-train=yes`. `site/_headers` sets Cloudflare response headers.

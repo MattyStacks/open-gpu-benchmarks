@@ -696,17 +696,17 @@ def check_site_seo(site_dir):
     for name in build.SITE_PAGES:
         assert (site_dir / name).is_file(), f"build must write site/{name}"
     sitemap = (site_dir / "sitemap.xml").read_text(encoding="utf-8")
-    assert f"<loc>{origin}</loc>" in sitemap and f"<loc>{origin}benchmarks.html</loc>" in sitemap
-    page = (site_dir / "benchmarks.html").read_text(encoding="utf-8")
+    assert f"<loc>{origin}</loc>" in sitemap and f"<loc>{origin}benchmarks/</loc>" in sitemap
+    page = (site_dir / "benchmarks" / "index.html").read_text(encoding="utf-8")
     full = (site_dir / "llms-full.txt").read_text(encoding="utf-8")
-    assert "<script" not in page, "benchmarks.html must work without JavaScript"
-    assert f'<link rel="canonical" href="{origin}benchmarks.html">' in page
+    assert "<script" not in page, "benchmarks/index.html must work without JavaScript"
+    assert f'<link rel="canonical" href="{origin}benchmarks/">' in page
     records = load_json(site_dir / "api" / "v1" / "dashboard.json")["records"]
     for record in records:
         row = "| " + " | ".join(build.summary_row(record)) + " |"
         assert row in full, f"llms-full.txt is missing {record['id']}"
         cells = "".join(f"<td>{build.html.escape(cell)}</td>" for cell in build.summary_row(record))
-        assert cells in page, f"benchmarks.html is missing {record['id']}"
+        assert cells in page, f"benchmarks/index.html is missing {record['id']}"
 
 
 if __name__ == "__main__":

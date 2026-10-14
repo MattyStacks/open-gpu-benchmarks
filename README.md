@@ -211,7 +211,7 @@ Do not commit generated API files unless repository policy changes.
 For search engines and AI tools, every host declares
 `https://opengpubenchmarks.com/` as canonical (`build.SITE_URL`), so the
 mirrors count as copies of it. `build.py` also writes JavaScript-free copies of
-every summary (`benchmarks.html`, `llms.txt`, `llms-full.txt`) and
+every summary (`benchmarks/index.html`, `llms.txt`, `llms-full.txt`) and
 `sitemap.xml` next to `site/api/`. They are gitignored like the API.
 `site/robots.txt` allows all crawlers, AI crawlers included. Those absolute
 URLs are the only exception to relative links.

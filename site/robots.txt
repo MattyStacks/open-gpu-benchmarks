@@ -1,6 +1,6 @@
 # Open GPU Benchmarks welcomes search engines and AI crawlers.
 # The canonical site is https://opengpubenchmarks.com/ (GitHub Pages is a mirror).
-# Plain, JavaScript-free copies of every summary: /benchmarks.html and /llms-full.txt
+# Plain, JavaScript-free copies of every summary: /benchmarks/ and /llms-full.txt
 
 User-agent: *
 Content-Signal: search=yes, ai-input=yes, ai-train=yes

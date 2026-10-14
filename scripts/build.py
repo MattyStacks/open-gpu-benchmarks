@@ -31,7 +31,9 @@ RELEASE_VERSION = "0.6.0"
 # checks they agree.
 SITE_URL = "https://opengpubenchmarks.com/"
 # Plain pages for crawlers and AI tools that don't run the dashboard's JavaScript.
-SITE_PAGES = ("benchmarks.html", "llms.txt", "llms-full.txt", "sitemap.xml")
+# benchmarks/index.html, not benchmarks.html: Cloudflare Pages 308-redirects
+# "*.html" to the bare path, and a canonical URL must not redirect.
+SITE_PAGES = ("benchmarks/index.html", "llms.txt", "llms-full.txt", "sitemap.xml")
 
 
 def load_yaml(path):
@@ -304,12 +306,12 @@ def method_lines(metadata):
 
 
 def write_text(site_dir, name, text):
-    site_dir.mkdir(parents=True, exist_ok=True)
+    (site_dir / name).parent.mkdir(parents=True, exist_ok=True)
     (site_dir / name).write_text(text, encoding="utf-8", newline="\n")
 
 
 def benchmarks_html(records, metadata):
-    page_url = f"{SITE_URL}benchmarks.html"
+    page_url = f"{SITE_URL}benchmarks/"
     description = "Every Open GPU Benchmarks summary as plain tables: average FPS and 1% lows by GPU, game, resolution, preset, and OS."
     sections = []
     for factor, rows in records_by_form_factor(records):
@@ -341,7 +343,7 @@ def benchmarks_html(records, metadata):
 <meta property="og:title" content="GPU Benchmark Tables">
 <meta property="og:description" content="{html.escape(description)}">
 <meta property="og:url" content="{page_url}">
-<link rel="icon" href="favicons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicons/favicon.svg" type="image/svg+xml">
 <style>
 :root {{ color-scheme: light dark; }}
 body {{ margin: 0 auto; max-width: 1200px; padding: 24px 16px 48px; font: 14px/1.5 system-ui, sans-serif; }}
@@ -354,9 +356,9 @@ th {{ background: #8882; }}
 <body>
 <h1>Open GPU Benchmarks: benchmark tables</h1>
 <p>{html.escape(description)} Generated {generated} (release {metadata["release_version"]}, schema {metadata["schema_version"]}).
-Open the <a href="./">interactive dashboard</a>, or get the same numbers as JSON from
-<a href="api/v1/dashboard.json">api/v1/dashboard.json</a> (summaries) and
-<a href="api/v1/gpus.json">api/v1/gpus.json</a> (GPU specs and per-GPU summaries).</p>
+Open the <a href="../">interactive dashboard</a>, or get the same numbers as JSON from
+<a href="../api/v1/dashboard.json">api/v1/dashboard.json</a> (summaries) and
+<a href="../api/v1/gpus.json">api/v1/gpus.json</a> (GPU specs and per-GPU summaries).</p>
 {synthetic}<h2>How the numbers are grouped</h2>
 <ul>
 {method}
@@ -385,7 +387,7 @@ def llms_txt(metadata):
 ## Data
 
 - [All benchmark summaries as Markdown]({SITE_URL}llms-full.txt): every row, one table per form factor
-- [Benchmark tables (HTML)]({SITE_URL}benchmarks.html): the same rows as a plain web page
+- [Benchmark tables (HTML)]({SITE_URL}benchmarks/): the same rows as a plain web page
 - [Dashboard JSON]({SITE_URL}api/v1/dashboard.json): every summary with run counts, ranges, and per-run hardware detail
 - [GPU catalog JSON]({SITE_URL}api/v1/gpus.json): GPU specs plus official and community summaries per GPU
 
@@ -417,7 +419,7 @@ def sitemap_xml(metadata):
     lastmod = metadata["generated_at"][:10]
     urls = "".join(
         f"  <url><loc>{SITE_URL}{path}</loc><lastmod>{lastmod}</lastmod></url>\n"
-        for path in ("", "benchmarks.html", "llms.txt", "llms-full.txt")
+        for path in ("", "benchmarks/", "llms.txt", "llms-full.txt")
     )
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -428,7 +430,7 @@ def sitemap_xml(metadata):
 
 def write_site_pages(site_dir, records, metadata):
     """Write the plain summary pages, built from the same records as dashboard.json."""
-    write_text(site_dir, "benchmarks.html", benchmarks_html(records, metadata))
+    write_text(site_dir, "benchmarks/index.html", benchmarks_html(records, metadata))
     write_text(site_dir, "llms.txt", llms_txt(metadata))
     write_text(site_dir, "llms-full.txt", llms_full_txt(records, metadata))
     write_text(site_dir, "sitemap.xml", sitemap_xml(metadata))

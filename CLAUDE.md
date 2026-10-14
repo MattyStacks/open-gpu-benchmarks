@@ -77,7 +77,7 @@ scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
 site/robots.txt, site/_headers     crawler rules (AI allowed) and Cloudflare headers
-site/benchmarks.html, llms.txt,    generated JS-free summary pages + sitemap.xml
+site/benchmarks/, llms.txt,       generated JS-free summary pages + sitemap.xml
   llms-full.txt, sitemap.xml       (gitignored, written by build.py)
 templates/                         starting points for runs (incl. community_found_result.yaml) and catalog entries
 requirements.txt                   Python dependencies (pyyaml, numpy); CI and .venv use it
@@ -175,7 +175,7 @@ unless repository policy changes.
   sitemap and pages use it, and `test_build.py` checks that they agree.
 - AI crawlers and search engines are welcome. robots.txt never disallows
   anything, and `build.py` writes JavaScript-free copies of every summary
-  (`benchmarks.html`, `llms-full.txt`) because most AI crawlers don't run JS.
+  (`benchmarks/`, `llms-full.txt`) because most AI crawlers don't run JS.
 - `preview.yml` deploys Cloudflare previews only for the repo owner's own
   same-repo PRs. Keep it on `pull_request`, never `pull_request_target`.
 

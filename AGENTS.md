@@ -56,6 +56,11 @@ community average more than 25% from the official average fails
 `community-outlier`. Official runs are maintainer-verified by definition
 ("Verified" on the dashboard) and may credit someone by `name` alone.
 
+Hosting: the canonical site is <https://opengpubenchmarks.com> (Cloudflare
+Pages). GitHub Pages is a mirror. Only the canonical/SEO URLs are absolute,
+robots.txt allows AI crawlers, and Cloudflare PR previews run only for the
+owner's own PRs (`preview.yml`).
+
 Catalog data must be accurate. Cite real pages in `sources`, list in
 `covers` only the sections a page backs, and leave a value out rather than
 guess it.

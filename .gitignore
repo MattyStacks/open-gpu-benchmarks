@@ -6,3 +6,8 @@ venv/
 
 # Generated API output
 site/api/
+# Generated crawlable pages (scripts/build.py writes them next to site/api/)
+site/benchmarks.html
+site/llms.txt
+site/llms-full.txt
+site/sitemap.xml

@@ -51,7 +51,8 @@ integrated GPUs from reviewable YAML. No backend, no database, no build
 toolchain beyond Python.
 
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
-- Site: <https://mattystacks.github.io/open-gpu-benchmarks/>
+- Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
+  <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
 - Current development version: `v0.6.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it)
 
@@ -75,13 +76,17 @@ scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
+site/robots.txt, site/_headers     crawler rules (AI allowed) and Cloudflare headers
+site/benchmarks.html, llms.txt,    generated JS-free summary pages + sitemap.xml
+  llms-full.txt, sitemap.xml       (gitignored, written by build.py)
 templates/                         starting points for runs (incl. community_found_result.yaml) and catalog entries
 requirements.txt                   Python dependencies (pyyaml, numpy); CI and .venv use it
 .venv/                             local virtual environment (gitignored, never committed)
 CHANGELOG.md                       high-level version history (update with every change)
 docs/TODO.md                       backlog: deferred work (update with every change)
 AGENTS.md                          tool-neutral agent entry point (keep in step with this file)
-.github/workflows/build.yml        builds site/api and deploys Pages on main
+.github/workflows/build.yml        builds site/api and deploys GitHub Pages + Cloudflare on main
+.github/workflows/preview.yml      Cloudflare PR previews, owner's own PRs only
 .github/workflows/validate.yml     three PR checks: Catalog entries, Benchmark results,
                                    Build and tests
 ```
@@ -163,8 +168,16 @@ unless repository policy changes.
   `preset_upscaling: true` (the graphics preset turned it on), otherwise
   `result-upscaling` fails. It is a grouping key, so upscaled runs never
   average with native ones.
-- The dashboard may move to a custom domain: keep GitHub links absolute and
-  API/data links relative to the page.
+- Keep GitHub links absolute and API/data links relative to the page, so
+  every host works. The one exception is the canonical origin
+  `https://opengpubenchmarks.com/` (`build.SITE_URL`): the canonical link,
+  `og:url`, and JSON-LD in `index.html`, `robots.txt`, and the generated
+  sitemap and pages use it, and `test_build.py` checks that they agree.
+- AI crawlers and search engines are welcome. robots.txt never disallows
+  anything, and `build.py` writes JavaScript-free copies of every summary
+  (`benchmarks.html`, `llms-full.txt`) because most AI crawlers don't run JS.
+- `preview.yml` deploys Cloudflare previews only for the repo owner's own
+  same-repo PRs. Keep it on `pull_request`, never `pull_request_target`.
 
 ## Checks to run before finishing
 

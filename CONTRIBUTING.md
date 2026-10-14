@@ -568,7 +568,10 @@ If you changed a rule, update every document that states it:
 `CONTRIBUTING.md`, `docs/COMMUNITY_SUBMISSIONS.md`, `data/community/README.md`,
 `data/gpus/README.md`, and `.github/copilot-instructions.md`.
 
-Do not commit the generated `site/api/` files; the Pages workflow rebuilds them.
+Do not commit the generated `site/api/` files (or `site/benchmarks.html`,
+`llms*.txt`, `sitemap.xml`); the deploy workflow rebuilds them. Cloudflare
+preview deploys run only for the maintainer's own pull requests. Contributor PRs
+get the three Validate checks, and the preview job shows as skipped.
 
 **Benchmark types:** `benchmark_type` other than `game` is kept in the GPU API
 but isn't shown in the game-FPS dashboard yet.

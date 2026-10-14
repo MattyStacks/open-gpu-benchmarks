@@ -1,9 +1,10 @@
-"""Build GPU-rooted API data for the GitHub Pages dashboard.
+"""Build GPU-rooted API data and crawlable summary pages for the dashboard.
 
-    python scripts/build.py                                  # data/ -> site/api/v1
+    python scripts/build.py                                  # data/ -> site/api/v1 + site pages
     python scripts/build.py --data-dir tests/fixtures/data   # preview the synthetic fixtures
 """
 import argparse
+import html
 import json
 import os
 import sys
@@ -21,9 +22,16 @@ import checks
 from checks import DATA_DIR, ROOT, relative_path, spec
 
 
-OUTPUT_DIR = ROOT / "site" / "api" / "v1"
+SITE_DIR = ROOT / "site"
+OUTPUT_DIR = SITE_DIR / "api" / "v1"
 SCHEMA_VERSION = "0.12"
 RELEASE_VERSION = "0.6.0"
+# The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
+# search engines here; index.html and robots.txt repeat it, and test_build.py
+# checks they agree.
+SITE_URL = "https://opengpubenchmarks.com/"
+# Plain pages for crawlers and AI tools that don't run the dashboard's JavaScript.
+SITE_PAGES = ("benchmarks.html", "llms.txt", "llms-full.txt", "sitemap.xml")
 
 
 def load_yaml(path):
@@ -242,7 +250,192 @@ def gpu_summary(source, gpu, records, metadata):
     }
 
 
-def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR):
+SUMMARY_COLUMNS = ("GPU", "Game", "Resolution", "Preset", "Upscaling", "OS", "Source", "Avg FPS", "1% low", "Runs")
+FORM_FACTOR_ORDER = ("Desktop", "Laptop", "Handheld", "Igpu")
+FORM_FACTOR_LABELS = {"Igpu": "Integrated"}
+
+
+def fps(value):
+    return "n/a" if value is None else f"{value:g}"
+
+
+def summary_row(record):
+    return (
+        record["gpu_name"],
+        record["game"],
+        record["resolution"],
+        record["graphics_preset"],
+        record["upscaling"] or "off",
+        record["os"].title(),
+        record["source"].title(),
+        fps(record["avg_fps"]),
+        fps(record["p1_low"]),
+        str(record["run_count"]),
+    )
+
+
+def records_by_form_factor(records):
+    """Group summaries by form factor, each sorted by game, resolution, then fastest first."""
+    grouped = defaultdict(list)
+    for record in records:
+        grouped[record["form_factor"]].append(record)
+    order = {name: index for index, name in enumerate(FORM_FACTOR_ORDER)}
+    return [
+        (
+            FORM_FACTOR_LABELS.get(factor, factor),
+            sorted(rows, key=lambda r: (r["game"], r["resolution"], r["graphics_preset"], r["os"], -r["avg_fps"])),
+        )
+        for factor, rows in sorted(grouped.items(), key=lambda item: order.get(item[0], len(order)))
+    ]
+
+
+def method_lines(metadata):
+    policy = metadata["comparison_policy"]
+    return [
+        "Each row averages every run that matches on GPU, form factor, GPU power, game, "
+        "resolution, graphics preset, upscaling, and OS.",
+        "Windows and Linux runs are never averaged together, and desktop and laptop GPUs never share a row.",
+        "Frame generation is off in every comparable run. Upscaling is off unless the graphics preset turns it on.",
+        "Official runs are verified by the maintainer. Community runs are reviewed in pull requests, and a "
+        f"community average more than {policy['community_outlier_threshold']:.0%} away from the matching "
+        "official average is rejected.",
+        "1% low is n/a when the capture tool doesn't report one (3DMark and many in-game benchmarks).",
+    ]
+
+
+def write_text(site_dir, name, text):
+    site_dir.mkdir(parents=True, exist_ok=True)
+    (site_dir / name).write_text(text, encoding="utf-8", newline="\n")
+
+
+def benchmarks_html(records, metadata):
+    page_url = f"{SITE_URL}benchmarks.html"
+    description = "Every Open GPU Benchmarks summary as plain tables: average FPS and 1% lows by GPU, game, resolution, preset, and OS."
+    sections = []
+    for factor, rows in records_by_form_factor(records):
+        head = "".join(f"<th>{column}</th>" for column in SUMMARY_COLUMNS)
+        body = "\n".join(
+            "<tr>" + "".join(f"<td>{html.escape(cell)}</td>" for cell in summary_row(record)) + "</tr>"
+            for record in rows
+        )
+        sections.append(
+            f'<h2 id="{factor.lower()}">{factor} GPUs</h2>\n'
+            f"<table>\n<thead><tr>{head}</tr></thead>\n<tbody>\n{body}\n</tbody>\n</table>"
+        )
+    tables = "\n".join(sections) or "<p>No benchmark summaries are published yet.</p>"
+    synthetic = (
+        '<p class="warn">This build contains synthetic test data.</p>\n' if metadata["synthetic_data"] else ""
+    )
+    method = "\n".join(f"<li>{html.escape(line)}</li>" for line in method_lines(metadata))
+    generated = metadata["generated_at"][:10]
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPU Benchmark Tables | Open GPU Benchmarks</title>
+<meta name="description" content="{html.escape(description)}">
+<link rel="canonical" href="{page_url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Open GPU Benchmarks">
+<meta property="og:title" content="GPU Benchmark Tables">
+<meta property="og:description" content="{html.escape(description)}">
+<meta property="og:url" content="{page_url}">
+<link rel="icon" href="favicons/favicon.svg" type="image/svg+xml">
+<style>
+:root {{ color-scheme: light dark; }}
+body {{ margin: 0 auto; max-width: 1200px; padding: 24px 16px 48px; font: 14px/1.5 system-ui, sans-serif; }}
+table {{ border-collapse: collapse; width: 100%; margin-bottom: 28px; font-size: 13px; }}
+th, td {{ border: 1px solid #8884; padding: 6px 8px; text-align: left; }}
+th {{ background: #8882; }}
+.warn {{ font-weight: 700; color: #b45309; }}
+</style>
+</head>
+<body>
+<h1>Open GPU Benchmarks: benchmark tables</h1>
+<p>{html.escape(description)} Generated {generated} (release {metadata["release_version"]}, schema {metadata["schema_version"]}).
+Open the <a href="./">interactive dashboard</a>, or get the same numbers as JSON from
+<a href="api/v1/dashboard.json">api/v1/dashboard.json</a> (summaries) and
+<a href="api/v1/gpus.json">api/v1/gpus.json</a> (GPU specs and per-GPU summaries).</p>
+{synthetic}<h2>How the numbers are grouped</h2>
+<ul>
+{method}
+</ul>
+{tables}
+<p>Source data is reviewable YAML in the <a href="https://github.com/MattyStacks/open-gpu-benchmarks">GitHub repository</a>.</p>
+</body>
+</html>
+"""
+
+
+def markdown_table(rows):
+    lines = ["| " + " | ".join(SUMMARY_COLUMNS) + " |", "|" + " --- |" * len(SUMMARY_COLUMNS)]
+    lines += ["| " + " | ".join(cell.replace("|", "\\|") for cell in summary_row(record)) + " |" for record in rows]
+    return "\n".join(lines)
+
+
+def llms_txt(metadata):
+    method = "\n".join(f"- {line}" for line in method_lines(metadata))
+    return f"""# Open GPU Benchmarks
+
+> Open, reviewable FPS benchmarks for desktop, laptop, handheld, and integrated GPUs. Each game result is an average FPS (and 1% low where the capture tool records one), grouped by GPU, game, resolution, graphics preset, upscaling, and OS. Official runs are maintainer-verified; community runs are reviewed in pull requests.
+
+{method}
+
+## Data
+
+- [All benchmark summaries as Markdown]({SITE_URL}llms-full.txt): every row, one table per form factor
+- [Benchmark tables (HTML)]({SITE_URL}benchmarks.html): the same rows as a plain web page
+- [Dashboard JSON]({SITE_URL}api/v1/dashboard.json): every summary with run counts, ranges, and per-run hardware detail
+- [GPU catalog JSON]({SITE_URL}api/v1/gpus.json): GPU specs plus official and community summaries per GPU
+
+## Project
+
+- [Interactive dashboard]({SITE_URL})
+- [Source repository](https://github.com/MattyStacks/open-gpu-benchmarks): YAML source data, validation rules, and submission guide
+"""
+
+
+def llms_full_txt(records, metadata):
+    sections = [
+        f"## {factor} GPUs\n\n{markdown_table(rows)}" for factor, rows in records_by_form_factor(records)
+    ] or ["No benchmark summaries are published yet."]
+    synthetic = "\n**This build contains synthetic test data.**\n" if metadata["synthetic_data"] else ""
+    method = "\n".join(f"- {line}" for line in method_lines(metadata))
+    body = "\n\n".join(sections)
+    return f"""# Open GPU Benchmarks: all benchmark summaries
+
+Source: {SITE_URL} (generated {metadata["generated_at"][:10]}, release {metadata["release_version"]}, schema {metadata["schema_version"]}). Machine-readable copy: {SITE_URL}api/v1/dashboard.json
+{synthetic}
+{method}
+
+{body}
+"""
+
+
+def sitemap_xml(metadata):
+    lastmod = metadata["generated_at"][:10]
+    urls = "".join(
+        f"  <url><loc>{SITE_URL}{path}</loc><lastmod>{lastmod}</lastmod></url>\n"
+        for path in ("", "benchmarks.html", "llms.txt", "llms-full.txt")
+    )
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{urls}</urlset>\n"
+    )
+
+
+def write_site_pages(site_dir, records, metadata):
+    """Write the plain summary pages, built from the same records as dashboard.json."""
+    write_text(site_dir, "benchmarks.html", benchmarks_html(records, metadata))
+    write_text(site_dir, "llms.txt", llms_txt(metadata))
+    write_text(site_dir, "llms-full.txt", llms_full_txt(records, metadata))
+    write_text(site_dir, "sitemap.xml", sitemap_xml(metadata))
+
+
+def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
+    """Build the API into output_dir; also write the summary pages when site_dir is set."""
     gpus, catalog_issues = checks.load_catalog(data_dir)
     runs, result_issues = checks.load_results(gpus, data_dir)
     issues = checks.Issues([*catalog_issues, *result_issues])
@@ -364,6 +557,9 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR):
         },
     )
 
+    if site_dir is not None:
+        write_site_pages(site_dir, dashboard_records, metadata)
+
     print(
         f"GPUs: {len(gpus)} | Official runs: {len(official)} | "
         f"Community runs: {len(community_raw)} | Dashboard summaries: "
@@ -376,7 +572,7 @@ def cli(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--data-dir", type=Path, default=DATA_DIR, help="source tree to build (default: data)")
     args = parser.parse_args(argv)
-    return main(args.data_dir.resolve())
+    return main(args.data_dir.resolve(), OUTPUT_DIR, SITE_DIR)
 
 
 if __name__ == "__main__":

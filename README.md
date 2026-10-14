@@ -1,7 +1,9 @@
 # Open GPU Benchmarks
 
 Compare desktop, laptop, handheld, and integrated GPUs in one interactive
-graph. The site is a static GitHub Pages dashboard built from reviewable YAML.
+graph. The site is a static dashboard built from reviewable YAML, live at
+<https://opengpubenchmarks.com> (Cloudflare Pages, canonical) and mirrored on
+[GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 
 Current version: `v0.6.0`: Linux vs Windows results charted side by side, cited catalog sources, and one overlaid avg/1% low bar per GPU. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
 [docs/TODO.md](docs/TODO.md) for planned follow-ups.
@@ -201,8 +203,18 @@ the site works under any host or custom domain. Site icons live in
 contributing guide, and issues are absolute and appear in the header and
 footer. The workflow in
 [.github/workflows/build.yml](.github/workflows/build.yml) validates the data,
-rebuilds `site/api/`, and deploys the site whenever `main` changes. Do not commit generated API
-files unless repository policy changes.
+rebuilds `site/api/`, and deploys the site to both GitHub Pages and Cloudflare
+Pages whenever `main` changes. [preview.yml](.github/workflows/preview.yml)
+deploys a Cloudflare preview for the repository owner's own pull requests only.
+Do not commit generated API files unless repository policy changes.
+
+For search engines and AI tools, every host declares
+`https://opengpubenchmarks.com/` as canonical (`build.SITE_URL`), so the
+mirrors count as copies of it. `build.py` also writes JavaScript-free copies of
+every summary (`benchmarks.html`, `llms.txt`, `llms-full.txt`) and
+`sitemap.xml` next to `site/api/`. They are gitignored like the API.
+`site/robots.txt` allows all crawlers, AI crawlers included. Those absolute
+URLs are the only exception to relative links.
 
 For the architecture and maintenance checklist, see
 [docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md). Contributor setup and PR

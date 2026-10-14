@@ -1,0 +1,27 @@
+# Open GPU Benchmarks welcomes search engines and AI crawlers.
+# The canonical site is https://opengpubenchmarks.com/ (GitHub Pages is a mirror).
+# Plain, JavaScript-free copies of every summary: /benchmarks.html and /llms-full.txt
+
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+Allow: /
+
+User-agent: Googlebot
+User-agent: Google-Extended
+User-agent: Bingbot
+User-agent: Applebot
+User-agent: Applebot-Extended
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: CCBot
+User-agent: DuckAssistBot
+User-agent: meta-externalagent
+Allow: /
+
+Sitemap: https://opengpubenchmarks.com/sitemap.xml

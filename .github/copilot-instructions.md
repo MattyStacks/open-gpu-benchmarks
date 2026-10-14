@@ -104,7 +104,18 @@ prepares:
   `data/gpus/README.md` or `docs/COMMUNITY_SUBMISSIONS.md`; `test_build.py`
   enforces it. The build stops before writing `site/api/` on any error.
 - Dashboard links to GitHub are absolute; API links stay relative so the site
-  works on a custom domain.
+  works on every host. The canonical origin is `https://opengpubenchmarks.com/`
+  (`build.SITE_URL`). The canonical link, `og:url`, and JSON-LD in
+  `site/index.html`, plus `site/robots.txt` and the generated sitemap and
+  pages, are the only absolute site URLs, and `test_build.py` checks they
+  agree. robots.txt never disallows crawlers: AI tools are meant to use the
+  site.
+- `build.py` writes `benchmarks.html`, `llms.txt`, `llms-full.txt`, and
+  `sitemap.xml` into `site/` from the dashboard summaries (gitignored, like
+  `site/api/`). Keep them in step with any dashboard field change.
+- Deploys: `build.yml` publishes `main` to GitHub Pages and Cloudflare Pages.
+  `preview.yml` deploys Cloudflare previews only for the owner's own
+  same-repo PRs. Never switch it to `pull_request_target`.
 
 ## Version and release housekeeping
 

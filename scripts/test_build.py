@@ -540,6 +540,7 @@ def check_import_cyberpunk():
         assert day_run["system"]["driver"] == "617.14" and day_run["system"]["memory"] == "32 GB"
         assert day_run["proof"]["method"] == "in_game_benchmark"
         assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
+        assert entry["display_mode"] == "Fullscreen" and "display_mode" not in day_run["system"]
 
         catalog, issues = checks.load_catalog(data_dir)
         _, result_issues = checks.load_results(catalog, data_dir)
@@ -551,7 +552,7 @@ def check_import_cyberpunk():
         # Later the same day: a new run joins the day's file, and a run after a
         # driver update gets its own file because system applies to the whole file.
         add_runs({
-            "benchmark_2026-10-13_20-00-00": cyberpunk_summary(renderWidth=3840, renderHeight=2160),
+            "benchmark_2026-10-13_20-00-00": cyberpunk_summary(renderWidth=3840, renderHeight=2160, windowMode=1),
             "benchmark_2026-10-13_21-00-00": cyberpunk_summary(gpuDriverVersion="Nvidia v 61800 [r618_00]"),
             "benchmark_2026-10-14_09-00-00": cyberpunk_summary(),
         })
@@ -561,6 +562,8 @@ def check_import_cyberpunk():
         ]
         day_runs = [entry["benchmark_run"] for entry in yaml.safe_load(day_file.read_text(encoding="utf-8"))["result"]]
         assert day_runs[-1] == "benchmark_2026-10-13_20-00-00" and len(day_runs) == 3, day_runs
+        assert yaml.safe_load(day_file.read_text(encoding="utf-8"))["result"][-1]["display_mode"] == "Borderless windowed", \
+            "a different display mode stays in the same file"
         updated = yaml.safe_load((out / "result_20261013_cyberpunk_2077_2.yaml").read_text(encoding="utf-8"))
         assert updated["system"]["driver"] == "618.00" and len(updated["result"]) == 1
         assert import_cyberpunk.main([*args[:1], "no_such_gpu", *args[2:]]) == 1

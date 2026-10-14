@@ -106,7 +106,8 @@ Each file holds:
 - **The run:** the game version, resolution, preset, and upscaler.
 - **Performance:** average FPS, plus minimum and maximum FPS, the run time, and
   the frame count.
-- **Your system:** CPU, system memory, GPU driver, and OS.
+- **Your system:** CPU, system memory, GPU driver, and OS, plus each run's
+  display mode (fullscreen or borderless).
 
 Everything comes from `summary.json`. The proof method is `in_game_benchmark`.
 

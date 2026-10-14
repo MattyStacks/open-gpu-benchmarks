@@ -117,7 +117,8 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "cpu": str(system.get("cpu", "")),
         "memory": str(system.get("memory", system.get("ram", ""))),
         "power_mode": str(system.get("power_mode", system.get("tdp_mode", ""))),
-        "display_mode": str(system.get("display_mode", "")),
+        # A result item may carry its own display_mode when it changed between runs.
+        "display_mode": str(result.get("display_mode", system.get("display_mode", ""))),
         "os": str(system.get("os", "")),
         **os_details(system),
         "capture_method": str(proof.get("method", "")),

@@ -488,7 +488,9 @@ See [Operating system](#operating-system) for the fields.
 Warning only. A key under `system:` isn't a known field. Check the spelling
 against [Operating system](#operating-system) and the template. The known
 machine fields are `cpu`, `memory`, `power_mode`, `display_mode`, `driver`,
-`device_name`, and `gpu_power_w`.
+`device_name`, and `gpu_power_w`. `display_mode` may also go on a single
+`result` item, when it differs between the profiles in one file; the item's
+value wins.
 
 #### `community-submitter`
 

@@ -404,8 +404,10 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
   file-level field matches (`SETUP_KEYS`: `gpu_id`, `submitted_by`, `game`,
   `version`, `system`, `proof`); otherwise it goes in `_2`, `_3`, ...
   Appending rewrites the file, so hand-added comments in it are lost.
-  `display_mode` isn't recorded, because it varied between runs and would
-  split files. Skipped runs are not remembered.
+  `display_mode` (from `windowMode`) goes on each result item, because it
+  can vary between runs and `system` is file-level; `build_record()` prefers
+  the item's `display_mode` over `system.display_mode`. Skipped runs are not
+  remembered.
 - **Mapping.** `presetName` maps to the in-game name (`RayTracingUltra` is
   `Ray Tracing: Ultra`). Presets that enable an upscaler get `upscaling` and
   `preset_upscaling: true`. DLSS and FSR 2.1 quality indices use the menu

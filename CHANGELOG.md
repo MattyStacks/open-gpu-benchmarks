@@ -92,7 +92,9 @@ Cyberpunk 2077's own benchmark results into result files.
   Proton) and writes one `result_YYYYMMDD_cyberpunk_2077.yaml` per day and
   setup, with one `result` item per run, each naming its run folder in
   `benchmark_run`. Running it again adds only new runs, appending same-day
-  runs to that day's file. It skips runs with frame generation,
+  runs to that day's file. Each item also records its display mode.
+- `display_mode` may be set on a single `result` item as well as under
+  `system:`; the item's value wins on the run record. It skips runs with frame generation,
   V-Sync, or an FPS cap, runs from a different GPU, and Custom presets with
   upscaling. Custom presets with upscaling off need a name. A user guide is in
   `docs/CYBERPUNK_BENCHMARK.md`, and `test_build.py` covers the importer.

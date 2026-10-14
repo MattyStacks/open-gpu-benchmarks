@@ -56,6 +56,9 @@ PRESETS = {
     "RayTracingOverdrive": "Ray Tracing: Overdrive",
 }
 CUSTOM_PRESET = "Custom"
+# windowMode, confirmed for 2 against UserSettings.json. It can change between
+# runs, so it goes on each result item rather than under system.
+WINDOW_MODES = {0: "Windowed", 1: "Borderless windowed", 2: "Fullscreen"}
 # Each result item names its run folder here; that is how re-runs skip it.
 RUN_KEY = "benchmark_run"
 PROOF_FORMAT = "cyberpunk_summary_json"
@@ -291,6 +294,8 @@ def build_entry(data, preset, folder_name):
             entry[key] = round(float(data[field]), 2)
     if checks.is_number(data.get("frameNumber")):
         entry["frame_count"] = int(data["frameNumber"])
+    if data.get("windowMode") in WINDOW_MODES:
+        entry["display_mode"] = WINDOW_MODES[data["windowMode"]]
     return entry
 
 

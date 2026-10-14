@@ -1,5 +1,5 @@
 # Save as data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml,
-# for example data/community/rtx_4070_super_12gb_fe/result_20261003_cyberpunk.yaml.
+# for example data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml.
 # For a second file with the same date and game, add a number:
 # result_20261003_cyberpunk_2.yaml.
 # The folder name and gpu_id must exactly match a catalog ID: the file name of
@@ -11,20 +11,26 @@
 #
 # Found these numbers in a video, review, or post instead of running them
 # yourself? Start from community_found_result.yaml.
+# Ran Cyberpunk 2077's built-in benchmark? scripts/import_cyberpunk.py writes
+# these files for you; see docs/CYBERPUNK_BENCHMARK.md.
 #
 # result is a YAML list. Keep the leading "-" for every benchmark profile:
 # it lets one file contain different resolutions or presets without duplicate
 # YAML keys. Every list item is validated and aggregated independently.
-gpu_id: rtx_4070_super_12gb_fe # Required
+gpu_id: rtx_5080_16gb_fe # Required
 game: Cyberpunk 2077 # Required
 result: # Required; one "-" item per resolution/preset
   - resolution: 1440p # Required
-    graphics_preset: Ultra RT # Required
+    graphics_preset: "Ray Tracing: Ultra" # Required; the preset name the game shows
+    upscaling: DLSS Auto # Only because this preset turns DLSS on by itself
+    preset_upscaling: true
     avg_fps: 79.1 # Required
     p1_low: 65.0 # Required when proof.method records every frame (see below)
     p5_low: 68.2 # Optional from PresentMon
   - resolution: 1080p
-    graphics_preset: Ultra RT
+    graphics_preset: "Ray Tracing: Ultra"
+    upscaling: DLSS Auto
+    preset_upscaling: true
     avg_fps: 103.4
     p1_low: 84.7
 system:
@@ -71,7 +77,7 @@ proof:
   method: presentmon
   # Optional evidence. A raw capture lets a reviewer check the numbers; runs with
   # no evidence are shown as "Unverified". Keep raw captures in this GPU folder,
-  # such as data/community/rtx_4070_super_12gb_fe/raw/cyberpunk_1440p.csv.
+  # such as data/community/rtx_5080_16gb_fe/raw/cyberpunk_1440p.csv.
   # Raw logs can contain your PC name or file paths; check before you commit.
   # raw_log: raw/cyberpunk_1440p.csv
   # format: presentmon_summary

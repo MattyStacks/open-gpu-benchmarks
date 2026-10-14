@@ -10,7 +10,11 @@
 - GPU master API: <https://opengpubenchmarks.com/api/v1/gpus.json>
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
-- Current version: `v0.6.0` (2026-10-08)
+- Current version: `v1.0.0` (2026-10-14)
+  - v1.0.0: the published catalog was reset to one product, the GeForce RTX
+    5080 Founders Edition (`rtx_5080_16gb_fe`, base `rtx_5080_16gb`), with
+    its first 33 official Cyberpunk 2077 runs, imported by the new
+    `scripts/import_cyberpunk.py`. API schema unchanged (0.12).
   - v0.6.0: Linux vs Windows (`system.os` required and a grouping key, OS
     detail fields, `result-os`/`result-os-field`/`result-system-field`
     checks, OS chips and striped Linux bars), catalog `sources`, one overlaid
@@ -147,14 +151,12 @@ Schema `0.8` adds reference files.
     fields are `oem`, `cpu`, `ram_mts`, `os_shipped`, `display`,
     `power_min_w`, `power_max_w`, and `battery_wh`, each range-checked, and
     the minimum power can't exceed the maximum.
-- **Current references.** `rtx_4090_24gb`, `rtx_4080_super_16gb`,
-  `rtx_4070_super_12gb`, `rx_7900_xtx_24gb`, `arc_a770_16gb`,
-  `rtx_4090_laptop_16gb`, `rtx_4070_laptop_8gb`, `arc_a770m_16gb`, and
-  `z1_extreme`, shared by the Ally and the Legion Go.
-  - `steam_deck_oled_16gb` deliberately has no `base`.
-  - The merged specs match the pre-split catalog exactly. The only changes
-    are the product names (now "Founders Edition", "Limited Edition", and
-    "(AMD reference)") and the handheld notes, which moved into `platform`.
+- **Current references.** `data/` has one: `rtx_5080_16gb`, the base of
+  `rtx_5080_16gb_fe`. Its specs come from NVIDIA's RTX 5080 page and
+  Wikipedia's RTX 50 series table; TechPowerUp blocks automated fetches with a
+  bot check. The fixture catalog snapshot keeps the nine pre-1.0 references
+  (`rtx_4090_24gb`, `z1_extreme`, ...), and `steam_deck_oled_16gb` there
+  deliberately has no `base`.
 - **Dashboard.** The expanded row shows a "Device" grid from `platform` and
   chips for the board partner and base.
 
@@ -219,7 +221,8 @@ Schema `0.10` (v0.6.0) adds the OS:
 - **Per-distro charts are DIY** from `community.json`, `official.json`, or a
   per-product `summary.json`.
 
-Old-to-new ID map, applied to the result folders as well:
+Old-to-new ID map from v0.5.0, applied to the result folders as well. Since
+v1.0.0 these products live only in the test fixtures:
 
 | Old ID | New ID |
 | ------ | ------ |
@@ -317,7 +320,7 @@ python -m pip install -r requirements.txt
 python scripts/validate.py            # or: validate.py catalog / validate.py results
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
 git diff --check
 deactivate                               # when done
 ```
@@ -383,6 +386,45 @@ file. `--os` is `windows` or
 PresentMon means windows); it is written to `system.os`, with `--os-detail`
 to `system.os_detail`. MangoHud logs with the `os,cpu,gpu,...,kernel,driver`
 header block fill `system.kernel` and `system.driver`.
+
+[`scripts/import_cyberpunk.py`](../scripts/import_cyberpunk.py) turns
+Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
+[CYBERPUNK_BENCHMARK.md](CYBERPUNK_BENCHMARK.md).
+
+- **Input.** The game writes `benchmarkResults/benchmark_YYYY-MM-DD_HH-MM-SS/`
+  with `summary.json` (read) and `frames.csv` (ignored). The script finds the
+  folder through the Windows Documents known folder (handles OneDrive), or
+  the Proton prefix of Steam app 1091500 on Linux; `--input` overrides.
+  Nothing is copied into the repo.
+- **Files and re-runs.** Runs go in `result_YYYYMMDD_cyberpunk_2077.yaml` by
+  run date, one `result` item per run. Each item's `benchmark_run` holds its
+  folder name (it ends up in the API under `metrics`). A run whose
+  `benchmark_run` is in any `data/{official,community}/*/` result file is
+  skipped. A new same-day run is appended to the day's file when every
+  file-level field matches (`SETUP_KEYS`: `gpu_id`, `submitted_by`, `game`,
+  `version`, `system`, `proof`); otherwise it goes in `_2`, `_3`, ...
+  Appending rewrites the file, so hand-added comments in it are lost.
+  `display_mode` (from `windowMode`) goes on each result item, because it
+  can vary between runs and `system` is file-level; `build_record()` prefers
+  the item's `display_mode` over `system.display_mode`. Skipped runs are not
+  remembered.
+- **Mapping.** `presetName` maps to the in-game name (`RayTracingUltra` is
+  `Ray Tracing: Ultra`). Presets that enable an upscaler get `upscaling` and
+  `preset_upscaling: true`. DLSS and FSR 2.1 quality indices use the menu
+  order Auto, Quality, Balanced, Performance, Ultra Performance;
+  `UserSettings.json` confirmed DLSS 0 = Auto and FSR 2.1 1 = Quality. Other
+  upscalers' indices are written as `(mode N)`. Changing a label later splits
+  dashboard groups. `avg_fps` is `averageFps`; there is no `p1_low`
+  (`proof.method: in_game_benchmark`, `result-no-p1-low` warning per file).
+  The driver string `Nvidia v 61714 [r617_07]` becomes `617.14`.
+- **Skips.** Frame generation on (`frameGenerationType` or a frame-gen flag;
+  `DLSSMultiFrameGenEnabled` alone is just the saved multiplier), V-Sync or an
+  FPS cap, a GPU whose name lacks the ID's model tokens or whose memory
+  doesn't match `memory.capacity_gb`, and Custom presets with upscaling on.
+  Custom presets with upscaling off need a name (`--custom-preset`, or a
+  prompt on a terminal).
+- **Tests.** `check_import_cyberpunk()` in `test_build.py` imports synthetic
+  summaries into a temp copy of the fixture catalog through `main(argv)`.
 `scripts/test_build.py` covers:
 
 - aggregation and `submitted_by`/`contributors` output
@@ -392,22 +434,31 @@ header block fill `system.kernel` and `system.driver`.
 - one negative case per check rule, run in temporary data directories
 - that one run reports errors from several files at once
 - that `build.main()` returns 1 and writes nothing on errors
+- that a build deletes per-GPU summary folders for GPUs no longer in the
+  catalog (`remove_stale_gpu_folders()`; other files in `site/api/` are
+  overwritten, never deleted)
 - that a required-fields-only catalog entry builds
 - that every rule has a doc heading
 - that the `templates/catalog_*.yaml` files pass the catalog checks
-  alongside the real reference files
+  alongside the fixture reference files (their example bases aren't published)
 - `base` merge behavior (inherit, override, and list replacement)
 - OS rules, Windows/Linux summary separation, and OS-aware outlier baselines
 - MangoHud parsing (`check_parse_mangohud()`)
-- that every `templates/community_*.yaml` passes the result checks as written
+- the Cyberpunk 2077 importer (`check_import_cyberpunk()`): mapping, skips,
+  and that a second import writes nothing
+- that every `templates/community_*.yaml` passes the result checks as written,
+  against the published `data/gpus` catalog (so they use `rtx_5080_16gb_fe`)
 - the generated payload shape, from a temp build of `tests/fixtures/data/`
 - that `data/` passes every check and has no `synthetic: true` runs
 
 ## Published data and test fixtures
 
-**Published data (`data/`).** 11 catalog GPU entries and no benchmark runs
-yet. `data/` is what CI builds and deploys, so it holds only real data. With no
-runs, `dashboard.json` has an empty `records` list and `showNoBenchmarks()` in
+**Published data (`data/`).** 1 catalog GPU entry (`rtx_5080_16gb_fe`), 33
+official result runs, 0 community runs, and 29 dashboard summaries: Cyberpunk
+2077 built-in benchmark runs on Windows at 1080p, 1440p, and 4K, imported with
+`scripts/import_cyberpunk.py`. Every run has `p1_low: null`. `data/` is what
+CI builds and deploys, so it holds only real data. With no runs,
+`dashboard.json` has an empty `records` list and `showNoBenchmarks()` in
 `site/index.html` replaces the filters, chart, and table with a "No benchmarks
 published yet" message.
 
@@ -453,6 +504,27 @@ width. The
 benchmark table sorts by any column, searches IDs, codenames, and
 architectures, and expands each row into silicon details, price history,
 and the exact runs behind the number.
+
+**Upscaled vs native.** Many presets turn an upscaler on, so one GPU can have
+several bars at one resolution and preset (4K High: FSR 2.1 Quality and
+native). Each y-axis label is ECharts rich text: the label text plus a pill
+holding `upscalingLabel()`, the upscaler or `Native`. `upscalerFamily()` picks
+the pill's rich style and the table badge class from the upscaler's maker:
+`dlss` (DLSS and DLAA, green `--up-dlss`), `fsr` (red `--up-fsr`), `xess` (blue
+`--up-xess`), `upscaled` (any other upscaler, amber `--upscaled`), and `native`
+(`--muted`). Each token has a softer dark-theme and a deeper light-theme shade,
+all at least 4.5:1 against the panel. Pill colors are rgba()
+from the hex tokens, because canvas text can't use CSS `color-mix()`. The label
+text comes from `displayParts()`: the GPU name, the preset when more than one
+preset is visible, and the OS under the existing both-OSes rule. The GPU name is
+shortened first so the pill and the distinguishing parts stay whole, and when
+every visible bar is the same GPU the label leaves the name out
+(`singleGpuName()`; the chart description names it). `plainName()` adds
+`(upscaler)` or `(native)` for the comparison sentence and "Top result". The
+Native/Upscaled chips (`state.upscaling`, `renderUpscalingFilters()`) filter
+like the OS chips. The table's Settings column shows the preset and an
+`.upscale-badge upscale-<family>`, and sorts native rows first. The tooltip shows the preset and
+upscaler.
 The header has **JSON API** (jumps to `#data-api`) and **GitHub** buttons, and
 the footer links to the repository, contributing guide, and issues. GitHub
 links are absolute (`https://github.com/MattyStacks/open-gpu-benchmarks`); API

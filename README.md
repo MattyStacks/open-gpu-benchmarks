@@ -5,7 +5,7 @@ graph. The site is a static dashboard built from reviewable YAML, live at
 <https://opengpubenchmarks.com> (Cloudflare Pages, canonical) and mirrored on
 [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 
-Current version: `v0.6.0`: Linux vs Windows results charted side by side, cited catalog sources, and one overlaid avg/1% low bar per GPU. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
+Current version: `v1.0.0`: the first published results (Cyberpunk 2077 on the GeForce RTX 5080 Founders Edition) and a Cyberpunk 2077 benchmark importer. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
 [docs/TODO.md](docs/TODO.md) for planned follow-ups.
 
 ## GPU-rooted data flow
@@ -13,7 +13,7 @@ Current version: `v0.6.0`: Linux vs Windows results charted side by side, cited 
 `data/gpus/` is the authoritative hardware catalog, one file per product at
 `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`. The ID names the exact
 product, including its memory size: `rtx_5060_ti_8gb_msi_ventus_2x_oc`,
-`rtx_4090_24gb_fe`, `steam_deck_oled_16gb`. Different memory sizes and board
+`rtx_5080_16gb_fe`, `steam_deck_oled_16gb`. Different memory sizes and board
 makers are different IDs, so their results are never averaged together.
 
 Every source folder uses one of these IDs exactly, so each card, laptop GPU,
@@ -54,6 +54,12 @@ fail. It then expands every list item and derives game summaries by product
 ID, form factor, known power profile, game, resolution, `graphics_preset`, and
 OS. It never groups desktop and laptop GPUs together, or Windows and Linux runs.
 
+Many graphics presets turn an upscaler on by themselves, so one GPU can show
+a native and an upscaled result for the same preset. Every chart label carries
+a pill naming the upscaler (`FSR 2.1 Quality`, `DLSS Auto`) or `Native`,
+colored by maker (DLSS green, FSR red, XeSS blue, native gray), the
+table has a Settings column, and Native/Upscaled filter chips hide either kind.
+
 Every game run sets `system.os` to `windows` or `linux`. The dashboard has
 Windows and Linux filter chips, labels a product's bars by OS when both appear,
 and stripes the Linux bars. The distro is not a grouping key: SteamOS, Bazzite,
@@ -70,8 +76,9 @@ statistics. The linked per-GPU JSON includes all source runs, grouped game
 summaries, evidence references, and exact machine metadata. Generated API
 files are ignored by Git and appear after running the build.
 
-Published data: 11 catalog GPUs and no benchmark runs yet. Until the first run
-is merged, the dashboard says so instead of showing a chart.
+Published data: 1 catalog GPU (the GeForce RTX 5080 Founders Edition), 33
+official runs, no community runs, and 29 dashboard summaries, all Cyberpunk
+2077 built-in benchmark runs on Windows.
 
 `data/` holds only real data, because it's what the site deploys. The synthetic
 test data lives in [`tests/fixtures/data/`](tests/fixtures/data/), a
@@ -115,7 +122,7 @@ Copy [templates/community_submission.yaml](templates/community_submission.yaml)
 to the folder matching its `gpu_id`, for example:
 
 ```text
-data/community/rtx_4090_24gb_fe/result_20261003_cyberpunk.yaml
+data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml
 ```
 
 Submissions are anonymous by default. A run needs only the product, game,
@@ -158,7 +165,7 @@ With the environment active (your prompt starts with `(.venv)`):
 python scripts/validate.py            # or: validate.py catalog / validate.py results
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
 python -m http.server 8000 --directory site
 ```
 
@@ -187,12 +194,23 @@ rejects IDs that aren't in the catalog and takes the form factor from the
 catalog entry:
 
 ```powershell
-python scripts/parse.py capture.csv --gpu-id rtx_4090_24gb_fe --game "Cyberpunk 2077" --os windows
+python scripts/parse.py capture.csv --gpu-id rtx_5080_16gb_fe --game "Cyberpunk 2077" --os windows
 ```
 
 `--os` is `windows` or `linux` (with an optional `--os-detail`). Without it, a
 MangoHud capture defaults to `linux` and a PresentMon capture to `windows`. The
 OS is written under `system:`.
+
+Ran Cyberpunk 2077's built-in benchmark? `scripts/import_cyberpunk.py` reads
+the `summary.json` of every run in the game's `benchmarkResults` folder and
+writes one result file per day, with one `result` item per run. Run it again
+later and it adds only the new runs. See
+[docs/CYBERPUNK_BENCHMARK.md](docs/CYBERPUNK_BENCHMARK.md):
+
+```powershell
+python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --dry-run
+python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
+```
 
 ## Site and deployment
 

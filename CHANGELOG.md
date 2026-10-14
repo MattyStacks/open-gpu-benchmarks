@@ -13,7 +13,18 @@ a fresh empty `Unreleased` section.
 
 ## Unreleased
 
+## 1.0.0 - 2026-10-14
+
+The first published results: the catalog starts over with the GeForce RTX 5080
+Founders Edition and 33 official Cyberpunk 2077 runs, and a script turns
+Cyberpunk 2077's own benchmark results into result files.
+
 ### Changed
+- The templates, the dashboard's examples, and the contributor docs use
+  `rtx_5080_16gb_fe`. Cyberpunk 2077 examples use the in-game preset names
+  (`Ray Tracing: Ultra`) with the preset's upscaler, matching the importer.
+- `test_build.py` checks the catalog templates against the fixture reference
+  files, since their example bases aren't published any more.
 - `community-outlier` threshold tightened from 50% to 25% away from the
   matching official average (`checks.OUTLIER_RATIO`, also reported as
   `comparison_policy.community_outlier_threshold`).
@@ -65,10 +76,41 @@ a fresh empty `Unreleased` section.
   contributing guide when there are no runs, instead of an error.
 
 ### Removed
+- Every published catalog entry and reference file except the RTX 5080. The
+  pre-1.0 products remain in the test fixtures.
 - The `result-no-driver` warning. A driver version is still welcome but never
   asked for.
 
+### Fixed
+- `build.py` deletes per-GPU summary folders in `site/api/v1/official/` and
+  `community/` for GPUs no longer in the catalog. Before, a local build kept
+  serving old summaries after a catalog entry was removed.
+
 ### Added
+- Upscaled and native results are told apart on the dashboard. Every chart
+  label has a pill naming the upscaler (`FSR 2.1 Quality`, `DLSS Auto`) or
+  `Native`, colored by the upscaler's maker: DLSS and DLAA green, FSR red, XeSS
+  blue, native gray, in shades tuned for each theme. Labels add the preset when several presets are shown, and leave
+  out the GPU name when every bar is the same GPU. Native/Upscaled filter
+  chips sit next to the OS chips, the table has a Settings column (preset and
+  upscaler), and the tooltip names both. The plain benchmark tables
+  (`/benchmarks/`, `llms-full.txt`) say `Native` instead of `off`.
+- GeForce RTX 5080 Founders Edition (`rtx_5080_16gb_fe`) and its reference
+  file `rtx_5080_16gb`, sourced from NVIDIA and Wikipedia.
+- The first official results: 33 Cyberpunk 2077 built-in benchmark runs on the
+  RTX 5080 FE at 1080p, 1440p, and 4K, across every quick preset plus native
+  High (29 dashboard summaries).
+- `scripts/import_cyberpunk.py`: reads each run's `summary.json` from the
+  game's `benchmarkResults` folder (found automatically on Windows and Steam
+  Proton) and writes one `result_YYYYMMDD_cyberpunk_2077.yaml` per day and
+  setup, with one `result` item per run, each naming its run folder in
+  `benchmark_run`. Running it again adds only new runs, appending same-day
+  runs to that day's file. Each item also records its display mode.
+- `display_mode` may be set on a single `result` item as well as under
+  `system:`; the item's value wins on the run record. It skips runs with frame generation,
+  V-Sync, or an FPS cap, runs from a different GPU, and Custom presets with
+  upscaling. Custom presets with upscaling off need a name. A user guide is in
+  `docs/CYBERPUNK_BENCHMARK.md`, and `test_build.py` covers the importer.
 - Cloudflare Pages hosting at <https://opengpubenchmarks.com> (the canonical
   site). `build.yml` deploys the same build to Cloudflare (Wrangler Direct
   Upload) and GitHub Pages; GitHub Pages stays live as a mirror.

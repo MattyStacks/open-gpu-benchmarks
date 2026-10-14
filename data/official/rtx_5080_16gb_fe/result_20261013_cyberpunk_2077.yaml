@@ -1,0 +1,377 @@
+# Imported by scripts/import_cyberpunk.py from Cyberpunk 2077's built-in
+# benchmark. Each benchmark_run is a folder in the game's benchmarkResults;
+# re-running the script skips runs listed here and adds new ones.
+gpu_id: rtx_5080_16gb_fe
+benchmark_type: game
+game: Cyberpunk 2077
+version: '2.31'
+frame_generation: false
+result:
+  - benchmark_run: benchmark_2026-10-13_18-44-57
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 88.52
+    min_fps: 79.67
+    max_fps: 99.79
+    duration: 64.25
+    frame_count: 5687
+    display_mode: Borderless windowed
+  - benchmark_run: benchmark_2026-10-13_18-47-46
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 89.34
+    min_fps: 80.55
+    max_fps: 100.42
+    duration: 64.25
+    frame_count: 5740
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_18-50-40
+    resolution: 4K
+    graphics_preset: Steam Deck
+    upscaling: FSR 2.1 Balanced
+    preset_upscaling: true
+    avg_fps: 165.63
+    min_fps: 142.58
+    max_fps: 197.21
+    duration: 64.26
+    frame_count: 10643
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_18-53-24
+    resolution: 4K
+    graphics_preset: Low
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 197.7
+    min_fps: 156.44
+    max_fps: 238.24
+    duration: 64.26
+    frame_count: 12705
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_18-55-44
+    resolution: 4K
+    graphics_preset: Medium
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 190.01
+    min_fps: 152.72
+    max_fps: 229.57
+    duration: 64.25
+    frame_count: 12209
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_18-59-31
+    resolution: 4K
+    graphics_preset: High
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 131.71
+    min_fps: 116.49
+    max_fps: 151.61
+    duration: 64.25
+    frame_count: 8462
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-01-34
+    resolution: 4K
+    graphics_preset: Ultra
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 88.0
+    min_fps: 77.97
+    max_fps: 111.52
+    duration: 64.24
+    frame_count: 5653
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-03-44
+    resolution: 4K
+    graphics_preset: Steam Deck
+    upscaling: FSR 2.1 Balanced
+    preset_upscaling: true
+    avg_fps: 165.56
+    min_fps: 142.54
+    max_fps: 196.24
+    duration: 64.25
+    frame_count: 10638
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-05-45
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Low'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 113.09
+    min_fps: 101.75
+    max_fps: 132.42
+    duration: 64.25
+    frame_count: 7266
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-07-41
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Medium'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 88.52
+    min_fps: 80.52
+    max_fps: 100.62
+    duration: 64.26
+    frame_count: 5688
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-09-31
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 89.05
+    min_fps: 80.15
+    max_fps: 99.98
+    duration: 64.24
+    frame_count: 5721
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-11-28
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Overdrive'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 62.14
+    min_fps: 55.86
+    max_fps: 69.76
+    duration: 64.24
+    frame_count: 3992
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-21-55
+    resolution: 1440p
+    graphics_preset: Low
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 210.53
+    min_fps: 169.41
+    max_fps: 249.88
+    duration: 64.26
+    frame_count: 13529
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-24-01
+    resolution: 1440p
+    graphics_preset: Medium
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 203.39
+    min_fps: 160.25
+    max_fps: 247.46
+    duration: 64.26
+    frame_count: 13070
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-25-59
+    resolution: 1440p
+    graphics_preset: High
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 192.14
+    min_fps: 146.93
+    max_fps: 232.22
+    duration: 64.26
+    frame_count: 12346
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-28-13
+    resolution: 1440p
+    graphics_preset: Ultra
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 167.7
+    min_fps: 129.84
+    max_fps: 211.9
+    duration: 64.25
+    frame_count: 10775
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-30-13
+    resolution: 1440p
+    graphics_preset: Steam Deck
+    upscaling: FSR 2.1 Balanced
+    preset_upscaling: true
+    avg_fps: 200.29
+    min_fps: 156.35
+    max_fps: 246.79
+    duration: 64.26
+    frame_count: 12871
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-32-50
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Low'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 173.62
+    min_fps: 140.22
+    max_fps: 209.86
+    duration: 64.25
+    frame_count: 11155
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-37-46
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Medium'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 136.56
+    min_fps: 113.38
+    max_fps: 159.7
+    duration: 64.26
+    frame_count: 8775
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-46-54
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 124.14
+    min_fps: 100.94
+    max_fps: 145.4
+    duration: 64.26
+    frame_count: 7977
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-48-53
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Overdrive'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 92.49
+    min_fps: 82.89
+    max_fps: 104.01
+    duration: 64.25
+    frame_count: 5943
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-53-53
+    resolution: 1080p
+    graphics_preset: Low
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 209.0
+    min_fps: 165.11
+    max_fps: 249.38
+    duration: 64.26
+    frame_count: 13430
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-55-36
+    resolution: 1080p
+    graphics_preset: Medium
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 205.86
+    min_fps: 162.67
+    max_fps: 246.59
+    duration: 64.26
+    frame_count: 13228
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-57-33
+    resolution: 1080p
+    graphics_preset: High
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 193.05
+    min_fps: 148.95
+    max_fps: 230.62
+    duration: 64.26
+    frame_count: 12405
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_19-59-37
+    resolution: 1080p
+    graphics_preset: Ultra
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 184.03
+    min_fps: 131.67
+    max_fps: 231.77
+    duration: 64.26
+    frame_count: 11826
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_20-01-30
+    resolution: 1080p
+    graphics_preset: Steam Deck
+    upscaling: FSR 2.1 Balanced
+    preset_upscaling: true
+    avg_fps: 201.35
+    min_fps: 157.12
+    max_fps: 244.1
+    duration: 64.26
+    frame_count: 12938
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_20-03-16
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Low'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 182.82
+    min_fps: 140.85
+    max_fps: 220.17
+    duration: 64.26
+    frame_count: 11748
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_20-05-02
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Medium'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 141.44
+    min_fps: 113.36
+    max_fps: 166.76
+    duration: 64.25
+    frame_count: 9088
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_20-06-50
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 128.39
+    min_fps: 102.03
+    max_fps: 155.47
+    duration: 64.25
+    frame_count: 8249
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_20-08-57
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Overdrive'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 111.34
+    min_fps: 97.27
+    max_fps: 126.87
+    duration: 64.24
+    frame_count: 7153
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_20-16-59
+    resolution: 1440p
+    graphics_preset: High
+    avg_fps: 179.71
+    min_fps: 150.06
+    max_fps: 218.97
+    duration: 64.26
+    frame_count: 11548
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_20-19-09
+    resolution: 1440p
+    graphics_preset: High
+    avg_fps: 178.55
+    min_fps: 146.66
+    max_fps: 217.3
+    duration: 64.25
+    frame_count: 11472
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-10-13_20-21-40
+    resolution: 4K
+    graphics_preset: High
+    avg_fps: 91.48
+    min_fps: 81.27
+    max_fps: 105.29
+    duration: 64.26
+    frame_count: 5878
+    display_mode: Fullscreen
+system:
+  os: windows
+  os_detail: Windows 11 Pro
+  os_build: 10.0.26300
+  cpu: AMD Ryzen 9 9950X3D 16-Core Processor
+  memory: 64 GB
+  driver: '617.14'
+  graphics_api: DX12
+proof:
+  method: in_game_benchmark
+  format: cyberpunk_summary_json

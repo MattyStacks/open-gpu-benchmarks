@@ -1,0 +1,34 @@
+id: rtx_5080_16gb_fe
+base: rtx_5080_16gb
+identity:
+  name: GeForce RTX 5080 Founders Edition
+  gpu_vendor: nvidia
+  board_partner: NVIDIA
+classification:
+  form_factor: desktop
+power:
+  connectors:
+    - 16-pin PCIe Gen 5
+release:
+  date: '2025-01-30'
+  msrp_usd: 999
+  msrp_history:
+    - date: '2025-01'
+      price_usd: 999
+features:
+  outputs:
+    - HDMI 2.1b
+    - DP 2.1b x3
+notes: Full GB203 die with 16 GB of GDDR7, launched at the same $999 price as the RTX 4080 Super.
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5080/
+    title: NVIDIA GeForce RTX 5080 Graphics Cards
+    accessed: '2026-10-14'
+    covers:
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/GeForce_RTX_50_series
+    title: Wikipedia - GeForce RTX 50 series
+    accessed: '2026-10-14'
+    covers:
+      - release

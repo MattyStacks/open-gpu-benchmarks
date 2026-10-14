@@ -12,8 +12,12 @@ data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
 For example:
 
 ```text
-data/community/rtx_4090_24gb_fe/result_20261003_cyberpunk.yaml
+data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml
 ```
+
+Ran Cyberpunk 2077's built-in benchmark? `scripts/import_cyberpunk.py` writes
+these files from the game's own results, one per day; see
+[CYBERPUNK_BENCHMARK.md](CYBERPUNK_BENCHMARK.md).
 
 The ID names one exact product, including its memory size. An 8 GB and a 16 GB
 card are separate IDs, and so are two board partners' versions of the same GPU.
@@ -75,7 +79,7 @@ profiles. This shape allows one captured machine run to submit multiple
 resolution/preset combinations:
 
 ```yaml
-gpu_id: arc_a770_16gb_le
+gpu_id: rtx_5080_16gb_fe
 game: Helldivers 2
 system:
   os: windows
@@ -302,7 +306,7 @@ A raw PresentMon capture is the best evidence. Put it under the same GPU
 folder, for example:
 
 ```text
-data/community/rtx_4090_24gb_fe/raw/cyberpunk_1440p.csv
+data/community/rtx_5080_16gb_fe/raw/cyberpunk_1440p.csv
 ```
 
 Reference it with `proof.raw_log: raw/cyberpunk_1440p.csv`. Without a raw log,
@@ -392,13 +396,13 @@ or `result_YYYYMMDD_<benchmark>.yaml` (official).
 
 `gpu_id` isn't a catalog ID. Copy the exact file name, without `.yaml`, of the
 product's entry under `data/gpus/`, or add the entry first. Product IDs such as
-`rtx_4090_24gb_fe` replaced the old model-level IDs such as `rtx_4090`.
+`rtx_5080_16gb_fe` replaced the old model-level IDs such as `rtx_5080`.
 
 #### `result-reference-id`
 
 `gpu_id` names a reference file under `data/gpus/reference/`, which holds a
 GPU's shared specs, not a product. Use the ID of the exact card, laptop, or
-handheld you tested, such as `rtx_4090_24gb_fe` rather than `rtx_4090_24gb`.
+handheld you tested, such as `rtx_5080_16gb_fe` rather than `rtx_5080_16gb`.
 
 #### `result-form-factor`
 
@@ -484,7 +488,9 @@ See [Operating system](#operating-system) for the fields.
 Warning only. A key under `system:` isn't a known field. Check the spelling
 against [Operating system](#operating-system) and the template. The known
 machine fields are `cpu`, `memory`, `power_mode`, `display_mode`, `driver`,
-`device_name`, and `gpu_power_w`.
+`device_name`, and `gpu_power_w`. `display_mode` may also go on a single
+`result` item, when it differs between the profiles in one file; the item's
+value wins.
 
 #### `community-submitter`
 

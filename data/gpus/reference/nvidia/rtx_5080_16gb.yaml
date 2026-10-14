@@ -1,0 +1,48 @@
+# Reference specs shared by every product with `base: rtx_5080_16gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_5080_16gb
+identity:
+  name: GeForce RTX 5080
+  codename: GB203
+  gpu_vendor: nvidia
+classification:
+  architecture: Blackwell
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 378
+  transistors_b: 45.6
+  shader_cores: 10752
+  rt_cores: 84
+  tmus: 336
+  rops: 112
+memory:
+  capacity_gb: 16
+  type: GDDR7
+  bus_width_bits: 256
+  bandwidth_gbs: 960
+clocks:
+  base_mhz: 2300
+  boost_mhz: 2620
+power:
+  tdp_w: 360
+  pcie: 5.0 x16
+features:
+  dlss: '4'
+  av1: encode+decode
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5080/
+    title: NVIDIA GeForce RTX 5080 Graphics Cards
+    accessed: '2026-10-14'
+    covers:
+      - classification
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/GeForce_RTX_50_series
+    title: Wikipedia - GeForce RTX 50 series
+    accessed: '2026-10-14'
+    covers:
+      - identity
+      - silicon
+      - memory

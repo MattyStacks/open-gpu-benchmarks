@@ -7,6 +7,7 @@ import argparse
 import html
 import json
 import os
+import shutil
 import sys
 from collections import defaultdict
 from datetime import UTC, datetime
@@ -25,7 +26,7 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 SITE_DIR = ROOT / "site"
 OUTPUT_DIR = SITE_DIR / "api" / "v1"
 SCHEMA_VERSION = "0.12"
-RELEASE_VERSION = "0.6.0"
+RELEASE_VERSION = "1.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.
@@ -117,7 +118,8 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "cpu": str(system.get("cpu", "")),
         "memory": str(system.get("memory", system.get("ram", ""))),
         "power_mode": str(system.get("power_mode", system.get("tdp_mode", ""))),
-        "display_mode": str(system.get("display_mode", "")),
+        # A result item may carry its own display_mode when it changed between runs.
+        "display_mode": str(result.get("display_mode", system.get("display_mode", ""))),
         "os": str(system.get("os", "")),
         **os_details(system),
         "capture_method": str(proof.get("method", "")),
@@ -230,6 +232,17 @@ def aggregate_game_records(records, id_prefix):
     return summaries
 
 
+def remove_stale_gpu_folders(output_dir, gpu_ids):
+    """Delete per-GPU summaries left by an earlier build for GPUs no longer in the catalog."""
+    for source in checks.RESULT_SOURCES:
+        source_dir = output_dir / source
+        if not source_dir.is_dir():
+            continue
+        for folder in source_dir.iterdir():
+            if folder.is_dir() and folder.name not in gpu_ids:
+                shutil.rmtree(folder)
+
+
 def write_json(output_dir, path, payload):
     destination = output_dir / path
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -267,7 +280,7 @@ def summary_row(record):
         record["game"],
         record["resolution"],
         record["graphics_preset"],
-        record["upscaling"] or "off",
+        record["upscaling"] or "Native",
         record["os"].title(),
         record["source"].title(),
         fps(record["avg_fps"]),
@@ -484,6 +497,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
         },
     }
 
+    remove_stale_gpu_folders(output_dir, {gpu["id"] for gpu in gpus})
     official_by_gpu = {}
     community_by_gpu = {}
     for gpu in gpus:

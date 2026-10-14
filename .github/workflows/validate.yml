@@ -41,6 +41,6 @@ jobs:
           python-version: '3.11'
           cache: pip
       - run: pip install -r requirements.txt
-      - run: python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/test_build.py
+      - run: python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
       - run: python scripts/build.py
       - run: python scripts/test_build.py

@@ -3,13 +3,18 @@
 Each community submission lives in the folder whose name exactly matches its
 `gpu_id`. The ID is the file name of a catalog entry under
 [`data/gpus/`](../gpus/README.md). It names one exact product, including its
-memory size, such as `rtx_4090_24gb_fe` or `steam_deck_oled_16gb`:
+memory size, such as `rtx_5080_16gb_fe`:
 
 ```text
 data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
 data/community/<gpu_id>/raw/<capture>.csv          (optional evidence)
 data/community/<gpu_id>/raw/permission_<name>.png  (optional permission proof, unpublished third-party results)
 ```
+
+Cyberpunk 2077 built-in benchmark runs can be imported with
+`scripts/import_cyberpunk.py`, which writes one
+`result_YYYYMMDD_cyberpunk_2077.yaml` per day with one `result` item per run; see
+[docs/CYBERPUNK_BENCHMARK.md](../../docs/CYBERPUNK_BENCHMARK.md).
 
 **New here? Follow the step-by-step guide with examples in
 [CONTRIBUTING.md](../../CONTRIBUTING.md).** Start from
@@ -55,5 +60,5 @@ Folder rules:
   independently. Matching profiles from this or another file are averaged into
   one generated summary; different resolutions or presets remain separate.
 - Keep optional raw captures in the same GPU folder, such as
-  `data/community/rtx_4090_24gb_fe/raw/capture.csv`, and reference them from
+  `data/community/rtx_5080_16gb_fe/raw/capture.csv`, and reference them from
   `proof.raw_log`. Raw captures are not included in the generated browser API.

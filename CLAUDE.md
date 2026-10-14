@@ -53,7 +53,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v0.6.0` (`RELEASE_VERSION` in
+- Current development version: `v1.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it)
 
 ### Layout
@@ -73,6 +73,8 @@ scripts/checks.py                  every catalog and result rule, written once
 scripts/build.py                   YAML source -> site/api/v1/** JSON (runs checks first; --data-dir)
 scripts/validate.py                PR validator: validate.py [catalog|results] [--data-dir]
 scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
+scripts/import_cyberpunk.py        Cyberpunk 2077 benchmarkResults/*/summary.json -> result YAML
+                                   (one file per day; re-runs add only new runs)
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
@@ -82,6 +84,7 @@ site/benchmarks/, llms.txt,       generated JS-free summary pages + sitemap.xml
 templates/                         starting points for runs (incl. community_found_result.yaml) and catalog entries
 requirements.txt                   Python dependencies (pyyaml, numpy); CI and .venv use it
 .venv/                             local virtual environment (gitignored, never committed)
+docs/CYBERPUNK_BENCHMARK.md        user guide for the Cyberpunk 2077 importer
 CHANGELOG.md                       high-level version history (update with every change)
 docs/TODO.md                       backlog: deferred work (update with every change)
 AGENTS.md                          tool-neutral agent entry point (keep in step with this file)
@@ -168,6 +171,16 @@ unless repository policy changes.
   `preset_upscaling: true` (the graphics preset turned it on), otherwise
   `result-upscaling` fails. It is a grouping key, so upscaled runs never
   average with native ones.
+- Cyberpunk 2077 built-in benchmark runs come in through
+  `scripts/import_cyberpunk.py`. It writes one `result_YYYYMMDD_cyberpunk_2077.yaml`
+  per day and setup, with one `result` item per run. Each item's
+  `benchmark_run` names its run folder, and that is how re-runs skip imported
+  runs. A run with a different version, driver, CPU, memory, or OS goes in a
+  `_2` file, because those fields apply to the whole file. It uses the
+  in-game preset names (`Ray Tracing: Ultra`) and upscaler labels
+  (`DLSS Auto`, `FSR 2.1 Quality`); keep those labels stable, because
+  changing one splits dashboard groups. It reads only `summary.json`, so its
+  runs have no `p1_low`.
 - Keep GitHub links absolute and API/data links relative to the page, so
   every host works. The one exception is the canonical origin
   `https://opengpubenchmarks.com/` (`build.SITE_URL`): the canonical link,
@@ -190,7 +203,7 @@ python -m pip install -r requirements.txt
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
 git diff --check
 ```
 

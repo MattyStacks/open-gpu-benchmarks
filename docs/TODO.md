@@ -13,32 +13,28 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
 
 The four-step catalog plan is complete. These items finish it off.
 
-- [ ] **Re-validate catalog sources by hand.** The current sources were added
-  on 2026-10-08. TechPowerUp blocks scripts, so those URLs were confirmed by
-  page title and their values through search results. Also find a source for
-  the `z1_extreme` silicon specs (die size, transistors, shader counts), and
-  for any value not yet listed in a `covers`.
+- [ ] **Re-validate the RTX 5080 sources by hand.** `rtx_5080_16gb` and
+  `rtx_5080_16gb_fe` cite NVIDIA's product page and Wikipedia (2026-10-14),
+  because TechPowerUp blocks scripts with a bot check. The clocks are written
+  from NVIDIA's rounded 2.30/2.62 GHz as 2300/2620 MHz, and `mem_mhz` and
+  `features.fsr` are left out. Check them against TechPowerUp or NVIDIA's
+  Blackwell whitepaper (Appendix B) and add a TechPowerUp source.
 - [ ] **Require `sources`.** After the re-validation above, turn the
   `sources-missing` warning into an error.
-- [ ] **Replace `_generic` laptop IDs** (`arc_a770m_16gb_generic`,
-  `rtx_4070_laptop_8gb_generic`, `rtx_4090_laptop_16gb_generic`) with real
-  laptop models, then make every `_generic` laptop ID an `id-generic` error
-  instead of a warning.
+- [ ] **Make `_generic` laptop IDs an error.** Since v1.0.0 the published
+  catalog has no `_generic` IDs (only the test fixtures do), so `id-generic`
+  could become an error for `data/` once the fixtures stop needing it.
+- [ ] **Re-add the pre-1.0 catalog products when they get real runs.** v1.0.0
+  reset `data/gpus/` to the RTX 5080 FE. The old entries (RTX 4090/4080
+  Super/4070 Super FE, RX 7900 XTX, Arc A770 LE, the laptops, and the
+  handhelds) are still in `tests/fixtures/data/gpus/` and in git history.
 
 ## 3DMark and capture tools
 
 Follow-ups to average-only results and `proof.method` (PR #13).
 
-- [ ] **Publish the first real runs.** `data/` has no benchmark runs since the
-  synthetic ones moved to `tests/fixtures/data/`, so the live dashboard shows
-  "No benchmarks published yet". Add real official runs first, so community
-  runs get a baseline instead of `result-no-baseline`, then update the
-  published counts in `README.md` and `docs/COPILOT_HANDOFF.md`. With only a
-  few runs, check that the game/resolution defaults and the empty-filter
-  message still read well.
-- [ ] **Add the RTX 5080 and the first Steel Nomad run.** The catalog has no
-  RTX 5080 entry yet. Add one (with sources), then add the maintainer's Steel
-  Nomad run (8603 score, 86.03 FPS) as community data with its 3DMark result
+- [ ] **Add the first Steel Nomad run.** Add the maintainer's Steel
+  Nomad run on the RTX 5080 FE (8603 score, 86.03 FPS) as community data with its 3DMark result
   URL as `proof.summary_source`. Also add an official Steel Nomad baseline per
   catalog GPU, since without one the run only gets `result-no-baseline`.
 - [ ] **Confirm 3DMark fixed settings.** Check the fixed render resolution and
@@ -62,6 +58,23 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   measured against the best known score for the hardware.
 
 ## Data and submissions
+
+- [ ] **Cyberpunk importer follow-ups** (`scripts/import_cyberpunk.py`).
+  - Confirm the upscaler quality indices that weren't checked against
+    `UserSettings.json`: DLSS and FSR 2.1 indices other than DLSS 0 (Auto)
+    and FSR 2.1 1 (Quality) follow the menu order, and FSR 3, FSR 4, XeSS,
+    and FSR 1.0 are written as `(mode N)`. A label change splits dashboard
+    groups, so update existing files in the same PR.
+  - Confirm `windowMode` 0 (Windowed) and 1 (Borderless windowed); only 2
+    (Fullscreen) was checked against `UserSettings.json`.
+  - Optional 1% low from `frames.csv` (the frame time column), behind a
+    flag, so these runs can carry `p1_low`.
+  - Re-run the native 1080p High benchmark on the RTX 5080 FE. The 1080p
+    Custom run from 2026-10-13 (`benchmark_2026-10-13_20-12-15`) still had
+    FSR 2.1 on and was skipped, and the 1440p native run was recorded twice.
+  - Make `--gpu-id` remembered or inferred when the catalog has one match.
+- [ ] **Importers for other games' built-in benchmarks**, using the same
+  one-file-per-run naming so re-runs skip imported runs.
 
 - [ ] **Simple benchmark submission flow (no PRs).** PRs are too complex for
   most people. Build a low-friction way to get benchmarks in.
@@ -141,6 +154,12 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Dashboard
 
+- [ ] **Show the internal render resolution of upscaled results**, for example
+  "4K, renders at 1440p" for FSR 2.1 Quality, next to the upscaling pill. It
+  needs confirmed scale factors per upscaler and mode, and Auto modes pick a
+  mode from the output resolution, so they can't be shown without the game's
+  rule.
+
 - [ ] **Roll-up view by GPU model.** Group products that share a `base`
   reference, for example every RTX 5060 Ti 16 GB board, and compare boards
   of the same GPU side by side.
@@ -214,6 +233,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   `main`. Checked 2026-10-13: `main` has no protection or rulesets.
 
 ## Recently completed
+
+- **v1.0.0 (2026-10-14, branch `release/1.0.0`)**
+  - Catalog reset to the GeForce RTX 5080 Founders Edition, with its first
+    33 official Cyberpunk 2077 runs (29 summaries).
+  - `scripts/import_cyberpunk.py` and `docs/CYBERPUNK_BENCHMARK.md`.
 
 - **Unreleased (branch `feature/cloudflare-pages`, 2026-10-13)**
   - Cloudflare Pages deploy and the opengpubenchmarks.com canonical domain,

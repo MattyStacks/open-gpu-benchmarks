@@ -69,6 +69,16 @@ prepares:
 - Upscaling is off by default. `upscaling` is allowed only with
   `preset_upscaling: true` (the graphics preset turned it on); otherwise
   `result-upscaling` fails. Upscaling is a grouping key.
+- Cyberpunk 2077 built-in benchmark runs come in through
+  `scripts/import_cyberpunk.py`. It writes one `result_YYYYMMDD_cyberpunk_2077.yaml`
+  per day and setup, with one `result` item per run. Each item's
+  `benchmark_run` names its run folder, and that is how re-runs skip imported
+  runs. A run with a different version, driver, CPU, memory, or OS goes in a
+  `_2` file, because those fields apply to the whole file. It uses the
+  in-game preset names (`Ray Tracing: Ultra`) and upscaler labels
+  (`DLSS Auto`, `FSR 2.1 Quality`); keep those labels stable, because
+  changing one splits dashboard groups. It reads only `summary.json`, so its
+  runs have no `p1_low`.
 - The catalog is one file per product at
   `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`; the file name equals `id`
   and the folders equal `classification.form_factor` and
@@ -139,7 +149,7 @@ For a versioned dashboard change:
    python scripts/validate.py
    python scripts/build.py
    python scripts/test_build.py
-   python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\test_build.py
+   python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
    git diff --check
    ```
 

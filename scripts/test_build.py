@@ -750,7 +750,11 @@ def main():
 
 def check_fixture_build(api_dir):
     """Build the synthetic fixtures and check the payload numbers they're known to produce."""
+    stale = api_dir / "official" / "removed_gpu_8gb_fe" / "summary.json"
+    stale.parent.mkdir(parents=True)
+    stale.write_text("{}", encoding="utf-8")
     assert build.main(FIXTURES_DIR, api_dir) == 0, "the fixtures must pass every check"
+    assert not stale.parent.exists(), "a GPU removed from the catalog loses its old summary folder"
     assert load_json(api_dir / "dashboard.json")["metadata"]["synthetic_data"] is True
     arc_a770 = load_json(api_dir / "community" / "arc_a770_16gb_le" / "summary.json")
     assert arc_a770["run_count"] == 4

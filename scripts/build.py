@@ -7,6 +7,7 @@ import argparse
 import html
 import json
 import os
+import shutil
 import sys
 from collections import defaultdict
 from datetime import UTC, datetime
@@ -229,6 +230,17 @@ def aggregate_game_records(records, id_prefix):
             }
         )
     return summaries
+
+
+def remove_stale_gpu_folders(output_dir, gpu_ids):
+    """Delete per-GPU summaries left by an earlier build for GPUs no longer in the catalog."""
+    for source in checks.RESULT_SOURCES:
+        source_dir = output_dir / source
+        if not source_dir.is_dir():
+            continue
+        for folder in source_dir.iterdir():
+            if folder.is_dir() and folder.name not in gpu_ids:
+                shutil.rmtree(folder)
 
 
 def write_json(output_dir, path, payload):
@@ -485,6 +497,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
         },
     }
 
+    remove_stale_gpu_folders(output_dir, {gpu["id"] for gpu in gpus})
     official_by_gpu = {}
     community_by_gpu = {}
     for gpu in gpus:

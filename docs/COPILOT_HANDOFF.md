@@ -434,6 +434,9 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 - one negative case per check rule, run in temporary data directories
 - that one run reports errors from several files at once
 - that `build.main()` returns 1 and writes nothing on errors
+- that a build deletes per-GPU summary folders for GPUs no longer in the
+  catalog (`remove_stale_gpu_folders()`; other files in `site/api/` are
+  overwritten, never deleted)
 - that a required-fields-only catalog entry builds
 - that every rule has a doc heading
 - that the `templates/catalog_*.yaml` files pass the catalog checks

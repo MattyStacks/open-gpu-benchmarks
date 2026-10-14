@@ -81,6 +81,11 @@ Cyberpunk 2077's own benchmark results into result files.
 - The `result-no-driver` warning. A driver version is still welcome but never
   asked for.
 
+### Fixed
+- `build.py` deletes per-GPU summary folders in `site/api/v1/official/` and
+  `community/` for GPUs no longer in the catalog. Before, a local build kept
+  serving old summaries after a catalog entry was removed.
+
 ### Added
 - GeForce RTX 5080 Founders Edition (`rtx_5080_16gb_fe`) and its reference
   file `rtx_5080_16gb`, sourced from NVIDIA and Wikipedia.

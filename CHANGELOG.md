@@ -56,12 +56,23 @@ a fresh empty `Unreleased` section.
 - One synthetic fixture (Steam Deck, Cyberpunk 2077) is now anonymous.
 - `templates/official_result.yaml` now includes the required `system.os` and
   `proof.method`, and CONTRIBUTING's minimal example is a valid anonymous run.
+- The synthetic benchmark runs moved out of `data/` into
+  `tests/fixtures/data/`, with their own catalog snapshot, so the published
+  site shows only real benchmarks. The site has no runs until the first real
+  ones are merged. `test_build.py` now builds the fixtures into a temporary
+  folder, never `site/api/`.
+- The dashboard shows "No benchmarks published yet" with a link to the
+  contributing guide when there are no runs, instead of an error.
 
 ### Removed
 - The `result-no-driver` warning. A driver version is still welcome but never
   asked for.
 
 ### Added
+- `--data-dir` on `build.py` and `validate.py`, for example
+  `python scripts/build.py --data-dir tests/fixtures/data` to preview the
+  dashboard with the synthetic fixtures.
+- A test that `data/` passes every check and holds no `synthetic: true` runs.
 - `requirements.txt` lists the Python dependencies (`pyyaml`, `numpy`). Local
   setup now uses a `.venv` virtual environment (create, activate, install,
   `deactivate`), documented in `README.md` and `CONTRIBUTING.md`. Both CI

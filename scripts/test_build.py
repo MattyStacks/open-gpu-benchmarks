@@ -1,8 +1,6 @@
 """Regression checks for the catalog, result checks, and aggregation."""
 import json
 import re
-import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
@@ -13,7 +11,9 @@ import checks
 
 
 ROOT = Path(__file__).resolve().parent.parent
-API_DIR = ROOT / "site" / "api" / "v1"
+# The synthetic runs live here, never in data/; they build into a temp folder so
+# nothing synthetic reaches site/api (build.yml deploys site/ after this test).
+FIXTURES_DIR = ROOT / "tests" / "fixtures" / "data"
 TEST_ID = "test_gpu_8gb_fe"
 TEST_CATALOG_PATH = f"gpus/desktop/nvidia/{TEST_ID}.yaml"
 
@@ -490,12 +490,7 @@ def check_reports_every_error_and_build_stops():
         for relative, content in files.items():
             (data_dir / relative).parent.mkdir(parents=True, exist_ok=True)
             (data_dir / relative).write_text(dump(content), encoding="utf-8")
-        original_output = build.OUTPUT_DIR
-        build.OUTPUT_DIR = output_dir
-        try:
-            assert build.main(data_dir) == 1
-        finally:
-            build.OUTPUT_DIR = original_output
+        assert build.main(data_dir, output_dir) == 1
         assert not output_dir.exists(), "build must not write output when checks fail"
 
 
@@ -572,8 +567,18 @@ def check_rules_are_documented():
         assert f"#### `{rule}`" in text, f"rule '{rule}' needs a '#### `{rule}`' heading in {doc}"
 
 
-def check_catalog_specs():
-    master = load_json(API_DIR / "gpus.json")
+def check_real_data():
+    """data/ is what deploys: it passes every check and never holds synthetic runs."""
+    catalog, issues = checks.load_catalog()
+    runs, result_issues = checks.load_results(catalog)
+    issues = checks.Issues([*issues, *result_issues])
+    assert not issues.errors, [issue.format() for issue in issues.errors]
+    synthetic = [checks.relative_path(path) for items in runs.values() for path, run in items if run.get("synthetic")]
+    assert not synthetic, f"synthetic runs belong in tests/fixtures/data, not data/: {synthetic}"
+
+
+def check_catalog_specs(api_dir):
+    master = load_json(api_dir / "gpus.json")
     assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.12"
     assert {"os", "upscaling"} <= set(master["metadata"]["comparison_policy"]["group_by"])
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
@@ -603,12 +608,12 @@ def check_catalog_specs():
     assert len(flagship_sources) == 1 and "silicon" in flagship_sources[0]["covers"] and "release" in flagship_sources[0]["covers"]
     assert by_id["arc_a770m_16gb_generic"].get("release", {}).get("date") is None
 
-    arc_a770 = load_json(API_DIR / "community" / "arc_a770_16gb_le" / "summary.json")
+    arc_a770 = load_json(api_dir / "community" / "arc_a770_16gb_le" / "summary.json")
     assert arc_a770["records"]
     assert all(record["vram_gb"] == 16 and record["tdp_w"] == 225 for record in arc_a770["records"])
     assert all(record["gpu_vendor"] == "intel" for record in arc_a770["records"])
 
-    dashboard = load_json(API_DIR / "dashboard.json")
+    dashboard = load_json(api_dir / "dashboard.json")
     deck_records = [record for record in dashboard["records"] if record["gpu_id"] == "steam_deck_oled_16gb"]
     assert deck_records, "expected dashboard records for steam_deck_oled_16gb"
     assert all(record["vram_gb"] is None and record["tdp_w"] == 15 for record in deck_records)
@@ -637,8 +642,17 @@ def main():
     check_base_merge()
     check_rules_are_documented()
     check_templates_are_valid()
-    subprocess.run([sys.executable, "scripts/build.py"], cwd=ROOT, check=True)
-    arc_a770 = load_json(API_DIR / "community" / "arc_a770_16gb_le" / "summary.json")
+    check_real_data()
+    with tempfile.TemporaryDirectory() as temp:
+        check_fixture_build(Path(temp))
+    print("Catalog rules, result rules, aggregation, submitter, and catalog spec checks passed")
+
+
+def check_fixture_build(api_dir):
+    """Build the synthetic fixtures and check the payload numbers they're known to produce."""
+    assert build.main(FIXTURES_DIR, api_dir) == 0, "the fixtures must pass every check"
+    assert load_json(api_dir / "dashboard.json")["metadata"]["synthetic_data"] is True
+    arc_a770 = load_json(api_dir / "community" / "arc_a770_16gb_le" / "summary.json")
     assert arc_a770["run_count"] == 4
     assert arc_a770["game_summary_count"] == 3
 
@@ -660,10 +674,9 @@ def main():
     assert summary_1440p["avg_fps"] == 60.0
     assert summary_1440p["p1_low"] == 42.3
 
-    dashboard = load_json(API_DIR / "dashboard.json")
+    dashboard = load_json(api_dir / "dashboard.json")
     assert len(dashboard["records"]) == 30
-    check_catalog_specs()
-    print("Catalog rules, result rules, aggregation, submitter, and catalog spec checks passed")
+    check_catalog_specs(api_dir)
 
 
 if __name__ == "__main__":

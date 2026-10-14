@@ -261,6 +261,16 @@
       elements.error.classList.remove("hidden");
     }
 
+    // A fresh deploy can have a catalog but no runs yet: say so instead of showing empty filters.
+    function showNoBenchmarks() {
+      document.querySelectorAll(".toolbar, .side, .table-panel, .legend").forEach((section) => section.classList.add("hidden"));
+      elements.chart.closest(".grid").style.gridTemplateColumns = "minmax(0,1fr)";
+      elements.chart.classList.add("hidden");
+      elements.description.textContent = "";
+      elements.empty.innerHTML = 'No benchmarks published yet. Have a result? Follow the <a href="https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer">contribution guide</a> to submit the first one.';
+      elements.empty.classList.remove("hidden");
+    }
+
     function recordsForCurrentGame() {
       return state.data.records.filter((record) => record.game === state.game);
     }
@@ -880,15 +890,20 @@
         const gpuResponse = await fetch("./api/v1/gpus.json", { cache: "no-cache" });
         if (!gpuResponse.ok) throw new Error(`HTTP ${gpuResponse.status}`);
         state.specs = Object.fromEntries((((await gpuResponse.json()).gpus) || []).map((gpu) => [gpu.id, gpu]));
-        if (!Array.isArray(state.data.records) || !state.data.records.length) throw new Error("The dashboard dataset contains no benchmark records.");
+        if (!Array.isArray(state.data.records)) throw new Error("The dashboard dataset has no records list.");
+        elements.version.textContent = `v${state.data.metadata.release_version} · ${state.data.metadata.commit}`;
+        elements.schema.textContent = `schema v${state.data.metadata.schema_version}`;
+        if (!state.data.records.length) {
+          showNoBenchmarks();
+          renderReviews();
+          return;
+        }
         state.game = state.data.games[0];
         refreshResolutionOptions();
         setOptions(elements.game, state.data.games, state.game);
         state.graphicsPreset = "All";
         setOptions(elements.preset, ["All", ...state.data.graphics_presets], state.graphicsPreset);
         elements.preset.value = state.graphicsPreset;
-        elements.version.textContent = `v${state.data.metadata.release_version} · ${state.data.metadata.commit}`;
-        elements.schema.textContent = `schema v${state.data.metadata.schema_version}`;
         elements.synthetic.classList.toggle("hidden", !state.data.metadata.synthetic_data);
         renderReviews();
         render();

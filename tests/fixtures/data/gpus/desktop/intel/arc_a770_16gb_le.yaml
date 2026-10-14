@@ -1,0 +1,30 @@
+id: arc_a770_16gb_le
+base: arc_a770_16gb
+identity:
+  name: Intel Arc A770 Limited Edition
+  gpu_vendor: intel
+  board_partner: Intel
+classification:
+  form_factor: desktop
+power:
+  connectors:
+  - 8-pin + 6-pin
+release:
+  date: '2022-10-12'
+  msrp_usd: 349
+  msrp_history:
+  - date: '2022-10'
+    price_usd: 349
+features:
+  outputs:
+  - HDMI 2.1
+  - DP 2.0 x3
+notes: Full DG2-512 die. Specs are for the 16 GB Limited Edition; drivers improved substantially through 2023-24.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/arc-a770.c3914
+    title: TechPowerUp GPU Database - Arc A770
+    accessed: '2026-10-08'
+    covers:
+      - release
+      - power
+      - features

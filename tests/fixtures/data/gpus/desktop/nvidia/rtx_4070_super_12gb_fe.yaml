@@ -1,0 +1,30 @@
+id: rtx_4070_super_12gb_fe
+base: rtx_4070_super_12gb
+identity:
+  name: GeForce RTX 4070 Super Founders Edition
+  gpu_vendor: nvidia
+  board_partner: NVIDIA
+classification:
+  form_factor: desktop
+power:
+  connectors:
+  - 16-pin 12VHPWR
+release:
+  date: '2024-01-17'
+  msrp_usd: 599
+  msrp_history:
+  - date: '2024-01'
+    price_usd: 599
+features:
+  outputs:
+  - HDMI 2.1a
+  - DP 1.4a x3
+notes: Largest generational uplift of the Super refresh over the base RTX 4070.
+sources:
+  - url: https://www.techpowerup.com/gpu-specs/geforce-rtx-4070-super.c4186
+    title: TechPowerUp GPU Database - GeForce RTX 4070 SUPER
+    accessed: '2026-10-08'
+    covers:
+      - release
+      - power
+      - features

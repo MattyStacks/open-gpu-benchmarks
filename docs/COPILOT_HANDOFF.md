@@ -271,7 +271,7 @@ is required on every game run and must be one of `checks.PROOF_METHODS`
 tool by editing that tuple and the table in `docs/COMMUNITY_SUBMISSIONS.md`). It
 is run detail, copied to `capture_method` on every record and
 `implementations` entry, and never a grouping key. PresentMon is the
-recommended method. The existing synthetic fixtures use `other`. The tuple is
+recommended method. The synthetic test fixtures use `other`. The tuple is
 split: `P1_LOW_METHODS` (frame-time tools; a missing `p1_low` is the
 `result-p1-low-required` error) and `AVERAGE_ONLY_METHODS` (a missing
 `p1_low` is the `result-no-p1-low` warning, silent for
@@ -318,6 +318,9 @@ python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scri
 git diff --check
 deactivate                               # when done
 ```
+
+`python scripts/build.py --data-dir tests/fixtures/data` (or the same flag on
+`validate.py`) runs against the synthetic test fixtures instead of `data/`.
 
 Agents clean up before reporting a task complete: stop any server they
 started (such as the `python -m http.server` preview), then `deactivate`.
@@ -394,11 +397,33 @@ header block fill `system.kernel` and `system.driver`.
 - OS rules, Windows/Linux summary separation, and OS-aware outlier baselines
 - MangoHud parsing (`check_parse_mangohud()`)
 - that every `templates/community_*.yaml` passes the result checks as written
-- the generated payload shape
+- the generated payload shape, from a temp build of `tests/fixtures/data/`
+- that `data/` passes every check and has no `synthetic: true` runs
 
-## Current synthetic fixtures
+## Published data and test fixtures
 
-The repository has 11 catalog GPU entries, 19 official result runs, 12
+**Published data (`data/`).** 11 catalog GPU entries and no benchmark runs
+yet. `data/` is what CI builds and deploys, so it holds only real data. With no
+runs, `dashboard.json` has an empty `records` list and `showNoBenchmarks()` in
+`site/index.html` replaces the filters, chart, and table with a "No benchmarks
+published yet" message.
+
+**Test fixtures (`tests/fixtures/data/`).** The synthetic runs moved here
+from `data/` before the first real runs. The folder copies the `data/` layout,
+including a snapshot of the catalog and `reviews.yaml`, so changes to the real
+catalog (such as replacing the `_generic` laptop IDs) don't break the tests.
+Leave the snapshot alone unless a test needs a new catalog entry.
+
+- `build.py` and `validate.py` take `--data-dir`, for example
+  `python scripts/build.py --data-dir tests/fixtures/data` for a local preview
+  of the full dashboard. `build.main(data_dir, output_dir)` takes both folders.
+- `test_build.py` builds the fixtures with `build.main(FIXTURES_DIR, <temp>)`,
+  never into `site/api/`: `build.yml` runs the test after the real build and
+  then deploys `site/`. `check_fixture_build()` asserts the payload numbers.
+- `check_real_data()` asserts that `data/` passes every check and holds no
+  `synthetic: true` run.
+
+The fixtures have 11 catalog GPU entries, 19 official result runs, 12
 community result runs, and 30 combined dashboard summaries. Six Linux runs pair
 with a Windows run of the same profile: official RX 7900 XTX (Alan Wake 2,
 Baldur's Gate 3, Helldivers 2; CachyOS) and RTX 4090 (Cyberpunk 2077), and

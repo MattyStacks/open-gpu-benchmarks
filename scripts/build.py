@@ -1,4 +1,9 @@
-"""Build GPU-rooted API data for the GitHub Pages dashboard."""
+"""Build GPU-rooted API data for the GitHub Pages dashboard.
+
+    python scripts/build.py                                  # data/ -> site/api/v1
+    python scripts/build.py --data-dir tests/fixtures/data   # preview the synthetic fixtures
+"""
+import argparse
 import json
 import os
 import sys
@@ -215,8 +220,8 @@ def aggregate_game_records(records, id_prefix):
     return summaries
 
 
-def write_json(path, payload):
-    destination = OUTPUT_DIR / path
+def write_json(output_dir, path, payload):
+    destination = output_dir / path
     destination.parent.mkdir(parents=True, exist_ok=True)
     with destination.open("w", encoding="utf-8") as output:
         json.dump(payload, output, indent=2)
@@ -237,7 +242,7 @@ def gpu_summary(source, gpu, records, metadata):
     }
 
 
-def main(data_dir=DATA_DIR):
+def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR):
     gpus, catalog_issues = checks.load_catalog(data_dir)
     runs, result_issues = checks.load_results(gpus, data_dir)
     issues = checks.Issues([*catalog_issues, *result_issues])
@@ -290,10 +295,12 @@ def main(data_dir=DATA_DIR):
         official_by_gpu[gpu["id"]] = gpu_summary("official", gpu, official, metadata)
         community_by_gpu[gpu["id"]] = gpu_summary("community", gpu, community_raw, metadata)
         write_json(
+            output_dir,
             Path("official") / gpu["id"] / "summary.json",
             official_by_gpu[gpu["id"]],
         )
         write_json(
+            output_dir,
             Path("community") / gpu["id"] / "summary.json",
             community_by_gpu[gpu["id"]],
         )
@@ -332,9 +339,10 @@ def main(data_dir=DATA_DIR):
         ),
     )
 
-    write_json("gpus.json", {"metadata": metadata, "gpus": master_gpus})
-    write_json("official.json", {"metadata": metadata, "records": official, "count": len(official)})
+    write_json(output_dir, "gpus.json", {"metadata": metadata, "gpus": master_gpus})
+    write_json(output_dir, "official.json", {"metadata": metadata, "records": official, "count": len(official)})
     write_json(
+        output_dir,
         "community.json",
         {
             "metadata": metadata,
@@ -344,6 +352,7 @@ def main(data_dir=DATA_DIR):
         },
     )
     write_json(
+        output_dir,
         "dashboard.json",
         {
             "metadata": metadata,
@@ -358,10 +367,17 @@ def main(data_dir=DATA_DIR):
     print(
         f"GPUs: {len(gpus)} | Official runs: {len(official)} | "
         f"Community runs: {len(community_raw)} | Dashboard summaries: "
-        f"{len(dashboard_records)} | Output: {OUTPUT_DIR}"
+        f"{len(dashboard_records)} | Output: {output_dir}"
     )
     return 0
 
 
+def cli(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--data-dir", type=Path, default=DATA_DIR, help="source tree to build (default: data)")
+    args = parser.parse_args(argv)
+    return main(args.data_dir.resolve())
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(cli())

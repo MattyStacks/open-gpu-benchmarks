@@ -1,0 +1,29 @@
+# Imported by scripts/import_cyberpunk.py from benchmark_2026-10-13_19-07-41/summary.json
+# (Cyberpunk 2077's built-in benchmark). Re-running the script skips this run.
+gpu_id: rtx_5080_16gb_fe
+benchmark_type: game
+game: Cyberpunk 2077
+version: '2.31'
+frame_generation: false
+result:
+  - resolution: 4K
+    graphics_preset: 'Ray Tracing: Medium'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 88.52
+    min_fps: 80.52
+    max_fps: 100.62
+    duration: 64.26
+    frame_count: 5688
+system:
+  os: windows
+  os_detail: Windows 11 Pro
+  os_build: 10.0.26300
+  cpu: AMD Ryzen 9 9950X3D 16-Core Processor
+  memory: 64 GB
+  driver: '617.14'
+  graphics_api: DX12
+  display_mode: Fullscreen
+proof:
+  method: in_game_benchmark
+  format: cyberpunk_summary_json

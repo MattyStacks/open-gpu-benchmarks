@@ -1,6 +1,6 @@
 # 3DMark Steel Nomad. Save as
 # data/community/<gpu_id>/result_YYYYMMDD_steel_nomad.yaml,
-# for example data/community/rtx_4070_super_12gb_fe/result_20261013_steel_nomad.yaml.
+# for example data/community/rtx_5080_16gb_fe/result_20261013_steel_nomad.yaml.
 # Only gpu_id, game, result, system.os, and proof.method are required; the
 # rest is optional, and you don't have to give your name.
 # The folder name and gpu_id must exactly match a catalog ID, and it must be the
@@ -15,7 +15,7 @@
 # low, so p1_low is left out. For benchmarks with more than one graphics test
 # (such as Time Spy), enter the graphics-test FPS shown on the results page, not
 # the overall score divided by 100.
-gpu_id: rtx_4070_super_12gb_fe
+gpu_id: rtx_5080_16gb_fe
 # submitted_by: your-github-username # Optional; leave it out to stay anonymous
 benchmark_type: game
 game: 3DMark Steel Nomad
@@ -23,7 +23,7 @@ version: "1.0" # The benchmark version shown on the results page
 frame_generation: false
 form_factor: desktop
 device_name: Ryzen 7 7800X3D test bench # Optional; encouraged for exact machine metadata
-gpu_power_w: 220 # Optional for desktops; strongly encouraged for laptops
+gpu_power_w: 360 # Optional for desktops; strongly encouraged for laptops
 overclocked: false
 result:
   - resolution: 1440p # Steel Nomad renders at a fixed resolution; use the one the benchmark states

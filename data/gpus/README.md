@@ -39,6 +39,10 @@ data/gpus/
     └── amd/z1_extreme.yaml
 ```
 
+The file names above are examples of the layout. The published catalog holds
+one product today, `desktop/nvidia/rtx_5080_16gb_fe.yaml`, with its reference
+`reference/nvidia/rtx_5080_16gb.yaml`.
+
 The `reference/` folder is different: it holds
 [reference files](#reference-files), not products, and nothing is benchmarked
 against them.

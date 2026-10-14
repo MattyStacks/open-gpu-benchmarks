@@ -13,7 +13,18 @@ a fresh empty `Unreleased` section.
 
 ## Unreleased
 
+## 1.0.0 - 2026-10-14
+
+The first published results: the catalog starts over with the GeForce RTX 5080
+Founders Edition and 33 official Cyberpunk 2077 runs, and a script turns
+Cyberpunk 2077's own benchmark results into result files.
+
 ### Changed
+- The templates, the dashboard's examples, and the contributor docs use
+  `rtx_5080_16gb_fe`. Cyberpunk 2077 examples use the in-game preset names
+  (`Ray Tracing: Ultra`) with the preset's upscaler, matching the importer.
+- `test_build.py` checks the catalog templates against the fixture reference
+  files, since their example bases aren't published any more.
 - `community-outlier` threshold tightened from 50% to 25% away from the
   matching official average (`checks.OUTLIER_RATIO`, also reported as
   `comparison_policy.community_outlier_threshold`).
@@ -65,10 +76,24 @@ a fresh empty `Unreleased` section.
   contributing guide when there are no runs, instead of an error.
 
 ### Removed
+- Every published catalog entry and reference file except the RTX 5080. The
+  pre-1.0 products remain in the test fixtures.
 - The `result-no-driver` warning. A driver version is still welcome but never
   asked for.
 
 ### Added
+- GeForce RTX 5080 Founders Edition (`rtx_5080_16gb_fe`) and its reference
+  file `rtx_5080_16gb`, sourced from NVIDIA and Wikipedia.
+- The first official results: 33 Cyberpunk 2077 built-in benchmark runs on the
+  RTX 5080 FE at 1080p, 1440p, and 4K, across every quick preset plus native
+  High (29 dashboard summaries).
+- `scripts/import_cyberpunk.py`: reads each run's `summary.json` from the
+  game's `benchmarkResults` folder (found automatically on Windows and Steam
+  Proton) and writes one `result_YYYYMMDD_cyberpunk_2077_HHMMSS.yaml` per run.
+  Running it again adds only new runs. It skips runs with frame generation,
+  V-Sync, or an FPS cap, runs from a different GPU, and Custom presets with
+  upscaling. Custom presets with upscaling off need a name. A user guide is in
+  `docs/CYBERPUNK_BENCHMARK.md`, and `test_build.py` covers the importer.
 - Cloudflare Pages hosting at <https://opengpubenchmarks.com> (the canonical
   site). `build.yml` deploys the same build to Cloudflare (Wrangler Direct
   Upload) and GitHub Pages; GitHub Pages stays live as a mirror.

@@ -58,7 +58,7 @@ Every product in the catalog has one file under [data/gpus/](data/gpus/README.md
 data/gpus/
 └── desktop/
     └── nvidia/
-        └── rtx_4070_super_12gb_fe.yaml     <- gpu_id: rtx_4070_super_12gb_fe
+        └── rtx_5080_16gb_fe.yaml     <- gpu_id: rtx_5080_16gb_fe
 ```
 
 The ID names the exact product you tested, including its memory size and, for
@@ -69,9 +69,7 @@ Current IDs:
 
 | Form factor | IDs |
 | ----------- | --- |
-| desktop  | `rtx_4090_24gb_fe`, `rtx_4080_super_16gb_fe`, `rtx_4070_super_12gb_fe`, `rx_7900_xtx_24gb_reference`, `arc_a770_16gb_le` |
-| laptop   | `rtx_4090_laptop_16gb_generic`, `rtx_4070_laptop_8gb_generic`, `arc_a770m_16gb_generic` |
-| handheld | `rog_ally_z1_extreme_16gb`, `legion_go_z1_extreme_16gb`, `steam_deck_oled_16gb` |
+| desktop  | `rtx_5080_16gb_fe` |
 
 Your product isn't listed? Add it first. See
 [Adding a card, laptop, or handheld](#adding-a-card-laptop-or-handheld). You
@@ -84,7 +82,7 @@ Create **one file per game run** in your product's folder:
 ```text
 data/
 └── community/
-    └── rtx_4070_super_12gb_fe/                      <- folder name = gpu_id
+    └── rtx_5080_16gb_fe/                      <- folder name = gpu_id
         ├── result_20261003_cyberpunk.yaml          <- your file
         └── raw/
             └── cyberpunk_1440p.csv                  <- optional capture (recommended)
@@ -117,16 +115,27 @@ Pick **one** way to create the file:
 
 ```powershell
 Copy-Item templates/community_submission.yaml `
-  data/community/rtx_4070_super_12gb_fe/result_20261003_cyberpunk.yaml
+  data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml
 ```
 
 Then edit the values. The examples below show what to fill in.
 
-**Option B: generate it from a PresentMon or MangoHud CSV**
+**Option B: import Cyberpunk 2077's built-in benchmark runs**
+
+```powershell
+python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --dry-run
+python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
+```
+
+This writes one file per benchmark run from the game's `benchmarkResults`
+folder, and skips runs it has already imported. See
+[docs/CYBERPUNK_BENCHMARK.md](docs/CYBERPUNK_BENCHMARK.md).
+
+**Option C: generate it from a PresentMon or MangoHud CSV**
 
 ```powershell
 python scripts/parse.py capture.csv `
-  --gpu-id rtx_4070_super_12gb_fe `
+  --gpu-id rtx_5080_16gb_fe `
   --game "Cyberpunk 2077" `
   --resolution 1440p `
   --graphics-preset Ultra `
@@ -158,7 +167,7 @@ python scripts/test_build.py
 name in brackets, then a link to the rule's explanation:
 
 ```text
-error: data/community/rtx_4070_super_12gb_fe/result_20261003_cyberpunk_yourname.yaml: [result-impossible] result[0] p1_low 80 > avg_fps 60 is impossible
+error: data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_yourname.yaml: [result-impossible] result[0] p1_low 80 > avg_fps 60 is impossible
     See https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#result-impossible
 ```
 
@@ -168,7 +177,7 @@ Fix every error. You can check one part at a time with
 ### Step 5: Open a pull request
 
 ```powershell
-git add data/community/rtx_4070_super_12gb_fe
+git add data/community/rtx_5080_16gb_fe
 git commit -m "Add RTX 4070 Super FE Cyberpunk 2077 results"
 git push -u origin add-rtx-4070-super-cyberpunk
 ```
@@ -190,6 +199,9 @@ touch `site/api/`, which is generated.
 
 ## Examples
 
+The laptop and handheld examples use IDs that aren't in the catalog yet; add
+your product first (see [Adding a card, laptop, or handheld](#adding-a-card-laptop-or-handheld)).
+
 ### Minimal file (only what's required)
 
 This is the smallest file that passes validation, and it's anonymous. It warns
@@ -197,7 +209,7 @@ that there's no evidence, and the dashboard labels it "Unverified", so add a
 raw capture or a summary link when you can.
 
 ```yaml
-gpu_id: rtx_4070_super_12gb_fe   # must equal the folder name
+gpu_id: rtx_5080_16gb_fe   # must equal the folder name
 game: Cyberpunk 2077
 result:
   - resolution: 1440p
@@ -219,7 +231,7 @@ You don't need permission, only the link. The names and links here are
 placeholders.
 
 ```yaml
-gpu_id: rtx_4070_super_12gb_fe
+gpu_id: rtx_5080_16gb_fe
 game: Cyberpunk 2077
 credit:
   source_url: https://example.com/example-creator/gpu-review   # required
@@ -240,7 +252,7 @@ One run, two profiles. Each profile starts with its own `-`. This one adds the
 optional username and machine details.
 
 ```yaml
-gpu_id: rtx_4070_super_12gb_fe
+gpu_id: rtx_5080_16gb_fe
 submitted_by: mattystacks        # optional; shown as @mattystacks
 benchmark_type: game
 game: Cyberpunk 2077
@@ -277,13 +289,12 @@ proof:
 
 Laptop results are grouped by GPU power, so always include `gpu_power_w`.
 Validation only warns if it's missing, but your result can't be compared
-properly without it. If your laptop model has its own catalog entry, use that
-ID. The `_generic` IDs are placeholders for laptops whose model isn't in the
-catalog yet. Laptop system RAM goes in `system.memory`, not in the ID, because
-it can usually be upgraded.
+properly without it. Use your laptop model's catalog ID, and add the laptop to
+the catalog first if it isn't there yet. Laptop system RAM goes in
+`system.memory`, not in the ID, because it can usually be upgraded.
 
 ```yaml
-gpu_id: rtx_4070_laptop_8gb_generic
+gpu_id: rtx_4070_laptop_8gb_lenovo_legion_pro_5_gen8
 game: Baldur's Gate 3
 version: "4.1.1"
 frame_generation: false
@@ -365,7 +376,7 @@ Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 | Mistake | Rule you'll see | Fix |
 | ------- | --------------- | --- |
 | Folder doesn't match `gpu_id` | `[result-folder]` | Move the file, or correct `gpu_id` |
-| Old or made-up ID such as `rtx_4090` | `[result-unknown-gpu]` | Use the exact catalog file name, such as `rtx_4090_24gb_fe` |
+| Old or made-up ID such as `rtx_4090` | `[result-unknown-gpu]` | Use the exact catalog file name, such as `rtx_5080_16gb_fe` |
 | File name isn't `result_YYYYMMDD_<game>.yaml` | `[community-filename]` | Rename the file, such as `result_20261003_cyberpunk.yaml` |
 | `submitted_by` with spaces or other characters a GitHub username can't have | `[community-submitter]` | Fix it, or remove the line to stay anonymous |
 | File not named `result_...` | `[result-filename]` | Rename it, or the build would skip it |
@@ -409,7 +420,7 @@ Raw captures make a result reviewable, so please include one when you can. Put
 them inside the same product folder and reference them relative to it:
 
 ```text
-data/community/rtx_4070_super_12gb_fe/raw/Cyberpunk_4070S_1440p.csv
+data/community/rtx_5080_16gb_fe/raw/Cyberpunk_4070S_1440p.csv
                                       └── proof.raw_log: raw/Cyberpunk_4070S_1440p.csv
 ```
 
@@ -555,7 +566,7 @@ the PR, run with `.venv` activated:
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
 git diff --check
 ```
 

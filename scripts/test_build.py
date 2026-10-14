@@ -474,6 +474,79 @@ def check_parse_mangohud():
     assert result["kernel"] == "6.5.0-valve22" and result["driver"] == "Mesa 24.1.0", result
 
 
+def cyberpunk_summary(**overrides):
+    """A Cyberpunk 2077 benchmark summary.json "Data" block, RTX 4090 on a named preset."""
+    data = {
+        "gameVersion": "2.31", "gpuName": "NVIDIA GeForce RTX 4090", "gpuMemory": 24210,
+        "gpuDriverVersion": "Nvidia v 61714 [r617_07]", "cpuName": "Test CPU", "systemMemory": 32768,
+        "osName": "Windows 11 Pro", "osVersion": "10.0.26300", "presetName": "RayTracingUltra",
+        "renderWidth": 2560, "renderHeight": 1440, "windowMode": 2, "verticalSync": False, "fpsClamp": -1,
+        "averageFps": 120.456, "minFps": 100.0, "maxFps": 140.0, "time": 64.2, "frameNumber": 7700,
+        "frameGenerationType": 0, "DLAAEnabled": False, "DLSSEnabled": True, "DLSSQuality": 0,
+        "DLSSFrameGenEnabled": False, "DLSSMultiFrameGenEnabled": True, "FSR2Enabled": False, "FSR2Quality": 1,
+        "FSR3Enabled": False, "FSR3FrameGenEnabled": False, "FSR4Enabled": False, "XeSSEnabled": False,
+        "XeSSFrameGenEnabled": False, "FSREnabled": False, "DRSEnabled": False,
+    }
+    data.update(overrides)
+    return {"RootType": "worldBenchmarkSummary", "Data": data}
+
+
+def check_import_cyberpunk():
+    """import_cyberpunk.py writes one checked file per usable run and skips runs it already imported."""
+    import shutil
+
+    import import_cyberpunk
+
+    native = {"DLSSEnabled": False}
+    runs = {
+        "benchmark_2026-10-13_18-44-57": cyberpunk_summary(),
+        "benchmark_2026-10-13_19-00-00": cyberpunk_summary(presetName="Custom", **native),
+        "benchmark_2026-10-13_19-10-00": cyberpunk_summary(presetName="Custom", DLSSEnabled=False, FSR2Enabled=True),
+        "benchmark_2026-10-13_19-20-00": cyberpunk_summary(frameGenerationType=1),
+        "benchmark_2026-10-13_19-30-00": cyberpunk_summary(gpuName="NVIDIA GeForce RTX 4080", gpuMemory=16000),
+        "benchmark_2026-10-13_19-40-00": cyberpunk_summary(verticalSync=True),
+    }
+    with tempfile.TemporaryDirectory() as temp:
+        temp = Path(temp)
+        data_dir = temp / "data"
+        shutil.copytree(FIXTURES_DIR / "gpus", data_dir / "gpus")
+        results = temp / "benchmarkResults"
+        for name, summary in runs.items():
+            (results / name).mkdir(parents=True)
+            (results / name / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+        args = ["--gpu-id", "rtx_4090_24gb_fe", "--input", str(results), "--source", "official",
+                "--custom-preset", "High", "--os", "windows", "--data-dir", str(data_dir)]
+
+        assert import_cyberpunk.main([*args, "--dry-run"]) == 0
+        assert not (data_dir / "official").exists(), "a dry run writes nothing"
+        assert import_cyberpunk.main(args) == 0
+        out = data_dir / "official" / "rtx_4090_24gb_fe"
+        names = sorted(path.name for path in out.iterdir())
+        assert names == [
+            "result_20261013_cyberpunk_2077_184457.yaml",
+            "result_20261013_cyberpunk_2077_190000.yaml",
+        ], names
+        text = (out / names[0]).read_text(encoding="utf-8")
+        assert "version: '2.31'" in text and "graphics_preset: 'Ray Tracing: Ultra'" in text, text
+        preset_run = yaml.safe_load(text)
+        entry = preset_run["result"][0]
+        assert entry["resolution"] == "1440p" and entry["avg_fps"] == 120.46
+        assert entry["upscaling"] == "DLSS Auto" and entry["preset_upscaling"] is True
+        assert "p1_low" not in entry and preset_run["frame_generation"] is False
+        assert preset_run["system"]["driver"] == "617.14" and preset_run["system"]["memory"] == "32 GB"
+        assert preset_run["proof"]["method"] == "in_game_benchmark"
+        custom = yaml.safe_load((out / names[1]).read_text(encoding="utf-8"))["result"][0]
+        assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
+
+        catalog, issues = checks.load_catalog(data_dir)
+        _, result_issues = checks.load_results(catalog, data_dir)
+        assert not [*issues.errors, *result_issues.errors], [issue.format() for issue in result_issues.errors]
+
+        assert import_cyberpunk.main(args) == 0
+        assert sorted(path.name for path in out.iterdir()) == names, "a second import adds nothing"
+        assert import_cyberpunk.main([*args[:1], "no_such_gpu", *args[2:]]) == 1
+
+
 def check_reports_every_error_and_build_stops():
     files = {
         "gpus/desktop/amd/test_gpu_8gb_fe.yaml": minimal_entry(),
@@ -531,10 +604,12 @@ def check_base_merge():
 
 
 def check_templates_are_valid():
-    """Each catalog template passes the checks alongside the real reference files."""
+    """Each catalog template passes the checks alongside the fixture reference files."""
+    # The catalog templates show cards that aren't published, so their bases
+    # come from the fixture catalog snapshot rather than data/.
     references = {
-        path.relative_to(ROOT / "data").as_posix(): path.read_text(encoding="utf-8")
-        for path in (ROOT / "data" / "gpus" / "reference").rglob("*.yaml")
+        path.relative_to(FIXTURES_DIR).as_posix(): path.read_text(encoding="utf-8")
+        for path in (FIXTURES_DIR / "gpus" / "reference").rglob("*.yaml")
     }
     for template in sorted((ROOT / "templates").glob("catalog_*.yaml")):
         text = template.read_text(encoding="utf-8")
@@ -637,6 +712,7 @@ def main():
     check_upscaling()
     check_third_party_credit()
     check_parse_mangohud()
+    check_import_cyberpunk()
     check_reports_every_error_and_build_stops()
     check_minimal_entry_builds()
     check_base_merge()

@@ -4,13 +4,13 @@
 #
 # Save as data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml, using today's
 # date, for example
-# data/community/rtx_4070_super_12gb_fe/result_20261013_cyberpunk.yaml.
+# data/community/rtx_5080_16gb_fe/result_20261013_cyberpunk.yaml.
 # The folder name and gpu_id must exactly match a catalog ID: the exact product
 # the source tested, including memory size.
 #
 # Copy only what the source states. Leave out anything it doesn't say rather
 # than guessing. The names and links below are placeholders, not real people.
-gpu_id: rtx_4070_super_12gb_fe # Required
+gpu_id: rtx_5080_16gb_fe # Required
 game: Cyberpunk 2077 # Required
 credit:
   source_url: https://example.com/example-creator/gpu-review # Required; the video, review, or post with the numbers

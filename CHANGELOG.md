@@ -87,6 +87,13 @@ Cyberpunk 2077's own benchmark results into result files.
   serving old summaries after a catalog entry was removed.
 
 ### Added
+- Upscaled and native results are told apart on the dashboard. Every chart
+  label has a pill naming the upscaler (`FSR 2.1 Quality`, `DLSS Auto`) or
+  `Native`. Labels add the preset when several presets are shown, and leave
+  out the GPU name when every bar is the same GPU. Native/Upscaled filter
+  chips sit next to the OS chips, the table has a Settings column (preset and
+  upscaler), and the tooltip names both. The plain benchmark tables
+  (`/benchmarks/`, `llms-full.txt`) say `Native` instead of `off`.
 - GeForce RTX 5080 Founders Edition (`rtx_5080_16gb_fe`) and its reference
   file `rtx_5080_16gb`, sourced from NVIDIA and Wikipedia.
 - The first official results: 33 Cyberpunk 2077 built-in benchmark runs on the

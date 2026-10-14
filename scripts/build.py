@@ -280,7 +280,7 @@ def summary_row(record):
         record["game"],
         record["resolution"],
         record["graphics_preset"],
-        record["upscaling"] or "off",
+        record["upscaling"] or "Native",
         record["os"].title(),
         record["source"].title(),
         fps(record["avg_fps"]),

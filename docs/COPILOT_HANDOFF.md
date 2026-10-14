@@ -504,6 +504,23 @@ width. The
 benchmark table sorts by any column, searches IDs, codenames, and
 architectures, and expands each row into silicon details, price history,
 and the exact runs behind the number.
+
+**Upscaled vs native.** Many presets turn an upscaler on, so one GPU can have
+several bars at one resolution and preset (4K High: FSR 2.1 Quality and
+native). Each y-axis label is ECharts rich text: the label text plus a pill
+(`rich.upscaled` in the amber `--upscaled` token, `rich.native` in `--muted`)
+holding `upscalingLabel()`, the upscaler or `Native`. Pill colors are rgba()
+from the hex tokens, because canvas text can't use CSS `color-mix()`. The label
+text comes from `displayParts()`: the GPU name, the preset when more than one
+preset is visible, and the OS under the existing both-OSes rule. The GPU name is
+shortened first so the pill and the distinguishing parts stay whole, and when
+every visible bar is the same GPU the label leaves the name out
+(`singleGpuName()`; the chart description names it). `plainName()` adds
+`(upscaler)` or `(native)` for the comparison sentence and "Top result". The
+Native/Upscaled chips (`state.upscaling`, `renderUpscalingFilters()`) filter
+like the OS chips. The table's Settings column shows the preset and an
+`.upscale-badge`, and sorts native rows first. The tooltip shows the preset and
+upscaler.
 The header has **JSON API** (jumps to `#data-api`) and **GitHub** buttons, and
 the footer links to the repository, contributing guide, and issues. GitHub
 links are absolute (`https://github.com/MattyStacks/open-gpu-benchmarks`); API

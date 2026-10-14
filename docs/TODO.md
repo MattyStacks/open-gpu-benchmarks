@@ -154,6 +154,12 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Dashboard
 
+- [ ] **Show the internal render resolution of upscaled results**, for example
+  "4K, renders at 1440p" for FSR 2.1 Quality, next to the upscaling pill. It
+  needs confirmed scale factors per upscaler and mode, and Auto modes pick a
+  mode from the output resolution, so they can't be shown without the game's
+  rule.
+
 - [ ] **Roll-up view by GPU model.** Group products that share a `base`
   reference, for example every RTX 5060 Ti 16 GB board, and compare boards
   of the same GPU side by side.

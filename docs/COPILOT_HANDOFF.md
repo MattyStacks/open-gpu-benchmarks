@@ -508,8 +508,12 @@ and the exact runs behind the number.
 **Upscaled vs native.** Many presets turn an upscaler on, so one GPU can have
 several bars at one resolution and preset (4K High: FSR 2.1 Quality and
 native). Each y-axis label is ECharts rich text: the label text plus a pill
-(`rich.upscaled` in the amber `--upscaled` token, `rich.native` in `--muted`)
-holding `upscalingLabel()`, the upscaler or `Native`. Pill colors are rgba()
+holding `upscalingLabel()`, the upscaler or `Native`. `upscalerFamily()` picks
+the pill's rich style and the table badge class from the upscaler's maker:
+`dlss` (DLSS and DLAA, green `--up-dlss`), `fsr` (red `--up-fsr`), `xess` (blue
+`--up-xess`), `upscaled` (any other upscaler, amber `--upscaled`), and `native`
+(`--muted`). Each token has a softer dark-theme and a deeper light-theme shade,
+all at least 4.5:1 against the panel. Pill colors are rgba()
 from the hex tokens, because canvas text can't use CSS `color-mix()`. The label
 text comes from `displayParts()`: the GPU name, the preset when more than one
 preset is visible, and the OS under the existing both-OSes rule. The GPU name is
@@ -519,7 +523,7 @@ every visible bar is the same GPU the label leaves the name out
 `(upscaler)` or `(native)` for the comparison sentence and "Top result". The
 Native/Upscaled chips (`state.upscaling`, `renderUpscalingFilters()`) filter
 like the OS chips. The table's Settings column shows the preset and an
-`.upscale-badge`, and sorts native rows first. The tooltip shows the preset and
+`.upscale-badge upscale-<family>`, and sorts native rows first. The tooltip shows the preset and
 upscaler.
 The header has **JSON API** (jumps to `#data-api`) and **GitHub** buttons, and
 the footer links to the repository, contributing guide, and issues. GitHub

@@ -50,8 +50,8 @@
   <link rel="apple-touch-icon" href="favicons/apple-touch-icon.png">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <style>
-    :root { color-scheme: dark; --bg:#090b10; --panel:#11151d; --panel-strong:#171c27; --text:#f1f5f9; --muted:#8b96a9; --border:#273142; --accent:#60a5fa; --official:#60a5fa; --community:#34d399; --warning:#fbbf24; --form-desktop:#58a6ff; --form-laptop:#bc8cff; --form-handheld:#3fb950; --form-igpu:#f0883e; --os-windows:#38bdf8; --os-linux:#facc15; --upscaled:#f59e0b; }
-    :root[data-theme="light"] { color-scheme: light; --bg:#f4f7fb; --panel:#ffffff; --panel-strong:#edf2f7; --text:#152033; --muted:#657287; --border:#d8e0eb; --accent:#2563eb; --official:#2563eb; --community:#059669; --warning:#b45309; --form-desktop:#0550ae; --form-laptop:#8250df; --form-handheld:#1a7f37; --form-igpu:#9a6700; --os-windows:#0369a1; --os-linux:#a16207; --upscaled:#b45309; }
+    :root { color-scheme: dark; --bg:#090b10; --panel:#11151d; --panel-strong:#171c27; --text:#f1f5f9; --muted:#8b96a9; --border:#273142; --accent:#60a5fa; --official:#60a5fa; --community:#34d399; --warning:#fbbf24; --form-desktop:#58a6ff; --form-laptop:#bc8cff; --form-handheld:#3fb950; --form-igpu:#f0883e; --os-windows:#38bdf8; --os-linux:#facc15; --upscaled:#f59e0b; --up-dlss:#8bd450; --up-fsr:#f87171; --up-xess:#6aa8ff; }
+    :root[data-theme="light"] { color-scheme: light; --bg:#f4f7fb; --panel:#ffffff; --panel-strong:#edf2f7; --text:#152033; --muted:#657287; --border:#d8e0eb; --accent:#2563eb; --official:#2563eb; --community:#059669; --warning:#b45309; --form-desktop:#0550ae; --form-laptop:#8250df; --form-handheld:#1a7f37; --form-igpu:#9a6700; --os-windows:#0369a1; --os-linux:#a16207; --upscaled:#b45309; --up-dlss:#3f7d0a; --up-fsr:#c42b2b; --up-xess:#1f5fc2; }
     * { box-sizing:border-box; } body { margin:0; background:radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 13%, transparent), transparent 34rem),var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     button,input,select { font:inherit; } button { cursor:pointer; } .shell { max-width:1440px; margin:auto; padding:0 24px 40px; } header { position:sticky; top:0; z-index:10; backdrop-filter:blur(18px); background:color-mix(in srgb, var(--bg) 88%, transparent); border-bottom:1px solid var(--border); }
     .header-inner { max-width:1440px; min-height:68px; margin:auto; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:18px; } h1,h2,h3,p { margin:0; } h1 { font-size:21px; letter-spacing:-.04em; } .eyebrow,.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .eyebrow { color:var(--muted); font-size:11px; letter-spacing:.13em; text-transform:uppercase; margin-top:4px; }
@@ -69,8 +69,12 @@
     .gpu-cell { display:flex; align-items:flex-start; gap:8px; } .expander { background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); width:22px; height:22px; line-height:1; padding:0; flex:none; font-size:11px; } .expander:hover { color:var(--text); border-color:var(--accent); }
     .form-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; } .form-desktop { color:var(--form-desktop); border-color:color-mix(in srgb,var(--form-desktop) 45%,var(--border)); background:color-mix(in srgb,var(--form-desktop) 10%,transparent); } .form-laptop { color:var(--form-laptop); border-color:color-mix(in srgb,var(--form-laptop) 45%,var(--border)); background:color-mix(in srgb,var(--form-laptop) 10%,transparent); } .form-handheld { color:var(--form-handheld); border-color:color-mix(in srgb,var(--form-handheld) 45%,var(--border)); background:color-mix(in srgb,var(--form-handheld) 10%,transparent); } .form-igpu { color:var(--form-igpu); border-color:color-mix(in srgb,var(--form-igpu) 45%,var(--border)); background:color-mix(in srgb,var(--form-igpu) 10%,transparent); }
     .os-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; } .os-windows { color:var(--os-windows); border-color:color-mix(in srgb,var(--os-windows) 45%,var(--border)); background:color-mix(in srgb,var(--os-windows) 10%,transparent); } .upscale-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:2px 7px; font-size:10px; font-weight:700; white-space:nowrap; }
-    .upscale-on { color:var(--upscaled); border-color:color-mix(in srgb,var(--upscaled) 45%,var(--border)); background:color-mix(in srgb,var(--upscaled) 14%,transparent); }
-    .upscale-off { color:var(--muted); background:color-mix(in srgb,var(--muted) 10%,transparent); }
+    .upscale-upscaled { --pill:var(--upscaled); }
+    .upscale-dlss { --pill:var(--up-dlss); }
+    .upscale-fsr { --pill:var(--up-fsr); }
+    .upscale-xess { --pill:var(--up-xess); }
+    .upscale-upscaled,.upscale-dlss,.upscale-fsr,.upscale-xess { color:var(--pill); border-color:color-mix(in srgb,var(--pill) 45%,var(--border)); background:color-mix(in srgb,var(--pill) 14%,transparent); }
+    .upscale-native { color:var(--muted); background:color-mix(in srgb,var(--muted) 10%,transparent); }
     .settings-cell .upscale-badge { margin-top:3px; }
     .os-linux { color:var(--os-linux); border-color:color-mix(in srgb,var(--os-linux) 45%,var(--border)); background:color-mix(in srgb,var(--os-linux) 10%,transparent); }
     .legend i.striped { border-radius:2px; width:12px; background:repeating-linear-gradient(135deg,var(--muted) 0 2px,transparent 2px 4px); }
@@ -157,7 +161,7 @@
             <span><i style="background:var(--official)"></i>Official</span>
             <span><i style="background:var(--community)"></i>Community</span>
             <span class="hidden" id="linux-legend"><i class="striped"></i>Striped = Linux</span>
-            <span title="Many presets turn an upscaler on by themselves, so one GPU can appear once per upscaler."><b class="upscale-badge upscale-off">Native</b> <b class="upscale-badge upscale-on">FSR / DLSS</b> = upscaler set by the preset</span>
+            <span title="Many presets turn an upscaler on by themselves, so one GPU can appear once per upscaler."><b class="upscale-badge upscale-native">Native</b> <b class="upscale-badge upscale-dlss">DLSS</b> <b class="upscale-badge upscale-fsr">FSR</b> <b class="upscale-badge upscale-xess">XeSS</b> = upscaler set by the preset</span>
           </div>
         </div>
         <div id="chart" aria-label="GPU benchmark comparison chart"></div>
@@ -446,6 +450,17 @@
       return new Set(records.map((record) => record.os)).size > 1;
     }
 
+    // The upscaler's maker decides the pill color: DLSS/DLAA (NVIDIA green),
+    // FSR (AMD red), XeSS (Intel blue). Anything else stays amber.
+    function upscalerFamily(record) {
+      const name = String(record.upscaling || "").toLowerCase();
+      if (!name) return "native";
+      if (name.startsWith("dlss") || name.startsWith("dlaa")) return "dlss";
+      if (name.startsWith("fsr")) return "fsr";
+      if (name.startsWith("xess")) return "xess";
+      return "upscaled";
+    }
+
     function upscalingKind(record) {
       return record.upscaling ? "upscaled" : "native";
     }
@@ -634,7 +649,7 @@
       // (about 6.2 px per character at 11 px).
       const labelWidth = Math.max(160, Math.round(elements.chart.clientWidth * 0.42));
       const css = getComputedStyle(document.documentElement);
-      const upscaledColor = css.getPropertyValue("--upscaled").trim();
+      const token = (name) => css.getPropertyValue(name).trim();
       const mutedColor = css.getPropertyValue("--muted").trim();
       // The GPU name is shortened first, so the preset and OS that tell bars
       // apart stay readable. When every bar is the same GPU, the label leaves
@@ -645,10 +660,10 @@
         const pill = upscalingLabel(record);
         const room = Math.floor((labelWidth - (pill.length * 6.2 + 22)) / 6.2);
         const [name, ...rest] = displayParts(record, records);
-        if (oneGpu && rest.length) return `{name|${richText(truncate(rest.join(" · "), Math.max(8, room)))}} {${upscalingKind(record)}|${richText(pill)}}`;
+        if (oneGpu && rest.length) return `{name|${richText(truncate(rest.join(" · "), Math.max(8, room)))}} {${upscalerFamily(record)}|${richText(pill)}}`;
         const suffix = rest.length ? ` · ${rest.join(" · ")}` : "";
         const text = truncate(`${truncate(name, Math.max(8, room - suffix.length))}${suffix}`, Math.max(8, room));
-        return `{name|${richText(text)}} {${upscalingKind(record)}|${richText(pill)}}`;
+        return `{name|${richText(text)}} {${upscalerFamily(record)}|${richText(pill)}}`;
       };
       // Canvas text needs plain colors, so the hex theme tokens become rgba().
       const withAlpha = (hex, alpha) => {
@@ -679,7 +694,7 @@
         tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (params) => chartTooltip(records, params) },
         legend: { show: series.length > 1, textStyle: { color: getComputedStyle(document.documentElement).getPropertyValue("--muted") } },
         xAxis: { type: "value", axisLabel: { color: getComputedStyle(document.documentElement).getPropertyValue("--muted") }, splitLine: { lineStyle: { color: getComputedStyle(document.documentElement).getPropertyValue("--border") } } },
-        yAxis: { type: "category", inverse: true, data: labels, axisLabel: { formatter: formatLabel, rich: { name: { color: css.getPropertyValue("--text").trim(), fontSize: 11 }, upscaled: pillStyle(upscaledColor), native: pillStyle(mutedColor) } }, axisTick: { show: false }, axisLine: { show: false } },
+        yAxis: { type: "category", inverse: true, data: labels, axisLabel: { formatter: formatLabel, rich: { name: { color: css.getPropertyValue("--text").trim(), fontSize: 11 }, upscaled: pillStyle(token("--upscaled")), dlss: pillStyle(token("--up-dlss")), fsr: pillStyle(token("--up-fsr")), xess: pillStyle(token("--up-xess")), native: pillStyle(mutedColor) } }, axisTick: { show: false }, axisLine: { show: false } },
         series
       }, true);
       // Grow the chart with the bar count so many GPUs don't squash the bars.
@@ -712,7 +727,7 @@
           <td class="mono">${escapeHtml(formatVendor(record))}</td>
           <td><span class="form-badge form-${escapeHtml(record.form_factor.toLowerCase())}">${escapeHtml(formatForm(record))}</span></td>
           <td><span class="os-badge os-${escapeHtml(record.os)}" title="${escapeHtml(record.os_detail || record.distro || "")}">${escapeHtml(formatOs(record))}</span></td>
-          <td class="settings-cell"><div>${escapeHtml(record.graphics_preset)}</div><span class="upscale-badge ${record.upscaling ? "upscale-on" : "upscale-off"}" title="${record.upscaling ? "Upscaler turned on by the preset" : "Rendered at full resolution"}">${escapeHtml(upscalingLabel(record))}</span></td>
+          <td class="settings-cell"><div>${escapeHtml(record.graphics_preset)}</div><span class="upscale-badge upscale-${upscalerFamily(record)}" title="${record.upscaling ? "Upscaler turned on by the preset" : "Rendered at full resolution"}">${escapeHtml(upscalingLabel(record))}</span></td>
           <td><div>${escapeHtml(architecture || MISSING)}</div><div class="detail mono">${escapeHtml(codename || "")}</div></td>
           <td class="mono">${escapeHtml(formatMemory(record))}</td>
           <td class="mono">${escapeHtml(formatBus(record))}</td>

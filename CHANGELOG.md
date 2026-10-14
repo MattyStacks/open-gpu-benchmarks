@@ -89,7 +89,8 @@ Cyberpunk 2077's own benchmark results into result files.
 ### Added
 - Upscaled and native results are told apart on the dashboard. Every chart
   label has a pill naming the upscaler (`FSR 2.1 Quality`, `DLSS Auto`) or
-  `Native`. Labels add the preset when several presets are shown, and leave
+  `Native`, colored by the upscaler's maker: DLSS and DLAA green, FSR red, XeSS
+  blue, native gray, in shades tuned for each theme. Labels add the preset when several presets are shown, and leave
   out the GPU name when every bar is the same GPU. Native/Upscaled filter
   chips sit next to the OS chips, the table has a Settings column (preset and
   upscaler), and the tooltip names both. The plain benchmark tables

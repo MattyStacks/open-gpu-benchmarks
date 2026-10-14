@@ -56,7 +56,8 @@ OS. It never groups desktop and laptop GPUs together, or Windows and Linux runs.
 
 Many graphics presets turn an upscaler on by themselves, so one GPU can show
 a native and an upscaled result for the same preset. Every chart label carries
-a pill naming the upscaler (`FSR 2.1 Quality`, `DLSS Auto`) or `Native`, the
+a pill naming the upscaler (`FSR 2.1 Quality`, `DLSS Auto`) or `Native`,
+colored by maker (DLSS green, FSR red, XeSS blue, native gray), the
 table has a Settings column, and Native/Upscaled filter chips hide either kind.
 
 Every game run sets `system.os` to `windows` or `linux`. The dashboard has

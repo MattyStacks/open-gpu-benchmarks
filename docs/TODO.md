@@ -63,9 +63,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   - Confirm the upscaler quality indices that weren't checked against
     `UserSettings.json`: DLSS and FSR 2.1 indices other than DLSS 0 (Auto)
     and FSR 2.1 1 (Quality) follow the menu order, and FSR 3, FSR 4, XeSS,
-    and FSR 1.0 are written as `(mode N)`. Also confirm `windowMode` 1
-    (Borderless windowed). A label change splits dashboard groups, so rename
-    existing files in the same PR.
+    and FSR 1.0 are written as `(mode N)`. A label change splits dashboard
+    groups, so update existing files in the same PR.
+  - Record `display_mode` per result item, if the schema ever allows it.
+    `windowMode` (2 = Fullscreen) varied between runs, and `system` is
+    file-level, so the importer leaves it out.
   - Optional 1% low from `frames.csv` (the frame time column), behind a
     flag, so these runs can carry `p1_low`.
   - Re-run the native 1080p High benchmark on the RTX 5080 FE. The 1080p

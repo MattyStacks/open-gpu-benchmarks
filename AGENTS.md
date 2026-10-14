@@ -56,8 +56,9 @@ community average more than 25% from the official average fails
 `community-outlier`. Official runs are maintainer-verified by definition
 ("Verified" on the dashboard) and may credit someone by `name` alone.
 Cyberpunk 2077 built-in benchmark runs come in through
-`scripts/import_cyberpunk.py` (guide: `docs/CYBERPUNK_BENCHMARK.md`), one
-`result_YYYYMMDD_cyberpunk_2077_HHMMSS.yaml` per run; keep its preset and
+`scripts/import_cyberpunk.py` (guide: `docs/CYBERPUNK_BENCHMARK.md`): one
+`result_YYYYMMDD_cyberpunk_2077.yaml` per day and setup, one `result` item per
+run, each naming its run folder in `benchmark_run`; keep its preset and
 upscaler labels stable, because changing one splits dashboard groups.
 
 Hosting: the canonical site is <https://opengpubenchmarks.com> (Cloudflare

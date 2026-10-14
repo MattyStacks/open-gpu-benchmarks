@@ -396,10 +396,16 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
   folder through the Windows Documents known folder (handles OneDrive), or
   the Proton prefix of Steam app 1091500 on Linux; `--input` overrides.
   Nothing is copied into the repo.
-- **Re-runs.** Each run folder maps to one fixed name,
-  `result_YYYYMMDD_cyberpunk_2077_HHMMSS.yaml`. A run whose file exists in
-  any `data/{official,community}/*/` folder is skipped, so re-running only
-  adds new runs. Skipped runs are not remembered.
+- **Files and re-runs.** Runs go in `result_YYYYMMDD_cyberpunk_2077.yaml` by
+  run date, one `result` item per run. Each item's `benchmark_run` holds its
+  folder name (it ends up in the API under `metrics`). A run whose
+  `benchmark_run` is in any `data/{official,community}/*/` result file is
+  skipped. A new same-day run is appended to the day's file when every
+  file-level field matches (`SETUP_KEYS`: `gpu_id`, `submitted_by`, `game`,
+  `version`, `system`, `proof`); otherwise it goes in `_2`, `_3`, ...
+  Appending rewrites the file, so hand-added comments in it are lost.
+  `display_mode` isn't recorded, because it varied between runs and would
+  split files. Skipped runs are not remembered.
 - **Mapping.** `presetName` maps to the in-game name (`RayTracingUltra` is
   `Ray Tracing: Ultra`). Presets that enable an upscaler get `upscaling` and
   `preset_upscaling: true`. DLSS and FSR 2.1 quality indices use the menu

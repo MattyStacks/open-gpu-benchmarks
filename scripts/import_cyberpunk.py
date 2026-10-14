@@ -3,13 +3,17 @@ import_cyberpunk.py - Cyberpunk 2077 built-in benchmark runs -> result YAML
 
 Every time the game's benchmark finishes, it saves a folder such as
 benchmarkResults/benchmark_2026-10-13_18-44-57/ with a summary.json in it. This
-script reads those summary.json files and writes one result file per run:
+script reads those summary.json files and writes the runs from one day into one
+result file, one item in its result list per run:
 
-    data/<source>/<gpu_id>/result_20261013_cyberpunk_2077_184457.yaml
+    data/<source>/<gpu_id>/result_20261013_cyberpunk_2077.yaml
 
-Nothing is copied from the game folder; the runs stay where they are. Run the
-script again any time: runs that already have a result file are skipped, so only
-new benchmarks are added. Full instructions: docs/CYBERPUNK_BENCHMARK.md
+Each item's benchmark_run names the run folder it came from. Nothing is copied
+from the game folder; the runs stay where they are. Run the script again any
+time: runs already listed in a result file are skipped, and new runs from the
+same day are added to that day's file. A run with a different setup (game
+version, driver, CPU, memory, or OS) goes in its own file, _2, _3, ..., because
+those fields apply to the whole file. Full instructions: docs/CYBERPUNK_BENCHMARK.md
 
     python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --dry-run
     python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
@@ -52,6 +56,11 @@ PRESETS = {
     "RayTracingOverdrive": "Ray Tracing: Overdrive",
 }
 CUSTOM_PRESET = "Custom"
+# Each result item names its run folder here; that is how re-runs skip it.
+RUN_KEY = "benchmark_run"
+PROOF_FORMAT = "cyberpunk_summary_json"
+# File-level fields: runs share a file only when all of these match.
+SETUP_KEYS = ("gpu_id", "submitted_by", "game", "version", "system", "proof")
 RESOLUTIONS = {(1920, 1080): "1080p", (2560, 1440): "1440p", (3840, 2160): "4K"}
 # Upscaler quality indices, in the order of the game's menu. UserSettings.json
 # confirms DLSS 0 = Auto and FSR 2.1 1 = Quality; the rest follow that order.
@@ -60,7 +69,6 @@ RESOLUTIONS = {(1920, 1080): "1080p", (2560, 1440): "1440p", (3840, 2160): "4K"}
 QUALITY_MODES = {0: "Auto", 1: "Quality", 2: "Balanced", 3: "Performance", 4: "Ultra Performance"}
 DLSS_MODES = QUALITY_MODES
 FSR2_MODES = QUALITY_MODES
-WINDOW_MODES = {1: "Borderless windowed", 2: "Fullscreen"}
 
 
 def default_input_dirs():
@@ -119,14 +127,51 @@ def find_input_dir(given):
     sys.exit(f"Couldn't find Cyberpunk 2077's benchmarkResults folder. Tried:\n  {tried}\nPass it with --input.")
 
 
-def output_name(folder_name):
-    year, month, day, hour, minute, second = RUN_FOLDER.match(folder_name).groups()
-    return f"result_{year}{month}{day}_{GAME_SLUG}_{hour}{minute}{second}.yaml"
+def run_date(folder_name):
+    year, month, day = RUN_FOLDER.match(folder_name).groups()[:3]
+    return f"{year}{month}{day}"
 
 
-def already_imported(data_dir, name):
-    """A run counts as imported once a result file with its name exists anywhere."""
-    return any(any((data_dir / source).glob(f"*/{name}")) for source in checks.RESULT_SOURCES)
+def load_run(path):
+    try:
+        run = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        return None
+    return run if isinstance(run, dict) else None
+
+
+def imported_runs(data_dir):
+    """Every benchmark_run already listed in a result file, so re-runs skip them."""
+    seen = set()
+    for source in checks.RESULT_SOURCES:
+        for path in checks.result_paths(data_dir, source):
+            entries = (load_run(path) or {}).get("result")
+            if isinstance(entries, list):
+                seen.update(entry[RUN_KEY] for entry in entries if isinstance(entry, dict) and entry.get(RUN_KEY))
+    return seen
+
+
+def same_setup(run, other):
+    """Runs share a file only when every file-level field matches."""
+    return all(run.get(key) == other.get(key) for key in SETUP_KEYS)
+
+
+def target_file(out_dir, date, run, planned):
+    """The day's file with the same setup, or the next free name for a new one."""
+    repeat = 1
+    while True:
+        suffix = "" if repeat == 1 else f"_{repeat}"
+        path = out_dir / f"result_{date}_{GAME_SLUG}{suffix}.yaml"
+        if path not in planned and path.exists():
+            existing = load_run(path)
+            if existing is not None and isinstance(existing.get("result"), list):
+                planned[path] = existing
+        if path not in planned and not path.exists():
+            planned[path] = {**run, "result": []}
+            return path
+        if path in planned and same_setup(planned[path], run):
+            return path
+        repeat += 1
 
 
 def mode_label(modes, index):
@@ -230,13 +275,12 @@ def build_system(data, os_name):
     if driver_version(data.get("gpuDriverVersion")):
         system["driver"] = driver_version(data.get("gpuDriverVersion"))
     system["graphics_api"] = "DX12"
-    if data.get("windowMode") in WINDOW_MODES:
-        system["display_mode"] = WINDOW_MODES[data["windowMode"]]
     return system
 
 
-def build_run(data, gpu_id, preset, source, os_name, submitted_by):
-    entry = {"resolution": resolution(data), "graphics_preset": preset}
+def build_entry(data, preset, folder_name):
+    """One result list item for one benchmark run."""
+    entry = {RUN_KEY: folder_name, "resolution": resolution(data), "graphics_preset": preset}
     upscaling = upscaler(data)
     if upscaling:
         entry["upscaling"] = upscaling
@@ -247,7 +291,11 @@ def build_run(data, gpu_id, preset, source, os_name, submitted_by):
             entry[key] = round(float(data[field]), 2)
     if checks.is_number(data.get("frameNumber")):
         entry["frame_count"] = int(data["frameNumber"])
+    return entry
 
+
+def build_run(data, gpu_id, source, os_name, submitted_by):
+    """The file-level fields shared by every run in one result file."""
     run = {"gpu_id": gpu_id}
     if source == "community" and submitted_by:
         run["submitted_by"] = submitted_by
@@ -255,9 +303,9 @@ def build_run(data, gpu_id, preset, source, os_name, submitted_by):
     if data.get("gameVersion"):
         run["version"] = str(data["gameVersion"])
     run["frame_generation"] = False
-    run["result"] = [entry]
+    run["result"] = []
     run["system"] = build_system(data, os_name)
-    run["proof"] = {"method": "in_game_benchmark", "format": "cyberpunk_summary_json"}
+    run["proof"] = {"method": "in_game_benchmark", "format": PROOF_FORMAT}
     return run
 
 
@@ -268,10 +316,11 @@ class IndentedDumper(yaml.SafeDumper):
         return super().increase_indent(flow, False)
 
 
-def write_run(path, run, folder):
+def write_run(path, run):
     header = (
-        f"# Imported by scripts/import_cyberpunk.py from {folder.name}/summary.json\n"
-        "# (Cyberpunk 2077's built-in benchmark). Re-running the script skips this run.\n"
+        "# Imported by scripts/import_cyberpunk.py from Cyberpunk 2077's built-in\n"
+        "# benchmark. Each benchmark_run is a folder in the game's benchmarkResults;\n"
+        "# re-running the script skips runs listed here and adds new ones.\n"
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     text = yaml.dump(run, Dumper=IndentedDumper, sort_keys=False, default_flow_style=False, allow_unicode=True)
@@ -326,10 +375,11 @@ def main(argv=None):
     custom_preset = args.custom_preset.strip()
     can_ask = not args.dry_run and not custom_preset and sys.stdin.isatty()
     last_custom = ""
-    rows, written, previously = [], [], 0
+    rows, previously = [], 0
+    seen = imported_runs(data_dir)
+    planned, added = {}, {}
     for folder in sorted(path for path in input_dir.iterdir() if path.is_dir() and RUN_FOLDER.match(path.name)):
-        name = output_name(folder.name)
-        if already_imported(data_dir, name):
+        if folder.name in seen:
             previously += 1
             continue
         summary = folder / "summary.json"
@@ -367,14 +417,13 @@ def main(argv=None):
         else:
             skip(f"unknown preset '{preset_key}'"); continue
 
-        run = build_run(data, args.gpu_id, preset, args.source, args.os, args.submitted_by)
-        rows.append(("new", folder.name, res, preset, upscaling, fps, ""))
-        if not args.dry_run:
-            path = out_dir / name
-            write_run(path, run, folder)
-            written.append(path)
+        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by)
+        path = target_file(out_dir, run_date(folder.name), run, planned)
+        planned[path]["result"].append(build_entry(data, preset, folder.name))
+        added[path] = added.get(path, 0) + 1
+        rows.append(("new", folder.name, res, preset, upscaling, fps, path.name))
 
-    headers = ("status", "run", "resolution", "preset", "upscaling", "avg fps", "note")
+    headers = ("status", "run", "resolution", "preset", "upscaling", "avg fps", "file or reason")
     if rows:
         widths = [max(len(str(row[i])) for row in (headers, *rows)) for i in range(len(headers) - 1)]
         for row in (headers, *rows):
@@ -383,9 +432,15 @@ def main(argv=None):
     skipped = len(rows) - new
     verb = "would import" if args.dry_run else "imported"
     print(f"\n{new} {verb}, {skipped} skipped, {previously} already imported earlier")
+    for path, count in added.items():
+        total = len(planned[path]["result"])
+        print(f"  {checks.relative_path(path)}: {count} new, {total} in the file")
 
-    if not written:
+    if args.dry_run or not added:
         return 0
+    written = list(added)
+    for path in written:
+        write_run(path, planned[path])
     catalog, catalog_issues = checks.load_catalog(data_dir)
     _, result_issues = checks.load_results(catalog, data_dir)
     mine = {checks.relative_path(path) for path in written}

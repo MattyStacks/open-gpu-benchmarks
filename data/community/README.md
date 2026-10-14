@@ -13,7 +13,7 @@ data/community/<gpu_id>/raw/permission_<name>.png  (optional permission proof, u
 
 Cyberpunk 2077 built-in benchmark runs can be imported with
 `scripts/import_cyberpunk.py`, which writes one
-`result_YYYYMMDD_cyberpunk_2077_HHMMSS.yaml` per run; see
+`result_YYYYMMDD_cyberpunk_2077.yaml` per day with one `result` item per run; see
 [docs/CYBERPUNK_BENCHMARK.md](../../docs/CYBERPUNK_BENCHMARK.md).
 
 **New here? Follow the step-by-step guide with examples in

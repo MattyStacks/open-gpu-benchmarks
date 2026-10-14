@@ -492,7 +492,7 @@ def cyberpunk_summary(**overrides):
 
 
 def check_import_cyberpunk():
-    """import_cyberpunk.py writes one checked file per usable run and skips runs it already imported."""
+    """import_cyberpunk.py puts a day's runs in one checked file and skips runs it already imported."""
     import shutil
 
     import import_cyberpunk
@@ -511,9 +511,13 @@ def check_import_cyberpunk():
         data_dir = temp / "data"
         shutil.copytree(FIXTURES_DIR / "gpus", data_dir / "gpus")
         results = temp / "benchmarkResults"
-        for name, summary in runs.items():
-            (results / name).mkdir(parents=True)
-            (results / name / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+
+        def add_runs(new_runs):
+            for name, summary in new_runs.items():
+                (results / name).mkdir(parents=True)
+                (results / name / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+
+        add_runs(runs)
         args = ["--gpu-id", "rtx_4090_24gb_fe", "--input", str(results), "--source", "official",
                 "--custom-preset", "High", "--os", "windows", "--data-dir", str(data_dir)]
 
@@ -521,21 +525,20 @@ def check_import_cyberpunk():
         assert not (data_dir / "official").exists(), "a dry run writes nothing"
         assert import_cyberpunk.main(args) == 0
         out = data_dir / "official" / "rtx_4090_24gb_fe"
-        names = sorted(path.name for path in out.iterdir())
-        assert names == [
-            "result_20261013_cyberpunk_2077_184457.yaml",
-            "result_20261013_cyberpunk_2077_190000.yaml",
-        ], names
-        text = (out / names[0]).read_text(encoding="utf-8")
+        day_file = out / "result_20261013_cyberpunk_2077.yaml"
+        assert sorted(path.name for path in out.iterdir()) == [day_file.name]
+        text = day_file.read_text(encoding="utf-8")
         assert "version: '2.31'" in text and "graphics_preset: 'Ray Tracing: Ultra'" in text, text
-        preset_run = yaml.safe_load(text)
-        entry = preset_run["result"][0]
+        day_run = yaml.safe_load(text)
+        assert [entry["benchmark_run"] for entry in day_run["result"]] == [
+            "benchmark_2026-10-13_18-44-57", "benchmark_2026-10-13_19-00-00",
+        ], "the skipped runs are left out"
+        entry, custom = day_run["result"]
         assert entry["resolution"] == "1440p" and entry["avg_fps"] == 120.46
         assert entry["upscaling"] == "DLSS Auto" and entry["preset_upscaling"] is True
-        assert "p1_low" not in entry and preset_run["frame_generation"] is False
-        assert preset_run["system"]["driver"] == "617.14" and preset_run["system"]["memory"] == "32 GB"
-        assert preset_run["proof"]["method"] == "in_game_benchmark"
-        custom = yaml.safe_load((out / names[1]).read_text(encoding="utf-8"))["result"][0]
+        assert "p1_low" not in entry and day_run["frame_generation"] is False
+        assert day_run["system"]["driver"] == "617.14" and day_run["system"]["memory"] == "32 GB"
+        assert day_run["proof"]["method"] == "in_game_benchmark"
         assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
 
         catalog, issues = checks.load_catalog(data_dir)
@@ -543,7 +546,23 @@ def check_import_cyberpunk():
         assert not [*issues.errors, *result_issues.errors], [issue.format() for issue in result_issues.errors]
 
         assert import_cyberpunk.main(args) == 0
-        assert sorted(path.name for path in out.iterdir()) == names, "a second import adds nothing"
+        assert yaml.safe_load(day_file.read_text(encoding="utf-8")) == day_run, "a second import changes nothing"
+
+        # Later the same day: a new run joins the day's file, and a run after a
+        # driver update gets its own file because system applies to the whole file.
+        add_runs({
+            "benchmark_2026-10-13_20-00-00": cyberpunk_summary(renderWidth=3840, renderHeight=2160),
+            "benchmark_2026-10-13_21-00-00": cyberpunk_summary(gpuDriverVersion="Nvidia v 61800 [r618_00]"),
+            "benchmark_2026-10-14_09-00-00": cyberpunk_summary(),
+        })
+        assert import_cyberpunk.main(args) == 0
+        assert sorted(path.name for path in out.iterdir()) == [
+            day_file.name, "result_20261013_cyberpunk_2077_2.yaml", "result_20261014_cyberpunk_2077.yaml",
+        ]
+        day_runs = [entry["benchmark_run"] for entry in yaml.safe_load(day_file.read_text(encoding="utf-8"))["result"]]
+        assert day_runs[-1] == "benchmark_2026-10-13_20-00-00" and len(day_runs) == 3, day_runs
+        updated = yaml.safe_load((out / "result_20261013_cyberpunk_2077_2.yaml").read_text(encoding="utf-8"))
+        assert updated["system"]["driver"] == "618.00" and len(updated["result"]) == 1
         assert import_cyberpunk.main([*args[:1], "no_such_gpu", *args[2:]]) == 1
 
 

@@ -60,9 +60,15 @@ python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
 ```
 
 The dry run lists every run it found and what it would do with each one,
-without writing anything. The second command writes one file per run to
-`data/community/<gpu_id>/`, named after the run, for example
-`result_20261013_cyberpunk_2077_184457.yaml`. It then checks the new files.
+without writing anything. The second command writes the runs to
+`data/community/<gpu_id>/`, one file per day with one `result` item per run,
+for example `result_20261013_cyberpunk_2077.yaml`. Each item's
+`benchmark_run` names the folder it came from. It then checks the new files.
+
+If you run it again later the same day, new runs are added to that day's file.
+Runs on another day go in a new file. So do runs after a driver or game
+update, named `_2`, `_3`, and so on, because the driver, game version, CPU,
+memory, and OS apply to the whole file.
 
 Useful options:
 
@@ -100,7 +106,7 @@ Each file holds:
 - **The run:** the game version, resolution, preset, and upscaler.
 - **Performance:** average FPS, plus minimum and maximum FPS, the run time, and
   the frame count.
-- **Your system:** CPU, system memory, GPU driver, OS, and display mode.
+- **Your system:** CPU, system memory, GPU driver, and OS.
 
 Everything comes from `summary.json`. The proof method is `in_game_benchmark`.
 

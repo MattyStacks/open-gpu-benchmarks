@@ -197,8 +197,8 @@ OS is written under `system:`.
 
 Ran Cyberpunk 2077's built-in benchmark? `scripts/import_cyberpunk.py` reads
 the `summary.json` of every run in the game's `benchmarkResults` folder and
-writes one result file per run, named after the run. Run it again later and it
-adds only the new runs. See
+writes one result file per day, with one `result` item per run. Run it again
+later and it adds only the new runs. See
 [docs/CYBERPUNK_BENCHMARK.md](docs/CYBERPUNK_BENCHMARK.md):
 
 ```powershell

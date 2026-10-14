@@ -74,7 +74,7 @@ scripts/build.py                   YAML source -> site/api/v1/** JSON (runs chec
 scripts/validate.py                PR validator: validate.py [catalog|results] [--data-dir]
 scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
 scripts/import_cyberpunk.py        Cyberpunk 2077 benchmarkResults/*/summary.json -> result YAML
-                                   (one file per run; re-runs add only new runs)
+                                   (one file per day; re-runs add only new runs)
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
@@ -172,8 +172,11 @@ unless repository policy changes.
   `result-upscaling` fails. It is a grouping key, so upscaled runs never
   average with native ones.
 - Cyberpunk 2077 built-in benchmark runs come in through
-  `scripts/import_cyberpunk.py`, one `result_YYYYMMDD_cyberpunk_2077_HHMMSS.yaml`
-  per run (the fixed name is how re-runs skip imported runs). It uses the
+  `scripts/import_cyberpunk.py`. It writes one `result_YYYYMMDD_cyberpunk_2077.yaml`
+  per day and setup, with one `result` item per run. Each item's
+  `benchmark_run` names its run folder, and that is how re-runs skip imported
+  runs. A run with a different version, driver, CPU, memory, or OS goes in a
+  `_2` file, because those fields apply to the whole file. It uses the
   in-game preset names (`Ray Tracing: Ultra`) and upscaler labels
   (`DLSS Auto`, `FSR 2.1 Quality`); keep those labels stable, because
   changing one splits dashboard groups. It reads only `summary.json`, so its

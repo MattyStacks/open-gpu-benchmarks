@@ -127,8 +127,8 @@ python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --dry-run
 python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
 ```
 
-This writes one file per benchmark run from the game's `benchmarkResults`
-folder, and skips runs it has already imported. See
+This writes the day's runs from the game's `benchmarkResults` folder into one
+file, one `result` item per run, and skips runs it has already imported. See
 [docs/CYBERPUNK_BENCHMARK.md](docs/CYBERPUNK_BENCHMARK.md).
 
 **Option C: generate it from a PresentMon or MangoHud CSV**

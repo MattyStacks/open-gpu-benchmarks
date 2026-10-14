@@ -16,7 +16,7 @@ data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml
 ```
 
 Ran Cyberpunk 2077's built-in benchmark? `scripts/import_cyberpunk.py` writes
-these files from the game's own results, one per run; see
+these files from the game's own results, one per day; see
 [CYBERPUNK_BENCHMARK.md](CYBERPUNK_BENCHMARK.md).
 
 The ID names one exact product, including its memory size. An 8 GB and a 16 GB

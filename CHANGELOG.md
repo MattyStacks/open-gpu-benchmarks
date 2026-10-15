@@ -29,6 +29,13 @@ runs" or "New post: <title>". Earlier releases used three parts.
 
 ## Unreleased
 
+### Fixed
+- Dashboard on phones: the submission example, review checklist, and API code
+  blocks no longer spill past their panel; code scrolls inside its own box.
+
+### Changed
+- The site icon now shows at the top left of the dashboard and blog headers.
+
 ## 1.1.0.0 - 2026-10-14
 
 A blog, guides, and reviews section at `/blog/`, featured GPU picks on the

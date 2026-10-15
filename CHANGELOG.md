@@ -34,6 +34,10 @@ runs" or "New post: <title>". Earlier releases used three parts.
   blocks no longer spill past their panel; code scrolls inside its own box.
 
 ### Changed
+- Dashboard header on phones is compact: one brand line with the icon buttons
+  beside it and the All/Official/Community switch on a single row below.
+- Blog header on phones is compact too: one line, no subtitle, smaller icons.
+- Agent instructions: new branches always start from `main`.
 - The site icon now shows at the top left of the dashboard and blog headers.
 
 ## 1.1.0.0 - 2026-10-14

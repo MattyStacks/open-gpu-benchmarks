@@ -17,6 +17,13 @@ These two steps are required for every PR:
    completed, and add anything you deferred, found broken, or were asked to
    do later. Don't start backlog items unless asked.
 
+## Branching
+
+Always create a new branch from an up-to-date `main` (`git checkout main && git pull`, then
+`git checkout -b <type>/<name>`). Never stack a branch on another unmerged
+feature branch, unless the user explicitly asks for it. The usual workflow:
+commit everything, push, and open a PR into `main`; one topic per branch.
+
 ## Read before changing anything
 
 - [.github/copilot-instructions.md](.github/copilot-instructions.md): the

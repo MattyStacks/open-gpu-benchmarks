@@ -15,6 +15,13 @@ prepares:
 2. **[docs/TODO.md](docs/TODO.md)** (the backlog) — remove items you completed, and
    add anything you deferred, found broken, or were asked to do later.
 
+## Branching
+
+Always create a new branch from an up-to-date `main` (`git checkout main && git pull`, then
+`git checkout -b <type>/<name>`). Never stack a branch on another unmerged
+feature branch, unless the user explicitly asks for it. The usual workflow:
+commit everything, push, and open a PR into `main`; one topic per branch.
+
 ## Read these first
 
 Before changing the data schema, build logic, validation, the dashboard, or the

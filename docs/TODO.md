@@ -272,7 +272,7 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
-- **Game registry (Unreleased, branch `feat/game-registry`)**
+- **v1.2.0.0 (2026-10-15, branch `feat/game-registry`): game registry**
   - `data/games.yaml` with `id`, `name`, `type`, `year`, and optional
     `steam_appid`, `igdb_id`, `url`, `notes`; results use `game_id`
     (schema 0.15). This unblocks the benchmark issue form PR (#25).

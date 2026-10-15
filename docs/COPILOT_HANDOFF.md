@@ -11,9 +11,15 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.1.0.0` (2026-10-14). Versions are now
+- Current version: `v1.2.0.0` (2026-10-15). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)).
+  - v1.2.0.0: the game registry. `data/games.yaml` (`checks.load_games()`,
+    `game-*` rules) lists every game by `id`, `name`, `type`, and `year`, plus
+    optional `steam_appid`, `igdb_id`, and `url`. Results name their game by
+    `game_id` (schema 0.14 → 0.15, new `games.json`), and the dashboard picker
+    became "Benchmark". It also brings required result `date`s with an
+    optional per-run `time` (schema 0.14), and phone layout fixes.
   - v1.1.0.0: `/blog/` (Astro) for posts, guides, and reviews, with
     data-driven `<BenchChart>`, affiliate links with an automatic disclosure,
     and an AI-editing note. Also four-part versions and a fourth PR check,

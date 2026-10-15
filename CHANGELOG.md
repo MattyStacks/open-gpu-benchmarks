@@ -29,6 +29,11 @@ runs" or "New post: <title>". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.2.0.0 - 2026-10-15
+
+A game registry (`data/games.yaml`) that every result names by `game_id`,
+required result dates, and phone layout fixes.
+
 ### Added
 - Game registry: `data/games.yaml` lists every game and benchmark a result can
   name, with a required `id`, `name`, `type` (`game`, `synthetic`, or

@@ -13,6 +13,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 88.52
+    p1_low: 76.51
     min_fps: 79.67
     max_fps: 99.79
     duration: 64.25
@@ -23,7 +24,8 @@ result:
     graphics_preset: 'Ray Tracing: Ultra'
     upscaling: DLSS Auto
     preset_upscaling: true
-    avg_fps: 89.34
+    avg_fps: 89.33
+    p1_low: 77.52
     min_fps: 80.55
     max_fps: 100.42
     duration: 64.25
@@ -34,7 +36,8 @@ result:
     graphics_preset: Steam Deck
     upscaling: FSR 2.1 Balanced
     preset_upscaling: true
-    avg_fps: 165.63
+    avg_fps: 165.64
+    p1_low: 128.11
     min_fps: 142.58
     max_fps: 197.21
     duration: 64.26
@@ -45,7 +48,8 @@ result:
     graphics_preset: Low
     upscaling: FSR 2.1 Auto
     preset_upscaling: true
-    avg_fps: 197.7
+    avg_fps: 197.71
+    p1_low: 139.67
     min_fps: 156.44
     max_fps: 238.24
     duration: 64.26
@@ -57,6 +61,7 @@ result:
     upscaling: FSR 2.1 Auto
     preset_upscaling: true
     avg_fps: 190.01
+    p1_low: 135.14
     min_fps: 152.72
     max_fps: 229.57
     duration: 64.25
@@ -68,6 +73,7 @@ result:
     upscaling: FSR 2.1 Quality
     preset_upscaling: true
     avg_fps: 131.71
+    p1_low: 112.99
     min_fps: 116.49
     max_fps: 151.61
     duration: 64.25
@@ -79,6 +85,7 @@ result:
     upscaling: FSR 2.1 Quality
     preset_upscaling: true
     avg_fps: 88.0
+    p1_low: 75.82
     min_fps: 77.97
     max_fps: 111.52
     duration: 64.24
@@ -90,6 +97,7 @@ result:
     upscaling: FSR 2.1 Balanced
     preset_upscaling: true
     avg_fps: 165.56
+    p1_low: 128.76
     min_fps: 142.54
     max_fps: 196.24
     duration: 64.25
@@ -101,6 +109,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 113.09
+    p1_low: 98.81
     min_fps: 101.75
     max_fps: 132.42
     duration: 64.25
@@ -112,6 +121,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 88.52
+    p1_low: 78.24
     min_fps: 80.52
     max_fps: 100.62
     duration: 64.26
@@ -123,6 +133,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 89.05
+    p1_low: 77.22
     min_fps: 80.15
     max_fps: 99.98
     duration: 64.24
@@ -134,6 +145,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 62.14
+    p1_low: 52.91
     min_fps: 55.86
     max_fps: 69.76
     duration: 64.24
@@ -145,6 +157,7 @@ result:
     upscaling: FSR 2.1 Auto
     preset_upscaling: true
     avg_fps: 210.53
+    p1_low: 152.67
     min_fps: 169.41
     max_fps: 249.88
     duration: 64.26
@@ -156,6 +169,7 @@ result:
     upscaling: FSR 2.1 Auto
     preset_upscaling: true
     avg_fps: 203.39
+    p1_low: 143.0
     min_fps: 160.25
     max_fps: 247.46
     duration: 64.26
@@ -167,6 +181,7 @@ result:
     upscaling: FSR 2.1 Quality
     preset_upscaling: true
     avg_fps: 192.14
+    p1_low: 132.63
     min_fps: 146.93
     max_fps: 232.22
     duration: 64.26
@@ -178,6 +193,7 @@ result:
     upscaling: FSR 2.1 Quality
     preset_upscaling: true
     avg_fps: 167.7
+    p1_low: 115.81
     min_fps: 129.84
     max_fps: 211.9
     duration: 64.25
@@ -189,6 +205,7 @@ result:
     upscaling: FSR 2.1 Balanced
     preset_upscaling: true
     avg_fps: 200.29
+    p1_low: 139.02
     min_fps: 156.35
     max_fps: 246.79
     duration: 64.26
@@ -199,7 +216,8 @@ result:
     graphics_preset: 'Ray Tracing: Low'
     upscaling: DLSS Auto
     preset_upscaling: true
-    avg_fps: 173.62
+    avg_fps: 173.61
+    p1_low: 125.94
     min_fps: 140.22
     max_fps: 209.86
     duration: 64.25
@@ -211,6 +229,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 136.56
+    p1_low: 101.7
     min_fps: 113.38
     max_fps: 159.7
     duration: 64.26
@@ -222,6 +241,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 124.14
+    p1_low: 91.66
     min_fps: 100.94
     max_fps: 145.4
     duration: 64.26
@@ -233,6 +253,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 92.49
+    p1_low: 79.68
     min_fps: 82.89
     max_fps: 104.01
     duration: 64.25
@@ -244,6 +265,7 @@ result:
     upscaling: FSR 2.1 Auto
     preset_upscaling: true
     avg_fps: 209.0
+    p1_low: 149.48
     min_fps: 165.11
     max_fps: 249.38
     duration: 64.26
@@ -255,6 +277,7 @@ result:
     upscaling: FSR 2.1 Auto
     preset_upscaling: true
     avg_fps: 205.86
+    p1_low: 144.72
     min_fps: 162.67
     max_fps: 246.59
     duration: 64.26
@@ -266,6 +289,7 @@ result:
     upscaling: FSR 2.1 Quality
     preset_upscaling: true
     avg_fps: 193.05
+    p1_low: 134.05
     min_fps: 148.95
     max_fps: 230.62
     duration: 64.26
@@ -277,6 +301,7 @@ result:
     upscaling: FSR 2.1 Quality
     preset_upscaling: true
     avg_fps: 184.03
+    p1_low: 119.33
     min_fps: 131.67
     max_fps: 231.77
     duration: 64.26
@@ -288,6 +313,7 @@ result:
     upscaling: FSR 2.1 Balanced
     preset_upscaling: true
     avg_fps: 201.35
+    p1_low: 138.77
     min_fps: 157.12
     max_fps: 244.1
     duration: 64.26
@@ -299,6 +325,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 182.82
+    p1_low: 126.74
     min_fps: 140.85
     max_fps: 220.17
     duration: 64.26
@@ -310,6 +337,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 141.44
+    p1_low: 102.55
     min_fps: 113.36
     max_fps: 166.76
     duration: 64.25
@@ -320,7 +348,8 @@ result:
     graphics_preset: 'Ray Tracing: Ultra'
     upscaling: DLSS Auto
     preset_upscaling: true
-    avg_fps: 128.39
+    avg_fps: 128.4
+    p1_low: 92.68
     min_fps: 102.03
     max_fps: 155.47
     duration: 64.25
@@ -332,6 +361,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 111.34
+    p1_low: 90.5
     min_fps: 97.27
     max_fps: 126.87
     duration: 64.24
@@ -341,6 +371,7 @@ result:
     resolution: 1440p
     graphics_preset: High
     avg_fps: 179.71
+    p1_low: 137.83
     min_fps: 150.06
     max_fps: 218.97
     duration: 64.26
@@ -350,6 +381,7 @@ result:
     resolution: 1440p
     graphics_preset: High
     avg_fps: 178.55
+    p1_low: 134.59
     min_fps: 146.66
     max_fps: 217.3
     duration: 64.25
@@ -359,6 +391,7 @@ result:
     resolution: 4K
     graphics_preset: High
     avg_fps: 91.48
+    p1_low: 76.8
     min_fps: 81.27
     max_fps: 105.29
     duration: 64.26

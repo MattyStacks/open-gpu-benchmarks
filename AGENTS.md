@@ -46,7 +46,7 @@ reverse) are errors. Per-distro comparisons are DIY from the JSON.
 report none). `proof.method` is required on every game run and names the
 capture tool (`checks.PROOF_METHODS`); PresentMon is the recommended default,
 and the method is never a grouping key. Frame-time tools must include
-`p1_low`. Community results are anonymous by default: `submitted_by` is
+`p1_low`; on an in-game benchmark a missing one is only an `info` note. Community results are anonymous by default: `submitted_by` is
 optional and the file name is `result_YYYYMMDD_<game>.yaml`. A result someone
 else measured adds a `credit` block with an https `source_url` (where it was
 found) or, for unpublished numbers, a `permission` block; example credits use

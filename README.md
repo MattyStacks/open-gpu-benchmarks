@@ -82,8 +82,8 @@ statistics. The linked per-GPU JSON includes all source runs, grouped game
 summaries, evidence references, and exact machine metadata. Generated API
 files are ignored by Git and appear after running the build.
 
-Published data: 1 catalog GPU (the GeForce RTX 5080 Founders Edition), 33
-official runs, no community runs, and 29 dashboard summaries, all Cyberpunk
+Published data: 1 catalog GPU (the GeForce RTX 5080 Founders Edition), 34
+official runs, no community runs, and 30 dashboard summaries, all Cyberpunk
 2077 built-in benchmark runs on Windows.
 
 `data/` holds only real data, because it's what the site deploys. The synthetic
@@ -227,9 +227,11 @@ MangoHud capture defaults to `linux` and a PresentMon capture to `windows`. The
 OS is written under `system:`.
 
 Ran Cyberpunk 2077's built-in benchmark? `scripts/import_cyberpunk.py` reads
-the `summary.json` of every run in the game's `benchmarkResults` folder and
-writes one result file per day, with one `result` item per run. Run it again
-later and it adds only the new runs. See
+the `summary.json` and `frames.csv` of every run in the game's
+`benchmarkResults` folder and writes one result file per day, with one
+`result` item per run. The average and 1% low come from the frame times in
+`frames.csv`. Run it again later and it adds only the new runs, and gives
+earlier runs without a 1% low one from their `frames.csv`. See
 [docs/CYBERPUNK_BENCHMARK.md](docs/CYBERPUNK_BENCHMARK.md):
 
 ```powershell

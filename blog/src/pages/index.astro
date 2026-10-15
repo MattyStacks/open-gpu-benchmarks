@@ -1,0 +1,20 @@
+---
+import PostList from "../components/PostList.astro";
+import { BLOG_DESCRIPTION, BLOG_TITLE, SITE_URL } from "../config";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { allTags, publishedPosts } from "../lib/posts";
+
+const posts = await publishedPosts();
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  name: BLOG_TITLE,
+  description: BLOG_DESCRIPTION,
+  url: `${SITE_URL}blog/`,
+  isPartOf: { "@id": `${SITE_URL}#website` },
+};
+---
+
+<BaseLayout title={BLOG_TITLE} description={BLOG_DESCRIPTION} path="" jsonLd={jsonLd} active="blog">
+  <PostList heading="Blog" intro={BLOG_DESCRIPTION} posts={posts} tags={allTags(posts)} />
+</BaseLayout>

@@ -127,16 +127,82 @@ prepares:
   `preview.yml` deploys Cloudflare previews only for the owner's own
   same-repo PRs. Never switch it to `pull_request_target`.
 
+## Licenses
+
+- Code is MIT (`LICENSE`). Benchmark data, meaning `data/` and everything
+  built from it (the API, `benchmarks/`, `llms*.txt`), is CC0 1.0
+  (`data/LICENSE`). Blog writing in `content/` is the author's and is under
+  neither.
+- Submitting a result releases it under CC0. Anyone can use it for anything
+  without permission or credit, and it can't be taken back.
+  - The plain-English terms live once in `docs/COMMUNITY_SUBMISSIONS.md`
+    ("Your results become public data"). CONTRIBUTING,
+    `data/community/README.md`, the community templates, the dashboard, and
+    `.github/pull_request_template.md` link to them.
+  - Found results submit only the numbers and a link, never the creator's
+    screenshots or text.
+  - A friend's numbers need their agreement to public release.
+- `build.DATA_LICENSE` feeds `metadata.license`, `llms.txt`, and
+  `benchmarks/`, and the `index.html` Dataset JSON-LD repeats the URL.
+  `test_build.check_licenses()` keeps them in step.
+
+## Featured GPU picks
+
+- `data/picks.yaml` feeds the dashboard's **Featured GPU picks** panel. It
+  has one card per slot (`amd`, `nvidia`, `intel`), and an empty slot shows
+  "coming soon".
+- A pick needs a `note` and a `name`, or a catalog `gpu_id` whose
+  `identity.gpu_vendor` equals the slot. It also needs at least one
+  `links` item (`retailer`: amazon, newegg, or bestbuy, plus an https `url`).
+  `label` is an optional badge of at most 24 characters.
+- Never add prices. They go stale, and Amazon forbids prices not taken from
+  its API.
+- The rules (`pick-slot`, `pick-field`, `pick-gpu-id`, `pick-link`) are in
+  `checks.load_picks()` and documented in `data/gpus/README.md`.
+  `checks.PICK_RETAILERS` must match `blog/src/data/retailers.ts`.
+
+## Blog
+
+- `/blog/` is Astro (`blog/`), rendering `content/posts/<slug>/index.md(x)`
+  into `site/blog/` (gitignored). It builds after `build.py`, because
+  `<BenchChart>` and review spec cards read `site/api/v1/`. `build.py` lists
+  non-draft posts in the sitemap and `llms.txt`.
+- The blog rules live in `blog/src/content.config.ts` (frontmatter, catalog
+  `gpu_ids`, quoted dates) and `blog/src/lib/posts.ts` (reserved slugs, and
+  no `<AffiliateLink>` without `affiliate: true`).
+- `BLOG_BASE` is `/blog` (Cloudflare) or `/open-gpu-benchmarks/blog` (the
+  GitHub Pages mirror, built separately in `build.yml`). Build links from
+  `import.meta.env.BASE_URL` and `siteRoot()`. Canonical and RSS links use
+  `https://opengpubenchmarks.com/blog/`.
+- Never restyle the dashboard for the blog. `blog/src/styles/tokens.css` is a
+  verbatim copy of the `:root` blocks in `site/index.html`, and
+  `test_build.py` checks they match.
+- The author writes the content. AI may clean up wording and insert
+  affiliate links, noted in `ai_assistance`. A post AI wrote sets
+  `ai_generated: true`. Never type benchmark numbers into a post; use
+  `<BenchChart>`. Store links go only through `<AffiliateLink>`.
+  See `content/README.md`.
+
 ## Version and release housekeeping
 
 Record every behavioral, data-contract, dashboard, or workflow change under
 `Unreleased` in [CHANGELOG.md](../CHANGELOG.md).
 
-For a versioned dashboard change:
+Versions are `MAJOR.MINOR.DATA.POST`, always four parts:
+- MAJOR is a breaking data contract or API change.
+- MINOR is any code change.
+- DATA is newly published runs.
+- POST is a new or materially updated blog post.
+
+There's one bump per release, chosen by the biggest change under
+`Unreleased`, and it resets the parts to its right.
+
+For a release:
 
 1. Rename `Unreleased` in `CHANGELOG.md` to the new version and date, then add
    a fresh empty `Unreleased` section.
-2. Update `RELEASE_VERSION` in `scripts/build.py`.
+2. Update `RELEASE_VERSION` in `scripts/build.py`. `test_build.py` checks it
+   matches the newest changelog release.
 3. Increment `SCHEMA_VERSION` when the generated API payload changes.
 4. Update the current-version references, published and fixture counts, and feature summary
    in `README.md` and `docs/COPILOT_HANDOFF.md`.
@@ -150,10 +216,12 @@ For a versioned dashboard change:
    python scripts/build.py
    python scripts/test_build.py
    python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+   npm --prefix blog ci                  # Node 22.12+; once, or after the lockfile changes
+   npm --prefix blog run build           # after build.py; writes site/blog/
    git diff --check
    ```
 
-6. Do not commit generated `site/api/` files unless repository policy changes.
+6. Do not commit generated `site/api/` or `site/blog/` files unless repository policy changes.
 7. Create a Git tag only when explicitly requested after the commit is
    reviewed.
 

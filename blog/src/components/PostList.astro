@@ -1,0 +1,50 @@
+---
+// A list page: the blog index, one post type, or one tag.
+import { POST_TYPES } from "../config";
+import type { Post } from "../lib/posts";
+import PostCard from "./PostCard.astro";
+
+interface Props {
+  heading: string;
+  intro: string;
+  posts: Post[];
+  activeFilter?: string;
+  tags?: string[];
+}
+
+const { heading, intro, posts, activeFilter = "all", tags = [] } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const count = `${posts.length} ${posts.length === 1 ? "entry" : "entries"}`;
+---
+
+<div class="page-head">
+  <h1>{heading}</h1>
+  <p>{intro}</p>
+  <p class="subtle" style="margin-top:8px">{count}</p>
+  <nav class="filter-row" aria-label="Filter by type">
+    <a class={`chip${activeFilter === "all" ? " active" : ""}`} href={base}>All</a>
+    {
+      Object.entries(POST_TYPES).map(([key, type]) => (
+        <a class={`chip${activeFilter === key ? " active" : ""}`} href={`${base}${type.path}/`}>{type.plural}</a>
+      ))
+    }
+  </nav>
+  {
+    tags.length > 0 && (
+      <nav class="filter-row" aria-label="Tags">
+        {tags.map((tag) => (
+          <a class={`tag${activeFilter === `tag:${tag}` ? " active" : ""}`} href={`${base}tags/${tag}/`}>#{tag}</a>
+        ))}
+      </nav>
+    )
+  }
+</div>
+{
+  posts.length ? (
+    <ul class="post-list">
+      {posts.map((post) => <PostCard post={post} />)}
+    </ul>
+  ) : (
+    <p class="empty-state">Nothing published here yet.</p>
+  )
+}

@@ -5,7 +5,13 @@ graph. The site is a static dashboard built from reviewable YAML, live at
 <https://opengpubenchmarks.com> (Cloudflare Pages, canonical) and mirrored on
 [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 
-Current version: `v1.0.0`: the first published results (Cyberpunk 2077 on the GeForce RTX 5080 Founders Edition) and a Cyberpunk 2077 benchmark importer. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
+Posts, guides, and reviews built on the same data live at
+<https://opengpubenchmarks.com/blog/>.
+
+Current version: `v1.1.0.0`: the blog, guides, and reviews section, and
+four-part `MAJOR.MINOR.DATA.POST` versions. v1.0.0 brought the first
+published results (Cyberpunk 2077 on the GeForce RTX 5080 Founders Edition)
+and a Cyberpunk 2077 benchmark importer. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
 [docs/TODO.md](docs/TODO.md) for planned follow-ups.
 
 ## GPU-rooted data flow
@@ -111,7 +117,11 @@ grouping key (empty when off), adds `none` ("Unverified", community only) and
 `maintainer-verified` (official runs with no linked evidence) to `proof_level`,
 and
 adds `source_url` to each summary `credits` entry and `credit_source_url` to
-`implementations`. The
+`implementations`. Schema `0.13` adds `picks` to `dashboard.json`: the
+featured GPU cards from [data/picks.yaml](data/picks.yaml), one per GPU maker,
+each with `slot`, `name`, optional `gpu_id`, `note`, `label`, `vram_gb`,
+`tdp_w`, `form_factor`, and `links` (`retailer`, `retailer_name`, `url`), and
+`metadata.license` (`CC0-1.0`) to every API file. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.
@@ -135,9 +145,9 @@ one from a video or review, start from
 and link where you found it in `credit.source_url`. Upscaling is off unless the
 graphics preset turns it on (`preset_upscaling: true`).
 
-Pull requests run three separate checks so it's clear which part failed:
+Pull requests run four separate checks so it's clear which part failed:
 **Catalog entries** (`validate.py catalog`), **Benchmark results**
-(`validate.py results`), and **Build and tests**. The result check covers
+(`validate.py results`), **Build and tests**, and **Blog** (the Astro build). The result check covers
 official and community `result_*.yaml` and `result_*.yml` files. It enforces
 the game benchmark contract, requires frame generation and upscaling to be
 off, checks catalog/folder identity, the file name, and any `submitted_by` or
@@ -179,6 +189,21 @@ again afterwards to go back to the real data:
 ```powershell
 python scripts/build.py --data-dir tests/fixtures/data
 ```
+
+### Blog
+
+The blog (`/blog/`) is an [Astro](https://astro.build) project in `blog/`
+that renders posts from `content/posts/`. It needs Node 22.12+ and builds
+after `build.py`, because its charts read `site/api/v1/`:
+
+```powershell
+npm --prefix blog ci                     # once, or after blog/package-lock.json changes
+npm --prefix blog run build              # writes site/blog/, served by the http.server above
+npm --prefix blog run dev                # live preview at http://localhost:4321/blog/, drafts included
+```
+
+How to write a post, the frontmatter fields, charts, and the affiliate rules
+are in [content/README.md](content/README.md).
 
 To leave the virtual environment, run `deactivate` (same on every OS) or close
 the terminal. In a new terminal, only re-run the activate line; the install
@@ -240,4 +265,16 @@ requirements are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT Code, CC0 Data
+- **Code** (`scripts/`, `site/`, `blog/`, `templates/`, workflows) is under
+  the [MIT license](LICENSE).
+- **Benchmark data** is in the public domain under [CC0 1.0](data/LICENSE).
+  That covers everything in `data/` (the catalog, official and community
+  results, raw captures) and everything generated from it (the dashboard
+  data, the JSON API, `benchmarks/`, and `llms*.txt`). Use it for anything,
+  commercial or not, with no permission or credit needed; a link back is
+  appreciated. Submitting a result means agreeing to this; see
+  [Your results become public data](docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data-cc0).
+- **Blog posts, guides, and reviews** in `content/` are the author's
+  writing and aren't covered by either license. Charts in posts are drawn
+  from the CC0 data.
+- GPU and company names are trademarks of their owners.

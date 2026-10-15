@@ -1,0 +1,33 @@
+# Featured GPU picks: the three cards near the bottom of the dashboard, one
+# per GPU maker (amd, nvidia, intel, shown in that order). A slot with no pick
+# shows "Pick coming soon". The rules are in data/gpus/README.md (pick-*).
+#
+# Each pick:
+#   slot     amd, nvidia, or intel (one card each)
+#   name     the card's name; optional when gpu_id names a catalog product
+#   gpu_id   optional catalog ID; adds VRAM, power, and a link to its benchmarks
+#   note     required: one or two sentences on why you picked it
+#   label    optional short badge, at most 24 characters, such as "Deal" or "Best value"
+#   links    one or more store links: retailer (amazon, newegg, bestbuy) and the
+#            full https affiliate URL from the program
+#
+# No prices: they go stale, and Amazon's rules don't allow typed-in prices.
+#
+# Example (block style only, no inline [ ] or { }):
+#
+# picks:
+#   - slot: nvidia
+#     gpu_id: rtx_5080_16gb_fe
+#     note: "Why this is my pick."
+#     label: "Best value"
+#     links:
+#       - retailer: amazon
+#         url: https://www.amazon.com/dp/EXAMPLE
+#   - slot: amd
+#     name: "Example Radeon card"
+#     note: "A good deal this week."
+#     links:
+#       - retailer: newegg
+#         url: https://www.example.com/affiliate-link
+
+picks:

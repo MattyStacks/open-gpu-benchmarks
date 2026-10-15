@@ -10,7 +10,17 @@
 - GPU master API: <https://opengpubenchmarks.com/api/v1/gpus.json>
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
-- Current version: `v1.0.0` (2026-10-14)
+- Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
+- Current version: `v1.1.0.0` (2026-10-14). Versions are now
+  `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
+  [CHANGELOG.md](../CHANGELOG.md)).
+  - v1.1.0.0: `/blog/` (Astro) for posts, guides, and reviews, with
+    data-driven `<BenchChart>`, affiliate links with an automatic disclosure,
+    and an AI-editing note. Also four-part versions and a fourth PR check,
+    **Blog**. The dashboard's empty reviews panel became **Featured GPU
+    picks** (`data/picks.yaml`, `checks.load_picks()`, `pick-*` rules), and
+    API schema 0.12 → 0.13 adds `picks` to `dashboard.json`. The first post,
+    `why-im-starting-open-gpu-benchmarks`, ships with it.
   - v1.0.0: the published catalog was reset to one product, the GeForce RTX
     5080 Founders Edition (`rtx_5080_16gb_fe`, base `rtx_5080_16gb`), with
     its first 33 official Cyberpunk 2077 runs, imported by the new
@@ -84,6 +94,10 @@ summary source, or `credit.source_url`; the dashboard says "Unverified"), and
 only `name`. `upscaling` is normalized by `checks.upscaling()` to `""` when off and
 is a grouping key. Summary `credits` entries are `{name, url, source_url}`, and
 `implementations` entries carry `credit_source_url` and `upscaling`.
+
+Schema `0.13` adds `picks` to `dashboard.json`, the featured GPU cards (see
+[Featured GPU picks](#featured-gpu-picks)), and `metadata.license` (see
+[Licenses](#licenses)) to every API file.
 
 Schema `0.6` nests the catalog hardware specs. Each catalog entry keeps its
 `id` at the top level with `identity`, `classification`, `silicon`,
@@ -321,6 +335,8 @@ python scripts/validate.py            # or: validate.py catalog / validate.py re
 python scripts/build.py
 python scripts/test_build.py
 python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
+npm --prefix blog run build              # after build.py; writes site/blog/
 git diff --check
 deactivate                               # when done
 ```
@@ -362,11 +378,12 @@ or `check_result_rules()`.
 ### CI
 
 [`.github/workflows/validate.yml`](../.github/workflows/validate.yml) runs on
-every pull request as three jobs, so the PR shows which part failed:
+every pull request as four jobs, so the PR shows which part failed:
 
 - **Catalog entries**: `validate.py catalog`
 - **Benchmark results**: `validate.py results`
 - **Build and tests**: `py_compile`, `build.py`, `test_build.py`
+- **Blog**: `build.py`, then `npm --prefix blog ci` and `npm --prefix blog run build` (Node 22)
 
 There is deliberately no `paths:` filter. A required check that is skipped
 never reports, and that blocks the merge. Each job takes seconds.
@@ -374,7 +391,7 @@ never reports, and that blocks the merge. Each job takes seconds.
 [`build.yml`](../.github/workflows/build.yml) runs `validate.py` before
 `build.py`, so `main` cannot deploy bad data.
 
-**Repo setting (manual):** mark the three checks as required status checks in
+**Repo setting (manual):** mark the four checks as required status checks in
 the `main` branch protection rules (Settings → Branches).
 [`scripts/parse.py`](../scripts/parse.py) writes converted CSV output directly
 to `data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml`, with the game
@@ -540,6 +557,125 @@ site's ◐ theme toggle, so the tab icon follows the toggle rather than the OS.
 If the fetch fails, the static link still follows the OS. `favicon.ico` and
 `apple-touch-icon.png` are dark-only fallbacks.
 
+## Blog
+
+`/blog/` holds posts, guides, and reviews. It's an Astro project in
+[`blog/`](../blog/) (Node 22.12+, exact versions in
+`blog/package-lock.json`). It renders
+`content/posts/<slug>/index.md(x)` into `site/blog/`, which is gitignored like
+`site/api/`. The author's guide is [content/README.md](../content/README.md).
+
+```text
+content/posts/<slug>/index.md(x) + images
+                 |
+python scripts/build.py   -> site/api/v1/** (charts read it), sitemap + llms.txt list non-draft posts
+npm --prefix blog run build -> site/blog/<slug>/, /posts/, /guides/, /reviews/, /tags/<tag>/, rss.xml
+```
+
+- **Schema**: `blog/src/content.config.ts`, using Zod through `astro/zod`.
+  - Required: `title`, `description`, a quoted `date`, and `type`
+    (`post`/`guide`/`review`).
+  - Optional: `updated`, kebab-case `tags`, and `gpu_ids`, which must be
+    catalog file names (a review requires at least one). Also `author`,
+    `ai_generated`, `ai_assistance`, `affiliate`, `draft`, `hero` + `hero_alt`, and, for reviews
+    only, `verdict`, `pros`, and `cons`.
+  - The schema is `.strict()`, so unknown fields fail.
+  - The glob loader's `base` is relative (`../content/posts`), because an
+    absolute Windows path breaks it.
+- **Body rules**: `blog/src/lib/posts.ts` enforces two rules that need the
+  post body:
+  - Reserved slugs (`tags`, `posts`, `guides`, `reviews`) are rejected.
+  - `<AffiliateLink>` is only allowed with `affiliate: true`.
+
+  Drafts show only on the dev server (`import.meta.env.DEV`).
+- **Components** are passed to MDX through `<Content components={...}>` in
+  `src/pages/[slug].astro`, so posts don't import them:
+  - `<BenchChart>` (`src/components/BenchChart.astro`) filters
+    `dashboard.json` records by gpu, game (normalized), resolution, preset,
+    os, and source (official by default). It renders HTML/CSS bars, no SVG and
+    no JS, so it reflows on phones, and it throws if nothing matches.
+  - `<Callout>` is a note, tip, or warning banner.
+  - `<AffiliateLink>` gives the link `rel="sponsored nofollow noopener"` and
+    an "affiliate" badge. `src/data/retailers.ts` lists Amazon (adds its
+    `tag` param once an ID is set), Newegg, and Best Buy (paste the network
+    tracking URL). No IDs are set yet.
+  - `PostLayout` adds `DisclosureBanner` when `affiliate: true` (with
+    Amazon's required sentence), `ReviewSummary` for reviews (specs from
+    `gpus.json`, plus verdict and pros/cons), and the "Edited with AI
+    assistance" footer for `ai_generated`/`ai_assistance`.
+- **Base path**: `BLOG_BASE` (default `/blog`) is Astro's `base`.
+  - `build.yml` builds the blog once for Cloudflare and uploads the `site`
+    artifact. It then rebuilds with `BLOG_BASE=/open-gpu-benchmarks/blog` for
+    the GitHub Pages artifact. Astro empties `site/blog/` on each build.
+  - `siteRoot()` gives the dashboard root.
+  - Canonical, `og:url`, `og:image`, JSON-LD, and RSS links always use
+    `https://opengpubenchmarks.com/blog/`.
+- **Style**: `blog/src/styles/tokens.css` is a verbatim copy of the two
+  `:root` blocks in `site/index.html`, and `test_build.check_blog_tokens()`
+  compares them. `blog.css` re-creates the dashboard's header, buttons,
+  chips, and panels without touching `index.html`. The theme script uses the
+  dashboard's `open-gpu-benchmarks-theme` localStorage key. The dashboard's
+  only change is a relative "Blog" header link.
+- **Tests**: `test_build.check_blog_posts()` covers draft exclusion and
+  sitemap `lastmod` from `updated`. `check_release_version()` checks the
+  four-part `RELEASE_VERSION` against the newest changelog release.
+- **Images**: Astro's sharp converts post images to WebP at build.
+  `site/_headers` caches `/blog/_assets/*` as immutable (the file names are
+  content-hashed).
+
+## Licenses
+
+- **Code**: MIT, in [`LICENSE`](../LICENSE) ("MattyStacks and Open GPU
+  Benchmarks contributors", 2026).
+- **Data**: CC0 1.0, in [`data/LICENSE`](../data/LICENSE), the official
+  Creative Commons text. It covers `data/` and the generated API and pages.
+  `build.DATA_LICENSE` (`CC0-1.0` + URL) is written to
+  `metadata.license` in every API file, to `llms.txt`, and to
+  `benchmarks/index.html`. `site/index.html`'s Dataset JSON-LD has the same
+  `license` URL, which matters for Google Dataset Search and AI tools.
+- **Blog writing** (`content/`) is the author's and is under neither.
+- **Submissions**: the plain-English terms ("Your results become public data
+  (CC0)" in `docs/COMMUNITY_SUBMISSIONS.md`) say a submitted result is
+  released under CC0, can't be taken back, and covers raw captures and machine
+  details. Found results contribute only the numbers and a link, and a
+  friend's numbers need their agreement to public release.
+  `.github/pull_request_template.md` has a CC0 checkbox for results and an MIT
+  checkbox for code.
+- **Test**: `test_build.check_licenses()` checks both license files, the
+  JSON-LD, the API metadata, `llms.txt`, and `benchmarks/`.
+
+## Featured GPU picks
+
+The dashboard panel near the bottom shows three cards, one per GPU maker, in
+`checks.PICK_SLOTS` order (`amd`, `nvidia`, `intel`). They come from
+[`data/picks.yaml`](../data/picks.yaml), which is optional and may be empty.
+`checks.load_picks()` validates it (`pick-slot`, `pick-field`, `pick-gpu-id`,
+`pick-link`, documented in `data/gpus/README.md`). `validate.py catalog` and
+`build.py` both run it.
+
+- **Fields**: `slot`, `note` (required), `name` (required unless `gpu_id`
+  names a catalog product), an optional `gpu_id` whose vendor must match the
+  slot, `label` (a badge of at most 24 characters), and `links` (at least one
+  `retailer` + https `url`).
+- **Retailers**: `checks.PICK_RETAILERS` lists amazon, newegg, and bestbuy.
+  Keep it in step with `blog/src/data/retailers.ts`.
+- **API**: `build.py` writes `dashboard.json` → `picks`, adding `vram_gb`,
+  `tdp_w`, and `form_factor` from the catalog and `retailer_name` per link.
+- **Dashboard** (`renderPicks()` in `site/index.html`):
+  - Each card's top border is its maker's color (the chart's vendor colors).
+    Empty slots say "<Maker> pick coming soon".
+  - Store buttons use `rel="sponsored nofollow noopener"`.
+  - A catalog pick with published runs gets "See benchmarks", which filters
+    the table by the card's name.
+  - The affiliate disclosure is above the cards, adds Amazon's sentence when
+    any Amazon link exists, and hides when there are no picks.
+- **No prices**, because they go stale and Amazon's Operating Agreement
+  forbids prices not taken from its API.
+- **Fixtures**: `tests/fixtures/data/picks.yaml` has an NVIDIA catalog pick
+  and an Intel free-form pick. The AMD slot is empty on purpose.
+- **Reviews**: `data/reviews.yaml` and the API's `reviews` field remain, but
+  the dashboard no longer shows them. Reviews are blog posts now.
+
 ## Planned next steps
 
 The approved catalog plan is complete. Steps 1-4 are done: the catalog split,
@@ -552,7 +688,7 @@ are in [TODO.md](TODO.md).
 
 The project deploys `site/` using
 [.github/workflows/build.yml](../.github/workflows/build.yml). Generated
-`site/api/` files, and the generated pages below, are ignored and recreated in CI.
+`site/api/` files, the generated pages below, and `site/blog/` are ignored and recreated in CI.
 
 ### Hosts
 
@@ -563,7 +699,7 @@ Cloudflare Pages project `open-gpu-benchmarks` with
 custom domain opengpubenchmarks.com is attached to that project. Both hosts
 stay live.
 
-[`preview.yml`](../.github/workflows/preview.yml) runs `build.py` and deploys a
+[`preview.yml`](../.github/workflows/preview.yml) runs `build.py` and the blog build, and deploys a
 Cloudflare **preview** for a pull request only when the PR comes from this
 repository (not a fork) **and** its author is `github.repository_owner`. Every
 other PR skips the job, so nobody else can trigger deployments. It uses
@@ -619,10 +755,20 @@ Secrets: `CLOUDFLARE_API_TOKEN` (Account > Cloudflare Pages > Edit) and
 
 ### Versioned changes
 
-For a versioned dashboard payload change:
+Versions are `MAJOR.MINOR.DATA.POST`, always four parts:
+- MAJOR is a breaking data contract or API change.
+- MINOR is any code change, features and fixes alike.
+- DATA is newly published runs.
+- POST is a new or materially updated blog post.
 
-1. Update `RELEASE_VERSION` and `SCHEMA_VERSION` in
-   [`scripts/build.py`](../scripts/build.py).
+A release bumps the part for its biggest change and resets the parts to its
+right, for example `1.1.0.3` becomes `1.1.1.0` when new runs ship. Tags are
+`v1.1.0.0`. The post count comes from the content, not the version.
+
+For a release:
+
+1. Update `RELEASE_VERSION` in [`scripts/build.py`](../scripts/build.py), and
+   `SCHEMA_VERSION` when the API payload changes.
 2. Update current-version references, fixture counts, and feature summary in
    [README.md](../README.md) and this document, and move `Unreleased` in
    [CHANGELOG.md](../CHANGELOG.md) under the new version heading.

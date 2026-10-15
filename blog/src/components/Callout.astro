@@ -1,0 +1,15 @@
+---
+// A banner inside a post: <Callout type="warning" title="Heads up">...</Callout>
+interface Props {
+  type?: "note" | "tip" | "warning";
+  title?: string;
+}
+
+const { type = "note", title } = Astro.props;
+const label = title ?? { note: "Note", tip: "Tip", warning: "Warning" }[type];
+---
+
+<aside class={`callout callout-${type}`} role="note">
+  <span class="callout-title">{label}</span>
+  <slot />
+</aside>

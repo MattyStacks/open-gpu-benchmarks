@@ -1,0 +1,103 @@
+---
+// A bar chart of published summaries, as plain HTML,, rendered at build time from
+// site/api/v1/dashboard.json. No client JS, so crawlers read it too.
+//   <BenchChart gpu="rtx_5080_16gb_fe" game="cyberpunk_2077" resolution="1440p" />
+// Filters: gpu (one ID or a list), game, and optional resolution, preset, os,
+// and source ("official" by default, "community", or "all").
+import { dashboard, normalize, type SummaryRecord } from "../lib/api";
+import { siteRoot } from "../lib/posts";
+
+interface Props {
+  gpu: string | string[];
+  game: string;
+  resolution?: string;
+  preset?: string;
+  os?: "windows" | "linux";
+  source?: "official" | "community" | "all";
+  title?: string;
+}
+
+const { gpu, game, resolution, preset, os, source = "official", title } = Astro.props;
+const gpus = new Set(Array.isArray(gpu) ? gpu : [gpu]);
+const { metadata, records } = dashboard();
+
+const rows = records
+  .filter(
+    (r: SummaryRecord) =>
+      gpus.has(r.gpu_id) &&
+      normalize(r.game) === normalize(game) &&
+      (!resolution || normalize(r.resolution) === normalize(resolution)) &&
+      (!preset || normalize(r.graphics_preset) === normalize(preset)) &&
+      (!os || r.os === os) &&
+      (source === "all" || r.source === source),
+  )
+  .sort((a, b) => b.avg_fps - a.avg_fps);
+
+if (!rows.length) {
+  const filters = JSON.stringify({ gpu, game, resolution, preset, os, source });
+  throw new Error(`<BenchChart> found no published summaries for ${filters}. Check the IDs against site/api/v1/dashboard.json.`);
+}
+
+const isNative = (value: string) => !value || ["native", "none", "off"].includes(value.toLowerCase());
+const vary = (key: keyof SummaryRecord) => new Set(rows.map((r) => r[key])).size > 1;
+const showGpu = vary("gpu_id");
+const showRes = !resolution && vary("resolution");
+const showOs = vary("os");
+const showSource = vary("source");
+
+const label = (r: SummaryRecord) => [showGpu ? r.gpu_name : null, r.graphics_preset].filter(Boolean).join(" · ");
+const sub = (r: SummaryRecord) =>
+  [
+    showRes ? r.resolution : null,
+    isNative(r.upscaling) ? "Native" : r.upscaling,
+    showOs ? (r.os === "linux" ? "Linux" : "Windows") : null,
+    showSource ? r.source : null,
+    `${r.run_count} run${r.run_count === 1 ? "" : "s"}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+const max = Math.max(...rows.map((r) => r.avg_fps));
+const pct = (value: number) => `${Math.max(1, Math.round((value / max) * 1000) / 10)}%`;
+const fps = (value: number | null) => (value == null ? "—" : value.toFixed(value >= 100 ? 0 : 1));
+const hasP1 = rows.some((r) => r.p1_low != null);
+
+const heading =
+  title ??
+  [
+    showGpu ? null : rows[0].gpu_name,
+    rows[0].game,
+    resolution ? rows[0].resolution : null,
+    preset ? rows[0].graphics_preset : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+const runs = rows.reduce((sum, r) => sum + r.run_count, 0);
+const dashboardUrl = siteRoot();
+---
+
+<figure class="bench-chart">
+  <h4>{heading}</h4>
+  <div class="chart-legend" aria-hidden="true">
+    <span><i style="background:var(--official)"></i>Average FPS</span>
+    {hasP1 && <span><i style="background:var(--text);opacity:.55"></i>1% low</span>}
+  </div>
+  <ol class="bench-rows" aria-label={`${heading}: average FPS by setting`}>
+    {
+      rows.map((r) => (
+        <li class="bench-row">
+          <span class="bench-name">{label(r)}<small>{sub(r)}</small></span>
+          <span class="bench-track" aria-hidden="true">
+            <span class={`bench-avg ${r.source}`} style={`width:${pct(r.avg_fps)}`}></span>
+            {r.p1_low != null && <span class="bench-p1" style={`width:${pct(r.p1_low)}`}></span>}
+          </span>
+          <span class="bench-value">{fps(r.avg_fps)}{r.p1_low != null ? ` / ${fps(r.p1_low)}` : ""}</span>
+        </li>
+      ))
+    }
+  </ol>
+  <figcaption>
+    {hasP1 ? "Average FPS / 1% low" : "Average FPS"} from {runs} published run{runs === 1 ? "" : "s"}, frame generation off.
+    Data release {metadata.release_version}. Compare more settings on the <a href={dashboardUrl}>dashboard</a>.
+  </figcaption>
+</figure>

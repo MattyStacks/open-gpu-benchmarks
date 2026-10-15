@@ -1,0 +1,15 @@
+---
+// Use only in posts with `affiliate: true`; the build fails otherwise, so the
+// disclosure banner is never missing.
+import { RETAILERS, affiliateHref, type RetailerKey } from "../data/retailers";
+
+interface Props {
+  retailer: RetailerKey;
+  href: string;
+}
+
+const { retailer, href } = Astro.props;
+const url = affiliateHref(retailer, href);
+---
+
+<a class="affiliate-link" href={url} rel="sponsored nofollow noopener" target="_blank"><slot /><span class="retailer-badge">{RETAILERS[retailer].name} · affiliate</span></a>

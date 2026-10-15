@@ -22,6 +22,11 @@ Cyberpunk 2077 built-in benchmark runs can be imported with
 or [`templates/community_found_result.yaml`](../../templates/community_found_result.yaml)
 for a result you found in a video or review.
 
+**Everything in these folders is public data under [CC0](../LICENSE).** By
+submitting a result, you agree that anyone can use it for anything, without
+asking or crediting you, and it can't be taken back. See
+[Your results become public data](../../docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data-cc0).
+
 Folder rules:
 
 - Files are anonymous by default and named `result_YYYYMMDD_<game>.yaml`. For

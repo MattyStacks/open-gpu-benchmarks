@@ -66,6 +66,39 @@ Pages). GitHub Pages is a mirror. Only the canonical/SEO URLs are absolute,
 robots.txt allows AI crawlers, and Cloudflare PR previews run only for the
 owner's own PRs (`preview.yml`).
 
+Blog: `/blog/` is an Astro project in `blog/` that renders
+`content/posts/<slug>/index.md(x)` into `site/blog/` (gitignored). It builds
+after `build.py`, because charts read `site/api/v1/`. `build.py` lists
+non-draft posts in the sitemap and `llms.txt`. Rules are in
+`blog/src/content.config.ts` and `blog/src/lib/posts.ts`.
+- `BLOG_BASE` is `/blog` for Cloudflare and `/open-gpu-benchmarks/blog` for
+  the GitHub Pages mirror. Build links from `import.meta.env.BASE_URL`.
+- `blog/src/styles/tokens.css` is a verbatim copy of the dashboard's `:root`
+  tokens, and `test_build.py` checks they match.
+- The author writes the content. AI may clean up wording and insert
+  affiliate links, noted in `ai_assistance`. A post AI wrote sets
+  `ai_generated: true`. Never type benchmark numbers; use `<BenchChart>`. Store links go only through `<AffiliateLink>` with
+  `affiliate: true`. See [content/README.md](content/README.md).
+
+Licenses: code is MIT (`LICENSE`), and benchmark data (`data/` and the API
+built from it) is CC0 (`data/LICENSE`). Submitting a result releases it
+under CC0; the plain-English terms are in `docs/COMMUNITY_SUBMISSIONS.md`
+("Your results become public data"). Blog writing in `content/` is the
+author's. `build.DATA_LICENSE`, the `index.html` JSON-LD, and the license
+files must agree (`test_build.check_licenses()`).
+
+Featured picks: `data/picks.yaml` feeds the dashboard's three GPU cards.
+- Slots are `amd`, `nvidia`, and `intel`. A pick needs a `note`, plus a
+  `name` or a catalog `gpu_id` matching the slot's vendor.
+- Affiliate `links` go to `amazon`, `newegg`, or `bestbuy`, never with
+  prices.
+- The `pick-*` rules live in `checks.load_picks()`.
+
+Versions: `MAJOR.MINOR.DATA.POST`, always four parts. MAJOR is a breaking
+data or API change, MINOR is any code change, DATA is newly published runs,
+and POST is a new or updated post. A bump resets the parts to its right.
+`RELEASE_VERSION` must equal the newest `CHANGELOG.md` release.
+
 Catalog data must be accurate. Cite real pages in `sources`, list in
 `covers` only the sections a page backs, and leave a value out rather than
 guess it.
@@ -82,14 +115,16 @@ python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
 python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
+npm --prefix blog run build              # after build.py; writes site/blog/
 git diff --check
 ```
 
-Don't commit generated `site/api/` files or `.venv/`. Create Git tags only
+Don't commit generated `site/api/` or `site/blog/` files, `blog/node_modules/`, or `.venv/`. Create Git tags only
 when asked.
 
 ## Clean up before finishing
 
 Before you report a task complete, stop every server or background process
 you started (for example the `python -m http.server 8000 --directory site`
-preview), then run `deactivate` to leave the `.venv` virtual environment.
+preview or `npm --prefix blog run dev`), then run `deactivate` to leave the `.venv` virtual environment.

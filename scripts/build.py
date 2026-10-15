@@ -25,8 +25,11 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 SITE_DIR = ROOT / "site"
 OUTPUT_DIR = SITE_DIR / "api" / "v1"
-SCHEMA_VERSION = "0.12"
-RELEASE_VERSION = "1.0.0"
+SCHEMA_VERSION = "0.13"
+# MAJOR.MINOR.DATA.POST: MAJOR = breaking data contract or API, MINOR = any
+# code change, DATA = newly published runs, POST = a new or updated blog post.
+# A bump resets the parts to its right; all four parts are always written.
+RELEASE_VERSION = "1.1.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.
@@ -35,6 +38,11 @@ SITE_URL = "https://opengpubenchmarks.com/"
 # benchmarks/index.html, not benchmarks.html: Cloudflare Pages 308-redirects
 # "*.html" to the bare path, and a canonical URL must not redirect.
 SITE_PAGES = ("benchmarks/index.html", "llms.txt", "llms-full.txt", "sitemap.xml")
+# Blog posts: content/posts/<slug>/index.md(x). Astro (blog/) renders them into
+# site/blog/; this build only lists them in the sitemap and llms.txt.
+CONTENT_DIR = ROOT / "content" / "posts"
+# Benchmark data (data/ and everything built from it) is public domain; the code is MIT.
+DATA_LICENSE = {"id": "CC0-1.0", "url": "https://creativecommons.org/publicdomain/zero/1.0/"}
 
 
 def load_yaml(path):
@@ -377,7 +385,8 @@ Open the <a href="../">interactive dashboard</a>, or get the same numbers as JSO
 {method}
 </ul>
 {tables}
-<p>Source data is reviewable YAML in the <a href="https://github.com/MattyStacks/open-gpu-benchmarks">GitHub repository</a>.</p>
+<p>Source data is reviewable YAML in the <a href="https://github.com/MattyStacks/open-gpu-benchmarks">GitHub repository</a>.
+The data is in the public domain (<a href="{DATA_LICENSE["url"]}">CC0 1.0</a>): use it for anything, no permission or credit needed.</p>
 </body>
 </html>
 """
@@ -389,8 +398,33 @@ def markdown_table(rows):
     return "\n".join(lines)
 
 
-def llms_txt(metadata):
+def blog_posts(content_dir=CONTENT_DIR):
+    """Published (non-draft) posts' frontmatter, newest first. Astro validates the fields."""
+    posts = []
+    for path in sorted(Path(content_dir).glob("*/index.md*")):
+        text = path.read_text(encoding="utf-8")
+        if not text.startswith("---"):
+            continue
+        front = yaml.safe_load(text.split("---", 2)[1]) or {}
+        if front.get("draft"):
+            continue
+        posts.append({
+            "slug": path.parent.name,
+            "title": str(front.get("title", path.parent.name)),
+            "description": str(front.get("description", "")),
+            "type": str(front.get("type", "post")),
+            "date": str(front.get("date", "")),
+            "updated": str(front.get("updated") or front.get("date", "")),
+        })
+    return sorted(posts, key=lambda post: post["date"], reverse=True)
+
+
+def llms_txt(metadata, posts=()):
     method = "\n".join(f"- {line}" for line in method_lines(metadata))
+    blog_lines = "".join(
+        f"- [{post['title']}]({SITE_URL}blog/{post['slug']}/): {post['type']}, {post['date']}. {post['description']}\n"
+        for post in posts
+    )
     return f"""# Open GPU Benchmarks
 
 > Open, reviewable FPS benchmarks for desktop, laptop, handheld, and integrated GPUs. Each game result is an average FPS (and 1% low where the capture tool records one), grouped by GPU, game, resolution, graphics preset, upscaling, and OS. Official runs are maintainer-verified; community runs are reviewed in pull requests.
@@ -403,12 +437,17 @@ def llms_txt(metadata):
 - [Benchmark tables (HTML)]({SITE_URL}benchmarks/): the same rows as a plain web page
 - [Dashboard JSON]({SITE_URL}api/v1/dashboard.json): every summary with run counts, ranges, and per-run hardware detail
 - [GPU catalog JSON]({SITE_URL}api/v1/gpus.json): GPU specs plus official and community summaries per GPU
+- License: all benchmark data is public domain ([CC0 1.0]({DATA_LICENSE["url"]})). Use it for anything, including AI training, with no permission or credit needed.
 
 ## Project
 
 - [Interactive dashboard]({SITE_URL})
 - [Source repository](https://github.com/MattyStacks/open-gpu-benchmarks): YAML source data, validation rules, and submission guide
-"""
+
+## Blog
+
+- [Blog]({SITE_URL}blog/): posts, guides, and reviews built on this data ([RSS]({SITE_URL}blog/rss.xml))
+{blog_lines}"""
 
 
 def llms_full_txt(records, metadata):
@@ -428,12 +467,11 @@ Source: {SITE_URL} (generated {metadata["generated_at"][:10]}, release {metadata
 """
 
 
-def sitemap_xml(metadata):
+def sitemap_xml(metadata, posts=()):
     lastmod = metadata["generated_at"][:10]
-    urls = "".join(
-        f"  <url><loc>{SITE_URL}{path}</loc><lastmod>{lastmod}</lastmod></url>\n"
-        for path in ("", "benchmarks/", "llms.txt", "llms-full.txt")
-    )
+    pages = [(path, lastmod) for path in ("", "benchmarks/", "llms.txt", "llms-full.txt", "blog/")]
+    pages += [(f"blog/{post['slug']}/", post["updated"]) for post in posts]
+    urls = "".join(f"  <url><loc>{SITE_URL}{path}</loc><lastmod>{date}</lastmod></url>\n" for path, date in pages)
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -443,17 +481,19 @@ def sitemap_xml(metadata):
 
 def write_site_pages(site_dir, records, metadata):
     """Write the plain summary pages, built from the same records as dashboard.json."""
+    posts = blog_posts()
     write_text(site_dir, "benchmarks/index.html", benchmarks_html(records, metadata))
-    write_text(site_dir, "llms.txt", llms_txt(metadata))
+    write_text(site_dir, "llms.txt", llms_txt(metadata, posts))
     write_text(site_dir, "llms-full.txt", llms_full_txt(records, metadata))
-    write_text(site_dir, "sitemap.xml", sitemap_xml(metadata))
+    write_text(site_dir, "sitemap.xml", sitemap_xml(metadata, posts))
 
 
 def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
     """Build the API into output_dir; also write the summary pages when site_dir is set."""
     gpus, catalog_issues = checks.load_catalog(data_dir)
     runs, result_issues = checks.load_results(gpus, data_dir)
-    issues = checks.Issues([*catalog_issues, *result_issues])
+    picks, pick_issues = checks.load_picks(gpus, data_dir)
+    issues = checks.Issues([*catalog_issues, *result_issues, *pick_issues])
     if checks.report(issues, "Checks (run validate.py for warnings)", show_warnings=False):
         print("Build stopped: fix the errors above; nothing was written to site/api.")
         return 1
@@ -478,6 +518,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
         "commit": os.getenv("GITHUB_SHA", "local")[:12],
         "generated_at": datetime.now(UTC).isoformat(),
         "synthetic_data": any(record["synthetic"] for record in dashboard_records),
+        "license": DATA_LICENSE,
         "comparison_policy": {
             "group_by": [
                 "gpu_id",
@@ -570,6 +611,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
             "graphics_presets": graphics_presets,
             "records": dashboard_records,
             "reviews": reviews_source.get("reviews", []),
+            "picks": picks,
         },
     )
 

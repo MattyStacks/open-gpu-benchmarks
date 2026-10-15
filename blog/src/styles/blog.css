@@ -1,0 +1,108 @@
+/* The dashboard's look (site/index.html), plus article typography. Colors come
+   only from tokens.css. */
+* { box-sizing:border-box; }
+body { margin:0; min-height:100vh; background:radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 13%, transparent), transparent 34rem),var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+button { font:inherit; cursor:pointer; }
+.mono,.eyebrow { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
+
+/* Header and footer, same as the dashboard. */
+body > header { position:sticky; top:0; z-index:10; backdrop-filter:blur(18px); background:color-mix(in srgb, var(--bg) 88%, transparent); border-bottom:1px solid var(--border); }
+.header-inner { max-width:1440px; min-height:68px; margin:auto; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px 18px; flex-wrap:wrap; }
+.brand { color:var(--text); text-decoration:none; font-size:21px; font-weight:700; letter-spacing:-.04em; }
+.brand-section { display:block; color:var(--muted); font-size:11px; font-weight:400; letter-spacing:.13em; text-transform:uppercase; margin-top:4px; }
+.header-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.button,.chip { border:1px solid var(--border); color:var(--muted); background:var(--panel); border-radius:999px; padding:7px 11px; font-size:12px; font-weight:650; transition:.16s ease; text-decoration:none; }
+.button:hover,.chip:hover { color:var(--text); border-color:color-mix(in srgb, var(--accent) 55%, var(--border)); }
+.button.active,.chip.active { background:color-mix(in srgb,var(--accent) 18%,var(--panel)); color:var(--text); border-color:color-mix(in srgb,var(--accent) 65%,var(--border)); }
+.header-link { display:inline-flex; align-items:center; gap:6px; } .header-link svg { width:15px; height:15px; fill:currentColor; flex:none; }
+.icon-button { width:38px; height:38px; padding:0; display:grid; place-items:center; }
+.shell { max-width:1440px; margin:auto; padding:28px 24px 40px; }
+.footer { color:var(--muted); text-align:center; font-size:11px; margin-top:32px; line-height:1.7; } .footer a { color:var(--accent); font-weight:700; text-decoration:none; }
+.panel { background:color-mix(in srgb,var(--panel) 92%,transparent); border:1px solid var(--border); border-radius:16px; padding:18px; }
+.subtle { color:var(--muted); font-size:12px; }
+
+/* Pills, like the dashboard's badges. */
+.pill { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; text-decoration:none; color:var(--muted); }
+.pill-post { --pill:var(--accent); } .pill-guide { --pill:var(--community); } .pill-review { --pill:var(--form-laptop); }
+.pill-post,.pill-guide,.pill-review { color:var(--pill); border-color:color-mix(in srgb,var(--pill) 45%,var(--border)); background:color-mix(in srgb,var(--pill) 10%,transparent); }
+.tag { color:var(--muted); font-size:12px; text-decoration:none; } .tag:hover { color:var(--accent); }
+
+/* Index and list pages. */
+.page-head { max-width:760px; margin:0 auto 22px; }
+.page-head h1 { font-size:30px; letter-spacing:-.04em; margin:0 0 8px; }
+.page-head p { color:var(--muted); margin:0; line-height:1.6; }
+.filter-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
+.post-list { max-width:760px; margin:auto; display:grid; gap:12px; padding:0; list-style:none; }
+.post-card { display:block; padding:16px 18px; background:var(--panel-strong); border:1px solid var(--border); border-radius:12px; text-decoration:none; color:inherit; transition:.16s ease; }
+.post-card:hover { border-color:color-mix(in srgb,var(--accent) 55%,var(--border)); }
+.post-card h2 { font-size:18px; letter-spacing:-.02em; margin:8px 0 6px; }
+.post-card p { color:var(--muted); font-size:13px; line-height:1.55; margin:0; }
+.post-meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; color:var(--muted); font-size:12px; }
+.empty-state { max-width:760px; margin:auto; text-align:center; color:var(--muted); padding:40px 18px; }
+
+/* Article. */
+.article { max-width:760px; margin:auto; }
+.article-head h1 { font-size:34px; line-height:1.15; letter-spacing:-.04em; margin:12px 0 10px; }
+.article-head .lede { color:var(--muted); font-size:17px; line-height:1.55; margin:0 0 14px; }
+.hero { width:100%; height:auto; border-radius:14px; border:1px solid var(--border); margin:18px 0 6px; }
+.prose { font-size:16.5px; line-height:1.75; }
+.prose h2 { font-size:22px; letter-spacing:-.03em; margin:2em 0 .5em; } .prose h3 { font-size:17px; margin:1.6em 0 .4em; }
+.prose p,.prose ul,.prose ol,.prose blockquote,.prose table,.prose pre { margin:0 0 1.1em; }
+.prose a { color:var(--accent); } .prose li + li { margin-top:.3em; }
+.prose img { max-width:100%; height:auto; border-radius:12px; border:1px solid var(--border); }
+.prose blockquote { border-left:3px solid var(--accent); padding-left:14px; color:var(--muted); }
+.prose code { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:.88em; background:var(--panel-strong); border:1px solid var(--border); border-radius:6px; padding:1px 5px; }
+.prose pre { overflow:auto; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--panel-strong); font-size:13px; line-height:1.6; }
+.prose pre code { background:none; border:0; padding:0; }
+.prose table { width:100%; border-collapse:collapse; font-size:14px; display:block; overflow-x:auto; }
+.prose th { background:var(--panel-strong); color:var(--muted); text-align:left; padding:8px 10px; font-size:11px; letter-spacing:.06em; text-transform:uppercase; }
+.prose td { border-top:1px solid var(--border); padding:8px 10px; }
+.prose hr { border:0; border-top:1px solid var(--border); margin:2em 0; }
+.article-foot { margin-top:34px; padding-top:16px; border-top:1px solid var(--border); color:var(--muted); font-size:13px; line-height:1.6; display:grid; gap:10px; }
+
+/* Callouts and the affiliate disclosure, like the dashboard's .notice and .outlier-note. */
+.callout { --tone:var(--accent); border:1px solid color-mix(in srgb,var(--tone) 42%,var(--border)); background:color-mix(in srgb,var(--tone) 8%,var(--panel)); border-radius:12px; padding:12px 14px; margin:0 0 1.2em; font-size:14px; line-height:1.6; }
+.callout > :last-child { margin-bottom:0; }
+.callout-title { display:block; color:var(--tone); font:700 10px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; }
+.callout-note { --tone:var(--accent); } .callout-tip { --tone:var(--community); } .callout-warning,.callout-disclosure { --tone:var(--warning); }
+.affiliate-link { display:inline-flex; align-items:baseline; gap:6px; }
+.retailer-badge { font:700 9px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--warning); border:1px solid color-mix(in srgb,var(--warning) 45%,var(--border)); border-radius:999px; padding:1px 6px; }
+
+/* Review blocks. */
+.review-box { display:grid; gap:12px; margin:22px 0; }
+.spec-card { padding:14px 16px; background:var(--panel-strong); border:1px solid var(--border); border-radius:12px; }
+.spec-card h3 { font-size:14px; margin:0 0 10px; }
+.mini-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.mini-stat { border:1px solid var(--border); border-radius:9px; padding:9px 10px; background:var(--panel); }
+.mini-stat span { display:block; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.mini-stat strong { display:block; font-size:12px; margin-top:3px; font-weight:600; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
+.verdict { padding:14px 16px; border-radius:12px; border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border)); background:color-mix(in srgb,var(--accent) 7%,var(--panel)); }
+.verdict p { margin:0; line-height:1.6; }
+.pros-cons { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.pros-cons ul { margin:0; padding-left:18px; font-size:14px; line-height:1.6; }
+.pros h3 { color:var(--community); } .cons h3 { color:var(--up-fsr); }
+.pros-cons h3 { font:700 11px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.08em; text-transform:uppercase; margin:0 0 6px; }
+
+/* Benchmark charts: plain HTML bars, no client JS, reflow at any width. */
+.bench-chart { margin:1.4em 0; padding:14px 16px; background:var(--panel-strong); border:1px solid var(--border); border-radius:12px; }
+.bench-chart h4 { margin:0 0 2px; font-size:14px; }
+.bench-chart figcaption { color:var(--muted); font-size:12px; line-height:1.5; margin-top:10px; }
+.bench-chart figcaption a { color:var(--accent); }
+.bench-rows { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+.bench-row { display:grid; grid-template-columns:minmax(0,190px) minmax(0,1fr) auto; align-items:center; gap:4px 12px; }
+.bench-name { font-size:13px; line-height:1.3; } .bench-name small { display:block; color:var(--muted); font-size:11px; }
+.bench-track { position:relative; height:22px; border-radius:5px; background:var(--panel); }
+.bench-avg { position:absolute; inset:0 auto 0 0; border-radius:5px; background:var(--official); } .bench-avg.community { background:var(--community); }
+.bench-p1 { position:absolute; left:0; top:7px; height:8px; border-radius:3px; background:var(--text); opacity:.55; }
+.bench-value { font:700 12px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; text-align:right; min-width:4.5em; }
+.chart-legend { display:flex; gap:14px; color:var(--muted); font-size:11px; margin:6px 0 10px; }
+.chart-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px; }
+
+@media (max-width:680px) {
+  .shell,.header-inner { padding-left:16px; padding-right:16px; }
+  .brand { font-size:18px; }
+  .bench-row { grid-template-columns:minmax(0,1fr) auto; } .bench-track { grid-column:1 / -1; grid-row:2; }
+  .header-link .label { display:none; } .header-link { width:38px; height:38px; padding:0; justify-content:center; }
+  .article-head h1 { font-size:27px; } .prose { font-size:16px; }
+  .mini-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .pros-cons { grid-template-columns:1fr; }
+}

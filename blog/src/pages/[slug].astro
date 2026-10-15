@@ -1,0 +1,21 @@
+---
+import { render } from "astro:content";
+import AffiliateLink from "../components/AffiliateLink.astro";
+import BenchChart from "../components/BenchChart.astro";
+import Callout from "../components/Callout.astro";
+import PostLayout from "../layouts/PostLayout.astro";
+import { publishedPosts, type Post } from "../lib/posts";
+
+export async function getStaticPaths() {
+  const posts = await publishedPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props as { post: Post };
+const { Content } = await render(post);
+---
+
+<PostLayout post={post}>
+  <!-- .mdx posts use these without importing them. -->
+  <Content components={{ AffiliateLink, BenchChart, Callout }} />
+</PostLayout>

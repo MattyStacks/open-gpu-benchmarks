@@ -1,0 +1,19 @@
+{
+  "name": "open-gpu-benchmarks-blog",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The /blog/ section of opengpubenchmarks.com. Not the site version: that is RELEASE_VERSION in scripts/build.py.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "8.0.3",
+    "@astrojs/rss": "4.0.19",
+    "astro": "7.3.8"
+  }
+}

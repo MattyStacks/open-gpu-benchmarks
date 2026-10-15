@@ -27,16 +27,29 @@ jobs:
       - run: python scripts/validate.py
       - run: python scripts/build.py
       - run: python scripts/test_build.py
+      # The blog (Astro) reads site/api/v1, so it builds after build.py.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: blog/package-lock.json
+      - run: npm --prefix blog ci
+      # Cloudflare (canonical) serves the blog at /blog/.
+      - run: npm --prefix blog run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: ./site
+      # The GitHub Pages mirror lives under /open-gpu-benchmarks/, so its blog
+      # links need that prefix. Astro empties site/blog before rebuilding.
+      - run: npm --prefix blog run build
+        env:
+          BLOG_BASE: /open-gpu-benchmarks/blog
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: ./site
-      # The same built site, for the Cloudflare Pages deploy below.
-      - uses: actions/upload-artifact@v4
-        with:
-          name: site
           path: ./site
   deploy:
     environment:

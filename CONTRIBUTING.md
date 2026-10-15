@@ -51,7 +51,16 @@ git clone https://github.com/<your-github-username>/open-gpu-benchmarks.git
 cd open-gpu-benchmarks
 git checkout -b add-rtx-4070-super-cyberpunk
 python -m venv .venv
-.venv\Scripts\Activate.ps1               # macOS/Linux: source .venv/bin/activate
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+That's PowerShell on Windows. On macOS, Linux, or WSL, make and turn on the
+environment with:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate                # run it with source, not ./ or bash
 python -m pip install -r requirements.txt
 ```
 

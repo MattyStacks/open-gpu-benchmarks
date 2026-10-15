@@ -29,22 +29,12 @@ runs" or "New post: <title>". Earlier releases used three parts.
 
 ## Unreleased
 
-### Added
-- 1 new Cyberpunk 2077 run on the RTX 5080 Founders Edition (1080p High,
-  native), the re-run of the skipped 2026-10-13 run.
+### Fixed
+- Dashboard on phones: the submission example, review checklist, and API code
+  blocks no longer spill past their panel; code scrolls inside its own box.
 
 ### Changed
-- `scripts/import_cyberpunk.py` reads each run's `frames.csv`: `avg_fps` and
-  a new `p1_low` (1st percentile of per-frame FPS) come from the frame times,
-  falling back to `summary.json`'s average when the file is missing or doesn't
-  match. Re-running it backfills `p1_low` on runs it imported earlier.
-- Every published Cyberpunk 2077 run now has a 1% low, so the 34
-  `result-no-p1-low` warnings are gone.
-- Checks have a third level, `info`, which never fails and shows as a GitHub
-  notice. A missing `p1_low` on an `in_game_benchmark` run is now one info
-  note per file instead of a warning per run, since built-in benchmarks often
-  have no 1% low or their frame log wasn't kept. Adrenalin and `other` runs
-  still warn.
+- The site icon now shows at the top left of the dashboard and blog headers.
 
 ## 1.1.0.0 - 2026-10-14
 

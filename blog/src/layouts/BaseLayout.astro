@@ -60,7 +60,10 @@ const { release_version } = dashboard().metadata;
   <body>
     <header>
       <div class="header-inner">
-        <a class="brand" href={home}>OPEN GPU BENCHMARKS<span class="brand-section">Blog, guides, and reviews</span></a>
+        <a class="brand" href={home}>
+          <img id="brand-icon" src={`${home}favicons/favicon.svg`} width="44" height="44" alt="" />
+          <span>OPEN GPU BENCHMARKS<span class="brand-section">Blog, guides, and reviews</span></span>
+        </a>
         <nav class="header-actions" aria-label="Site">
           <a class="button header-link" href={home} aria-label="Dashboard"><span class="mono" aria-hidden="true">▤</span><span class="label">Dashboard</span></a>
           <a class={`button header-link${active === "blog" ? " active" : ""}`} href={base} aria-label="Blog"><span class="mono" aria-hidden="true">¶</span><span class="label">Blog</span></a>
@@ -77,10 +80,22 @@ const { release_version } = dashboard().metadata;
       </footer>
     </main>
     <script is:inline>
+      // favicon.svg follows the OS color scheme on its own; pin the header icon to the site toggle instead.
+      let iconSvg;
+      async function syncIcon() {
+        const icon = document.querySelector("#brand-icon");
+        try {
+          iconSvg ??= await fetch(icon.src).then((response) => response.ok ? response.text() : Promise.reject());
+          const media = document.documentElement.dataset.theme === "light" ? "@media all" : "@media not all";
+          icon.src = "data:image/svg+xml," + encodeURIComponent(iconSvg.replace("@media (prefers-color-scheme:light)", media));
+        } catch {}
+      }
+      syncIcon();
       document.querySelector("#theme-toggle").addEventListener("click", () => {
         const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
         document.documentElement.dataset.theme = next;
         try { localStorage.setItem("open-gpu-benchmarks-theme", next); } catch {}
+        syncIcon();
       });
     </script>
   </body>

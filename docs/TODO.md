@@ -90,10 +90,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - [ ] **Benchmark issue follow-ups** (`benchmark-issue.yml`,
   `scripts/issue_to_result.py`). The issue form is now the primary way to
   submit.
-  - Finish the one-time setup in `docs/COPILOT_HANDOFF.md` ("Benchmark issues
-    and the bot App"): create and install the App, add
-    `BENCHMARK_BOT_APP_ID` and `BENCHMARK_BOT_PRIVATE_KEY`, and set the "Base
-    Rules" code-owner review settings. Then file a test issue end to end.
+  - File a test issue end to end. The one-time setup in
+    `docs/COPILOT_HANDOFF.md` ("Benchmark issues and the bot App") is done
+    (2026-10-15): the App is installed, `BENCHMARK_BOT_APP_ID` and
+    `BENCHMARK_BOT_PRIVATE_KEY` are set, and "Base Rules" requires a
+    code-owner approval with a Repository admin bypass for pull requests only.
   - Parse or scrape what people attach, into the same run dict
     `build_run()` returns:
     - a PresentMon, CapFrameX, or MangoHud CSV attached to the issue, through

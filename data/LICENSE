@@ -17,6 +17,11 @@ copies made under those terms keep them.
 Code for the website itself is MIT (see LICENSE at the repository root)
 unless otherwise noted.
 
+This license does not cover the text of blog posts, guides, and reviews
+(content/ and /blog/). That writing belongs to its author, all rights
+reserved, unless the post is marked AI-generated. Benchmark charts shown in
+a post come from the data and stay CC BY 4.0.
+
 Full license details: https://opengpubenchmarks.com/license/
 
 The unmodified CC BY 4.0 legal code follows.

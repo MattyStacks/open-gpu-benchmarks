@@ -25,7 +25,7 @@ Bumping one part resets the parts to its right (1.1.2.3 then 1.2.0.0). There is
 one bump per release, not per pull request: the biggest kind of change under
 `Unreleased` picks the part. Community data PRs don't add their own line; a
 DATA or POST release gets one short line, for example "12 new Cyberpunk 2077
-runs" or "New post: <title>". Earlier releases used three parts.
+runs" or "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 

@@ -178,11 +178,26 @@ You need Python 3.11+. Dependencies live in
 [requirements.txt](requirements.txt); install them into a project virtual
 environment (`.venv`, already gitignored) rather than your global Python:
 
+On Windows (PowerShell):
+
 ```powershell
 python -m venv .venv                     # once, creates the .venv folder
-.venv\Scripts\Activate.ps1               # macOS/Linux: source .venv/bin/activate
+.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 ```
+
+On macOS, Linux, or WSL:
+
+```bash
+python3 -m venv .venv                    # once, creates the .venv folder
+source .venv/bin/activate                # run it with source, not ./ or bash
+python -m pip install -r requirements.txt
+```
+
+On Ubuntu and WSL, if `python3 -m venv` says `ensurepip` is missing, run
+`sudo apt install python3-venv` first. If your prompt doesn't show `(.venv)`
+(some prompt themes hide it), `which python` should print a path ending in
+`.venv/bin/python`.
 
 With the environment active (your prompt starts with `(.venv)`):
 

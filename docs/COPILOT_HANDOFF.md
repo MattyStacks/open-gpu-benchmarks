@@ -11,9 +11,16 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.2.0.0` (2026-10-15). Versions are now
+- Current version: `v1.3.0.0` (2026-10-15). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
-  [CHANGELOG.md](../CHANGELOG.md)).
+  [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
+  submission bumps it.
+  - v1.3.0.0: data license CC0 → CC BY 4.0 with reasonable attribution (AI
+    training explicitly permitted), the `/license/` page, `_license` and
+    `_source` in every API file (schema 0.15 → 0.16), and copyright lines on
+    blog posts. Also the "Benchmark result" issue form and its bot pull
+    requests (`benchmark-issue.yml`, `scripts/issue_to_result.py`), and
+    macOS/Linux/WSL venv setup docs.
   - v1.2.0.0: the game registry. `data/games.yaml` (`checks.load_games()`,
     `game-*` rules) lists every game by `id`, `name`, `type`, and `year`, plus
     optional `steam_appid`, `igdb_id`, and `url`. Results name their game by
@@ -116,6 +123,9 @@ time zone), `""` when not set. Neither is a grouping key; they exist so old
 runs can be filtered, charted over time, or retired later.
 `import_cyberpunk.py` writes both from the run folder name and backfills
 files that lack them (`upgrade_files()`); `parse.py` writes today's date.
+
+Schema `0.16` switches the data license to CC BY 4.0 and leads every API file
+with `_license` and `_source` (see Licenses).
 
 Schema `0.15` adds the game registry. Result files name their game with
 `game_id`, an ID from `data/games.yaml` (`checks.load_games()`), instead of
@@ -681,22 +691,45 @@ npm --prefix blog run build -> site/blog/<slug>/, /posts/, /guides/, /reviews/, 
 
 - **Code**: MIT, in [`LICENSE`](../LICENSE) ("MattyStacks and Open GPU
   Benchmarks contributors", 2026).
-- **Data**: CC0 1.0, in [`data/LICENSE`](../data/LICENSE), the official
-  Creative Commons text. It covers `data/` and the generated API and pages.
-  `build.DATA_LICENSE` (`CC0-1.0` + URL) is written to
-  `metadata.license` in every API file, to `llms.txt`, and to
-  `benchmarks/index.html`. `site/index.html`'s Dataset JSON-LD has the same
-  `license` URL, which matters for Google Dataset Search and AI tools.
-- **Blog writing** (`content/`) is the author's and is under neither.
-- **Submissions**: the plain-English terms ("Your results become public data
-  (CC0)" in `docs/COMMUNITY_SUBMISSIONS.md`) say a submitted result is
-  released under CC0, can't be taken back, and covers raw captures and machine
-  details. Found results contribute only the numbers and a link, and a
-  friend's numbers need their agreement to public release.
-  `.github/pull_request_template.md` has a CC0 checkbox for results and an MIT
-  checkbox for code.
-- **Test**: `test_build.check_licenses()` checks both license files, the
-  JSON-LD, the API metadata, `llms.txt`, and `benchmarks/`.
+- **Data**: CC BY 4.0 with reasonable attribution. [`data/LICENSE`](../data/LICENSE)
+  is a short project header followed by the unmodified official legal code.
+  The public explanation is the checked-in `site/license/index.html`
+  (<https://opengpubenchmarks.com/license/>). AI training is explicitly
+  permitted. Sites credit "Data from Open GPU Benchmarks" with a link, and a
+  chart image or video may use "Source: opengpubenchmarks.com". AI models
+  credit it in their model card or docs, not in every output. Data published
+  before the switch (through v1.2.0.0) was CC0, and copies made then keep
+  those terms.
+- **Where it's stated**: `build.DATA_LICENSE` (`CC-BY-4.0` + URL),
+  `build.DATA_ATTRIBUTION`, and `build.API_LICENSE`. `write_json()` puts
+  `_license` (`API_LICENSE`) and `_source` (`url`, `generated_at`) first in
+  every API file. `metadata.license` is still written too. `llms.txt`,
+  `llms-full.txt`, and `benchmarks/index.html` carry the license and the
+  credit line, and the sitemap lists `license/`. `site/index.html`'s Dataset
+  JSON-LD has `license`, `usageInfo` (the license page), and `creditText`.
+  The footers of the dashboard and the blog link `license/`.
+- **Blog writing** (`content/`) stays the author's copyright, all rights
+  reserved, and is under neither license. A post with `ai_generated: true`
+  claims no copyright in its text. `PostLayout.astro` prints the matching
+  line on every post and adds `copyrightHolder` and `copyrightYear` to a human
+  post's JSON-LD.
+- **Submissions**: the plain-English terms ("Your results become public
+  data" in `docs/COMMUNITY_SUBMISSIONS.md`) say five things:
+  1. anyone can use a submitted result for anything, AI training included;
+  2. sites must credit Open GPU Benchmarks and link back;
+  3. the submitter's own credit stays here;
+  4. it can't be taken back;
+  5. it covers raw captures and machine details.
+
+  The same five points appear in full on the dashboard's submission panel, on
+  `license/`, and in the issue form (a markdown block above the checkbox,
+  whose label starts with `issue_to_result.LICENSE_AGREEMENT`). Found results
+  contribute only the numbers and a link, and a friend's numbers need their
+  agreement to public release. `.github/pull_request_template.md` has a
+  CC BY 4.0 checkbox for results and an MIT checkbox for code.
+- **Test**: `test_build.check_licenses()` checks both license files, every
+  API file's `_license` and `_source`, the JSON-LD, the license page,
+  `llms.txt`, and `benchmarks/`.
 
 ## Featured GPU picks
 

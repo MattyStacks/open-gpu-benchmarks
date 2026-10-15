@@ -1,6 +1,7 @@
-# Submitting this file releases its contents into the public domain (CC0,
-# see data/LICENSE): anyone can use the numbers for anything, without asking or
-# crediting you. Only include what you're happy to make public.
+# Submitting this file releases its contents under CC BY 4.0 (see
+# data/LICENSE): anyone can use the numbers for anything, including AI
+# training, as long as they credit Open GPU Benchmarks. Your own credit stays
+# with the result on the site. Only include what you're happy to make public.
 #
 # 3DMark Steel Nomad. Save as
 # data/community/<gpu_id>/result_YYYYMMDD_3dmark_steel_nomad.yaml, for example

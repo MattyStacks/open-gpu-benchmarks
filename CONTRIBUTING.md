@@ -35,12 +35,22 @@ flowchart LR
 You need Git, Python 3.11+, and a GitHub account. No other tooling.
 
 > **Your results become public data.** Benchmark data here is released under
-> [CC0](data/LICENSE), which puts it in the public domain. By submitting a
-> result, you agree that anyone can use it for anything (copy it, change it,
-> use it commercially, use it with AI tools) without asking you or crediting
-> you, and that it can't be taken back once it's out. Only include what you're
-> happy to make public. The details, in plain English, are in
-> [Your results become public data](docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data-cc0).
+> [CC BY 4.0](data/LICENSE). By submitting a result, you agree that:
+>
+> - anyone can use it for anything: copy it, change it, chart it, use it
+>   commercially, or train AI on it;
+> - sites that use it must credit Open GPU Benchmarks and link back, so
+>   readers can find the source, report problems, and contribute (AI models
+>   credit it in their documentation, not in every answer);
+> - your own credit (your username, or the source you found) stays with the
+>   result on this site, in the data, and in the Git history;
+> - it can't be taken back once it's out.
+>
+> Only include what you're happy to make public. The details, in plain
+> English, are in
+> [Your results become public data](docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data), and
+> the [license page](https://opengpubenchmarks.com/license/) explains what
+> counts as reasonable attribution.
 
 ### Step 1: Fork and clone
 
@@ -222,8 +232,9 @@ Open the pull request on GitHub and include:
   3DMark runs can start from `templates/community_steel_nomad.yaml`)
 
 Opening the pull request means you agree to release what you submit under
-[CC0](data/LICENSE): the numbers become public data anyone can use for
-anything. The pull request template asks you to confirm it.
+[CC BY 4.0](data/LICENSE): the numbers become public data anyone can use for
+anything, as long as they credit Open GPU Benchmarks. The pull request
+template asks you to confirm it.
 
 GitHub runs the same checks you just ran, as four separate checks (see
 [Reading a failed check](#reading-a-failed-check)). A maintainer then reviews

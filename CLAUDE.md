@@ -2,18 +2,30 @@
 
 Guidance for Claude Code working in this repository.
 
-## Every change: update the changelog and the backlog
+## Every change: update the changelog, the backlog, and the version
 
-These two steps are required, not optional, for every PR an agent or a person
+These three steps are required, not optional, for every PR an agent or a person
 prepares:
 
 1. **[CHANGELOG.md](CHANGELOG.md)** — add a line under `Unreleased` for any change to
    behavior, the data contract, the API schema, the dashboard, the checks, the
    templates, or the contributor workflow. Data-only result submissions are the
-   only exception. Don't finish a task with an empty `Unreleased` section if
-   you changed any of those.
+   only exception. Don't finish a task with your change missing from the
+   changelog.
 2. **[docs/TODO.md](docs/TODO.md)** (the backlog) — remove items you completed, and
    add anything you deferred, found broken, or were asked to do later.
+3. **Bump the version** — every PR except a data-only result submission
+   increments `RELEASE_VERSION` in [scripts/build.py](scripts/build.py) by the
+   biggest kind of change it contains: MAJOR (breaking data contract or API),
+   MINOR (any code, check, dashboard, docs-workflow, or license change), DATA
+   (newly published runs), or POST (a new or updated blog post). Reset the
+   parts to its right. Rename `Unreleased` in `CHANGELOG.md` to
+   `## <version> - <date>`, add a fresh empty `Unreleased` above it, and update
+   the current-version references and feature summary in `README.md`,
+   `docs/COPILOT_HANDOFF.md`, and `CLAUDE.md`. `test_build.py` fails if
+   `RELEASE_VERSION` doesn't match the newest changelog heading. Data-only
+   submissions (including bot PRs from benchmark issues) are batched into a
+   later DATA bump by a maintainer.
 
 ## Branching
 
@@ -62,7 +74,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.2.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.3.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -76,8 +88,8 @@ data/gpus/reference/<gpu_vendor>/<ref_id>.yaml
                                    shared chip specs products inherit via base:
 data/gpus/README.md                catalog rules, ID grammar, every check explained
 LICENSE                            MIT, for the code
-data/LICENSE                       CC0 1.0, for all benchmark data (data/ and its API)
-.github/pull_request_template.md   PR checklist, including agreeing to CC0 for results
+data/LICENSE                       CC BY 4.0 (+ reasonable-attribution header), for all benchmark data
+.github/pull_request_template.md   PR checklist, including agreeing to CC BY 4.0 for results
 data/reviews.yaml                  optional review links (still in the API; no longer shown)
 data/games.yaml                    game registry: every game_id a result may use, with
                                    name, type, year, and optional store IDs (game-* rules)
@@ -99,6 +111,7 @@ scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
 site/robots.txt, site/_headers     crawler rules (AI allowed) and Cloudflare headers
+site/license/index.html            the public license page (data CC BY 4.0, posts the author's)
 site/benchmarks/, llms.txt,       generated JS-free summary pages + sitemap.xml
   llms-full.txt, sitemap.xml       (gitignored, written by build.py)
 content/posts/<slug>/index.md(x)  blog posts, guides, and reviews (+ their images)
@@ -292,16 +305,27 @@ unless repository policy changes.
   `blog/src/data/retailers.ts` has no IDs.
 - Licenses:
   - **Code** is MIT (`LICENSE`).
-  - **Benchmark data** is CC0 (`data/LICENSE`). That's everything in `data/`
-    and everything built from it.
-  - **Blog writing** in `content/` is the author's and is under neither.
-  - Submitting a result releases it under CC0. The plain-English terms live
-    once in `docs/COMMUNITY_SUBMISSIONS.md` ("Your results become public
-    data"), and CONTRIBUTING, `data/community/README.md`, the community
-    templates, the dashboard, and `.github/pull_request_template.md` point to
-    them.
-  - `build.DATA_LICENSE` feeds the API metadata, `llms.txt`, and
-    `benchmarks/`, and the `index.html` JSON-LD repeats it.
+  - **Benchmark data** is CC BY 4.0 with reasonable attribution
+    (`data/LICENSE`, explained on `site/license/index.html`). That's
+    everything in `data/` and everything built from it. AI training is
+    explicitly permitted; sites credit "Data from Open GPU Benchmarks" with a
+    link, charts and videos may use a text credit, and AI models credit it
+    in their model card, not in every output. Data published before the
+    switch was CC0, and copies made then keep those terms.
+  - **Blog writing** in `content/` stays the author's copyright, all rights
+    reserved, under neither license. A post with `ai_generated: true` claims
+    no copyright in its text. `PostLayout.astro` prints the line on every post.
+  - Submitting a result releases it under CC BY 4.0. The plain-English terms
+    live once in `docs/COMMUNITY_SUBMISSIONS.md` ("Your results become public
+    data"). The same five points are repeated in full on the dashboard's
+    submission panel, on `license/`, and in the issue form. CONTRIBUTING,
+    `data/community/README.md`, the community templates, and
+    `.github/pull_request_template.md` give a short version plus a link.
+    Change them together.
+  - `build.DATA_LICENSE`, `build.DATA_ATTRIBUTION`, and `build.API_LICENSE`
+    feed the `_license` block that leads every API file (next to `_source`),
+    `metadata.license`, `llms.txt`, and `benchmarks/`. The `index.html`
+    JSON-LD (`license`, `usageInfo`, `creditText`) and `license/` repeat them.
     `test_build.check_licenses()` checks they agree.
   - Never add data under other terms.
 - The dashboard's **Featured GPU picks** come from `data/picks.yaml`:
@@ -366,9 +390,9 @@ is now stale:
   [docs/TODO.md](docs/TODO.md).
 - **Agent instructions changed** → keep `CLAUDE.md`,
   `.github/copilot-instructions.md`, and `AGENTS.md` consistent.
-- **Version change** → pick the part from the biggest change since the last
-  release (MAJOR breaking, MINOR code, DATA runs, POST posts), reset the parts
-  to its right, rename `Unreleased` in `CHANGELOG.md` to the new four-part
+- **Version bump (every PR but data-only submissions; see the top of this
+  file)** → pick the part from the biggest change in the PR (MAJOR breaking,
+  MINOR code, DATA runs, POST posts), reset the parts to its right, rename `Unreleased` in `CHANGELOG.md` to the new four-part
   version and date, and update `RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py) plus the version references and feature
   summary in `README.md` and `docs/COPILOT_HANDOFF.md`.

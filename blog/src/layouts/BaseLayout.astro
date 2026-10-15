@@ -76,6 +76,7 @@ const { release_version } = dashboard().metadata;
       <slot />
       <footer class="footer">
         <div><a href={home}>Dashboard</a> · <a href={base}>Blog</a> · <a href={`${base}rss.xml`}>RSS</a> · <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a></div>
+        <div>GPU data licensed under <a href={`${home}license/`}>CC BY 4.0</a>, including for AI training · post text © its author, all rights reserved</div>
         <div>Open GPU Benchmarks · release <span class="mono">{release_version}</span></div>
       </footer>
     </main>

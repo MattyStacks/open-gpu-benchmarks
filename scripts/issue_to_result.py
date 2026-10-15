@@ -81,7 +81,7 @@ OSES = {"Windows": "windows", "Linux": "linux"}
 GRAPHICS_APIS = ("DX12", "DX11", "Vulkan")
 CREDIT_ME = "Credit me as my GitHub username"
 FRAME_GENERATION_OFF = "Frame generation was off"
-CC0_AGREEMENT = "I release these results under CC0"
+LICENSE_AGREEMENT = "I release these results under CC BY 4.0"
 NO_RESPONSE = ("", "_no response_", "none")
 MAX_BODY = 20_000
 MAX_TEXT = 200
@@ -248,8 +248,8 @@ def parse_results(text, known_presets):
 def build_run(fields, author, catalog, games, data_dir):
     """The result file's contents from the parsed issue form. Raises SubmissionError."""
     confirmations = checked(fields.get("confirmations", ""))
-    if not any(label.startswith(CC0_AGREEMENT) for label in confirmations):
-        raise SubmissionError("Tick the **CC0** box: results are only accepted as public data.")
+    if not any(label.startswith(LICENSE_AGREEMENT) for label in confirmations):
+        raise SubmissionError("Tick the **CC BY 4.0** box: results are only accepted as public data.")
     if not any(label.startswith(FRAME_GENERATION_OFF) for label in confirmations):
         raise SubmissionError("Tick the **frame generation** box. Runs with frame generation on aren't accepted.")
 
@@ -333,7 +333,7 @@ def target_path(data_dir, run):
 def file_text(run, issue):
     header = (
         f"# Submitted through issue #{issue} and written by scripts/issue_to_result.py.\n"
-        "# Released under CC0 (see data/LICENSE).\n"
+        "# Released under CC BY 4.0 (see data/LICENSE).\n"
     )
     return header + yaml.dump(run, Dumper=IndentedDumper, sort_keys=False, default_flow_style=False, allow_unicode=True)
 
@@ -386,7 +386,7 @@ def pr_body(run, gpu, game, text, relative, issue, author, issues):
         f"- **File:** `{relative}`\n\n"
         f"{fence(text, 'yaml')}\n{notes}\n"
         "The submitter ticked the box releasing these results under "
-        f"[CC0]({checks.REPO_URL}/data/LICENSE).\n\n"
+        f"[CC BY 4.0]({checks.REPO_URL}/data/LICENSE).\n\n"
         "### Reviewer checklist\n\n"
         "- [ ] The numbers look plausible for this GPU, game, and preset.\n"
         "- [ ] The proof or source link, if any, backs them up.\n"

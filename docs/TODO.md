@@ -240,9 +240,17 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   Console plus the sitemap.
 - [ ] **A 1200x630 social share image** for `og:image` (it uses the 512 px
   icon now), and `twitter:card` `summary_large_image`.
-- [ ] **Per-GPU crawlable pages** (`/gpu/<id>.html`) once real runs exist, so
+- [ ] **Per-GPU crawlable pages** (`/gpu/<id>/`) once real runs exist, so
   searches like "RTX 4090 Cyberpunk 1440p FPS" land on a specific page. Add
-  them to the sitemap.
+  them to the sitemap. The license page then can ask reusers to link the GPU's
+  own page instead of the dashboard or `/benchmarks/`.
+- [ ] **Have a lawyer read the license page.** The CC BY 4.0 switch, its AI
+  clarifications, the CC0-history note, and the blog copyright lines were
+  written without legal review.
+- [ ] **Check who blog copyright lines name.** A post's copyright holder is its
+  `author`, or `DEFAULT_AUTHOR` ("Matt") without one. The first post sets
+  `author: Open GPU Benchmarks`, so its line reads "© 2026 Open GPU
+  Benchmarks". Change it if the copyright should name a person.
 - [ ] **Optional fixture-data preview.** PR previews build the real `data/`,
   which has no runs yet. A second preview built with
   `--data-dir tests/fixtures/data` would help with functional testing.
@@ -269,7 +277,13 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
-- **Unreleased (branch `feat/benchmark-issue-form`, 2026-10-15)**
+- **v1.3.0.0 (2026-10-15, branch `feat/cc-by-license`): CC BY 4.0 data license**
+  - Data license CC0 → CC BY 4.0 with reasonable attribution (AI training
+    explicitly permitted), the `/license/` page, `_license` and `_source` in
+    every API file (schema 0.16), plain-English terms on the dashboard, the
+    issue form, and the docs, and copyright lines on blog posts.
+
+- **v1.3.0.0 (2026-10-15, branch `feat/benchmark-issue-form`): benchmark issue form**
   - "Benchmark result" issue form, `benchmark-issue.yml`, and
     `scripts/issue_to_result.py`: an issue becomes a checked community file
     and a bot pull request from a GitHub App, with no Cloudflare preview. The

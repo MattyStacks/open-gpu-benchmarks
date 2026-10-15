@@ -106,6 +106,13 @@ insert affiliate links. Say what it did in `ai_assistance`, such as
 "Grammar and flow cleanup". A post AI wrote (rare, for example a simple
 tutorial) sets `ai_generated: true`, and the page says so.
 
+The author keeps the copyright to their writing, all rights reserved, the same
+as anything they publish elsewhere. Posts aren't under the data's CC BY 4.0 or
+the code's MIT license. Every post ends with "Text © <year> <author>. All
+rights reserved." A post with `ai_generated: true` instead says no copyright is
+claimed in its text, because fully AI-written text has no human author. The
+benchmark charts in a post come from the CC BY 4.0 data either way.
+
 Rules for anyone (person or AI) editing a post:
 
 - Keep the author's voice, opinions, and claims. Fix grammar, clarity, and

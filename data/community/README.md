@@ -35,10 +35,12 @@ yet, add it in the same pull request (`id`, `name`, `type`, `year`, plus
 `steam_appid` or `url` when the game has one); see
 [Adding a game or benchmark](../../docs/COMMUNITY_SUBMISSIONS.md#adding-a-game-or-benchmark).
 
-**Everything in these folders is public data under [CC0](../LICENSE).** By
-submitting a result, you agree that anyone can use it for anything, without
-asking or crediting you, and it can't be taken back. See
-[Your results become public data](../../docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data-cc0).
+**Everything in these folders is public data under [CC BY 4.0](../LICENSE).**
+By submitting a result, you agree that anyone can use it for anything,
+including AI training, as long as sites that use it credit Open GPU Benchmarks
+and link back. Your own credit stays with the result here, and it can't be
+taken back. See
+[Your results become public data](../../docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data).
 
 Folder rules:
 

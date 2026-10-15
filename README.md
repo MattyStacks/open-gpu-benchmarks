@@ -205,7 +205,7 @@ With the environment active (your prompt starts with `(.venv)`):
 python scripts/validate.py            # or: validate.py catalog / validate.py results
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
 python -m http.server 8000 --directory site
 ```
 

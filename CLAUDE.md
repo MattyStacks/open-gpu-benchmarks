@@ -297,7 +297,7 @@ python -m pip install -r requirements.txt
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
 npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
 npm --prefix blog run build              # after build.py; writes site/blog/
 git diff --check

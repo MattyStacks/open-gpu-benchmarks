@@ -607,7 +607,7 @@ the PR, run with `.venv` activated:
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
 npm --prefix blog ci                     # Node 22.12+; only if you changed blog/ or content/
 npm --prefix blog run build
 git diff --check

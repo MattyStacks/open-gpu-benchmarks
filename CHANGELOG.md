@@ -33,6 +33,8 @@ runs" or "New post: <title>". Earlier releases used three parts.
 - README and CONTRIBUTING give macOS, Linux, and WSL their own virtual
   environment setup (`python3 -m venv .venv`, `source .venv/bin/activate`),
   with how to check that it's active.
+- The documented `py_compile` command uses forward slashes, so it works in
+  bash as well as PowerShell.
 
 ## 1.2.0.0 - 2026-10-15
 

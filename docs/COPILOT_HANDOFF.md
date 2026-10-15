@@ -11,10 +11,14 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.3.0.0` (2026-10-15). Versions are now
+- Current version: `v1.4.0.0` (2026-10-15). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
+  - v1.4.0.0: README rewritten as a short overview (dashboard, JSON
+    endpoints, contributing, local dev, layout). Catalog usage notes moved
+    to `data/gpus/README.md`; schema history and fixture details live only
+    here.
   - v1.3.0.0: data license CC0 → CC BY 4.0 with reasonable attribution (AI
     training explicitly permitted), the `/license/` page, `_license` and
     `_source` in every API file (schema 0.15 → 0.16), and copyright lines on
@@ -959,8 +963,9 @@ For a release:
 
 1. Update `RELEASE_VERSION` in [`scripts/build.py`](../scripts/build.py), and
    `SCHEMA_VERSION` when the API payload changes.
-2. Update current-version references, fixture counts, and feature summary in
-   [README.md](../README.md) and this document, and move `Unreleased` in
+2. Update current-version references, published counts, and feature summary
+   in [README.md](../README.md) and this document (fixture counts are only in
+   this document), and move `Unreleased` in
    [CHANGELOG.md](../CHANGELOG.md) under the new version heading.
 3. Run the build, validation, compile checks, and `git diff --check`.
 4. Do not commit `site/api/` unless repository policy changes.

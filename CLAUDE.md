@@ -45,7 +45,9 @@ docs, read:
 2. [docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md) — architecture, the data
    contract, current fixture counts, deployment, and the maintenance checklist.
    This is the project's living state document.
-3. [README.md](README.md) — public description of the data flow and local dev.
+3. [README.md](README.md) — public overview: what the dashboard shows, the
+   JSON endpoints, where to contribute, and local dev. Keep it short; details
+   belong in the documents below.
 4. [CONTRIBUTING.md](CONTRIBUTING.md) and
    [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md) — contributor
    setup and the full submission/review rules.
@@ -74,7 +76,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.3.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.4.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -399,10 +401,10 @@ is now stale:
 - **Blog post published** → a POST bump (see above), with a changelog line
   "New post: `<title>`".
 - **Fixtures or published runs added/removed** → refresh the counts (catalog
-  GPUs, official runs, community runs, dashboard summaries) in `README.md` and
-  `docs/COPILOT_HANDOFF.md`, for the published `data/` and the
-  `tests/fixtures/data/` fixtures separately, and the fixture numbers asserted
-  in `scripts/test_build.py`. These counts are quoted in both files and go wrong
+  GPUs, official runs, community runs, dashboard summaries). Published `data/`
+  counts are quoted in `README.md` and `docs/COPILOT_HANDOFF.md`; the
+  `tests/fixtures/data/` counts live only in `docs/COPILOT_HANDOFF.md` and the
+  fixture numbers asserted in `scripts/test_build.py`. These counts go wrong
   easily.
 - **Submission or validation rules changed** → update `CONTRIBUTING.md`,
   `docs/COMMUNITY_SUBMISSIONS.md`, `data/community/README.md`,

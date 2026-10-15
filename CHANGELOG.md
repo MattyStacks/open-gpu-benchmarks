@@ -31,6 +31,15 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.4.0.0 - 2026-10-15
+
+### Changed
+- README rewritten as a short overview: what the dashboard shows, a table of
+  the JSON endpoints, how to contribute (with a table of where each rule
+  lives), local development, and a repository layout. Catalog usage notes
+  moved to `data/gpus/README.md`. The API schema history and the test-fixture
+  details now live only in `docs/COPILOT_HANDOFF.md`.
+
 ## 1.3.0.0 - 2026-10-15
 
 ### Added

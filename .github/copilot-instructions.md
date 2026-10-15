@@ -273,8 +273,9 @@ For every bump:
 2. Update `RELEASE_VERSION` in `scripts/build.py`. `test_build.py` checks it
    matches the newest changelog release.
 3. Increment `SCHEMA_VERSION` when the generated API payload changes.
-4. Update the current-version references, published and fixture counts, and feature summary
-   in `README.md` and `docs/COPILOT_HANDOFF.md`.
+4. Update the current-version references, published counts, and feature summary
+   in `README.md` and `docs/COPILOT_HANDOFF.md`, and the fixture counts in
+   `docs/COPILOT_HANDOFF.md`.
 5. Run, inside the activated `.venv` (create it once with
    `python -m venv .venv`):
 

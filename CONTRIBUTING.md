@@ -46,7 +46,16 @@ git clone https://github.com/<your-github-username>/open-gpu-benchmarks.git
 cd open-gpu-benchmarks
 git checkout -b add-rtx-4070-super-cyberpunk
 python -m venv .venv
-.venv\Scripts\Activate.ps1               # macOS/Linux: source .venv/bin/activate
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+That's PowerShell on Windows. On macOS, Linux, or WSL, make and turn on the
+environment with:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate                # run it with source, not ./ or bash
 python -m pip install -r requirements.txt
 ```
 
@@ -598,7 +607,7 @@ the PR, run with `.venv` activated:
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
 npm --prefix blog ci                     # Node 22.12+; only if you changed blog/ or content/
 npm --prefix blog run build
 git diff --check

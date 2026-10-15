@@ -171,10 +171,13 @@ def main():
     if driver: system["driver"]=driver
     if os_name=="linux" and result.get("kernel"): system["kernel"]=result["kernel"]
 
+    today = datetime.now()
     data={
         "gpu_id": args.gpu_id,
         "benchmark_type": "game",
         "game": args.game,
+        # The file name's YYYYMMDD below; both use today's date.
+        "date": today.strftime("%Y-%m-%d"),
         "form_factor": form_factor,
         "result": [{
             "avg_fps": round(float(result["avg"]),2),
@@ -203,7 +206,7 @@ def main():
 
     if not args.output:
         safe_game=re.sub(r"[^a-z0-9]+", "_", args.game.lower()).strip("_")
-        date = datetime.now().strftime("%Y%m%d")
+        date = today.strftime("%Y%m%d")
         folder = Path(f"data/community/{args.gpu_id}")
         out = folder / f"result_{date}_{safe_game}.yaml"
         repeat = 2

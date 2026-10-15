@@ -23,8 +23,10 @@
 # YAML keys. Every list item is validated and aggregated independently.
 gpu_id: rtx_5080_16gb_fe # Required
 game: Cyberpunk 2077 # Required
+date: "2026-10-03" # Required; the day you ran it, quoted, the same as the file name's YYYYMMDD
 result: # Required; one "-" item per resolution/preset
   - resolution: 1440p # Required
+    time: "20:15" # Optional; your local 24-hour time (HH:MM or HH:MM:SS), quoted. No time zone.
     graphics_preset: "Ray Tracing: Ultra" # Required; the preset name the game shows
     upscaling: DLSS Auto # Only because this preset turns DLSS on by itself
     preset_upscaling: true

@@ -99,6 +99,16 @@ Schema `0.13` adds `picks` to `dashboard.json`, the featured GPU cards (see
 [Featured GPU picks](#featured-gpu-picks)), and `metadata.license` (see
 [Licenses](#licenses)) to every API file.
 
+Schema `0.14` adds `date` and `time` to every run record. `date` is the result
+file's required top-level `date: 'YYYY-MM-DD'` (`checks.check_result_date()`):
+the day it was run, or a found result's publish date, and it must equal the
+file name's `YYYYMMDD` (`checks.RESULT_FILE_DATE`). `time` is a `result`
+item's optional local `'HH:MM'` or `'HH:MM:SS'` (`checks.TIME_OF_DAY`, no
+time zone), `""` when not set. Neither is a grouping key; they exist so old
+runs can be filtered, charted over time, or retired later.
+`import_cyberpunk.py` writes both from the run folder name and backfills
+files that lack them (`add_dates()`); `parse.py` writes today's date.
+
 Schema `0.6` nests the catalog hardware specs. Each catalog entry keeps its
 `id` at the top level with `identity`, `classification`, `silicon`,
 `memory`, `clocks`, `power`, `release`, and `features` sections. Run records

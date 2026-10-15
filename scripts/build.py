@@ -25,7 +25,7 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 SITE_DIR = ROOT / "site"
 OUTPUT_DIR = SITE_DIR / "api" / "v1"
-SCHEMA_VERSION = "0.13"
+SCHEMA_VERSION = "0.14"
 # MAJOR.MINOR.DATA.POST: MAJOR = breaking data contract or API, MINOR = any
 # code change, DATA = newly published runs, POST = a new or updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
@@ -114,6 +114,10 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "metrics": result,
         "game": run.get("game", ""),
         "game_version": str(run.get("version", "")),
+        # The day the file was run (a found result's publish date), and the run's
+        # optional local time. Neither groups runs; they're for filtering by age.
+        "date": str(run.get("date", "")),
+        "time": str(result.get("time", "")),
         "resolution": result.get("resolution", ""),
         "graphics_preset": result.get("graphics_preset", ""),
         # "" when upscaling was off, the default; a grouping key, so it never averages with native runs.

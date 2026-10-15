@@ -66,6 +66,8 @@ def result_run(**overrides):
     run = {
         "gpu_id": TEST_ID,
         "game": "Test Game",
+        # Matches the 20261003 in every test file name below.
+        "date": "2026-10-03",
         "result": [{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 100, "p1_low": 80}],
         "system": {"os": "windows"},
         "proof": {"method": "presentmon"},
@@ -229,9 +231,30 @@ def check_result_rules():
     }
     for label, run in os_cases.items():
         cases[label] = {COMMUNITY_PATH: run}
+    no_date = {key: value for key, value in community_run().items() if key != "date"}
+    timed = lambda time: community_run(result=[{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 100, "p1_low": 80, "time": time}])
+    date_cases = {
+        "result-date (missing)": no_date,
+        "result-date (unquoted)": dump(no_date) + "date: 2026-10-03\n",
+        "result-date (format)": community_run(date="10/03/2026"),
+        "result-date (not a day)": community_run(date="2026-02-30"),
+        "result-date (future)": community_run(date="2999-01-01"),
+        "result-date-filename": community_run(date="2026-10-04"),
+        "result-time (unquoted)": dump(community_run()).replace("p1_low: 80\n", "p1_low: 80\n  time: 14:30\n"),
+        "result-time (out of range)": timed("25:00"),
+        "result-time (one-digit hour)": timed("9:05"),
+    }
+    for label, run in date_cases.items():
+        cases[label] = {COMMUNITY_PATH: run}
     for rule, files in cases.items():
         expect_rule(rule.split(" (")[0], {**catalog, **files})
     expect_rule("result-system-field", {**catalog, COMMUNITY_PATH: community_run(system={"os": "linux", "kernal": "6.8"})}, level="warning")
+    # A quoted local time, with or without seconds, passes; so does a file name with no date to compare.
+    for time in ("09:10", "23:59:59"):
+        issues = run_checks({**catalog, COMMUNITY_PATH: timed(time)})
+        assert not issues.errors, (time, [issue.format() for issue in issues.errors])
+    issues = run_checks({**catalog, f"official/{TEST_ID}/result_launch_day.yaml": result_run()})
+    assert not issues.errors, [issue.format() for issue in issues.errors]
     # A full Linux run passes; a Linux community run is never outlier-checked against Windows numbers.
     linux = {
         "os": "linux", "distro": "Bazzite", "kernel": "6.9.12", "mesa": "24.1.5", "runtime": "proton",
@@ -547,6 +570,8 @@ def check_import_cyberpunk():
         assert day_run["proof"]["method"] == "in_game_benchmark"
         assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
         assert entry["display_mode"] == "Fullscreen" and "display_mode" not in day_run["system"]
+        assert day_run["date"] == "2026-10-13" and list(day_run)[:4] == ["gpu_id", "benchmark_type", "game", "date"]
+        assert entry["time"] == "18:44:57" and custom["time"] == "19:00:00", "time comes from the run folder"
 
         catalog, issues = checks.load_catalog(data_dir)
         _, result_issues = checks.load_results(catalog, data_dir)
@@ -554,6 +579,13 @@ def check_import_cyberpunk():
 
         assert import_cyberpunk.main(args) == 0
         assert yaml.safe_load(day_file.read_text(encoding="utf-8")) == day_run, "a second import changes nothing"
+
+        # A file imported before date and time existed gets them back on the next import.
+        undated = {key: value for key, value in day_run.items() if key != "date"}
+        undated["result"] = [{key: value for key, value in item.items() if key != "time"} for item in day_run["result"]]
+        import_cyberpunk.write_run(day_file, undated)
+        assert import_cyberpunk.main(args) == 0
+        assert yaml.safe_load(day_file.read_text(encoding="utf-8")) == day_run, "date and time are backfilled"
 
         # Later the same day: a new run joins the day's file, and a run after a
         # driver update gets its own file because system applies to the whole file.
@@ -677,8 +709,10 @@ def check_templates_are_valid():
     }
     for template in sorted((ROOT / "templates").glob("community_*.yaml")):
         text = template.read_text(encoding="utf-8")
-        gpu_id = yaml.safe_load(text)["gpu_id"]
-        issues = run_checks({**catalog, f"community/{gpu_id}/result_20261003_template.yaml": text})
+        run = yaml.safe_load(text)
+        # Save it under the template's own date, as a submitter would.
+        day = run["date"].replace("-", "")
+        issues = run_checks({**catalog, f"community/{run['gpu_id']}/result_{day}_template.yaml": text})
         assert not issues.errors, (template.name, [issue.format() for issue in issues.errors])
 
 
@@ -705,7 +739,7 @@ def check_real_data():
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.13"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.14"
     assert {"os", "upscaling"} <= set(master["metadata"]["comparison_policy"]["group_by"])
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
     assert len(by_id) == 11
@@ -805,6 +839,10 @@ def check_fixture_build(api_dir):
     assert summary_1080p["p1_low_range"] == [50.0, 52.0]
     assert summary_1080p["contributors"] == ["MattyStacks"]
     assert all(record["submitted_by"] for record in arc_a770["records"])
+    # Every run carries its file's date; time is "" when the run didn't record one.
+    for record in arc_a770["records"]:
+        named = re.match(r"result_(\d{4})(\d{2})(\d{2})", Path(record["source_file"]).name)
+        assert record["date"] == "-".join(named.groups()) and record["time"] == "", record
 
     linux_1080p = find_summary(arc_a770["game_summaries"], "1080p", "linux")
     assert linux_1080p["run_count"] == 1 and linux_1080p["avg_fps"] == 63.0, "Linux runs never average with Windows"

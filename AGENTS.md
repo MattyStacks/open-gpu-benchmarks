@@ -43,7 +43,10 @@ runs live in `tests/fixtures/data/` (same layout, its own catalog snapshot),
 and `test_build.py` fails if a `synthetic: true` run appears in `data/`.
 Preview them with `python scripts/build.py --data-dir tests/fixtures/data`.
 
-Results: game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
+Results: every result file needs a quoted `date: 'YYYY-MM-DD'` equal to the
+file name's `YYYYMMDD` (a found result uses its publish date); each `result`
+item may add a quoted local `time` (`'HH:MM'` or `'HH:MM:SS'`, no time zone).
+Neither groups runs. Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
 grouping key, so Windows and Linux runs are never averaged together; the
 distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
 keys or extra chart bars. Linux-only fields on a windows run (or the

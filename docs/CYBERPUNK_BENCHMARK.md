@@ -141,6 +141,8 @@ Run the same command again whenever you've benchmarked more:
   each result item's `benchmark_run`, which names the run's folder.
 - New runs from a day that already has a file are added to that file.
 - Runs from a new day go in a new file for that day.
+- Files imported before `date` and `time` existed get them filled in from the
+  file name and run folder names.
 - Runs after a driver or game update, or on a different CPU, memory amount, or
   OS, go in a separate file for the same day: `..._2.yaml`, `..._3.yaml`. The
   game version and everything under `system:` apply to every run in a file,
@@ -196,10 +198,12 @@ item per run:
 gpu_id: rtx_5080_16gb_fe
 benchmark_type: game
 game: Cyberpunk 2077
+date: '2026-10-13'
 version: '2.31'
 frame_generation: false
 result:
   - benchmark_run: benchmark_2026-10-13_18-44-57
+    time: '18:44:57'
     resolution: 4K
     graphics_preset: 'Ray Tracing: Ultra'
     upscaling: DLSS Auto
@@ -228,8 +232,10 @@ Where each value comes from in the run folder (`summary.json` unless noted):
 
 | Field | From | Notes |
 |---|---|---|
+| `date` | the run folder's name | The day of the runs; the same as the file name. |
 | `version` | `gameVersion` | Same for every run in the file. |
 | `result[].benchmark_run` | the run's folder name | How re-runs recognize imported runs. Don't edit it. |
+| `result[].time` | the run folder's name | Your PC's local time when the run started; the game records no time zone. |
 | `result[].resolution` | `renderWidth` x `renderHeight` | See [How settings are named](#how-settings-are-named). |
 | `result[].graphics_preset` | `presetName` | The in-game name, or your name for a Custom preset. |
 | `result[].upscaling`, `preset_upscaling` | the upscaler settings | Only when the preset turned an upscaler on. |

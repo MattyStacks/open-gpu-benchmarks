@@ -1,5 +1,45 @@
 # Community benchmark submissions
 
+The easiest way to submit a result is a GitHub issue; see
+[Submit through an issue](#submit-through-an-issue). A pull request is for
+bulk or scripted uploads, and everything below describes the file either path
+produces.
+
+## Submit through an issue
+
+Open a [**Benchmark result** issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark.yml)
+and fill in the form. You don't need to fork, install anything, or write YAML.
+
+1. The form applies the `benchmark` label. A bot
+   ([`benchmark-issue.yml`](../.github/workflows/benchmark-issue.yml) running
+   [`scripts/issue_to_result.py`](../scripts/issue_to_result.py)) writes
+   `data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml` from your answers and
+   runs the same checks as a pull request.
+2. If something is wrong, such as an unknown GPU or a 1% low missing for a tool
+   that reports one, the bot replies on the issue saying what to fix. Edit the
+   issue and it checks again.
+3. If everything passes, the bot opens a pull request from a
+   `benchmark/issue-<N>` branch and links it on the issue. A maintainer (a
+   [code owner](../.github/CODEOWNERS)) reviews and approves it; merging closes
+   the issue. Editing the issue later rebuilds the same pull request.
+
+The **Results** box takes one run per line: resolution, preset, average FPS,
+and optionally the 1% low, separated by commas, such as
+`1440p, Ultra, 79.1, 65.0`. The **GPU** box takes the catalog ID or the
+product's exact name. Game and preset names that differ only in case from
+ones already on the dashboard are rewritten to match, so groups don't split.
+You stay anonymous unless you tick **Credit me as my GitHub username**, and the
+CC0 box is required (see [below](#your-results-become-public-data-cc0)).
+
+The form covers one game and one day per issue, up to 20 runs, Windows or
+Linux, with an optional proof link. It doesn't yet take raw capture uploads,
+Linux-only system fields, per-run times, or `permission` credits. For those,
+or for many results at once (for example the
+[Cyberpunk 2077 importer](CYBERPUNK_BENCHMARK.md)), open a pull request as
+[CONTRIBUTING.md](../CONTRIBUTING.md) describes.
+
+## The result file
+
 Community source data is organized by catalog product. Find the exact ID in
 [`data/gpus/`](../data/gpus/README.md): it is the file name of the product's
 catalog entry, `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`. Then add one
@@ -434,7 +474,9 @@ brackets. Errors block the merge. Warnings are suggestions.
 
 ## Submission workflow
 
-The step-by-step contributor walkthrough, with examples, lives in
+Most results come in through a [Benchmark result issue](#submit-through-an-issue),
+which the bot turns into a pull request. For bulk or scripted uploads, the
+step-by-step pull request walkthrough, with examples, lives in
 [CONTRIBUTING.md](../CONTRIBUTING.md). In short: fork, add one result file (and
 optional raw evidence) under `data/community/<gpu_id>/`, run `validate.py`,
 `build.py`, and `test_build.py`, then open a pull request. A maintainer

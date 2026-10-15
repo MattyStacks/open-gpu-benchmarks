@@ -4,6 +4,9 @@ name: Preview
 # deployments; the three Validate checks still run for them. Plain pull_request
 # (never pull_request_target), so fork code never runs with the secrets.
 # Cloudflare sends X-Robots-Tag: noindex on preview deployments.
+# Benchmark-issue PRs (benchmark/issue-<N> branches, opened by the bot App) never
+# get a preview either. The bot isn't the owner, and the branch check also
+# covers a maintainer pushing a fix to one of those branches.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -21,7 +24,8 @@ jobs:
     name: Cloudflare preview
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.user.login == github.repository_owner
+      github.event.pull_request.user.login == github.repository_owner &&
+      !startsWith(github.head_ref, 'benchmark/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

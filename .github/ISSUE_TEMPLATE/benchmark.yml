@@ -1,0 +1,165 @@
+name: Benchmark result
+description: Submit a GPU benchmark result. A bot turns it into a pull request for a maintainer to review.
+title: "Benchmark: "
+labels:
+  - benchmark
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill this in and a bot writes the result file and opens a pull request. A maintainer reviews it before anything reaches the dashboard. If something needs fixing, the bot replies here; edit the issue and it checks again.
+
+        Results are anonymous unless you tick **Credit me** below. Leave out anything you don't know or don't want to share.
+
+        Uploading many results at once, or results from a script such as the [Cyberpunk 2077 importer](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/CYBERPUNK_BENCHMARK.md)? Open a pull request instead; see [COMMUNITY_SUBMISSIONS.md](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md).
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU
+      description: >-
+        The exact product you tested: its catalog ID (a file name under
+        [data/gpus](https://github.com/MattyStacks/open-gpu-benchmarks/tree/main/data/gpus), without .yaml)
+        or its product name. Memory size and board partner matter.
+      placeholder: rtx_5080_16gb_fe
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      description: The game or benchmark, spelled the way the dashboard shows it if it's already there.
+      placeholder: Cyberpunk 2077
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Game version
+      placeholder: "2.31"
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      description: The day you ran it (or the day the video, review, or post was published), as YYYY-MM-DD.
+      placeholder: "2026-10-03"
+    validations:
+      required: true
+  - type: dropdown
+    id: who
+    attributes:
+      label: Who ran it?
+      options:
+        - I ran it myself
+        - "Someone else: I found it in a video, review, or post"
+    validations:
+      required: true
+  - type: input
+    id: source_url
+    attributes:
+      label: Source link
+      description: Required if someone else ran it. The https:// link to the video, review, or post with the numbers.
+      placeholder: https://example.com/gpu-review
+  - type: input
+    id: creator
+    attributes:
+      label: Creator name
+      description: Optional, if someone else ran it. Who measured the numbers.
+  - type: textarea
+    id: results
+    attributes:
+      label: Results
+      description: >-
+        One run per line: resolution, graphics preset, average FPS, and the 1% low if you have it, separated by commas.
+        Use the preset name the game shows. Upscaling and frame generation should be off.
+      placeholder: |
+        1440p, Ultra, 79.1, 65.0
+        1080p, Ultra, 103.4, 84.7
+    validations:
+      required: true
+  - type: input
+    id: upscaling
+    attributes:
+      label: Upscaler the preset turned on
+      description: >-
+        Leave empty if upscaling was off. Fill it in only when the graphics preset turned upscaling on by itself,
+        such as `DLSS Auto` on Cyberpunk's Ray Tracing presets.
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: method
+    attributes:
+      label: Capture tool
+      description: >-
+        What measured the FPS. PresentMon, CapFrameX, FrameView, Afterburner, MangoHud, and OCAT all report a 1% low,
+        so add it to every Results line when you pick one of them.
+      options:
+        - PresentMon (recommended)
+        - CapFrameX
+        - NVIDIA FrameView
+        - MSI Afterburner / RivaTuner (RTSS)
+        - MangoHud (Linux)
+        - OCAT
+        - "AMD Software: Adrenalin Edition"
+        - The game's built-in benchmark
+        - 3DMark or another synthetic benchmark
+        - Something else, or the source doesn't say
+    validations:
+      required: true
+  - type: input
+    id: proof_url
+    attributes:
+      label: Proof link
+      description: Optional. An https:// link to a screenshot or summary that shows the numbers. Runs without proof show as "Unverified".
+  - type: input
+    id: cpu
+    attributes:
+      label: CPU
+      placeholder: AMD Ryzen 7 7800X3D
+  - type: input
+    id: memory
+    attributes:
+      label: Memory
+      placeholder: 32 GB DDR5
+  - type: input
+    id: driver
+    attributes:
+      label: GPU driver
+      placeholder: "561.09"
+  - type: input
+    id: os_detail
+    attributes:
+      label: OS version
+      placeholder: Windows 11 Pro 24H2
+  - type: dropdown
+    id: graphics_api
+    attributes:
+      label: Graphics API
+      options:
+        - DX12
+        - DX11
+        - Vulkan
+  - type: checkboxes
+    id: credit
+    attributes:
+      label: Credit
+      options:
+        - label: Credit me as my GitHub username
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: Frame generation was off for every run.
+          required: true
+        - label: >-
+            I release these results under CC0. In plain English, anyone can use these numbers for anything, without
+            asking me or crediting me, and I can't take that back. I only included what I'm allowed to share and happy
+            to make public ([details](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data-cc0)).
+          required: true

@@ -30,6 +30,15 @@ runs" or "New post: <title>". Earlier releases used three parts.
 ## Unreleased
 
 ### Added
+- Submit a result through a GitHub issue: the new **Benchmark result** issue
+  form (label `benchmark`) is now the primary way to add a result. A workflow
+  (`benchmark-issue.yml`) runs `scripts/issue_to_result.py` to write the
+  community file and check it. It then opens a pull request from a GitHub App
+  for a maintainer to approve, or replies on the issue saying what to fix.
+  Bot pull requests never get Cloudflare previews. Pull requests stay the path
+  for bulk or scripted uploads.
+- `.github/CODEOWNERS` lists the maintainers whose approval merges a pull
+  request.
 - Result files require a top-level `date: 'YYYY-MM-DD'` that matches the file
   name's date (a found result uses its publish date), and each run may add an
   optional local `time`. New checks: `result-date`, `result-date-filename`,

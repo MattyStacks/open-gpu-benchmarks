@@ -130,7 +130,17 @@ stay correct on GitHub Pages or a custom domain.
 
 ## Community contributions
 
-Copy [templates/community_submission.yaml](templates/community_submission.yaml)
+The easiest way to add a result is a
+[Benchmark result issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark.yml).
+Fill in the form and a bot ([`scripts/issue_to_result.py`](scripts/issue_to_result.py)
+via [`benchmark-issue.yml`](.github/workflows/benchmark-issue.yml)) writes the
+result file, runs the checks, and opens a pull request for a maintainer (a
+[code owner](.github/CODEOWNERS)) to approve. If something needs fixing, it
+replies on the issue. See
+[Submit through an issue](docs/COMMUNITY_SUBMISSIONS.md#submit-through-an-issue).
+
+For bulk or scripted uploads, open a pull request instead. Copy
+[templates/community_submission.yaml](templates/community_submission.yaml)
 to the folder matching its `gpu_id`, for example:
 
 ```text
@@ -177,7 +187,7 @@ With the environment active (your prompt starts with `(.venv)`):
 python scripts/validate.py            # or: validate.py catalog / validate.py results
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\issue_to_result.py scripts\test_build.py
 python -m http.server 8000 --directory site
 ```
 
@@ -252,7 +262,8 @@ footer. The workflow in
 [.github/workflows/build.yml](.github/workflows/build.yml) validates the data,
 rebuilds `site/api/`, and deploys the site to both GitHub Pages and Cloudflare
 Pages whenever `main` changes. [preview.yml](.github/workflows/preview.yml)
-deploys a Cloudflare preview for the repository owner's own pull requests only.
+deploys a Cloudflare preview for the repository owner's own pull requests only,
+never for the bot's `benchmark/*` pull requests.
 Do not commit generated API files unless repository policy changes.
 
 For search engines and AI tools, every host declares

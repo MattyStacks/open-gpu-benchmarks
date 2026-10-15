@@ -74,7 +74,28 @@ upscaler labels stable, because changing one splits dashboard groups.
 Hosting: the canonical site is <https://opengpubenchmarks.com> (Cloudflare
 Pages). GitHub Pages is a mirror. Only the canonical/SEO URLs are absolute,
 robots.txt allows AI crawlers, and Cloudflare PR previews run only for the
-owner's own PRs (`preview.yml`).
+owner's own PRs (`preview.yml`), never for `benchmark/*` branches.
+
+Benchmark issues: the primary way to submit a result is the "Benchmark
+result" issue form (`.github/ISSUE_TEMPLATE/benchmark.yml`, label
+`benchmark`). `.github/workflows/benchmark-issue.yml` runs
+`scripts/issue_to_result.py`, commits the one generated file to
+`benchmark/issue-<N>`, and opens a pull request with a GitHub App token for a
+code owner (`.github/CODEOWNERS`, the maintainer list) to approve. Pull
+requests stay the path for bulk or scripted uploads.
+
+Rules (details in `docs/COPILOT_HANDOFF.md`, "Benchmark issues and the bot
+App"):
+- never enable "Allow GitHub Actions to create and approve pull requests";
+- never give the App the Workflows permission;
+- never call a review, approve, or merge API from a workflow;
+- never reference the Cloudflare secrets in `benchmark-issue.yml`;
+- never interpolate the issue body into a shell line;
+- never add a bot to CODEOWNERS;
+- keep the form's labels and options in step with `issue_to_result.py` and
+  `tests/fixtures/issues/valid.md`.
+
+`test_build.py` enforces the parts it can.
 
 Blog: `/blog/` is an Astro project in `blog/` that renders
 `content/posts/<slug>/index.md(x)` into `site/blog/` (gitignored). It builds
@@ -124,7 +145,7 @@ python -m pip install -r requirements.txt
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\issue_to_result.py scripts\test_build.py
 npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
 npm --prefix blog run build              # after build.py; writes site/blog/
 git diff --check

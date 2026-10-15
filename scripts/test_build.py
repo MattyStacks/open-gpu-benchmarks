@@ -630,6 +630,122 @@ def check_import_cyberpunk():
         assert latest[-1]["benchmark_run"] == "benchmark_2026-10-14_10-00-00" and latest[-1]["p1_low"] == 66.67, latest
 
 
+ISSUE_FIXTURE = ROOT / "tests" / "fixtures" / "issues" / "valid.md"
+
+
+def run_issue(body, data_dir, out_dir):
+    """Feed one issue body to issue_to_result.py; return (exit code, comment)."""
+    import issue_to_result
+
+    body_file = out_dir / "body.md"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    body_file.write_text(body, encoding="utf-8")
+    args = ["--body-file", str(body_file), "--issue", "42", "--author", "octo-cat",
+            "--data-dir", str(data_dir), "--out-dir", str(out_dir)]
+    status = issue_to_result.main(args)
+    return status, (out_dir / "comment.md").read_text(encoding="utf-8")
+
+
+def check_issue_to_result():
+    """A benchmark issue becomes one checked community file; a bad issue gets a reply and no file."""
+    import shutil
+
+    valid = ISSUE_FIXTURE.read_text(encoding="utf-8")
+    with tempfile.TemporaryDirectory() as temp:
+        temp = Path(temp)
+        data_dir = temp / "data"
+        shutil.copytree(FIXTURES_DIR, data_dir)
+        folder = data_dir / "community" / "rtx_4090_24gb_fe"
+
+        status, comment = run_issue(valid, data_dir, temp / "ok")
+        assert status == 0, comment
+        path = folder / "result_20261003_cyberpunk_2077.yaml"
+        run = yaml.safe_load(path.read_text(encoding="utf-8"))
+        # The product name resolves to its ID; the game and preset reuse existing spellings.
+        assert run["gpu_id"] == "rtx_4090_24gb_fe" and run["game"] == "Cyberpunk 2077", run
+        assert [entry["graphics_preset"] for entry in run["result"]] == ["Ultra", "Ultra"], run
+        assert run["result"][1]["resolution"] == "1440p" and run["result"][1]["avg_fps"] == 180, run
+        assert run["submitted_by"] == "octo-cat" and run["proof"]["method"] == "presentmon", run
+        assert run["date"] == "2026-10-03" and "credit" not in run, run
+        assert "Closes #42" in (temp / "ok" / "pr_body.md").read_text(encoding="utf-8")
+        catalog, _ = checks.load_catalog(data_dir)
+        _, issues = checks.load_results(catalog, data_dir)
+        assert not [issue for issue in issues.errors if path.name in issue.path], [issue.format() for issue in issues]
+
+        # A second issue for the same day and game gets the next free name.
+        assert run_issue(valid, data_dir, temp / "again")[0] == 0
+        assert (folder / "result_20261003_cyberpunk_2077_2.yaml").exists()
+
+        found = valid.replace("I ran it myself", "Someone else: I found it in a video, review, or post")
+        status, comment = run_issue(found, data_dir, temp / "found")
+        assert status == 1 and "Source link" in comment, comment
+        found = found.replace("### Source link\n\n_No response_", "### Source link\n\nhttps://example.com/review")
+        assert run_issue(found, data_dir, temp / "found2")[0] == 0
+
+        before = sorted(folder.iterdir())
+        failures = {
+            "not in the catalog": valid.replace("GeForce RTX 4090 Founders Edition", "rtx 4090 founders"),
+            "is not a number": valid.replace("175.2, 140.1", "fast, 140"),
+            "community-outlier": valid.replace("175.2, 140.1", "400, 300"),
+            "result-p1-low-required": valid.replace("175.2, 140.1", "175.2"),
+            "CC0": valid.replace("- [X] I release", "- [ ] I release"),
+            "YYYY-MM-DD": valid.replace("2026-10-03", "10/03/2026"),
+        }
+        for expected, body in failures.items():
+            status, comment = run_issue(body, data_dir, temp / expected)
+            assert status == 1 and expected in comment, (expected, comment)
+            assert not (temp / expected / "pr_body.md").exists(), expected
+        assert sorted(folder.iterdir()) == before, "a failed issue leaves no file behind"
+
+        # Untrusted text can't break out of the reply's code spans.
+        status, comment = run_issue(valid.replace("GeForce RTX 4090 Founders Edition", "x` @someone `y"), data_dir, temp / "md")
+        assert status == 1 and "`x' @someone 'y`" in comment, comment
+
+
+def check_issue_form_matches_script():
+    """The issue form's labels and options are the ones issue_to_result.py reads."""
+    import issue_to_result as script
+
+    form = yaml.safe_load((ROOT / ".github" / "ISSUE_TEMPLATE" / "benchmark.yml").read_text(encoding="utf-8"))
+    assert form["labels"] == ["benchmark"], form["labels"]
+    fields = {item["id"]: item for item in form["body"] if item["type"] != "markdown"}
+    assert {item["attributes"]["label"]: key for key, item in fields.items()} == script.FIELDS
+    options = {key: item["attributes"].get("options") for key, item in fields.items()}
+    assert options["method"] == list(script.CAPTURE_TOOLS), options["method"]
+    assert sorted(script.CAPTURE_TOOLS.values()) == sorted(checks.PROOF_METHODS)
+    assert options["who"] == list(script.WHO_RAN_IT) and options["os"] == list(script.OSES)
+    assert options["graphics_api"] == list(script.GRAPHICS_APIS)
+    assert [option["label"] for option in options["credit"]] == [script.CREDIT_ME]
+    labels = [option["label"] for option in options["confirmations"]]
+    assert labels[0].startswith(script.FRAME_GENERATION_OFF) and labels[1].startswith(script.CC0_AGREEMENT), labels
+
+
+def check_bot_safety():
+    """CODEOWNERS lists the maintainers, and bot PRs can never deploy, approve, or merge."""
+    owners = [
+        line.split()
+        for line in (ROOT / ".github" / "CODEOWNERS").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    assert any(rule[0] == "*" and len(rule) > 1 for rule in owners), "CODEOWNERS needs a '*' rule with owners"
+    for rule in owners:
+        for owner in rule[1:]:
+            assert owner.startswith("@") and checks.GITHUB_USER_PATTERN.match(owner[1:]), f"bad code owner '{owner}'"
+            assert "bot" not in owner.lower(), f"never make a bot a code owner: {owner}"
+
+    workflows = ROOT / ".github" / "workflows"
+    preview = (workflows / "preview.yml").read_text(encoding="utf-8")
+    assert "!startsWith(github.head_ref, 'benchmark/')" in preview, "preview.yml must skip benchmark/ branches"
+    bot = (workflows / "benchmark-issue.yml").read_text(encoding="utf-8")
+    for text in (preview, bot):
+        assert not re.search(r"^\s*pull_request_target:", text, re.MULTILINE), "never trigger on pull_request_target"
+    for banned in ("CLOUDFLARE", "secrets.GITHUB_TOKEN", "gh pr review", "gh pr merge", "createReview", "pulls.merge"):
+        assert banned not in bot, f"benchmark-issue.yml must not use '{banned}'"
+    # The issue body only ever reaches the shell through an env var.
+    assert re.search(r"ISSUE_BODY: \$\{\{ github\.event\.issue\.body \}\}", bot)
+    assert bot.count("github.event.issue.body") == 1, "use the issue body only through ISSUE_BODY"
+
+
 def check_reports_every_error_and_build_stops():
     files = {
         "gpus/desktop/amd/test_gpu_8gb_fe.yaml": minimal_entry(),
@@ -798,6 +914,9 @@ def main():
     check_third_party_credit()
     check_parse_mangohud()
     check_import_cyberpunk()
+    check_issue_to_result()
+    check_issue_form_matches_script()
+    check_bot_safety()
     check_reports_every_error_and_build_stops()
     check_minimal_entry_builds()
     check_base_merge()

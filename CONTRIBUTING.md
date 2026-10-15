@@ -1,14 +1,19 @@
 # Contributing to Open GPU Benchmarks
 
 Thanks for helping build an open, reviewable GPU comparison. Every number on the
-dashboard comes from a small YAML file in this repository, so **adding a
-benchmark result is just adding one file in a pull request.**
+dashboard comes from a small YAML file in this repository. **The easiest way
+to add a result is a [Benchmark result issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark.yml):**
+fill in the form and a bot writes the file and opens the pull request for you
+(see [Submit through an issue](docs/COMMUNITY_SUBMISSIONS.md#submit-through-an-issue)).
+The pull request steps below are for bulk or scripted uploads, raw captures,
+and anything the form doesn't cover.
 
 ## What do you want to do?
 
 | I want to...                              | Go to                                                  |
 | ----------------------------------------- | ------------------------------------------------------ |
-| **Add my FPS results** (most people)      | [Submit a result in 5 steps](#submit-a-result-in-5-steps) |
+| **Add my FPS results** (most people)      | [Open a Benchmark result issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark.yml) |
+| Add many results, or results with raw captures | [Submit a result in 5 steps](#submit-a-result-in-5-steps) (pull request) |
 | Add a card, laptop, or handheld that isn't in the catalog | [Adding a card, laptop, or handheld](#adding-a-card-laptop-or-handheld) |
 | Fix or remove a result I submitted        | [Fixing or removing a result](#fixing-or-removing-a-result) |
 | Understand a failed check on my PR        | [Reading a failed check](#reading-a-failed-check)      |
@@ -589,7 +594,7 @@ the PR, run with `.venv` activated:
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\issue_to_result.py scripts\test_build.py
 npm --prefix blog ci                     # Node 22.12+; only if you changed blog/ or content/
 npm --prefix blog run build
 git diff --check
@@ -609,8 +614,13 @@ If you changed a rule, update every document that states it:
 Do not commit the generated `site/api/` files (or `site/benchmarks/`,
 `site/blog/`, `llms*.txt`, `sitemap.xml`); the deploy workflow rebuilds them.
 Cloudflare preview deploys run only for the maintainer's own pull requests.
-Contributor PRs get the four Validate checks, and the preview job shows as
-skipped.
+Contributor PRs, and the bot's `benchmark/issue-<N>` PRs, get the four
+Validate checks, and the preview job shows as skipped.
+
+**Maintainers** are the code owners in [`.github/CODEOWNERS`](.github/CODEOWNERS),
+and a code owner's approval is required to merge. To add a maintainer, append
+their `@username` to the `*` line there and give them write access to the
+repository; a code owner without write access can't approve. Never add a bot.
 
 **Benchmark types:** `benchmark_type` other than `game` is kept in the GPU API
 but isn't shown in the game-FPS dashboard yet.

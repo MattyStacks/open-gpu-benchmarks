@@ -373,7 +373,7 @@ python -m pip install -r requirements.txt
 python scripts/validate.py            # or: validate.py catalog / validate.py results
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\issue_to_result.py scripts\test_build.py
 npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
 npm --prefix blog run build              # after build.py; writes site/blog/
 git diff --check
@@ -430,8 +430,11 @@ never reports, and that blocks the merge. Each job takes seconds.
 [`build.yml`](../.github/workflows/build.yml) runs `validate.py` before
 `build.py`, so `main` cannot deploy bad data.
 
-**Repo setting (manual):** mark the four checks as required status checks in
-the `main` branch protection rules (Settings → Branches).
+**Repo setting (manual):** `main` is protected by the "Base Rules" ruleset
+(Settings → Rules), not classic branch protection. It requires a pull request
+and the required status checks; see
+[Benchmark issues and the bot App](#benchmark-issues-and-the-bot-app-manual-setup)
+for the code-owner approval settings.
 [`scripts/parse.py`](../scripts/parse.py) writes converted CSV output directly
 to `data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml`. `--game-id` must
 be in `data/games.yaml`; an unknown one exits with the known IDs. `--submitted-by` is optional and only written when given. It
@@ -753,12 +756,15 @@ stay live.
 [`preview.yml`](../.github/workflows/preview.yml) runs `build.py` and the blog build, and deploys a
 Cloudflare **preview** for a pull request only when the PR comes from this
 repository (not a fork) **and** its author is `github.repository_owner`. Every
-other PR skips the job, so nobody else can trigger deployments. It uses
+other PR skips the job, so nobody else can trigger deployments. A
+`benchmark/*` branch (a bot PR from a benchmark issue) always skips it, even
+after a maintainer pushes to it. It uses
 `pull_request`, never `pull_request_target`, so fork code never runs with
 secrets. It posts or updates one PR comment (marker `<!-- cf-preview -->`)
 with the commit URL and the branch alias URL. Cloudflare adds
-`X-Robots-Tag: noindex` to preview deployments. The preview is not a required
-check.
+`X-Robots-Tag: noindex` to preview deployments. "Cloudflare preview" is a
+required check in the "Base Rules" ruleset; a job skipped by its `if:` reports
+as passing, so other PRs aren't blocked.
 
 Secrets: `CLOUDFLARE_API_TOKEN` (Account > Cloudflare Pages > Edit) and
 `CLOUDFLARE_ACCOUNT_ID`.
@@ -787,6 +793,106 @@ Secrets: `CLOUDFLARE_API_TOKEN` (Account > Cloudflare Pages > Edit) and
   `benchmarks/index.html` and `llms-full.txt`. The page lives in a folder
   because Cloudflare Pages 308-redirects `*.html` to the bare path, and a
   canonical URL must not redirect.
+
+### Benchmark issues and the bot App (manual setup)
+
+The issue is the primary way to submit a result. Pull requests are for bulk
+or scripted uploads (the Cyberpunk importer, many files, raw captures).
+
+**Flow.** [`.github/ISSUE_TEMPLATE/benchmark.yml`](../.github/ISSUE_TEMPLATE/benchmark.yml)
+is a form that applies the `benchmark` label.
+[`benchmark-issue.yml`](../.github/workflows/benchmark-issue.yml) runs on
+`issues` (opened, edited, labeled, reopened) when that label is present. It
+checks out `main` and runs
+[`scripts/issue_to_result.py`](../scripts/issue_to_result.py), which parses
+the form and writes `data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml`:
+
+- the GPU from its ID or exact `identity.name`, with `difflib` suggestions;
+- the game from its `game_id` or exact name in `data/games.yaml`
+  (`find_game`, also with suggestions). Only listed games are accepted; the
+  bot never writes `games.yaml`, so a new game needs its own pull request;
+- preset spellings reused from existing runs of that game, ignoring case;
+- `_2`, `_3`, ... for a name that's taken.
+
+The script then runs `checks.load_results` and keeps only the new file's
+issues. On errors it writes nothing, and the bot updates one marker comment
+(`<!-- benchmark-bot -->`) on the issue saying what to fix. On success the bot:
+
+- commits only that file to `benchmark/issue-<N>` and force-pushes it;
+- opens or updates the pull request (label `benchmark`, body with the YAML
+  and a reviewer checklist, `Closes #N`);
+- links the pull request in the marker comment.
+
+Editing the issue reruns the whole flow on the same branch. While
+`MAX_OPEN_PRS` (10) `benchmark/issue-*` pull requests are open, new issues get
+a "queue full" reply instead.
+
+The form's labels and options must match `FIELDS`, `CAPTURE_TOOLS`,
+`WHO_RAN_IT`, `OSES`, and `GRAPHICS_APIS` in the script. The capture-tool
+options must also match `checks.PROOF_METHODS`. `test_build.py`
+(`check_issue_form_matches_script`) enforces both, and
+`tests/fixtures/issues/valid.md` is a rendered issue body for the tests.
+
+**Why a GitHub App and not `GITHUB_TOKEN` or a personal token.**
+
+- Pull requests opened with `GITHUB_TOKEN` trigger no workflows, so the
+  required checks would never report.
+- Using `GITHUB_TOKEN` would also need "Allow GitHub Actions to create and
+  approve pull requests", which must stay **off**.
+- A personal token would make the owner the PR author. Cloudflare previews
+  would then run, and the owner couldn't approve their own PR.
+- An App's pull requests run `validate.yml` normally. The required "Cloudflare
+  preview" check reports as *skipped*, which counts as passing.
+
+**Safety.** These hold, and `test_build.py` (`check_bot_safety`) checks the
+parts it can:
+
+- **No deploys.** `benchmark-issue.yml` never references the Cloudflare
+  secrets. `preview.yml` deploys only when the PR author is the owner *and*
+  the branch isn't `benchmark/*`. `build.yml` deploys only from a push to
+  `main`, and the App can't push there: the ruleset requires a pull request
+  and the App isn't a bypass actor.
+- **No workflow edits.** The App has **no Workflows permission**, so GitHub
+  rejects any push from it that touches `.github/workflows/`.
+- **No approvals or merges.** The App isn't a code owner, and the workflow
+  never calls a review or merge API.
+- **Untrusted text.** The issue body reaches the script through an `env:` var
+  and a file, never `${{ }}` inside a shell line. YAML is written with
+  `yaml.dump`, and replies put user text in escaped code spans or fences. The
+  workflow checks that the only change is the one
+  `data/community/*/result_*.yaml` file before committing.
+- **Short-lived token.** The token is minted per run, expires within an
+  hour, and is scoped to contents, pull-requests, and issues on this repo.
+- **Residual risk.** Spam issues produce bot PRs, capped by the queue limit,
+  that a maintainer closes. Fake numbers are caught the same way as any PR:
+  `community-outlier` plus review.
+
+**One-time setup:**
+
+1. Create a GitHub App (Settings → Developer settings → GitHub Apps → New):
+   - webhook off;
+   - repository permissions **Contents: Read and write**, **Pull requests:
+     Read and write**, **Issues: Read and write**, Metadata: Read;
+   - **Workflows: No access**, and no organization or account permissions;
+   - installable "Only on this account".
+2. Install it on this repository only.
+3. Save the App ID as the Actions *variable* `BENCHMARK_BOT_APP_ID`, and a
+   generated private key as the Actions *secret* `BENCHMARK_BOT_PRIVATE_KEY`.
+4. Edit the "Base Rules" ruleset:
+   - required approvals **1**;
+   - **Require review from Code Owners**;
+   - **Require approval of the most recent reviewable push**;
+   - add **Repository admin** as a bypass actor in "pull requests only" mode,
+     so the owner's own PRs can still merge;
+   - optionally add "Catalog entries" and "Benchmark results" as required
+     checks.
+5. Leave Settings → Actions → General → "Allow GitHub Actions to create and
+   approve pull requests" **off**.
+
+**Maintainers.** [`.github/CODEOWNERS`](../.github/CODEOWNERS) is the list of
+maintainers, and a code owner's approval is required to merge. To add one,
+append their `@username` to the `*` line and give them write access
+(Settings → Collaborators). Never add a bot or an App.
 
 ### Cloudflare Pages (manual setup)
 

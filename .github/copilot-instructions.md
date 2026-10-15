@@ -151,7 +151,33 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   `site/api/`). Keep them in step with any dashboard field change.
 - Deploys: `build.yml` publishes `main` to GitHub Pages and Cloudflare Pages.
   `preview.yml` deploys Cloudflare previews only for the owner's own
-  same-repo PRs. Never switch it to `pull_request_target`.
+  same-repo PRs, never for `benchmark/*` branches. Never switch it to
+  `pull_request_target`.
+- **Benchmark issues are the primary submission path.** The issue form
+  (`.github/ISSUE_TEMPLATE/benchmark.yml`, label `benchmark`) feeds
+  `benchmark-issue.yml`, which runs `scripts/issue_to_result.py`, commits the
+  one generated file to `benchmark/issue-<N>`, and opens a pull request with a
+  GitHub App token. A code owner approves it. Pull requests stay the path for
+  bulk or scripted uploads (the Cyberpunk importer, raw captures). Safety
+  rules, all from `docs/COPILOT_HANDOFF.md` ("Benchmark issues and the bot
+  App"); `test_build.check_bot_safety()` enforces what it can:
+  - `benchmark/*` and bot pull requests never get Cloudflare previews;
+  - never enable "Allow GitHub Actions to create and approve pull requests";
+  - never give the bot App the Workflows permission;
+  - never call a review, approve, or merge API from a workflow;
+  - never reference the Cloudflare secrets in `benchmark-issue.yml`;
+  - never interpolate `github.event.issue.body` into a shell line (it goes
+    through the `ISSUE_BODY` env var).
+  - never let the bot add a game: the form accepts only a `game_id` or name
+    already in `data/games.yaml`, and a new game comes in its own pull request.
+- `.github/CODEOWNERS` is the maintainer list, and a code owner's approval is
+  required to merge. Adding a maintainer means adding their `@username` there
+  and giving them write access. Never add a bot.
+- A change to the issue form's labels or options goes in
+  `issue_to_result.py` (`FIELDS`, `CAPTURE_TOOLS`, `WHO_RAN_IT`, `OSES`,
+  `GRAPHICS_APIS`) and `tests/fixtures/issues/valid.md` in the same commit.
+  `test_build.check_issue_form_matches_script()` fails otherwise, and a new
+  `checks.PROOF_METHODS` value needs a form option.
 
 ## Licenses
 
@@ -241,7 +267,7 @@ For a release:
    python scripts/validate.py
    python scripts/build.py
    python scripts/test_build.py
-   python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
+   python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\issue_to_result.py scripts\test_build.py
    npm --prefix blog ci                  # Node 22.12+; once, or after the lockfile changes
    npm --prefix blog run build           # after build.py; writes site/blog/
    git diff --check

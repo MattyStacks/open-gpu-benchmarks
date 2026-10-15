@@ -1,0 +1,8 @@
+# Code owners are the project's maintainers. The "Base Rules" ruleset on main
+# requires a code owner's approval to merge, so this file is the list of people
+# who can approve pull requests, including the benchmark bot's.
+#
+# To add a maintainer: append their @username to the * line below, and give
+# them write access (Settings -> Collaborators). A code owner without write
+# access can't approve. Never add a bot or an App here.
+*   @MattyStacks

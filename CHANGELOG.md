@@ -25,16 +25,22 @@ Bumping one part resets the parts to its right (1.1.2.3 then 1.2.0.0). There is
 one bump per release, not per pull request: the biggest kind of change under
 `Unreleased` picks the part. Community data PRs don't add their own line; a
 DATA or POST release gets one short line, for example "12 new Cyberpunk 2077
-runs" or "New post: <title>". Earlier releases used three parts.
+runs" or "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
-### Changed
-- README and CONTRIBUTING give macOS, Linux, and WSL their own virtual
-  environment setup (`python3 -m venv .venv`, `source .venv/bin/activate`),
-  with how to check that it's active.
-- The documented `py_compile` command uses forward slashes, so it works in
-  bash as well as PowerShell.
+### Added
+- Submit a result through a GitHub issue: the new **Benchmark result** issue
+  form (label `benchmark`) is now the primary way to add a result. A workflow
+  (`benchmark-issue.yml`) runs `scripts/issue_to_result.py` to write the
+  community file and check it. It then opens a pull request from a GitHub App
+  for a maintainer to approve, or replies on the issue saying what to fix.
+  Bot pull requests never get Cloudflare previews. Pull requests stay the path
+  for bulk or scripted uploads. The form's **Game** field takes a `game_id` or
+  the exact name from `data/games.yaml`; only listed games are accepted, and a
+  new game is added by its own pull request first.
+- `.github/CODEOWNERS` lists the maintainers whose approval merges a pull
+  request.
 
 ## 1.2.0.0 - 2026-10-15
 

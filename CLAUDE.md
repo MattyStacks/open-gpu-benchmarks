@@ -92,6 +92,8 @@ scripts/build.py                   YAML source -> site/api/v1/** JSON (runs chec
 scripts/validate.py                PR validator: validate.py [catalog|results] [--data-dir]
 scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
 scripts/import_cyberpunk.py        Cyberpunk 2077 benchmarkResults/*/summary.json + frames.csv -> result YAML
+scripts/issue_to_result.py         "Benchmark result" issue body -> community result YAML + PR text
+                                   (run by benchmark-issue.yml; tests use tests/fixtures/issues/)
                                    (one file per day; re-runs add only new runs)
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
@@ -112,7 +114,12 @@ CHANGELOG.md                       high-level version history (update with every
 docs/TODO.md                       backlog: deferred work (update with every change)
 AGENTS.md                          tool-neutral agent entry point (keep in step with this file)
 .github/workflows/build.yml        builds site/api and deploys GitHub Pages + Cloudflare on main
-.github/workflows/preview.yml      Cloudflare PR previews, owner's own PRs only
+.github/workflows/preview.yml      Cloudflare PR previews, owner's own PRs only (never benchmark/*)
+.github/workflows/benchmark-issue.yml
+                                   benchmark issue -> result file -> bot PR (GitHub App token)
+.github/ISSUE_TEMPLATE/benchmark.yml
+                                   the "Benchmark result" issue form (applies the benchmark label)
+.github/CODEOWNERS                 maintainers; a code owner's approval is required to merge
 .github/workflows/validate.yml     four PR checks: Catalog entries, Benchmark results,
                                    Build and tests, Blog
 ```
@@ -233,7 +240,33 @@ unless repository policy changes.
   anything, and `build.py` writes JavaScript-free copies of every summary
   (`benchmarks/`, `llms-full.txt`) because most AI crawlers don't run JS.
 - `preview.yml` deploys Cloudflare previews only for the repo owner's own
-  same-repo PRs. Keep it on `pull_request`, never `pull_request_target`.
+  same-repo PRs, never for `benchmark/*` branches. Keep it on `pull_request`,
+  never `pull_request_target`.
+- **Benchmark issues are the primary submission path.** The issue form
+  (`.github/ISSUE_TEMPLATE/benchmark.yml`, label `benchmark`) feeds
+  `benchmark-issue.yml`, which runs `scripts/issue_to_result.py`, commits the
+  one generated file to `benchmark/issue-<N>`, and opens a pull request with a
+  GitHub App token. A code owner approves it. Pull requests stay the path for
+  bulk or scripted uploads (the Cyberpunk importer, raw captures). Safety
+  rules, all from `docs/COPILOT_HANDOFF.md` ("Benchmark issues and the bot
+  App"); `test_build.check_bot_safety()` enforces what it can:
+  - `benchmark/*` and bot pull requests never get Cloudflare previews;
+  - never enable "Allow GitHub Actions to create and approve pull requests";
+  - never give the bot App the Workflows permission;
+  - never call a review, approve, or merge API from a workflow;
+  - never reference the Cloudflare secrets in `benchmark-issue.yml`;
+  - never interpolate `github.event.issue.body` into a shell line (it goes
+    through the `ISSUE_BODY` env var).
+  - never let the bot add a game: the form accepts only a `game_id` or name
+    already in `data/games.yaml`, and a new game comes in its own pull request.
+- `.github/CODEOWNERS` is the maintainer list, and a code owner's approval is
+  required to merge. Adding a maintainer means adding their `@username` there
+  and giving them write access. Never add a bot.
+- A change to the issue form's labels or options goes in
+  `issue_to_result.py` (`FIELDS`, `CAPTURE_TOOLS`, `WHO_RAN_IT`, `OSES`,
+  `GRAPHICS_APIS`) and `tests/fixtures/issues/valid.md` in the same commit.
+  `test_build.check_issue_form_matches_script()` fails otherwise, and a new
+  `checks.PROOF_METHODS` value needs a form option.
 - The blog is Astro, scoped to `/blog/`. `build.py` still owns the dashboard,
   the API, the sitemap, and `llms.txt`, and it lists non-draft posts in both.
   Astro builds after `build.py`, because `<BenchChart>` and the review spec
@@ -297,7 +330,7 @@ python -m pip install -r requirements.txt
 python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
-python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
+python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\issue_to_result.py scripts\test_build.py
 npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
 npm --prefix blog run build              # after build.py; writes site/blog/
 git diff --check
@@ -340,7 +373,7 @@ is now stale:
   [scripts/build.py](scripts/build.py) plus the version references and feature
   summary in `README.md` and `docs/COPILOT_HANDOFF.md`.
 - **Blog post published** → a POST bump (see above), with a changelog line
-  "New post: <title>".
+  "New post: `<title>`".
 - **Fixtures or published runs added/removed** → refresh the counts (catalog
   GPUs, official runs, community runs, dashboard summaries) in `README.md` and
   `docs/COPILOT_HANDOFF.md`, for the published `data/` and the

@@ -1,0 +1,160 @@
+name: Benchmark issue
+# Turns a "Benchmark result" issue (.github/ISSUE_TEMPLATE/benchmark.yml, which
+# applies the benchmark label) into data/community/<gpu_id>/result_*.yaml on a
+# benchmark/issue-<N> branch, and opens a pull request for a code owner
+# (.github/CODEOWNERS) to review. Editing the issue rebuilds the same branch.
+#
+# Safety, in short (details in docs/COPILOT_HANDOFF.md):
+# - Writes use a short-lived token from the repo's own GitHub App, never
+#   GITHUB_TOKEN, so "Allow GitHub Actions to create and approve pull requests"
+#   stays off. The App has no Workflows permission, so it can't change files in
+#   .github/workflows/, and it isn't a code owner, so it can't approve.
+# - This workflow never sees the Cloudflare secrets. preview.yml skips bot PRs
+#   and benchmark/* branches, and build.yml deploys only from main.
+# - The issue text is untrusted. It reaches the script through an env var and a
+#   file, never through ${{ }} in a shell line, and only the one generated file
+#   is committed.
+on:
+  issues:
+    types: [opened, edited, labeled, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-issue-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+env:
+  # The bot stops opening new pull requests while this many are waiting.
+  MAX_OPEN_PRS: 10
+
+jobs:
+  submit:
+    name: Result file and pull request
+    if: >-
+      github.event.issue.state == 'open' &&
+      contains(github.event.issue.labels.*.name, 'benchmark') &&
+      github.event.issue.user.type != 'Bot' &&
+      (github.event.action != 'labeled' || github.event.label.name == 'benchmark')
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: benchmark/issue-${{ github.event.issue.number }}
+      OUT: ${{ github.workspace }}/../benchmark-out
+    steps:
+      - name: Get a token from the benchmark bot App
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.BENCHMARK_BOT_APP_ID }}
+          private-key: ${{ secrets.BENCHMARK_BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ steps.app.outputs.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Check the review queue
+        id: queue
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          mkdir -p "$OUT"
+          mine=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
+          waiting=$(gh pr list --state open --limit 200 --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("benchmark/issue-"))] | length')
+          if [ "$mine" = "0" ] && [ "$waiting" -ge "$MAX_OPEN_PRS" ]; then
+            printf '%s\n%s\n' '<!-- benchmark-bot -->' \
+              "**The review queue is full** ($waiting results are waiting). Edit this issue later, or a maintainer will re-run it." \
+              > "$OUT/comment.md"
+            echo "full=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the result file
+        id: result
+        if: steps.queue.outputs.full != 'true'
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          printf '%s' "$ISSUE_BODY" > "$OUT/body.md"
+          set +e
+          python scripts/issue_to_result.py --body-file "$OUT/body.md" --issue "$ISSUE_NUMBER" \
+            --author "$ISSUE_AUTHOR" --out-dir "$OUT"
+          status=$?
+          set -e
+          case "$status" in
+            0) echo "ok=true" >> "$GITHUB_OUTPUT" ;;
+            1) echo "ok=false" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$status" ;;
+          esac
+
+      - name: Push the branch and open or update the pull request
+        id: pr
+        if: steps.result.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          APP_SLUG: ${{ steps.app.outputs.app-slug }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          file=$(cat "$OUT/path.txt")
+          case "$file" in
+            data/community/*/result_*.yaml) ;;
+            *) echo "unexpected path: $file"; exit 1 ;;
+          esac
+          # Nothing but the one new file may be committed.
+          extra=$(git status --porcelain --untracked-files=all | grep -v -F -x "?? $file" || true)
+          if [ -n "$extra" ]; then echo "unexpected changes:"; echo "$extra"; exit 1; fi
+
+          user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -- "$file"
+          git commit -m "Add benchmark result from issue #$ISSUE_NUMBER"
+          git push --force origin "$BRANCH"
+
+          number=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh pr edit "$number" --title "$(cat "$OUT/title.txt")" --body-file "$OUT/pr_body.md"
+          else
+            gh pr create --base main --head "$BRANCH" --title "$(cat "$OUT/title.txt")" \
+              --body-file "$OUT/pr_body.md" --label benchmark
+          fi
+          echo "url=$(gh pr view "$BRANCH" --json url --jq .url)" >> "$GITHUB_OUTPUT"
+
+      - name: Reply on the issue
+        if: ${{ !cancelled() }}
+        uses: actions/github-script@v7
+        env:
+          PR_URL: ${{ steps.pr.outputs.url }}
+          OK: ${{ steps.result.outputs.ok }}
+        with:
+          github-token: ${{ steps.app.outputs.token }}
+          script: |
+            const fs = require("fs");
+            const path = require("path");
+            const marker = "<!-- benchmark-bot -->";
+            const file = path.join(process.env.OUT, "comment.md");
+            const fallback = `${marker}\n**Something went wrong on our side** while processing this issue. A maintainer will take a look.`;
+            let body = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : fallback;
+            if (process.env.OK === "true") {
+              body = process.env.PR_URL ? `${body}\n\nPull request: ${process.env.PR_URL}` : fallback;
+            }
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find((comment) => comment.body?.includes(marker) && comment.user?.type === "Bot");
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

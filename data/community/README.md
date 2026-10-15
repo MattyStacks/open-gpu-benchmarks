@@ -16,7 +16,14 @@ Cyberpunk 2077 built-in benchmark runs can be imported with
 `result_YYYYMMDD_cyberpunk_2077.yaml` per day with one `result` item per run; see
 [docs/CYBERPUNK_BENCHMARK.md](../../docs/CYBERPUNK_BENCHMARK.md).
 
-**New here? Follow the step-by-step guide with examples in
+**Most results arrive through a
+[Benchmark result issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark.yml):**
+a bot (`scripts/issue_to_result.py`) writes the file into this folder and opens
+a pull request for a maintainer; see
+[Submit through an issue](../../docs/COMMUNITY_SUBMISSIONS.md#submit-through-an-issue).
+Bulk or scripted uploads use a pull request instead.
+
+**Writing the file yourself? Follow the step-by-step guide with examples in
 [CONTRIBUTING.md](../../CONTRIBUTING.md).** Start from
 [`templates/community_submission.yaml`](../../templates/community_submission.yaml),
 or [`templates/community_found_result.yaml`](../../templates/community_found_result.yaml)

@@ -87,32 +87,32 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - [ ] **Importers for other games' built-in benchmarks**, using the same
   one-file-per-run naming so re-runs skip imported runs.
 
-- [ ] **Simple benchmark submission flow (no PRs).** PRs are too complex for
-  most people. Build a low-friction way to get benchmarks in.
-  - Goal: a contributor with a capture (or typed-in numbers) submits without
-    forking, branching, or writing YAML.
-  - Options to evaluate: a GitHub issue form (`.github/ISSUE_TEMPLATE/*.yml`)
-    with an Action that parses the issue, runs `scripts/checks.py`, and opens
-    the PR on the submitter's behalf; or a static web form on the dashboard
-    that generates the result YAML (using `parse.py` logic) for download or
-    prefilled issue.
-  - Anonymity: submissions are anonymous by default, so don't copy the issue
-    author into `submitted_by` unless they ask. A bot that commits issue-form
-    results also keeps the submitter out of the commit history, which a PR
-    can't (GitHub shows the PR author and commit email). Consider a
-    "Submit a result you found" form that asks for `credit.source_url`.
-  - Must keep: file name `result_YYYYMMDD_<game_id>.yaml`, `game_id` from
-    `data/games.yaml` (the form's game field should be a dropdown generated
-    from it, with a "not listed" path that adds the entry), required `system.os`
-    and `proof.method`, frame generation and upscaling off (or
-    `preset_upscaling: true`), an optional `credit` block for found results,
-    and raw capture attachments preserved under
-    `data/community/<gpu_id>/raw/`.
-  - Feedback: post validation errors back on the issue in plain language.
-  - Docs: update `CONTRIBUTING.md`, `docs/COMMUNITY_SUBMISSIONS.md`,
-    `data/community/README.md`; add rule headings for any new checks.
-  - Done when: a first-time user can submit one run end to end from the
-    browser and a maintainer only has to review and merge.
+- [ ] **Benchmark issue follow-ups** (`benchmark-issue.yml`,
+  `scripts/issue_to_result.py`). The issue form is now the primary way to
+  submit.
+  - Finish the one-time setup in `docs/COPILOT_HANDOFF.md` ("Benchmark issues
+    and the bot App"): create and install the App, add
+    `BENCHMARK_BOT_APP_ID` and `BENCHMARK_BOT_PRIVATE_KEY`, and set the "Base
+    Rules" code-owner review settings. Then file a test issue end to end.
+  - Parse or scrape what people attach, into the same run dict
+    `build_run()` returns:
+    - a PresentMon, CapFrameX, or MangoHud CSV attached to the issue, through
+      `parse.py`, kept under `raw/`;
+    - a Cyberpunk `summary.json`, through `import_cyberpunk.py`;
+    - a screenshot;
+    - a review URL.
+  - Fields the form doesn't take yet: Linux-only `system` fields (distro,
+    kernel, Mesa, Proton, ...), per-run `time`, `gpu_power_w` for laptops,
+    `device_name`, and `permission` credits for unpublished numbers.
+  - A static web form on the dashboard that prefills the issue.
+  - Maybe later: let the bot add a game that isn't in `data/games.yaml`.
+    For now the form only accepts listed games, and a new game needs its own
+    pull request, so the registry doesn't fill up with one-off entries.
+  - Spam: watch whether the 10-open-PR queue cap is enough. Options are a
+    per-author limit, or holding first-time submitters until a maintainer
+    adds a label.
+  - An "Official benchmark review" or "Report a bad result" form could reuse
+    the same bot (see the items below).
 - [ ] **Flesh out official benchmarks and cross-check them against community
   data.** Official runs must stay close to community runs for the same
   product, game, resolution, preset, and OS. Today only the reverse exists:
@@ -248,10 +248,6 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Tooling and bugs
 
-- [ ] **Resume the benchmark issue form (PR #25).** Game linking is done:
-  rework `scripts/issue_to_result.py` to take a `game_id` (the form's Game
-  field becomes a dropdown generated from `data/games.yaml`) instead of
-  matching free text with `canonical()` and `slug()`.
 - [ ] **Warn when a file name's game part doesn't match `game_id`.** Files are
   named `result_YYYYMMDD_<game_id>.yaml`, but older community fixtures use
   short names such as `_cyberpunk`, so this isn't checked yet.
@@ -272,6 +268,12 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **Unreleased (branch `feat/benchmark-issue-form`, 2026-10-15)**
+  - "Benchmark result" issue form, `benchmark-issue.yml`, and
+    `scripts/issue_to_result.py`: an issue becomes a checked community file
+    and a bot pull request from a GitHub App, with no Cloudflare preview. The
+    form's Game field takes a `game_id` or registry name; only listed games.
+  - `.github/CODEOWNERS` as the maintainer list.
 - **v1.2.0.0 (2026-10-15, branch `feat/game-registry`): game registry**
   - `data/games.yaml` with `id`, `name`, `type`, `year`, and optional
     `steam_appid`, `igdb_id`, `url`, `notes`; results use `game_id`

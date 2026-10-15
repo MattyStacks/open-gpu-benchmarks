@@ -83,6 +83,21 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - [ ] **Benchmark issue follow-ups** (`benchmark-issue.yml`,
   `scripts/issue_to_result.py`). The issue form is now the primary way to
   submit.
+  - **On hold (2026-10-15):** PR #25 (branch `feat/benchmark-issue-form`) is
+    a draft until game linking lands on `main`. When resuming:
+    1. Merge `main` into the branch.
+    2. Rework game handling in `issue_to_result.py` to use the new game
+       IDs and links instead of names. Three places depend on the free-text
+       `game` today:
+       - `canonical()` reuses existing game and preset spellings, ignoring
+         case;
+       - `slug()` builds the file name;
+       - the form's **Game** input.
+
+       It could become a dropdown or an ID input.
+    3. Update `tests/fixtures/issues/valid.md`, `check_issue_to_result`, and
+       `check_issue_form_matches_script` in `test_build.py`.
+    4. Run all checks, then mark the PR ready.
   - Finish the one-time setup in `docs/COPILOT_HANDOFF.md` ("Benchmark issues
     and the bot App"): create and install the App, add
     `BENCHMARK_BOT_APP_ID` and `BENCHMARK_BOT_PRIVATE_KEY`, and set the "Base

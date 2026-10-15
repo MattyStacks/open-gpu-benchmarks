@@ -25,11 +25,11 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 SITE_DIR = ROOT / "site"
 OUTPUT_DIR = SITE_DIR / "api" / "v1"
-SCHEMA_VERSION = "0.14"
+SCHEMA_VERSION = "0.15"
 # MAJOR.MINOR.DATA.POST: MAJOR = breaking data contract or API, MINOR = any
 # code change, DATA = newly published runs, POST = a new or updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
-RELEASE_VERSION = "1.1.0.0"
+RELEASE_VERSION = "1.2.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.
@@ -88,9 +88,10 @@ def os_details(system):
     return details
 
 
-def build_record(run, result, result_index, source, source_path, gpu_by_id):
+def build_record(run, result, result_index, source, source_path, gpu_by_id, games_by_id=None):
     """Expand one checked result entry into a flat run record."""
     gpu = gpu_by_id[run["gpu_id"]]
+    game = (games_by_id or {}).get(run.get("game_id"), {})
     benchmark_type = run.get("benchmark_type", "game")
     system = run.get("system") or {}
     proof = run.get("proof") or {}
@@ -112,7 +113,11 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
         "tdp_w": catalog_tdp_w(gpu),
         "benchmark_type": benchmark_type,
         "metrics": result,
-        "game": run.get("game", ""),
+        # game_id groups runs; the name, type, and year come from data/games.yaml.
+        "game_id": str(run.get("game_id", "")),
+        "game": game.get("name", ""),
+        "game_type": game.get("type", ""),
+        "game_year": game.get("year"),
         "game_version": str(run.get("version", "")),
         # The day the file was run (a found result's publish date), and the run's
         # optional local time. Neither groups runs; they're for filtering by age.
@@ -156,9 +161,9 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id):
     return record
 
 
-def source_records(runs, source, gpu_by_id):
+def source_records(runs, source, gpu_by_id, games_by_id):
     return [
-        build_record(run, result, result_index, source, path, gpu_by_id)
+        build_record(run, result, result_index, source, path, gpu_by_id, games_by_id)
         for path, run in runs[source]
         for result_index, result in enumerate(run["result"])
     ]
@@ -172,7 +177,7 @@ def aggregate_game_records(records, id_prefix):
         grouped[
             (
                 record["gpu_id"],
-                record["game"],
+                record["game_id"],
                 record["resolution"],
                 record["graphics_preset"],
                 record["upscaling"],
@@ -277,7 +282,7 @@ def gpu_summary(source, gpu, records, metadata):
     }
 
 
-SUMMARY_COLUMNS = ("GPU", "Game", "Resolution", "Preset", "Upscaling", "OS", "Source", "Avg FPS", "1% low", "Runs")
+SUMMARY_COLUMNS = ("GPU", "Benchmark", "Resolution", "Preset", "Upscaling", "OS", "Source", "Avg FPS", "1% low", "Runs")
 FORM_FACTOR_ORDER = ("Desktop", "Laptop", "Handheld", "Igpu")
 FORM_FACTOR_LABELS = {"Igpu": "Integrated"}
 
@@ -319,7 +324,7 @@ def records_by_form_factor(records):
 def method_lines(metadata):
     policy = metadata["comparison_policy"]
     return [
-        "Each row averages every run that matches on GPU, form factor, GPU power, game, "
+        "Each row averages every run that matches on GPU, form factor, GPU power, game or benchmark (by its ID), "
         "resolution, graphics preset, upscaling, and OS.",
         "Windows and Linux runs are never averaged together, and desktop and laptop GPUs never share a row.",
         "Frame generation is off in every comparable run. Upscaling is off unless the graphics preset turns it on.",
@@ -337,7 +342,7 @@ def write_text(site_dir, name, text):
 
 def benchmarks_html(records, metadata):
     page_url = f"{SITE_URL}benchmarks/"
-    description = "Every Open GPU Benchmarks summary as plain tables: average FPS and 1% lows by GPU, game, resolution, preset, and OS."
+    description = "Every Open GPU Benchmarks summary as plain tables: average FPS and 1% lows by GPU, game or benchmark, resolution, preset, and OS."
     sections = []
     for factor, rows in records_by_form_factor(records):
         head = "".join(f"<th>{column}</th>" for column in SUMMARY_COLUMNS)
@@ -431,7 +436,7 @@ def llms_txt(metadata, posts=()):
     )
     return f"""# Open GPU Benchmarks
 
-> Open, reviewable FPS benchmarks for desktop, laptop, handheld, and integrated GPUs. Each game result is an average FPS (and 1% low where the capture tool records one), grouped by GPU, game, resolution, graphics preset, upscaling, and OS. Official runs are maintainer-verified; community runs are reviewed in pull requests.
+> Open, reviewable FPS benchmarks for desktop, laptop, handheld, and integrated GPUs. Each game result is an average FPS (and 1% low where the capture tool records one), grouped by GPU, game or benchmark, resolution, graphics preset, upscaling, and OS. Official runs are maintainer-verified; community runs are reviewed in pull requests.
 
 {method}
 
@@ -441,6 +446,7 @@ def llms_txt(metadata, posts=()):
 - [Benchmark tables (HTML)]({SITE_URL}benchmarks/): the same rows as a plain web page
 - [Dashboard JSON]({SITE_URL}api/v1/dashboard.json): every summary with run counts, ranges, and per-run hardware detail
 - [GPU catalog JSON]({SITE_URL}api/v1/gpus.json): GPU specs plus official and community summaries per GPU
+- [Games JSON]({SITE_URL}api/v1/games.json): every game and benchmark a result can name, by ID
 - License: all benchmark data is public domain ([CC0 1.0]({DATA_LICENSE["url"]})). Use it for anything, including AI training, with no permission or credit needed.
 
 ## Project
@@ -495,16 +501,18 @@ def write_site_pages(site_dir, records, metadata):
 def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
     """Build the API into output_dir; also write the summary pages when site_dir is set."""
     gpus, catalog_issues = checks.load_catalog(data_dir)
-    runs, result_issues = checks.load_results(gpus, data_dir)
+    games, game_issues = checks.load_games(data_dir)
+    runs, result_issues = checks.load_results(gpus, data_dir, games)
     picks, pick_issues = checks.load_picks(gpus, data_dir)
-    issues = checks.Issues([*catalog_issues, *result_issues, *pick_issues])
+    issues = checks.Issues([*catalog_issues, *game_issues, *result_issues, *pick_issues])
     if checks.report(issues, "Checks (run validate.py for warnings)", show_warnings=False):
         print("Build stopped: fix the errors above; nothing was written to site/api.")
         return 1
     reviews_source = load_yaml(data_dir / "reviews.yaml")
     gpu_by_id = {gpu["id"]: gpu for gpu in gpus}
-    official = source_records(runs, "official", gpu_by_id)
-    community_raw = source_records(runs, "community", gpu_by_id)
+    games_by_id = {game["id"]: game for game in games}
+    official = source_records(runs, "official", gpu_by_id, games_by_id)
+    community_raw = source_records(runs, "community", gpu_by_id, games_by_id)
     official_summaries = aggregate_game_records(official, "official-summary")
     community_summaries = aggregate_game_records(community_raw, "community-summary")
     dashboard_records = sorted(
@@ -528,7 +536,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
                 "gpu_id",
                 "form_factor",
                 "gpu_power_w",
-                "game",
+                "game_id",
                 "resolution",
                 "graphics_preset",
                 "upscaling",
@@ -577,7 +585,12 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
         }
         for gpu in gpus
     ]
-    games = sorted({record["game"] for record in dashboard_records})
+    # The games that have summaries, for the dashboard's picker; games.json has them all.
+    used = {record["game_id"] for record in dashboard_records}
+    dashboard_games = sorted(
+        ({key: game.get(key) for key in ("id", "name", "type", "year")} for game in games if game["id"] in used),
+        key=lambda game: game["name"].lower(),
+    )
     resolutions = sorted(
         {record["resolution"] for record in dashboard_records},
         key=lambda value: (0, int(value.removesuffix("p")))
@@ -594,6 +607,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
     )
 
     write_json(output_dir, "gpus.json", {"metadata": metadata, "gpus": master_gpus})
+    write_json(output_dir, "games.json", {"metadata": metadata, "games": games, "count": len(games)})
     write_json(output_dir, "official.json", {"metadata": metadata, "records": official, "count": len(official)})
     write_json(
         output_dir,
@@ -610,7 +624,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
         "dashboard.json",
         {
             "metadata": metadata,
-            "games": games,
+            "games": dashboard_games,
             "resolutions": resolutions,
             "graphics_presets": graphics_presets,
             "records": dashboard_records,
@@ -623,7 +637,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
         write_site_pages(site_dir, dashboard_records, metadata)
 
     print(
-        f"GPUs: {len(gpus)} | Official runs: {len(official)} | "
+        f"GPUs: {len(gpus)} | Games: {len(games)} | Official runs: {len(official)} | "
         f"Community runs: {len(community_raw)} | Dashboard summaries: "
         f"{len(dashboard_records)} | Output: {output_dir}"
     )

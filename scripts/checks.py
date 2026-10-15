@@ -18,6 +18,8 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 CATALOG_DOC = "data/gpus/README.md"
 RESULTS_DOC = "docs/COMMUNITY_SUBMISSIONS.md"
+# Rules with these prefixes are explained in RESULTS_DOC; the rest in CATALOG_DOC.
+RESULTS_DOC_PREFIXES = ("result-", "community-", "game-")
 REPO_URL = "https://github.com/MattyStacks/open-gpu-benchmarks/blob/main"
 
 GPU_VENDORS = ("amd", "intel", "nvidia")
@@ -26,7 +28,7 @@ RESULT_SOURCES = ("official", "community")
 RESULT_GLOBS = ("result_*.yaml", "result_*.yml")
 OUTLIER_RATIO = 0.25
 GITHUB_USER_PATTERN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$")
-# result_YYYYMMDD_<game>, with optional _2, _3 repeats; older files also end in a username.
+# result_YYYYMMDD_<game_id>, with optional _2, _3 repeats; older files also end in a username.
 COMMUNITY_FILENAME = re.compile(r"^result_\d{8}_[a-z0-9]+(?:[_-][a-z0-9]+)*$", re.IGNORECASE)
 ID_PATTERN = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 MEMORY_TOKEN = re.compile(r"^(\d+)gb$")
@@ -185,7 +187,7 @@ class Issue:
 
     def doc(self):
         in_results = any(part in ("official", "community") for part in self.path.split("/"))
-        return RESULTS_DOC if in_results or self.rule.startswith(("result-", "community-")) else CATALOG_DOC
+        return RESULTS_DOC if in_results or self.rule.startswith(RESULTS_DOC_PREFIXES) else CATALOG_DOC
 
     def format(self):
         see = f"See {REPO_URL}/{self.doc()}#{self.rule}"
@@ -642,7 +644,7 @@ def submitter_errors(path, run, issues):
         issues.error(
             path,
             "community-filename",
-            f"file name '{path.name}' must follow result_YYYYMMDD_<game>{path.suffix}, such as result_20261003_cyberpunk{path.suffix}",
+            f"file name '{path.name}' must follow result_YYYYMMDD_<game_id>{path.suffix}, such as result_20261003_cyberpunk_2077{path.suffix}",
         )
     submitted_by = run.get("submitted_by")
     if submitted_by is None:
@@ -808,7 +810,43 @@ def result_os(run):
     return system.get("os") if isinstance(system, dict) else None
 
 
-def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()):
+def game_stub(game_id, name=None):
+    """A data/games.yaml entry to paste in and fill out."""
+    name = name or game_id.replace("_", " ").title()
+    return f"\n      - id: {game_id}\n        name: {name}\n        type: game\n        year: YYYY"
+
+
+def slug(text):
+    return re.sub(r"[^a-z0-9]+", "_", str(text).lower()).strip("_")
+
+
+def check_game_id(path, run, games_by_id, issues):
+    """A game run names its game by an ID from data/games.yaml, never by free text."""
+    game_id = run.get("game_id")
+    if "game" in run:
+        old = run["game"]
+        match = next((game["id"] for game in games_by_id.values() if str(old).strip().lower() == game["name"].lower()), None)
+        if match:
+            hint = f"replace 'game: {old}' with 'game_id: {match}'"
+        else:
+            hint = (
+                f"replace 'game: {old}' with 'game_id:' and an ID from data/games.yaml; if the game isn't there yet, "
+                f"add it in the same pull request:{game_stub(slug(old), old)}"
+            )
+        issues.error(path, "result-game-id", f"'game' is replaced by 'game_id'; {hint}")
+        return
+    if game_id is None:
+        issues.error(path, "result-game-id", "missing game_id; use the game's ID from data/games.yaml, such as cyberpunk_2077")
+    elif not is_text(game_id) or game_id not in games_by_id:
+        issues.error(
+            path,
+            "result-unknown-game",
+            f"game_id '{game_id}' is not in data/games.yaml; if it's a new game or benchmark, add it in the same "
+            f"pull request (id, name, type, year, plus steam_appid or url when the game has one):{game_stub(slug(game_id))}",
+        )
+
+
+def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=(), games_by_id=None):
     """Check one result file; return its result entries when they are usable."""
     if not isinstance(run, dict):
         issues.error(path, "result-not-mapping", "a result file holds fields at the left margin, not an empty file or a '-' list")
@@ -842,8 +880,7 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
 
     if run.get("benchmark_type", "game") != "game":
         return entries
-    if not run.get("game"):
-        issues.error(path, "result-field", "missing game")
+    check_game_id(path, run, games_by_id or {}, issues)
     if run.get("frame_generation", False):
         issues.error(path, "result-frame-generation", "frame generation must be disabled for comparable game runs")
     check_system_os(path, run, issues)
@@ -930,7 +967,7 @@ def official_baseline(run, entry, official_runs):
     matches = [
         float(other_entry["avg_fps"])
         for other, other_entries in official_runs
-        if other.get("gpu_id") == run.get("gpu_id") and other.get("game") == run.get("game")
+        if other.get("gpu_id") == run.get("gpu_id") and other.get("game_id") == run.get("game_id")
         and result_os(other) == result_os(run)
         for other_entry in other_entries
         if other_entry.get("resolution") == entry.get("resolution")
@@ -959,9 +996,15 @@ def check_outliers(community_runs, official_runs, issues):
                 )
 
 
-def load_results(catalog, data_dir=DATA_DIR):
-    """Return ({source: [(path, run)]}, issues) for every usable result file."""
+def load_results(catalog, data_dir=DATA_DIR, games=None):
+    """Return ({source: [(path, run)]}, issues) for every usable result file.
+
+    games is the list from load_games(); when left out it is loaded here, and
+    its own problems are left for load_games' caller to report."""
     issues = Issues()
+    if games is None:
+        games = load_games(data_dir)[0]
+    games_by_id = {game["id"]: game for game in games}
     catalog_by_id = {entry["id"]: entry for entry in catalog}
     reference_ids = {path.stem for path in (data_dir / "gpus" / "reference").rglob("*.yaml")}
     runs = {}
@@ -973,12 +1016,96 @@ def load_results(catalog, data_dir=DATA_DIR):
             parsed, run = load_yaml_file(path, issues)
             if not parsed:
                 continue
-            entries = check_result_file(source, path, run, catalog_by_id, issues, reference_ids)
+            entries = check_result_file(source, path, run, catalog_by_id, issues, reference_ids, games_by_id)
             if entries is not None:
                 runs[source].append((path, run, entries))
     official = [(run, entries) for _, run, entries in runs["official"] if run.get("benchmark_type", "game") == "game"]
     check_outliers(runs["community"], official, issues)
     return {source: [(path, run) for path, run, _ in items] for source, items in runs.items()}, issues
+
+
+# --- Games ---------------------------------------------------------------------
+
+# data/games.yaml: every game and benchmark a result can name with game_id.
+GAME_TYPES = ("game", "synthetic", "engine_demo")
+GAME_REQUIRED = ("id", "name", "type", "year")
+# Store IDs and url are optional (not every game is on Steam or has a page),
+# but should be filled in whenever the game has one.
+GAME_FIELDS = (*GAME_REQUIRED, "steam_appid", "igdb_id", "url", "notes")
+GAME_STORE_IDS = ("steam_appid", "igdb_id")
+FIRST_GAME_YEAR = 1980
+
+
+def check_game(path, label, item, issues):
+    """Check one registry entry; return True when it can be used."""
+    if not isinstance(item, dict):
+        issues.error(path, "game-field", f"{label} must be a '- id: ...' item with its fields indented under it")
+        return False
+    for key in sorted(set(item) - set(GAME_FIELDS)):
+        issues.error(path, "game-field", f"{label}: unknown field '{key}' (allowed: {', '.join(GAME_FIELDS)})")
+    ok = True
+    for key in GAME_REQUIRED:
+        if item.get(key) is None:
+            issues.error(path, "game-field", f"{label} is missing '{key}'")
+            ok = False
+    game_id, name, game_type, year = (item.get(key) for key in GAME_REQUIRED)
+    if game_id is not None and not (isinstance(game_id, str) and ID_PATTERN.match(game_id)):
+        issues.error(path, "game-id-format", f"{label}: id '{game_id}' may only use lowercase letters, digits, and single underscores")
+        ok = False
+    if name is not None and not is_text(name):
+        issues.error(path, "game-field", f"{label}: name must be text (quote it if YAML reads it as a number)")
+        ok = False
+    if game_type is not None and game_type not in GAME_TYPES:
+        issues.error(path, "game-field", f"{label}: type '{game_type}' must be one of {', '.join(GAME_TYPES)}")
+        ok = False
+    last_year = date.today().year + 1
+    if year is not None and not (isinstance(year, int) and not isinstance(year, bool) and FIRST_GAME_YEAR <= year <= last_year):
+        issues.error(path, "game-field", f"{label}: year must be a release year from {FIRST_GAME_YEAR} to {last_year}, such as 2020")
+        ok = False
+    for key in GAME_STORE_IDS:
+        value = item.get(key)
+        if value is not None and not (isinstance(value, int) and not isinstance(value, bool) and value > 0):
+            issues.error(path, "game-field", f"{label}: {key} must be a whole number, such as 1091500, without quotes")
+    if item.get("url") is not None and not (isinstance(item["url"], str) and HTTPS_URL.match(item["url"])):
+        issues.error(path, "game-field", f"{label}: url must be an https:// link")
+    if item.get("notes") is not None and not is_text(item["notes"]):
+        issues.error(path, "game-field", f"{label}: notes must be text")
+    return ok
+
+
+def load_games(data_dir=DATA_DIR):
+    """Return (games in file order, issues) from data/games.yaml, which is required."""
+    issues = Issues()
+    path = data_dir / "games.yaml"
+    if not path.is_file():
+        issues.error(path, "game-registry", "data/games.yaml is missing; every result's game_id must be listed there")
+        return [], issues
+    parsed, data = load_yaml_file(path, issues)
+    if not parsed:
+        return [], issues
+    items = data.get("games") if isinstance(data, dict) else None
+    if not isinstance(items, list):
+        issues.error(path, "game-registry", "the file must hold a 'games:' list with one '- id: ...' item per game")
+        return [], issues
+    games, names = {}, {}
+    for number, item in enumerate(items, start=1):
+        label = f"game {number}" + (f" ({item['id']})" if isinstance(item, dict) and is_text(item.get("id")) else "")
+        if not check_game(path, label, item, issues):
+            continue
+        game_id, name = item["id"], item["name"].strip()
+        if game_id in games:
+            issues.error(path, "game-duplicate", f"{label}: id '{game_id}' is listed twice")
+            continue
+        if name.lower() in names:
+            issues.error(
+                path,
+                "game-duplicate",
+                f"{label}: name '{name}' is already used by {names[name.lower()]}; give each edition or test its own name",
+            )
+            continue
+        names[name.lower()] = game_id
+        games[game_id] = {key: item[key] for key in GAME_FIELDS if item.get(key) is not None} | {"name": name}
+    return list(games.values()), issues
 
 
 # --- Featured picks ------------------------------------------------------------

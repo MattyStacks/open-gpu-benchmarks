@@ -11,7 +11,11 @@ export type SummaryRecord = {
   gpu_id: string;
   gpu_name: string;
   gpu_vendor: string;
+  // The registry ID from data/games.yaml; game is its display name.
+  game_id: string;
   game: string;
+  game_type: "game" | "synthetic" | "engine_demo";
+  game_year: number | null;
   resolution: string;
   graphics_preset: string;
   upscaling: string;
@@ -21,8 +25,11 @@ export type SummaryRecord = {
   run_count: number;
 };
 
+export type DashboardGame = { id: string; name: string; type: SummaryRecord["game_type"]; year: number };
+
 export type Dashboard = {
   metadata: { release_version: string; schema_version: string; generated_at: string };
+  games: DashboardGame[];
   records: SummaryRecord[];
 };
 

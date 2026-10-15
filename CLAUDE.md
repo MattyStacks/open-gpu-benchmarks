@@ -62,7 +62,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.1.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.2.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -79,6 +79,8 @@ LICENSE                            MIT, for the code
 data/LICENSE                       CC0 1.0, for all benchmark data (data/ and its API)
 .github/pull_request_template.md   PR checklist, including agreeing to CC0 for results
 data/reviews.yaml                  optional review links (still in the API; no longer shown)
+data/games.yaml                    game registry: every game_id a result may use, with
+                                   name, type, year, and optional store IDs (game-* rules)
 data/picks.yaml                    featured GPU picks: one dashboard card per GPU maker
                                    with affiliate store links (pick-* rules)
 data/official/<gpu_id>/result_*.yaml
@@ -129,6 +131,17 @@ unless repository policy changes.
 - `result:` is always a YAML list; every resolution/preset profile needs its
   leading `-`. A duplicated `result:` key silently drops data.
 - Desktop and laptop GPU records never share a summary group.
+- Every game run names its game with `game_id`, an ID from
+  `data/games.yaml` (`checks.load_games()`, rules `game-*`,
+  `result-game-id`, `result-unknown-game`). The registry supplies the
+  display name, `type` (`game`, `synthetic`, or `engine_demo`), and `year`,
+  all required. `steam_appid`, `igdb_id`, and `url` are optional, because
+  not every game is on Steam or has a page, but fill them in whenever the
+  game has one, and never guess them. `game_id` is the grouping key. A
+  remaster, edition, or different test (Steel Nomad vs Steel Nomad Light)
+  gets its own ID; a patch goes in `version`. The old free-text `game:` key
+  is an error. A result for a game that isn't registered adds its registry
+  entry in the same change.
 - Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
   grouping key, so Windows and Linux runs are never averaged together; the
   distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
@@ -181,10 +194,10 @@ unless repository policy changes.
   Each `result` item may add a quoted local `time` (`'HH:MM'` or
   `'HH:MM:SS'`, no time zone; `result-time`). Neither is a grouping key; the
   API puts `date` and `time` on every run record.
-- Community files are anonymous by default. Only `gpu_id`, `game`, `date`, the
+- Community files are anonymous by default. Only `gpu_id`, `game_id`, `date`, the
   `result` list, `system.os`, and `proof.method` are required. `submitted_by`
   is optional (a valid GitHub username when set), and the file name is
-  `result_YYYYMMDD_<game>.yaml` (same-day repeats `_<game>_2`; older names
+  `result_YYYYMMDD_<game_id>.yaml` (same-day repeats `_<game_id>_2`; older names
   ending in a username still pass). Runs with no evidence show as
   "Unverified" (`proof_level: none`). Official runs are maintainer-verified
   by definition (`maintainer-verified`, "Verified") and may carry a `credit`

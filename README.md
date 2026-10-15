@@ -8,8 +8,10 @@ graph. The site is a static dashboard built from reviewable YAML, live at
 Posts, guides, and reviews built on the same data live at
 <https://opengpubenchmarks.com/blog/>.
 
-Current version: `v1.1.0.0`: the blog, guides, and reviews section, and
-four-part `MAJOR.MINOR.DATA.POST` versions. v1.0.0 brought the first
+Current version: `v1.2.0.0`: a game registry, [data/games.yaml](data/games.yaml),
+that every result names by `game_id`, plus a required date on every result
+file. v1.1.0.0 added the blog, guides, and reviews section, and four-part
+`MAJOR.MINOR.DATA.POST` versions. v1.0.0 brought the first
 published results (Cyberpunk 2077 on the GeForce RTX 5080 Founders Edition)
 and a Cyberpunk 2077 benchmark importer. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and
 [docs/TODO.md](docs/TODO.md) for planned follow-ups.
@@ -39,9 +41,10 @@ reference, and the meaning of every check are in
 
 ```text
 data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml
-data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
-data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
+data/official/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
 data/community/<gpu_id>/raw/**                         optional raw evidence
+data/games.yaml                                        game registry: game_id -> name, type, year
                     ↓
 python scripts/build.py
                     ↓
@@ -49,6 +52,7 @@ site/api/v1/gpus.json                                  GPU-rooted master API
 site/api/v1/official/<gpu_id>/summary.json             generated GPU summary
 site/api/v1/community/<gpu_id>/summary.json            generated GPU summary
 site/api/v1/dashboard.json                             game-FPS dashboard data
+site/api/v1/games.json                                 the game registry as JSON
 ```
 
 Each result file describes one benchmark capture and contains a non-empty
@@ -123,7 +127,12 @@ each with `slot`, `name`, optional `gpu_id`, `note`, `label`, `vram_gb`,
 `tdp_w`, `form_factor`, and `links` (`retailer`, `retailer_name`, `url`), and
 `metadata.license` (`CC0-1.0`) to every API file. Schema `0.14` adds `date`
 (the result file's required `YYYY-MM-DD`) and `time` (the run's optional local
-`HH:MM[:SS]`, `""` when not set) to every run record; neither groups runs. The
+`HH:MM[:SS]`, `""` when not set) to every run record; neither groups runs.
+Schema `0.15` adds the game registry: results name their game with `game_id`
+from [data/games.yaml](data/games.yaml), every run record carries `game_id`,
+`game` (the registry name), `game_type`, and `game_year`, summaries group by
+`game_id`, `dashboard.json` `games` becomes a list of `{id, name, type, year}`
+objects, and `games.json` publishes the whole registry. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.
@@ -134,14 +143,18 @@ Copy [templates/community_submission.yaml](templates/community_submission.yaml)
 to the folder matching its `gpu_id`, for example:
 
 ```text
-data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml
+data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077.yaml
 ```
+
+The game is named by its `game_id` from [data/games.yaml](data/games.yaml). A
+new game is added there in the same pull request: `id`, `name`, `type`, and
+`year`, plus `steam_appid` or `url` when the game has one.
 
 Submissions are anonymous by default. A run needs only the product, game,
 resolution, preset, average FPS, `system.os`, and `proof.method`; your
 username (`submitted_by`), machine details, and evidence are optional. For a
 second file with the same date and game, add a number, such as
-`result_20261003_cyberpunk_2.yaml`. The result doesn't have to be yours: to add
+`result_20261003_cyberpunk_2077_2.yaml`. The result doesn't have to be yours: to add
 one from a video or review, start from
 [templates/community_found_result.yaml](templates/community_found_result.yaml)
 and link where you found it in `credit.source_url`. Upscaling is off unless the
@@ -215,13 +228,13 @@ run `Activate.ps1`, run
 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
 
 Use `scripts/parse.py` to convert PresentMon or MangoHud CSV data directly
-into `data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml` (it adds `_2`,
+into `data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml` (it adds `_2`,
 `_3`, ... instead of overwriting; `--submitted-by` is optional). It
 rejects IDs that aren't in the catalog and takes the form factor from the
 catalog entry:
 
 ```powershell
-python scripts/parse.py capture.csv --gpu-id rtx_5080_16gb_fe --game "Cyberpunk 2077" --os windows
+python scripts/parse.py capture.csv --gpu-id rtx_5080_16gb_fe --game-id cyberpunk_2077 --os windows
 ```
 
 `--os` is `windows` or `linux` (with an optional `--os-detail`). Without it, a

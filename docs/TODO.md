@@ -40,8 +40,15 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - [ ] **Confirm 3DMark fixed settings.** Check the fixed render resolution and
   preset for Steel Nomad, Steel Nomad Light, and the other benchmarks people
   will submit, and list them in `docs/COMMUNITY_SUBMISSIONS.md`. The Steel
-  Nomad template's `1440p` is unconfirmed. Consider a check that rejects a
-  3DMark `game` with the wrong resolution.
+  Nomad template now says `4K` (Light is the 1440p test); confirm it against
+  3DMark's technical guide. Consider a check that rejects a `synthetic`
+  `game_id` run at the wrong resolution, perhaps with a fixed `resolution` in
+  its `data/games.yaml` entry.
+- [ ] **Add Steel Nomad Light to `data/games.yaml`** when the first Light run
+  arrives (`3dmark_steel_nomad_light`, `type: synthetic`, 1440p).
+- [ ] **Fill in store IDs for the registered games.** `helldivers_2` and
+  `3dmark_steel_nomad` have no `steam_appid` or `url` yet. Add them after
+  checking each store page; never guess.
 - [ ] **Parsers for more capture tools (separate PR).** `parse.py` reads only
   PresentMon and MangoHud CSVs. Add CapFrameX, NVIDIA FrameView, MSI
   Afterburner/RTSS, and AMD Adrenalin exports, writing the matching
@@ -94,7 +101,9 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     results also keeps the submitter out of the commit history, which a PR
     can't (GitHub shows the PR author and commit email). Consider a
     "Submit a result you found" form that asks for `credit.source_url`.
-  - Must keep: file name `result_YYYYMMDD_<game>.yaml`, required `system.os`
+  - Must keep: file name `result_YYYYMMDD_<game_id>.yaml`, `game_id` from
+    `data/games.yaml` (the form's game field should be a dropdown generated
+    from it, with a "not listed" path that adds the entry), required `system.os`
     and `proof.method`, frame generation and upscaling off (or
     `preset_upscaling: true`), an optional `credit` block for found results,
     and raw capture attachments preserved under
@@ -157,6 +166,12 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   (see the official cross-check item above).
 
 ## Dashboard
+
+- [ ] **Search in the Benchmark picker.** The picker is a plain `<select>`
+  built from `dashboard.json` `games`, grouped by type. That list will get
+  long as `data/games.yaml` grows. Replace it with a searchable combobox
+  that matches on name and ID (later perhaps year or edition), keeps the
+  type groups, and stays usable with a keyboard and on phones.
 
 - [ ] **Show the internal render resolution of upscaled results**, for example
   "4K, renders at 1440p" for FSR 2.1 Quality, next to the upscaling pill. It
@@ -233,6 +248,14 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Tooling and bugs
 
+- [ ] **Resume the benchmark issue form (PR #25).** Game linking is done:
+  rework `scripts/issue_to_result.py` to take a `game_id` (the form's Game
+  field becomes a dropdown generated from `data/games.yaml`) instead of
+  matching free text with `canonical()` and `slug()`.
+- [ ] **Warn when a file name's game part doesn't match `game_id`.** Files are
+  named `result_YYYYMMDD_<game_id>.yaml`, but older community fixtures use
+  short names such as `_cyberpunk`, so this isn't checked yet.
+
 - [ ] **Clear stale build output.** `build.py` never deletes old files under
   `site/api/v1/`. After an ID rename, a local preview still serves the old
   per-product `summary.json` files. CI is unaffected because it starts from a
@@ -248,6 +271,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   `main`. Checked 2026-10-13: `main` has no protection or rulesets.
 
 ## Recently completed
+
+- **v1.2.0.0 (2026-10-15, branch `feat/game-registry`): game registry**
+  - `data/games.yaml` with `id`, `name`, `type`, `year`, and optional
+    `steam_appid`, `igdb_id`, `url`, `notes`; results use `game_id`
+    (schema 0.15). This unblocks the benchmark issue form PR (#25).
 
 - **v1.1.0.0 (2026-10-14, branch `feature/blog`)**
   - `/blog/` (Astro) with posts, guides, reviews, tags, RSS, `<BenchChart>`,

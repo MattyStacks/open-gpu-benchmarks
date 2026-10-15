@@ -1,6 +1,6 @@
 gpu_id: rtx_4080_super_16gb_fe
 benchmark_type: game
-game: Alan Wake 2
+game_id: alan_wake_2
 date: '2026-10-03'
 version: '1.2'
 synthetic: true

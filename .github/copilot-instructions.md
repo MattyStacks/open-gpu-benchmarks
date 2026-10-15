@@ -43,6 +43,17 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   name's `YYYYMMDD` (`result-date-filename`). Each `result` item may add a
   quoted local `time` (`'HH:MM'` or `'HH:MM:SS'`, no time zone;
   `result-time`). Neither is a grouping key.
+- Every game run names its game with `game_id`, an ID from
+  `data/games.yaml` (`checks.load_games()`, rules `game-*`,
+  `result-game-id`, `result-unknown-game`). The registry supplies the
+  display name, `type` (`game`, `synthetic`, or `engine_demo`), and `year`,
+  all required. `steam_appid`, `igdb_id`, and `url` are optional, because
+  not every game is on Steam or has a page, but fill them in whenever the
+  game has one, and never guess them. `game_id` is the grouping key. A
+  remaster, edition, or different test (Steel Nomad vs Steel Nomad Light)
+  gets its own ID; a patch goes in `version`. The old free-text `game:` key
+  is an error. A result for a game that isn't registered adds its registry
+  entry in the same change.
 - Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
   grouping key, so Windows and Linux runs are never averaged together; the
   distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
@@ -59,7 +70,7 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   `p1_low` (`result-p1-low-required`); Adrenalin and `other` only warn, and
   an `in_game_benchmark` file gets one `info` note (`checks.P1_LOW_INFO_METHODS`;
   info never fails and is a GitHub `::notice`). A 3DMark run is
-  a normal game run (`game: 3DMark Steel Nomad`) with the graphics-test FPS as
+  a normal game run (`game_id: 3dmark_steel_nomad`) with the graphics-test FPS as
   `avg_fps` and the result URL as `proof.summary_source`.
 - A community average more than 25% from the matching official average fails
   `community-outlier` (`OUTLIER_RATIO` in `scripts/checks.py`).
@@ -68,9 +79,9 @@ commit everything, push, and open a PR into `main`; one topic per branch.
 - Treat raw capture evidence as preferred and preserve its reference when
   correcting or removing a record.
 - Community result files are anonymous by default and named
-  `result_YYYYMMDD_<game>.yaml` (same-day repeats add `_2`, `_3`).
+  `result_YYYYMMDD_<game_id>.yaml` (same-day repeats add `_2`, `_3`).
   `submitted_by` is optional and must be a valid GitHub username when set.
-  Only `gpu_id`, `game`, `date`, the `result` list, `system.os`, and
+  Only `gpu_id`, `game_id`, `date`, the `result` list, `system.os`, and
   `proof.method` are required; community runs with no evidence get `proof_level: none`
   ("Unverified"). Official runs are maintainer-verified by definition
   (`maintainer-verified`, "Verified") and may carry a `credit` with just a

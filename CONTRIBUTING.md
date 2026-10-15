@@ -91,7 +91,7 @@ Create **one file per game run** in your product's folder:
 data/
 └── community/
     └── rtx_5080_16gb_fe/                      <- folder name = gpu_id
-        ├── result_20261003_cyberpunk.yaml          <- your file
+        ├── result_20261003_cyberpunk_2077.yaml     <- your file
         └── raw/
             └── cyberpunk_1440p.csv                  <- optional capture (recommended)
 ```
@@ -99,13 +99,20 @@ data/
 The file name has three parts. It doesn't include your name:
 
 ```text
-result_20261003_cyberpunk_2.yaml
-       └──┬───┘ └───┬────┘ ┬
-       date run   game   repeat
-       (YYYYMMDD) (no     (only if you already
-                  spaces) have a file for that
-                          day and game)
+result_20261003_cyberpunk_2077_2.yaml
+       └──┬───┘ └─────┬──────┘ ┬
+       date run    game_id    repeat
+       (YYYYMMDD)  (from      (only if you already
+                   data/      have a file for that
+                   games.yaml) day and game)
 ```
+
+**Is your game in [`data/games.yaml`](data/games.yaml)?** Every result names
+its game by the `id` listed there, such as `cyberpunk_2077`. If your game or
+benchmark isn't listed yet, add it in the same pull request. It needs four
+lines (`id`, `name`, `type`, `year`). Add `steam_appid` or `url` too when the
+game has one; they're optional because not every game is on Steam. See
+[Adding a game or benchmark](docs/COMMUNITY_SUBMISSIONS.md#adding-a-game-or-benchmark).
 
 Your username is optional. Add `submitted_by: yourname` to the file if you want
 the dashboard to show "@yourname"; leave it out and the run shows as
@@ -123,7 +130,7 @@ Pick **one** way to create the file:
 
 ```powershell
 Copy-Item templates/community_submission.yaml `
-  data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml
+  data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077.yaml
 ```
 
 Then edit the values. The examples below show what to fill in.
@@ -144,7 +151,7 @@ file, one `result` item per run, and skips runs it has already imported. See
 ```powershell
 python scripts/parse.py capture.csv `
   --gpu-id rtx_5080_16gb_fe `
-  --game "Cyberpunk 2077" `
+  --game-id cyberpunk_2077 `
   --resolution 1440p `
   --graphics-preset Ultra `
   --os windows `
@@ -222,7 +229,7 @@ raw capture or a summary link when you can.
 
 ```yaml
 gpu_id: rtx_5080_16gb_fe   # must equal the folder name
-game: Cyberpunk 2077
+game_id: cyberpunk_2077
 date: '2026-10-03'         # the day you ran it, quoted; same as the file name
 result:
   - resolution: 1440p
@@ -245,7 +252,7 @@ placeholders.
 
 ```yaml
 gpu_id: rtx_5080_16gb_fe
-game: Cyberpunk 2077
+game_id: cyberpunk_2077
 date: '2026-10-13'   # the day the source was published; same as the file name
 credit:
   source_url: https://example.com/example-creator/gpu-review   # required
@@ -269,7 +276,7 @@ optional username and machine details.
 gpu_id: rtx_5080_16gb_fe
 submitted_by: mattystacks        # optional; shown as @mattystacks
 benchmark_type: game
-game: Cyberpunk 2077
+game_id: cyberpunk_2077
 date: '2026-10-03'
 version: "2.12"
 frame_generation: false
@@ -310,7 +317,7 @@ the catalog first if it isn't there yet. Laptop system RAM goes in
 
 ```yaml
 gpu_id: rtx_4070_laptop_8gb_lenovo_legion_pro_5_gen8
-game: Baldur's Gate 3
+game_id: baldurs_gate_3          # not in data/games.yaml yet: add it in the same pull request
 version: "4.1.1"
 frame_generation: false
 device_name: Lenovo Legion Pro 5
@@ -342,7 +349,7 @@ dashboard labels these as summary-only.
 
 ```yaml
 gpu_id: steam_deck_oled_16gb
-game: Cyberpunk 2077
+game_id: cyberpunk_2077
 date: '2026-10-03'
 version: "2.12"
 frame_generation: false
@@ -368,7 +375,7 @@ proof:
 | Field                                          | Required? | Notes                                                   |
 | ---------------------------------------------- | --------- | ------------------------------------------------------- |
 | `gpu_id`                                       | **Yes**   | Must match the folder name and a catalog file name under `data/gpus/` |
-| `game`                                         | **Yes**   | Free text, keep spelling consistent for grouping        |
+| `game_id`                                      | **Yes**   | The game's `id` in `data/games.yaml`; add a new game there in the same pull request |
 | `date`                                         | **Yes**   | Quoted `'YYYY-MM-DD'`, the same day as the file name; for a result you found, the publish date. See [date and time](docs/COMMUNITY_SUBMISSIONS.md#date-and-time) |
 | `result[].time`                                | Optional  | Quoted local 24-hour `'HH:MM'` or `'HH:MM:SS'`; no time zone |
 | `result` list                                  | **Yes**   | At least one entry; every entry starts with `-`         |
@@ -395,7 +402,9 @@ Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 | ------- | --------------- | --- |
 | Folder doesn't match `gpu_id` | `[result-folder]` | Move the file, or correct `gpu_id` |
 | Old or made-up ID such as `rtx_4090` | `[result-unknown-gpu]` | Use the exact catalog file name, such as `rtx_5080_16gb_fe` |
-| File name isn't `result_YYYYMMDD_<game>.yaml` | `[community-filename]` | Rename the file, such as `result_20261003_cyberpunk.yaml` |
+| File name isn't `result_YYYYMMDD_<game_id>.yaml` | `[community-filename]` | Rename the file, such as `result_20261003_cyberpunk_2077.yaml` |
+| Free-text `game_id: cyberpunk_2077` | `[result-game-id]` | Use `game_id: cyberpunk_2077` |
+| `game_id` that isn't in `data/games.yaml` | `[result-unknown-game]` | Fix the spelling, or add the game to `data/games.yaml` in the same pull request |
 | `submitted_by` with spaces or other characters a GitHub username can't have | `[community-submitter]` | Fix it, or remove the line to stay anonymous |
 | File not named `result_...` | `[result-filename]` | Rename it, or the build would skip it |
 | No `date`, or an unquoted `date: 2026-10-03` | `[result-date]` | Add `date: '2026-10-03'`, quoted |
@@ -573,7 +582,7 @@ raw capture, keep it, or say in the PR why it's being removed.
 <summary><strong>Official results, code, and docs</strong></summary>
 
 **Official results** use `templates/official_result.yaml` and live at
-`data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml`. They don't need
+`data/official/<gpu_id>/result_YYYYMMDD_<game_id>.yaml`. They don't need
 `submitted_by`. Community results are compared against them. Official runs are
 verified by the maintainer, either run by them or by someone they know ran a
 valid result, so they show as "Verified" even without a linked capture. A run
@@ -604,7 +613,7 @@ Every check rule lives once in `scripts/checks.py`; `build.py` and
 
 If you changed a rule, update every document that states it:
 `CONTRIBUTING.md`, `docs/COMMUNITY_SUBMISSIONS.md`, `data/community/README.md`,
-`data/gpus/README.md`, and `.github/copilot-instructions.md`.
+`data/gpus/README.md`, the `data/games.yaml` header, and `.github/copilot-instructions.md`.
 
 Do not commit the generated `site/api/` files (or `site/benchmarks/`,
 `site/blog/`, `llms*.txt`, `sitemap.xml`); the deploy workflow rebuilds them.

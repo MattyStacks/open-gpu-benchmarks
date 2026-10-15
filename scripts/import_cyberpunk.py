@@ -43,8 +43,8 @@ except ImportError:
 import checks
 from parse import percentile
 
-GAME = "Cyberpunk 2077"
-GAME_SLUG = "cyberpunk_2077"
+# The game's ID in data/games.yaml; result files are named after it too.
+GAME_ID = "cyberpunk_2077"
 STEAM_APP_ID = "1091500"
 RESULTS_SUBPATH = Path("CD Projekt Red") / "Cyberpunk 2077" / "benchmarkResults"
 RUN_FOLDER = re.compile(r"^benchmark_(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$")
@@ -73,7 +73,7 @@ FRAME_TIME_COLUMN = "frame time (ms)"
 # frames.csv is ignored when its average is further than this from summary.json's.
 FRAMES_AVG_TOLERANCE = 0.01
 # File-level fields: runs share a file only when all of these match.
-SETUP_KEYS = ("gpu_id", "submitted_by", "game", "version", "system", "proof")
+SETUP_KEYS = ("gpu_id", "submitted_by", "game_id", "version", "system", "proof")
 RESOLUTIONS = {(1920, 1080): "1080p", (2560, 1440): "1440p", (3840, 2160): "4K"}
 # Upscaler quality indices, in the order of the game's menu. UserSettings.json
 # confirms DLSS 0 = Auto and FSR 2.1 1 = Quality; the rest follow that order.
@@ -179,7 +179,7 @@ def target_file(out_dir, date, run, planned):
     repeat = 1
     while True:
         suffix = "" if repeat == 1 else f"_{repeat}"
-        path = out_dir / f"result_{date.replace('-', '')}_{GAME_SLUG}{suffix}.yaml"
+        path = out_dir / f"result_{date.replace('-', '')}_{GAME_ID}{suffix}.yaml"
         if path not in planned and path.exists():
             existing = load_run(path)
             if existing is not None and isinstance(existing.get("result"), list):
@@ -351,7 +351,7 @@ def build_run(data, gpu_id, source, os_name, submitted_by, date):
     run = {"gpu_id": gpu_id}
     if source == "community" and submitted_by:
         run["submitted_by"] = submitted_by
-    run.update({"benchmark_type": "game", "game": GAME, "date": date})
+    run.update({"benchmark_type": "game", "game_id": GAME_ID, "date": date})
     if data.get("gameVersion"):
         run["version"] = str(data["gameVersion"])
     run["frame_generation"] = False
@@ -373,7 +373,7 @@ def add_p1_lows(out_dir, input_dir, planned):
     average) when they have none and their frames.csv is still in input_dir.
     Changed files are added to planned. Returns status rows and the files."""
     rows, changed = [], []
-    for path in sorted(out_dir.glob(f"result_*_{GAME_SLUG}*.yaml")):
+    for path in sorted(out_dir.glob(f"result_*_{GAME_ID}*.yaml")):
         run = load_run(path)
         if run is None or not isinstance(run.get("result"), list):
             continue
@@ -417,19 +417,21 @@ def with_key_after(mapping, key, value, after):
     return dict([*items[:at], (key, value), *items[at:]])
 
 
-def add_dates(out_dir, planned):
-    """Give files imported before the date field existed their date (from the
-    file name) and each run its time (from its run folder). Changed files are
-    added to planned. Returns the changed files."""
+def upgrade_files(out_dir, planned):
+    """Bring files from older imports up to date: game becomes game_id, each
+    file gets its date (from the file name), and each run its time (from its
+    run folder). Changed files are added to planned. Returns the changed files."""
     changed = []
-    for path in sorted(out_dir.glob(f"result_*_{GAME_SLUG}*.yaml")):
+    for path in sorted(out_dir.glob(f"result_*_{GAME_ID}*.yaml")):
         named = checks.RESULT_FILE_DATE.match(path.stem)
         run = planned.get(path) or load_run(path)
         if not named or run is None or not isinstance(run.get("result"), list):
             continue
         before = repr(run)
+        if "game" in run:
+            run = {("game_id" if key == "game" else key): (GAME_ID if key == "game" else value) for key, value in run.items()}
         if run.get("date") is None:
-            run = with_key_after(run, "date", "-".join(named.groups()), "game")
+            run = with_key_after(run, "date", "-".join(named.groups()), "game_id")
         for index, entry in enumerate(run["result"]):
             folder_name = entry.get(RUN_KEY) if isinstance(entry, dict) else None
             if folder_name and entry.get("time") is None and RUN_FOLDER.match(str(folder_name)):
@@ -479,6 +481,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     data_dir = Path(args.data_dir)
+    if GAME_ID not in {game["id"] for game in checks.load_games(data_dir)[0]}:
+        print(f"'{GAME_ID}' is missing from data/games.yaml; add it back (id, name, type, year) before importing.")
+        return 1
     catalog, _ = checks.load_catalog(data_dir)
     catalog_by_id = {entry["id"]: entry for entry in catalog}
     gpu = catalog_by_id.get(args.gpu_id)
@@ -503,7 +508,7 @@ def main(argv=None):
     seen = imported_runs(data_dir)
     planned, added = {}, {}
     rows, updated = add_p1_lows(out_dir, input_dir, planned) if out_dir.is_dir() else ([], [])
-    dated = add_dates(out_dir, planned) if out_dir.is_dir() else []
+    dated = upgrade_files(out_dir, planned) if out_dir.is_dir() else []
     for folder in sorted(path for path in input_dir.iterdir() if path.is_dir() and RUN_FOLDER.match(path.name)):
         if folder.name in seen:
             previously += 1
@@ -565,7 +570,7 @@ def main(argv=None):
     if filled:
         print(f"{filled} earlier run(s) {'would get' if args.dry_run else 'got'} a p1_low from {FRAMES_FILE}")
     if dated:
-        print(f"{len(dated)} earlier file(s) {'would get' if args.dry_run else 'got'} a date and run times")
+        print(f"{len(dated)} earlier file(s) {'would be' if args.dry_run else 'were'} upgraded (game_id, date, and run times)")
     for path, count in added.items():
         total = len(planned[path]["result"])
         print(f"  {checks.relative_path(path)}: {count} new, {total} in the file")
@@ -576,7 +581,8 @@ def main(argv=None):
     for path in written:
         write_run(path, planned[path])
     catalog, catalog_issues = checks.load_catalog(data_dir)
-    _, result_issues = checks.load_results(catalog, data_dir)
+    games, _ = checks.load_games(data_dir)
+    _, result_issues = checks.load_results(catalog, data_dir, games)
     mine = {checks.relative_path(path) for path in written}
     issues = checks.Issues(issue for issue in [*catalog_issues, *result_issues] if issue.path in mine)
     if issues.errors:

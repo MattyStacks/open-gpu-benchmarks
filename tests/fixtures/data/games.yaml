@@ -1,0 +1,30 @@
+# The game registry for the fixture build. 3DMark Steel Nomad and the engine
+# demo have no runs on purpose: they appear in games.json but not in the
+# dashboard's game list.
+games:
+  - id: 3dmark_steel_nomad
+    name: 3DMark Steel Nomad
+    type: synthetic
+    year: 2024
+  - id: alan_wake_2
+    name: Alan Wake 2
+    type: game
+    year: 2023
+  - id: baldurs_gate_3
+    name: Baldur's Gate 3
+    type: game
+    year: 2023
+  - id: cyberpunk_2077
+    name: Cyberpunk 2077
+    type: game
+    year: 2020
+    steam_appid: 1091500
+  - id: example_engine_demo
+    name: Example Engine Demo
+    type: engine_demo
+    year: 2025
+    notes: Made up for the fixtures.
+  - id: helldivers_2
+    name: Helldivers 2
+    type: game
+    year: 2024

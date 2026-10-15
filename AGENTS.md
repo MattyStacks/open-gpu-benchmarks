@@ -5,9 +5,9 @@ Copilot, Muse, Cursor, Codex, or others). Tool-specific files say the same
 thing: [CLAUDE.md](CLAUDE.md) and
 [.github/copilot-instructions.md](.github/copilot-instructions.md).
 
-## Every change: update the changelog and the backlog
+## Every change: update the changelog, the backlog, and the version
 
-These two steps are required for every PR:
+These three steps are required for every PR:
 
 1. **[CHANGELOG.md](CHANGELOG.md)**: add a line under `Unreleased` for any
    change to behavior, the data contract, the API schema, the dashboard, the
@@ -16,6 +16,14 @@ These two steps are required for every PR:
 2. **[docs/TODO.md](docs/TODO.md)** (the backlog): remove items you
    completed, and add anything you deferred, found broken, or were asked to
    do later. Don't start backlog items unless asked.
+3. **Bump the version**: every PR except a data-only result submission
+   increments `RELEASE_VERSION` in [scripts/build.py](scripts/build.py) by the
+   biggest kind of change it contains (MINOR for any code, check, dashboard,
+   docs-workflow, or license change). Rename `Unreleased` in `CHANGELOG.md` to
+   `## <version> - <date>` under a fresh empty `Unreleased`, and update the
+   current-version references in `README.md`, `docs/COPILOT_HANDOFF.md`, and
+   `CLAUDE.md`. Data-only submissions (including bot PRs) are batched into a
+   later DATA bump by a maintainer.
 
 ## Branching
 
@@ -139,6 +147,7 @@ Featured picks: `data/picks.yaml` feeds the dashboard's three GPU cards.
 Versions: `MAJOR.MINOR.DATA.POST`, always four parts. MAJOR is a breaking
 data or API change, MINOR is any code change, DATA is newly published runs,
 and POST is a new or updated post. A bump resets the parts to its right.
+Every PR but a data-only submission bumps it (see the top of this file).
 `RELEASE_VERSION` must equal the newest `CHANGELOG.md` release.
 
 Catalog data must be accurate. Cite real pages in `sources`, list in

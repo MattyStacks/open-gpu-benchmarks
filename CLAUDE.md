@@ -2,18 +2,30 @@
 
 Guidance for Claude Code working in this repository.
 
-## Every change: update the changelog and the backlog
+## Every change: update the changelog, the backlog, and the version
 
-These two steps are required, not optional, for every PR an agent or a person
+These three steps are required, not optional, for every PR an agent or a person
 prepares:
 
 1. **[CHANGELOG.md](CHANGELOG.md)** — add a line under `Unreleased` for any change to
    behavior, the data contract, the API schema, the dashboard, the checks, the
    templates, or the contributor workflow. Data-only result submissions are the
-   only exception. Don't finish a task with an empty `Unreleased` section if
-   you changed any of those.
+   only exception. Don't finish a task with your change missing from the
+   changelog.
 2. **[docs/TODO.md](docs/TODO.md)** (the backlog) — remove items you completed, and
    add anything you deferred, found broken, or were asked to do later.
+3. **Bump the version** — every PR except a data-only result submission
+   increments `RELEASE_VERSION` in [scripts/build.py](scripts/build.py) by the
+   biggest kind of change it contains: MAJOR (breaking data contract or API),
+   MINOR (any code, check, dashboard, docs-workflow, or license change), DATA
+   (newly published runs), or POST (a new or updated blog post). Reset the
+   parts to its right. Rename `Unreleased` in `CHANGELOG.md` to
+   `## <version> - <date>`, add a fresh empty `Unreleased` above it, and update
+   the current-version references and feature summary in `README.md`,
+   `docs/COPILOT_HANDOFF.md`, and `CLAUDE.md`. `test_build.py` fails if
+   `RELEASE_VERSION` doesn't match the newest changelog heading. Data-only
+   submissions (including bot PRs from benchmark issues) are batched into a
+   later DATA bump by a maintainer.
 
 ## Branching
 
@@ -62,7 +74,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.2.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.3.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -378,9 +390,9 @@ is now stale:
   [docs/TODO.md](docs/TODO.md).
 - **Agent instructions changed** → keep `CLAUDE.md`,
   `.github/copilot-instructions.md`, and `AGENTS.md` consistent.
-- **Version change** → pick the part from the biggest change since the last
-  release (MAJOR breaking, MINOR code, DATA runs, POST posts), reset the parts
-  to its right, rename `Unreleased` in `CHANGELOG.md` to the new four-part
+- **Version bump (every PR but data-only submissions; see the top of this
+  file)** → pick the part from the biggest change in the PR (MAJOR breaking,
+  MINOR code, DATA runs, POST posts), reset the parts to its right, rename `Unreleased` in `CHANGELOG.md` to the new four-part
   version and date, and update `RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py) plus the version references and feature
   summary in `README.md` and `docs/COPILOT_HANDOFF.md`.

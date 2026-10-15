@@ -277,13 +277,13 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
-- **Unreleased (branch `feat/cc-by-license`, 2026-10-15)**
+- **v1.3.0.0 (2026-10-15, branch `feat/cc-by-license`): CC BY 4.0 data license**
   - Data license CC0 → CC BY 4.0 with reasonable attribution (AI training
     explicitly permitted), the `/license/` page, `_license` and `_source` in
     every API file (schema 0.16), plain-English terms on the dashboard, the
     issue form, and the docs, and copyright lines on blog posts.
 
-- **Unreleased (branch `feat/benchmark-issue-form`, 2026-10-15)**
+- **v1.3.0.0 (2026-10-15, branch `feat/benchmark-issue-form`): benchmark issue form**
   - "Benchmark result" issue form, `benchmark-issue.yml`, and
     `scripts/issue_to_result.py`: an issue becomes a checked community file
     and a bot pull request from a GitHub App, with no Cloudflare preview. The

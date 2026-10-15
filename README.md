@@ -8,9 +8,12 @@ graph. The site is a static dashboard built from reviewable YAML, live at
 Posts, guides, and reviews built on the same data live at
 <https://opengpubenchmarks.com/blog/>.
 
-Current version: `v1.2.0.0`: a game registry, [data/games.yaml](data/games.yaml),
-that every result names by `game_id`, plus a required date on every result
-file. v1.1.0.0 added the blog, guides, and reviews section, and four-part
+Current version: `v1.3.0.0`: the benchmark data is now CC BY 4.0 (use it for
+anything, AI training included, with a link back; see the
+[license page](https://opengpubenchmarks.com/license/)), and results can be
+submitted through a GitHub issue form. v1.2.0.0 added a game registry,
+[data/games.yaml](data/games.yaml), that every result names by `game_id`, plus
+a required date on every result file. v1.1.0.0 added the blog, guides, and reviews section, and four-part
 `MAJOR.MINOR.DATA.POST` versions. v1.0.0 brought the first
 published results (Cyberpunk 2077 on the GeForce RTX 5080 Founders Edition)
 and a Cyberpunk 2077 benchmark importer. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version, and

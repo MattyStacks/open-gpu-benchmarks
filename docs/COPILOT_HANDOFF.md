@@ -11,9 +11,16 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.2.0.0` (2026-10-15). Versions are now
+- Current version: `v1.3.0.0` (2026-10-15). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
-  [CHANGELOG.md](../CHANGELOG.md)).
+  [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
+  submission bumps it.
+  - v1.3.0.0: data license CC0 → CC BY 4.0 with reasonable attribution (AI
+    training explicitly permitted), the `/license/` page, `_license` and
+    `_source` in every API file (schema 0.15 → 0.16), and copyright lines on
+    blog posts. Also the "Benchmark result" issue form and its bot pull
+    requests (`benchmark-issue.yml`, `scripts/issue_to_result.py`), and
+    macOS/Linux/WSL venv setup docs.
   - v1.2.0.0: the game registry. `data/games.yaml` (`checks.load_games()`,
     `game-*` rules) lists every game by `id`, `name`, `type`, and `year`, plus
     optional `steam_appid`, `igdb_id`, and `url`. Results name their game by

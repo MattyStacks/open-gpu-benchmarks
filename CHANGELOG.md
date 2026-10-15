@@ -21,13 +21,17 @@ parts (tags are `vMAJOR.MINOR.DATA.POST`):
 - **DATA**: newly published benchmark runs.
 - **POST**: a new or materially updated blog post, guide, or review.
 
-Bumping one part resets the parts to its right (1.1.2.3 then 1.2.0.0). There is
-one bump per release, not per pull request: the biggest kind of change under
-`Unreleased` picks the part. Community data PRs don't add their own line; a
-DATA or POST release gets one short line, for example "12 new Cyberpunk 2077
-runs" or "New post: `<title>`". Earlier releases used three parts.
+Bumping one part resets the parts to its right (1.1.2.3 then 1.2.0.0). Every
+pull request bumps the version, except a data-only result submission: the
+biggest kind of change in the pull request picks the part, and its lines move
+from `Unreleased` to the new version's heading. Community data PRs don't add
+their own line or bump; a maintainer batches them into a DATA release with one
+short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
+`<title>`". Earlier releases used three parts.
 
 ## Unreleased
+
+## 1.3.0.0 - 2026-10-15
 
 ### Added
 - Submit a result through a GitHub issue: the new **Benchmark result** issue
@@ -69,6 +73,9 @@ runs" or "New post: `<title>`". Earlier releases used three parts.
   name and link, `ai_training_permitted: true`, terms page) and `_source` (the
   file's canonical URL and `generated_at`). `metadata.license` is now
   `CC-BY-4.0`.
+- Every pull request except a data-only result submission now bumps the
+  version (CLAUDE.md, AGENTS.md, the Copilot rules, and the pull request
+  template say so), instead of one bump per batched release.
 - Blog posts state their copyright: "Text © <year> <author>. All rights
   reserved.", plus `copyrightHolder` in the JSON-LD. A post marked
   AI-generated says no copyright is claimed in its text. Post writing stays

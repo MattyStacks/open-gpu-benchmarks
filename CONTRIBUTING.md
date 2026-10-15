@@ -398,7 +398,8 @@ Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 | Ran with DLSS, FSR, or XeSS upscaling | `[result-upscaling]` | Re-run with upscaling off, or add `preset_upscaling: true` if the preset turned it on |
 | `p1_low` bigger than `avg_fps` | `[result-impossible]` | Check you didn't swap the values |
 | No `p1_low` from PresentMon, Afterburner, or another frame-time tool | `[result-p1-low-required]` | Copy the 1% low from the tool's summary |
-| No `p1_low` from an in-game benchmark or Adrenalin | `[result-no-p1-low]` (warning) | Fine if your tool didn't report one |
+| No `p1_low` from Adrenalin | `[result-no-p1-low]` (warning) | Fine if your tool didn't report one |
+| No `p1_low` from an in-game benchmark | `[result-no-p1-low]` (info) | Nothing to fix; it's a note, not a warning |
 | A result you found, with no link to where | `[community-credit]` | Add `credit.source_url` |
 | No `proof.method`, or an unknown one such as `screenshot` | `[result-proof-method]` | Add `proof.method` with the tool you used (list in the template); use `other` if yours isn't listed |
 | Far from the official result | `[community-outlier]` | Re-check the settings, or explain the difference in the PR |

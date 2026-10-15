@@ -199,9 +199,11 @@ should be is a one-line change to `PROOF_METHODS` in `scripts/checks.py`.
 A run with no `p1_low` still counts toward the average FPS. Its summary averages
 the 1% low over only the runs that have one, and shows no 1% low when none do.
 Leaving `p1_low` out of a Required tool's run is the `result-p1-low-required`
-error. Leaving it out of an `amd_adrenalin`, `in_game_benchmark`, or `other`
-run raises the `result-no-p1-low` warning, which is fine to ignore if your tool
-didn't report one. `synthetic_benchmark` runs never warn.
+error. Leaving it out of an `amd_adrenalin` or `other` run raises the
+`result-no-p1-low` warning, which is fine to ignore if your tool didn't report
+one. An `in_game_benchmark` file gets a single `info` note instead, because a
+game's built-in benchmark often logs no frame times, or the log wasn't kept.
+`synthetic_benchmark` runs say nothing.
 
 ## Submitting a result you found
 
@@ -489,10 +491,15 @@ actually came from somewhere else, such as the game's own benchmark, fix
 
 #### `result-no-p1-low`
 
-Warning only. A result entry has no `p1_low`, and its `proof.method` is
-`amd_adrenalin`, `in_game_benchmark`, or `other`. That's fine if your tool
-didn't report a 1% low; add it when it does. It isn't raised for
-`synthetic_benchmark` runs, which never report one.
+Never an error. A result entry has no `p1_low`, so the dashboard charts only
+its average.
+
+- `amd_adrenalin` or `other`: a warning for each entry. That's fine if your
+  tool didn't report a 1% low; add it when it does.
+- `in_game_benchmark`: one `info` note per file, counting the entries without
+  one. Built-in benchmarks often have no 1% low, or their frame log (such as
+  Cyberpunk 2077's `frames.csv`) wasn't kept. Info notes never fail a check.
+- `synthetic_benchmark`: nothing, since 3DMark never reports one.
 
 #### `result-frame-generation`
 

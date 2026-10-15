@@ -294,8 +294,11 @@ is run detail, copied to `capture_method` on every record and
 recommended method. The synthetic test fixtures use `other`. The tuple is
 split: `P1_LOW_METHODS` (frame-time tools; a missing `p1_low` is the
 `result-p1-low-required` error) and `AVERAGE_ONLY_METHODS` (a missing
-`p1_low` is the `result-no-p1-low` warning, silent for
-`synthetic_benchmark`). The community outlier limit is 25%
+`p1_low` is the `result-no-p1-low` warning per entry, one `info` per file
+for `P1_LOW_INFO_METHODS` (`in_game_benchmark`), and silent for
+`synthetic_benchmark`). `info` is the third issue level: `Issues.info()`,
+shown by `validate.py` (counted as "N info"), hidden by `build.py`, written as
+a `::notice` annotation in GitHub Actions, and it never fails a check. The community outlier limit is 25%
 (`OUTLIER_RATIO`), pinned by a test.
 
 Found results: anyone may submit a result someone else measured (a video, a
@@ -409,7 +412,16 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 [CYBERPUNK_BENCHMARK.md](CYBERPUNK_BENCHMARK.md).
 
 - **Input.** The game writes `benchmarkResults/benchmark_YYYY-MM-DD_HH-MM-SS/`
-  with `summary.json` (read) and `frames.csv` (ignored). The script finds the
+  with `summary.json` (settings) and `frames.csv` (one row per frame; the
+  `Frame time (ms)` column gives `avg_fps` = frames / total time and
+  `p1_low` = the 1st percentile of per-frame FPS, `parse.percentile`). The
+  frames.csv numbers are used only when its frame count equals `frameNumber`
+  and its average is within 1% of `averageFps` (`FRAMES_AVG_TOLERANCE`);
+  otherwise the run gets summary.json's average and no `p1_low`. Each import
+  also fills `p1_low` (and the frames.csv average) on runs already in the
+  `--gpu-id`/`--source` folder that lack one, when their run folder is still
+  there (`add_p1_lows`). `PROOF_FORMAT` stays `cyberpunk_summary_json`
+  because `proof` is a file-level setup key. The script finds the
   folder through the Windows Documents known folder (handles OneDrive), or
   the Proton prefix of Steam app 1091500 on Linux; `--input` overrides.
   Nothing is copied into the repo.
@@ -431,8 +443,10 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
   order Auto, Quality, Balanced, Performance, Ultra Performance;
   `UserSettings.json` confirmed DLSS 0 = Auto and FSR 2.1 1 = Quality. Other
   upscalers' indices are written as `(mode N)`. Changing a label later splits
-  dashboard groups. `avg_fps` is `averageFps`; there is no `p1_low`
-  (`proof.method: in_game_benchmark`, `result-no-p1-low` warning per file).
+  dashboard groups. `avg_fps` and `p1_low` come from `frames.csv` (see
+  Input); without it, `avg_fps` is `averageFps` and there is no `p1_low`
+  (`proof.method: in_game_benchmark`, one `result-no-p1-low` info per file).
+  A missing `frames.csv` never fails the import.
   The driver string `Nvidia v 61714 [r617_07]` becomes `617.14`.
 - **Skips.** Frame generation on (`frameGenerationType` or a frame-gen flag;
   `DLSSMultiFrameGenEnabled` alone is just the saved multiplier), V-Sync or an
@@ -470,10 +484,11 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 
 ## Published data and test fixtures
 
-**Published data (`data/`).** 1 catalog GPU entry (`rtx_5080_16gb_fe`), 33
-official result runs, 0 community runs, and 29 dashboard summaries: Cyberpunk
+**Published data (`data/`).** 1 catalog GPU entry (`rtx_5080_16gb_fe`), 34
+official result runs, 0 community runs, and 30 dashboard summaries: Cyberpunk
 2077 built-in benchmark runs on Windows at 1080p, 1440p, and 4K, imported with
-`scripts/import_cyberpunk.py`. Every run has `p1_low: null`. `data/` is what
+`scripts/import_cyberpunk.py`. Every run has an `avg_fps` and `p1_low` from
+its `frames.csv`. `data/` is what
 CI builds and deploys, so it holds only real data. With no runs,
 `dashboard.json` has an empty `records` list and `showNoBenchmarks()` in
 `site/index.html` replaces the filters, chart, and table with a "No benchmarks

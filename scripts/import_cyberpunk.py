@@ -2,16 +2,20 @@
 import_cyberpunk.py - Cyberpunk 2077 built-in benchmark runs -> result YAML
 
 Every time the game's benchmark finishes, it saves a folder such as
-benchmarkResults/benchmark_2026-10-13_18-44-57/ with a summary.json in it. This
-script reads those summary.json files and writes the runs from one day into one
-result file, one item in its result list per run:
+benchmarkResults/benchmark_2026-10-13_18-44-57/ with a summary.json and a
+frames.csv in it. This script reads the settings from summary.json and the
+average FPS and 1% low from the frame times in frames.csv. frames.csv is
+optional: without it a run gets summary.json's average and no 1% low, which the
+checks note as info, never a warning or a failure. It writes the runs from
+one day into one result file, one item in its result list per run:
 
     data/<source>/<gpu_id>/result_20261013_cyberpunk_2077.yaml
 
 Each item's benchmark_run names the run folder it came from. Nothing is copied
 from the game folder; the runs stay where they are. Run the script again any
 time: runs already listed in a result file are skipped, and new runs from the
-same day are added to that day's file. A run with a different setup (game
+same day are added to that day's file, and runs already listed without a
+p1_low get one from their frames.csv. A run with a different setup (game
 version, driver, CPU, memory, or OS) goes in its own file, _2, _3, ..., because
 those fields apply to the whole file. Full instructions: docs/CYBERPUNK_BENCHMARK.md
 
@@ -24,6 +28,7 @@ name (--custom-preset, or answer the prompt); a Custom run with upscaling on is
 skipped, because only a named preset may turn upscaling on.
 """
 import argparse
+import csv
 import json
 import os
 import re
@@ -36,6 +41,7 @@ except ImportError:
     print("pip install -r requirements.txt"); sys.exit(1)
 
 import checks
+from parse import percentile
 
 GAME = "Cyberpunk 2077"
 GAME_SLUG = "cyberpunk_2077"
@@ -62,6 +68,10 @@ WINDOW_MODES = {0: "Windowed", 1: "Borderless windowed", 2: "Fullscreen"}
 # Each result item names its run folder here; that is how re-runs skip it.
 RUN_KEY = "benchmark_run"
 PROOF_FORMAT = "cyberpunk_summary_json"
+FRAMES_FILE = "frames.csv"
+FRAME_TIME_COLUMN = "frame time (ms)"
+# frames.csv is ignored when its average is further than this from summary.json's.
+FRAMES_AVG_TOLERANCE = 0.01
 # File-level fields: runs share a file only when all of these match.
 SETUP_KEYS = ("gpu_id", "submitted_by", "game", "version", "system", "proof")
 RESOLUTIONS = {(1920, 1080): "1080p", (2560, 1440): "1440p", (3840, 2160): "4K"}
@@ -281,14 +291,46 @@ def build_system(data, os_name):
     return system
 
 
-def build_entry(data, preset, folder_name):
+def read_frame_times(folder):
+    """Frame times in ms from a run's frames.csv, or None when it can't be read."""
+    try:
+        with open(folder / FRAMES_FILE, newline="", encoding="utf-8") as file:
+            rows = csv.reader(file)
+            header = [cell.strip().lower() for cell in next(rows)]
+            column = header.index(FRAME_TIME_COLUMN)
+            times = [float(row[column]) for row in rows if len(row) > column and row[column].strip()]
+    except (OSError, StopIteration, ValueError, UnicodeDecodeError):
+        return None
+    return times if times and all(ms > 0 for ms in times) else None
+
+
+def frame_stats(folder, data):
+    """(avg_fps, p1_low) from frames.csv, or None when it's missing or doesn't
+    match summary.json (a different frame count or average)."""
+    times = read_frame_times(folder)
+    if times is None:
+        return None
+    avg = 1000 * len(times) / sum(times)
+    if checks.is_number(data.get("frameNumber")) and len(times) != int(data["frameNumber"]):
+        return None
+    expected = data.get("averageFps")
+    if checks.is_number(expected) and abs(avg - float(expected)) > FRAMES_AVG_TOLERANCE * float(expected):
+        return None
+    p1 = percentile([1000 / ms for ms in times], 1)
+    return round(avg, 2), round(p1, 2)
+
+
+def build_entry(data, preset, folder_name, stats):
     """One result list item for one benchmark run."""
     entry = {RUN_KEY: folder_name, "resolution": resolution(data), "graphics_preset": preset}
     upscaling = upscaler(data)
     if upscaling:
         entry["upscaling"] = upscaling
         entry["preset_upscaling"] = True
-    entry["avg_fps"] = round(float(data["averageFps"]), 2)
+    if stats:
+        entry["avg_fps"], entry["p1_low"] = stats
+    else:
+        entry["avg_fps"] = round(float(data["averageFps"]), 2)
     for key, field in (("min_fps", "minFps"), ("max_fps", "maxFps"), ("duration", "time")):
         if checks.is_number(data.get(field)):
             entry[key] = round(float(data[field]), 2)
@@ -319,6 +361,48 @@ class IndentedDumper(yaml.SafeDumper):
 
     def increase_indent(self, flow=False, indentless=False):
         return super().increase_indent(flow, False)
+
+
+def add_p1_lows(out_dir, input_dir, planned):
+    """Give runs already in out_dir's files a p1_low (and the frames.csv
+    average) when they have none and their frames.csv is still in input_dir.
+    Changed files are added to planned. Returns status rows and the files."""
+    rows, changed = [], []
+    for path in sorted(out_dir.glob(f"result_*_{GAME_SLUG}*.yaml")):
+        run = load_run(path)
+        if run is None or not isinstance(run.get("result"), list):
+            continue
+        for index, entry in enumerate(run["result"]):
+            folder_name = entry.get(RUN_KEY) if isinstance(entry, dict) else None
+            if not folder_name or entry.get("p1_low") is not None or not RUN_FOLDER.match(str(folder_name)):
+                continue
+            folder = input_dir / folder_name
+            if not folder.is_dir():
+                continue
+            try:
+                data = json.loads((folder / "summary.json").read_text(encoding="utf-8"))["Data"]
+            except (OSError, ValueError, KeyError, TypeError):
+                data = {}
+            stats = frame_stats(folder, data)
+            shown = (entry.get("resolution", ""), entry.get("graphics_preset", ""), entry.get("upscaling", ""))
+            if stats is None:
+                # A deleted frames.csv is normal and stays quiet; one that doesn't match is worth a look.
+                if (folder / FRAMES_FILE).exists():
+                    rows.append(("no p1_low", folder_name, *shown, str(entry.get("avg_fps", "")), f"{FRAMES_FILE} doesn't match summary.json"))
+                continue
+            items = []
+            for key, value in entry.items():
+                if key == "avg_fps":
+                    items += [("avg_fps", stats[0]), ("p1_low", stats[1])]
+                else:
+                    items.append((key, value))
+            run["result"][index] = dict(items)
+            rows.append(("updated", folder_name, *shown, f"{stats[0]:.1f}", f"{path.name}: p1_low {stats[1]}"))
+            if path not in changed:
+                changed.append(path)
+        if path in changed:
+            planned[path] = run
+    return rows, changed
 
 
 def write_run(path, run):
@@ -380,9 +464,10 @@ def main(argv=None):
     custom_preset = args.custom_preset.strip()
     can_ask = not args.dry_run and not custom_preset and sys.stdin.isatty()
     last_custom = ""
-    rows, previously = [], 0
+    previously = 0
     seen = imported_runs(data_dir)
     planned, added = {}, {}
+    rows, updated = add_p1_lows(out_dir, input_dir, planned) if out_dir.is_dir() else ([], [])
     for folder in sorted(path for path in input_dir.iterdir() if path.is_dir() and RUN_FOLDER.match(path.name)):
         if folder.name in seen:
             previously += 1
@@ -424,9 +509,11 @@ def main(argv=None):
 
         run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by)
         path = target_file(out_dir, run_date(folder.name), run, planned)
-        planned[path]["result"].append(build_entry(data, preset, folder.name))
+        stats = frame_stats(folder, data)
+        planned[path]["result"].append(build_entry(data, preset, folder.name, stats))
         added[path] = added.get(path, 0) + 1
-        rows.append(("new", folder.name, res, preset, upscaling, fps, path.name))
+        note = "" if stats else f" (no usable {FRAMES_FILE}, so no 1% low)"
+        rows.append(("new", folder.name, res, preset, upscaling, fps, path.name + note))
 
     headers = ("status", "run", "resolution", "preset", "upscaling", "avg fps", "file or reason")
     if rows:
@@ -434,16 +521,19 @@ def main(argv=None):
         for row in (headers, *rows):
             print("  ".join(str(value).ljust(width) for value, width in zip(row, widths)) + "  " + row[-1])
     new = sum(row[0] == "new" for row in rows)
-    skipped = len(rows) - new
+    filled = sum(row[0] == "updated" for row in rows)
+    skipped = sum(row[0] == "skipped" for row in rows)
     verb = "would import" if args.dry_run else "imported"
     print(f"\n{new} {verb}, {skipped} skipped, {previously} already imported earlier")
+    if filled:
+        print(f"{filled} earlier run(s) {'would get' if args.dry_run else 'got'} a p1_low from {FRAMES_FILE}")
     for path, count in added.items():
         total = len(planned[path]["result"])
         print(f"  {checks.relative_path(path)}: {count} new, {total} in the file")
 
-    if args.dry_run or not added:
+    written = list(dict.fromkeys([*updated, *added]))
+    if args.dry_run or not written:
         return 0
-    written = list(added)
     for path in written:
         write_run(path, planned[path])
     catalog, catalog_issues = checks.load_catalog(data_dir)
@@ -451,9 +541,9 @@ def main(argv=None):
     mine = {checks.relative_path(path) for path in written}
     issues = checks.Issues(issue for issue in [*catalog_issues, *result_issues] if issue.path in mine)
     if issues.errors:
-        checks.report(checks.Issues(issues.errors), "New result files")
+        checks.report(checks.Issues(issues.errors), "Written result files")
         return 1
-    print("The new files pass the checks. Review them, then run python scripts/validate.py and open a pull request.")
+    print("The written files pass the checks. Review them, then run python scripts/validate.py and open a pull request.")
     return 0
 
 

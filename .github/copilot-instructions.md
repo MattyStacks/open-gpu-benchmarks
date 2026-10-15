@@ -44,7 +44,9 @@ prepares:
   AMD Adrenalin, MangoHud, OCAT, in-game benchmark, synthetic benchmark, or
   other); PresentMon is the recommended default, and the method is never a
   grouping key. Frame-time tools (`checks.P1_LOW_METHODS`) must include
-  `p1_low` (`result-p1-low-required`); the rest only warn. A 3DMark run is
+  `p1_low` (`result-p1-low-required`); Adrenalin and `other` only warn, and
+  an `in_game_benchmark` file gets one `info` note (`checks.P1_LOW_INFO_METHODS`;
+  info never fails and is a GitHub `::notice`). A 3DMark run is
   a normal game run (`game: 3DMark Steel Nomad`) with the graphics-test FPS as
   `avg_fps` and the result URL as `proof.summary_source`.
 - A community average more than 25% from the matching official average fails
@@ -77,8 +79,9 @@ prepares:
   `_2` file, because those fields apply to the whole file. It uses the
   in-game preset names (`Ray Tracing: Ultra`) and upscaler labels
   (`DLSS Auto`, `FSR 2.1 Quality`); keep those labels stable, because
-  changing one splits dashboard groups. It reads only `summary.json`, so its
-  runs have no `p1_low`.
+  changing one splits dashboard groups. Settings come from `summary.json`;
+  `avg_fps` and `p1_low` come from the run's `frames.csv` frame times, and a
+  re-import backfills `p1_low` on earlier runs that lack one.
 - The catalog is one file per product at
   `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`; the file name equals `id`
   and the folders equal `classification.form_factor` and

@@ -267,11 +267,17 @@ def check_average_only_runs():
     nomad = community_run(game="3DMark Steel Nomad", result=avg_only, proof={"method": "synthetic_benchmark", "summary_source": "https://www.3dmark.com/sn/1"})
     issues = run_checks({**catalog, COMMUNITY_PATH: nomad})
     assert not issues.errors, [issue.format() for issue in issues.errors]
-    assert "result-no-p1-low" not in {issue.rule for issue in issues.warnings}, "synthetic benchmarks never report a 1% low"
+    assert "result-no-p1-low" not in {issue.rule for issue in issues}, "synthetic benchmarks never report a 1% low"
     # Tools that may report only an average get a warning, never an error.
-    for method in ("in_game_benchmark", "amd_adrenalin", "other"):
+    for method in ("amd_adrenalin", "other"):
         issues = run_checks({**catalog, COMMUNITY_PATH: community_run(result=avg_only, proof={"method": method})})
         assert not issues.errors and "result-no-p1-low" in {issue.rule for issue in issues.warnings}, method
+    # A built-in benchmark often has no 1% low (or its frame log wasn't kept):
+    # one info note per file, never a warning.
+    issues = run_checks({**catalog, COMMUNITY_PATH: community_run(result=avg_only * 2, proof={"method": "in_game_benchmark"})})
+    assert not issues.errors and "result-no-p1-low" not in {issue.rule for issue in issues.warnings}, [issue.format() for issue in issues]
+    assert [issue.rule for issue in issues.infos] == ["result-no-p1-low"], [issue.format() for issue in issues]
+    assert "2 of 2 run(s)" in issues.infos[0].message
     # Frame-time tools always report a 1% low, so it is required with them.
     for method in checks.P1_LOW_METHODS:
         expect_rule("result-p1-low-required", {**catalog, COMMUNITY_PATH: community_run(result=avg_only, proof={"method": method})})
@@ -536,7 +542,7 @@ def check_import_cyberpunk():
         entry, custom = day_run["result"]
         assert entry["resolution"] == "1440p" and entry["avg_fps"] == 120.46
         assert entry["upscaling"] == "DLSS Auto" and entry["preset_upscaling"] is True
-        assert "p1_low" not in entry and day_run["frame_generation"] is False
+        assert "p1_low" not in entry and day_run["frame_generation"] is False, "no frames.csv, no p1_low"
         assert day_run["system"]["driver"] == "617.14" and day_run["system"]["memory"] == "32 GB"
         assert day_run["proof"]["method"] == "in_game_benchmark"
         assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
@@ -567,6 +573,29 @@ def check_import_cyberpunk():
         updated = yaml.safe_load((out / "result_20261013_cyberpunk_2077_2.yaml").read_text(encoding="utf-8"))
         assert updated["system"]["driver"] == "618.00" and len(updated["result"]) == 1
         assert import_cyberpunk.main([*args[:1], "no_such_gpu", *args[2:]]) == 1
+
+        # frames.csv gives avg_fps and p1_low: earlier runs get them on the next
+        # import, new runs when imported, and a frames.csv that doesn't match
+        # summary.json (here a different frame count) is ignored.
+        def add_frames(name, times):
+            lines = ["Frame index, Frame time (ms), DLSS Frame Generation (ms), CPU memory (MB)"]
+            lines += [f"{index}, {ms}, {ms}" for index, ms in enumerate(times)]
+            (results / name / "frames.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+        frames = [8.2] * 7600 + [15.0] * 100  # 7700 frames, the summary's frameNumber
+        add_frames("benchmark_2026-10-13_18-44-57", frames)
+        add_frames("benchmark_2026-10-13_19-00-00", frames[:7000])
+        add_runs({"benchmark_2026-10-14_10-00-00": cyberpunk_summary()})
+        add_frames("benchmark_2026-10-14_10-00-00", frames)
+        assert import_cyberpunk.main([*args, "--dry-run"]) == 0
+        assert "p1_low" not in day_file.read_text(encoding="utf-8"), "a dry run writes nothing"
+        assert import_cyberpunk.main(args) == 0
+        first, custom = yaml.safe_load(day_file.read_text(encoding="utf-8"))["result"][:2]
+        assert first["avg_fps"] == 120.65 and first["p1_low"] == 66.67, first
+        assert list(first).index("p1_low") == list(first).index("avg_fps") + 1
+        assert "p1_low" not in custom and custom["avg_fps"] == 120.46, custom
+        latest = yaml.safe_load((out / "result_20261014_cyberpunk_2077.yaml").read_text(encoding="utf-8"))["result"]
+        assert latest[-1]["benchmark_run"] == "benchmark_2026-10-14_10-00-00" and latest[-1]["p1_low"] == 66.67, latest
 
 
 def check_reports_every_error_and_build_stops():

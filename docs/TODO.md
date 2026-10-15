@@ -67,11 +67,8 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     groups, so update existing files in the same PR.
   - Confirm `windowMode` 0 (Windowed) and 1 (Borderless windowed); only 2
     (Fullscreen) was checked against `UserSettings.json`.
-  - Optional 1% low from `frames.csv` (the frame time column), behind a
-    flag, so these runs can carry `p1_low`.
-  - Re-run the native 1080p High benchmark on the RTX 5080 FE. The 1080p
-    Custom run from 2026-10-13 (`benchmark_2026-10-13_20-12-15`) still had
-    FSR 2.1 on and was skipped, and the 1440p native run was recorded twice.
+  - The 1440p native High run on the RTX 5080 FE was recorded twice on
+    2026-10-13 (`20-16-59` and `20-19-09`); decide whether to keep both.
   - Make `--gpu-id` remembered or inferred when the catalog has one match.
 - [ ] **Importers for other games' built-in benchmarks**, using the same
   one-file-per-run naming so re-runs skip imported runs.

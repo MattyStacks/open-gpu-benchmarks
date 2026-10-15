@@ -46,7 +46,8 @@ python scripts/validate.py                                            # check ev
 
 Every run is saved as its own folder, such as
 `benchmark_2026-10-13_18-44-57`, which holds a `summary.json` and a
-`frames.csv`. The script reads only `summary.json`.
+`frames.csv`. The script reads the settings from `summary.json` and the
+average FPS and 1% low from the frame times in `frames.csv`.
 
 ### Presets and upscaling
 
@@ -127,7 +128,8 @@ the checks and open a pull request as described in
 python scripts/validate.py
 ```
 
-Each imported run shows one `result-no-p1-low` warning; that's expected (see
+Runs imported without a `frames.csv` show one `result-no-p1-low` info note
+per file; that's expected and isn't a warning (see
 [The result file](#the-result-file)). Errors must be fixed before the pull
 request can be merged.
 
@@ -203,6 +205,7 @@ result:
     upscaling: DLSS Auto
     preset_upscaling: true
     avg_fps: 88.52
+    p1_low: 76.51
     min_fps: 79.67
     max_fps: 99.79
     duration: 64.25
@@ -221,7 +224,7 @@ proof:
   format: cyberpunk_summary_json
 ```
 
-Where each value comes from in `summary.json`:
+Where each value comes from in the run folder (`summary.json` unless noted):
 
 | Field | From | Notes |
 |---|---|---|
@@ -230,7 +233,8 @@ Where each value comes from in `summary.json`:
 | `result[].resolution` | `renderWidth` x `renderHeight` | See [How settings are named](#how-settings-are-named). |
 | `result[].graphics_preset` | `presetName` | The in-game name, or your name for a Custom preset. |
 | `result[].upscaling`, `preset_upscaling` | the upscaler settings | Only when the preset turned an upscaler on. |
-| `result[].avg_fps` | `averageFps` | Rounded to two decimals. This is the number the dashboard charts. |
+| `result[].avg_fps` | `frames.csv` | Frames divided by total frame time, rounded to two decimals; the same as `averageFps`. This is the number the dashboard charts. |
+| `result[].p1_low` | `frames.csv` | The 1% low: the 1st percentile of per-frame FPS, the same way PresentMon and MangoHud captures are measured. |
 | `result[].min_fps`, `max_fps` | `minFps`, `maxFps` | Extra detail; not charted. |
 | `result[].duration`, `frame_count` | `time`, `frameNumber` | Seconds and frames rendered. |
 | `result[].display_mode` | `windowMode` | Per run, because it can change between runs. |
@@ -242,10 +246,18 @@ Where each value comes from in `summary.json`:
 | `system.graphics_api` | | Always `DX12`, the game's only API. |
 | `proof.method` | | Always `in_game_benchmark`. |
 
-`summary.json` has no 1% low, so these runs have none and the dashboard shows
-only their average. The checks print a `result-no-p1-low` warning for each
-run, which is expected. If you want 1% lows, capture the run with PresentMon
-instead, as described in [COMMUNITY_SUBMISSIONS.md](COMMUNITY_SUBMISSIONS.md).
+`summary.json` has no 1% low, so the script works out the average and the 1%
+low from `frames.csv`, which lists every frame's time. It uses `frames.csv`
+only when its frame count matches `frameNumber` and its average is within 1%
+of `averageFps`. When it's missing or doesn't match, the run gets
+`summary.json`'s average and no 1% low. That's fine: the import still works,
+the dashboard charts the average, and the checks print one `result-no-p1-low`
+info note for the file, never a warning or an error. You don't need to keep
+`frames.csv` files, but keeping them gives your runs a 1% low.
+
+Runs imported before the script read `frames.csv` get their 1% low the next
+time you run it, as long as their folders are still in `benchmarkResults`.
+They show as `updated` in the table, and their `avg_fps` may move by 0.01.
 
 Nothing else from your computer is recorded: no user name, computer name, or
 file paths.
@@ -330,5 +342,5 @@ delete the file and import again with the right `--custom-preset`.
   display mode per run. The hidden `--data-dir` option points the script at
   that folder.
 - Design notes are in [COPILOT_HANDOFF.md](COPILOT_HANDOFF.md); open questions
-  (unconfirmed mode names, an optional 1% low from `frames.csv`) are in
+  (unconfirmed mode names) are in
   [TODO.md](TODO.md).

@@ -9,6 +9,18 @@ different memory, or from different board makers, are separate entries, and
 their results are never averaged together. An 8 GB and a 16 GB RTX 5060 Ti, or
 a 16 GB and a 24 GB handheld, always get their own files.
 
+## How the catalog is used
+
+- **Results.** Each product owns its results. `python scripts/build.py`
+  summarizes them per product and never groups a desktop GPU with a laptop
+  GPU.
+- **Dashboard.** The specs show in the dashboard table, one row per product,
+  and its `sources` show as links when you expand the row.
+- **API.** `site/api/v1/gpus.json` lists every product with its specs, its
+  `official` and `community` statistics, and links to its per-product
+  `summary.json` files. A product that uses `base:` is returned already merged
+  with its [reference file](#reference-files).
+
 ## Where a file goes
 
 ```text

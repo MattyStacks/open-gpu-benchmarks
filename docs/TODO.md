@@ -277,6 +277,12 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **v1.4.0.0 (2026-10-15, branch `docs/readme-cleanup`): README overview**
+  - README cut to a short overview with an endpoint table, a "where the
+    rules live" table, grouped local setup, and a repository layout. Catalog
+    notes moved to `data/gpus/README.md`; schema history and fixture details
+    stay in `docs/COPILOT_HANDOFF.md` only.
+
 - **v1.3.0.0 (2026-10-15, branch `feat/cc-by-license`): CC BY 4.0 data license**
   - Data license CC0 → CC BY 4.0 with reasonable attribution (AI training
     explicitly permitted), the `/license/` page, `_license` and `_source` in

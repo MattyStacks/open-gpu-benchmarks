@@ -1,6 +1,6 @@
 ---
 title: "Why I'm Starting Open GPU Benchmarks"
-date: "2026-05-13"
+date: "2026-10-14"
 type: post
 author: "Open GPU Benchmarks"
 tags:
@@ -63,7 +63,7 @@ I want to be transparent about this:
 
 **1. Code:** Most of the site scaffolding is built with AI assistance. You can see that in the commits and PRs. It's been a huge accelerator.
 
-**2. Test data:** AI does generate *synthetic* benchmark data, but that data is never published as official. It lives in `/test` folders and is only used to test charts, parsers, and the site itself.
+**2. Test data:** AI does generate *synthetic* benchmark data, but that data is never published as official. It lives in test folders and is only used to test charts, parsers, and the site itself.
 
 **3. Official benchmark data:** Every official benchmark number is from a run I personally did, or a run where I was able to personally validate the source and methodology. No AI-generated performance numbers make it into the main dataset.
 
@@ -94,6 +94,5 @@ Thanks for reading the first post. Let's see where we can take this.
 ### Links & How to Contribute
 
 * Site: [opengpubenchmarks.com](https://opengpubenchmarks.com)
-* GitHub: [Add your repo link here]
-* Want to submit benchmarks? Check `/CONTRIBUTING.md` on GitHub (coming soon in v1.1)
+* GitHub: https://github.com/MattyStacks/open-gpu-benchmarks
 * Found a bug? Open an issue. I read them all.

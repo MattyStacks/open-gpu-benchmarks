@@ -1,6 +1,6 @@
 gpu_id: steam_deck_oled_16gb
 benchmark_type: game
-game: Cyberpunk 2077
+game_id: cyberpunk_2077
 date: '2026-10-03'
 version: '2.12'
 synthetic: true

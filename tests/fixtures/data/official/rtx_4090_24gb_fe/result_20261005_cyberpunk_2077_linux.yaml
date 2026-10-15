@@ -1,6 +1,6 @@
 gpu_id: rtx_4090_24gb_fe
 benchmark_type: game
-game: Cyberpunk 2077
+game_id: cyberpunk_2077
 date: '2026-10-05'
 version: '2.12'
 synthetic: true

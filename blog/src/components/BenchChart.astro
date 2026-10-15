@@ -2,7 +2,8 @@
 // A bar chart of published summaries, as plain HTML,, rendered at build time from
 // site/api/v1/dashboard.json. No client JS, so crawlers read it too.
 //   <BenchChart gpu="rtx_5080_16gb_fe" game="cyberpunk_2077" resolution="1440p" />
-// Filters: gpu (one ID or a list), game, and optional resolution, preset, os,
+// Filters: gpu (one ID or a list), game (its ID in data/games.yaml), and
+// optional resolution, preset, os,
 // and source ("official" by default, "community", or "all").
 import { dashboard, normalize, type SummaryRecord } from "../lib/api";
 import { siteRoot } from "../lib/posts";
@@ -19,13 +20,13 @@ interface Props {
 
 const { gpu, game, resolution, preset, os, source = "official", title } = Astro.props;
 const gpus = new Set(Array.isArray(gpu) ? gpu : [gpu]);
-const { metadata, records } = dashboard();
+const { metadata, games, records } = dashboard();
 
 const rows = records
   .filter(
     (r: SummaryRecord) =>
       gpus.has(r.gpu_id) &&
-      normalize(r.game) === normalize(game) &&
+      r.game_id === game &&
       (!resolution || normalize(r.resolution) === normalize(resolution)) &&
       (!preset || normalize(r.graphics_preset) === normalize(preset)) &&
       (!os || r.os === os) &&
@@ -33,6 +34,10 @@ const rows = records
   )
   .sort((a, b) => b.avg_fps - a.avg_fps);
 
+if (!games.some((g) => g.id === game)) {
+  const known = games.map((g) => g.id).join(", ");
+  throw new Error(`<BenchChart> game="${game}" isn't a game ID with published summaries. Use one of: ${known}.`);
+}
 if (!rows.length) {
   const filters = JSON.stringify({ gpu, game, resolution, preset, os, source });
   throw new Error(`<BenchChart> found no published summaries for ${filters}. Check the IDs against site/api/v1/dashboard.json.`);

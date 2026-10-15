@@ -1,0 +1,37 @@
+# Every game and benchmark a result file can name. A result says which one it
+# ran with game_id, the id below; the dashboard shows the name. The rules are in
+# docs/COMMUNITY_SUBMISSIONS.md ("Adding a game or benchmark", game-*).
+#
+# New game? Add it here in the same pull request as your results. Copy an
+# entry, keep the list in alphabetical order by name, and fill in:
+#   id           required: lowercase letters, digits, and single underscores,
+#                such as elden_ring. Never change it once results use it.
+#   name         required: the name as the game or store shows it
+#   type         required: game, synthetic (3DMark and similar), or engine_demo
+#   year         required: the year this edition or test came out
+#   steam_appid  the number in the game's store.steampowered.com/app/ link
+#   igdb_id      the game's numeric IGDB ID
+#   url          an https link to the game's official or store page
+#   notes        anything that tells it apart from a similar entry
+# The last four are optional, because not every game is on Steam or has a page,
+# but if the game has one, add it: it pins down exactly which game this is.
+# Leave out what doesn't exist or you can't check; never guess a store ID.
+#
+# A remaster, a new edition (Special, Enhanced, Next-Gen, VR), or a different
+# test (Steel Nomad vs Steel Nomad Light) gets its own entry. A patch or game
+# update doesn't: put that in the result file's version field.
+games:
+  - id: 3dmark_steel_nomad
+    name: 3DMark Steel Nomad
+    type: synthetic
+    year: 2024
+    notes: The full 4K test. Steel Nomad Light is a different test and gets its own entry.
+  - id: cyberpunk_2077
+    name: Cyberpunk 2077
+    type: game
+    year: 2020
+    steam_appid: 1091500
+  - id: helldivers_2
+    name: Helldivers 2
+    type: game
+    year: 2024

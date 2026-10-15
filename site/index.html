@@ -121,7 +121,7 @@
     <p class="notice hidden" id="error-notice" role="alert"></p>
     <section class="toolbar" aria-label="Benchmark filters">
       <div>
-        <label for="game-select">Game</label>
+        <label for="game-select">Benchmark</label>
         <select id="game-select"></select>
       </div>
       <div>
@@ -232,7 +232,7 @@
       </summary>
       <div class="workflow" aria-label="Community submission workflow">
         <article class="workflow-step"><span class="step-icon" aria-hidden="true">&lt;/&gt;</span><h3>Fork and prepare</h3><p>Fork the repository and use the submission template as a starting point.</p></article>
-        <article class="workflow-step"><span class="step-icon" aria-hidden="true">+</span><h3>Add profiles</h3><p>Create <span class="mono">result_YYYYMMDD_&lt;game&gt;.yaml</span> in <span class="mono">data/community/&lt;gpu_id&gt;/</span> and add each resolution/preset as a dashed <span class="mono">result</span> entry. Your username is optional, and a result you found online only needs a link to where you found it.</p></article>
+        <article class="workflow-step"><span class="step-icon" aria-hidden="true">+</span><h3>Add profiles</h3><p>Create <span class="mono">result_YYYYMMDD_&lt;game_id&gt;.yaml</span> in <span class="mono">data/community/&lt;gpu_id&gt;/</span> and add each resolution/preset as a dashed <span class="mono">result</span> entry. New game? Add it to <span class="mono">data/games.yaml</span> in the same pull request. Your username is optional, and a result you found online only needs a link to where you found it.</p></article>
         <article class="workflow-step"><span class="step-icon" aria-hidden="true">&#10003;</span><h3>Validate locally</h3><p>Run the build and validator before opening your pull request.</p></article>
         <article class="workflow-step"><span class="step-icon" aria-hidden="true">&#8981;</span><h3>Review evidence</h3><p>Maintainers check the capture, profile, machine details, and significant outliers.</p></article>
         <article class="workflow-step"><span class="step-icon" aria-hidden="true">&#8599;</span><h3>Approve and group</h3><p>Merged runs are grouped into generated summaries for that GPU.</p></article>
@@ -246,10 +246,10 @@
       <div class="submission-details">
         <div>
           <h3 class="submission-heading">Community YAML example</h3>
-          <pre class="yaml-example"><code><span class="yaml-comment"># data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml</span>
+          <pre class="yaml-example"><code><span class="yaml-comment"># data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077.yaml</span>
 <span class="yaml-comment"># Required fields only. Everything else is optional.</span>
 <span class="yaml-key">gpu_id</span>: <span class="yaml-string">rtx_5080_16gb_fe</span> <span class="yaml-comment"># catalog file name in data/gpus/</span>
-<span class="yaml-key">game</span>: <span class="yaml-string">Cyberpunk 2077</span>
+<span class="yaml-key">game_id</span>: <span class="yaml-string">cyberpunk_2077</span> <span class="yaml-comment"># id in data/games.yaml; add new games there</span>
 <span class="yaml-key">date</span>: <span class="yaml-string">'2026-10-03'</span> <span class="yaml-comment"># the day you ran it, same as the file name</span>
 <span class="yaml-key">result</span>:
   <span class="yaml-list">-</span> <span class="yaml-key">resolution</span>: <span class="yaml-string">1440p</span>
@@ -268,14 +268,14 @@
           <div>
             <h3 class="submission-heading">Review checklist</h3>
             <div class="checklist">
-              <div><h3 class="required">Required</h3><ul><li>GPU (the catalog ID)</li><li>Game, resolution, and settings</li><li>Avg FPS (1% low when your tool reports it)</li><li>Operating system (<span class="mono">system.os</span>)</li><li>Capture tool (<span class="mono">proof.method</span>)</li><li>Frame generation off (the default)</li><li>For a result you found: where you found it (<span class="mono">credit.source_url</span>)</li></ul></div>
+              <div><h3 class="required">Required</h3><ul><li>GPU (the catalog ID)</li><li>Game ID from <span class="mono">data/games.yaml</span> (add a new game there), resolution, and settings</li><li>Avg FPS (1% low when your tool reports it)</li><li>Operating system (<span class="mono">system.os</span>)</li><li>Capture tool (<span class="mono">proof.method</span>)</li><li>Frame generation off (the default)</li><li>For a result you found: where you found it (<span class="mono">credit.source_url</span>)</li></ul></div>
               <div><h3 class="encouraged">Optional, if you want to share it</h3><ul><li>Raw PresentMon capture or a summary link</li><li>Laptop TGP or GPU power</li><li>Your GitHub username</li><li>Exact card or device name</li><li>CPU, memory, driver, and power mode</li></ul></div>
             </div>
           </div>
           <p class="outlier-note"><strong>Validate every profile:</strong> the leading dash makes <span class="mono">result</span> a YAML list. Every profile is checked independently and only matching GPU, power, game, resolution, and preset entries are averaged. A submission more than 25% away from a matching official baseline must be corrected, explained by a different profile, or removed during review.</p>
         </div>
       </div>
-      <p class="submission-footer">Desktop and laptop GPUs never share a group. Game version remains as metadata, while matching summaries use GPU, form factor, known power profile, game, resolution, and graphics settings.</p>
+      <p class="submission-footer">Desktop and laptop GPUs never share a group. Game version remains as metadata, while matching summaries use GPU, form factor, known power profile, game ID, resolution, and graphics settings.</p>
     </details>
     <section class="panel info-panel" aria-labelledby="picks-title">
       <div class="panel-heading"><div><h2 id="picks-title">Featured GPU picks</h2><p class="subtle">One favorite from each GPU maker. Reviews and guides are on the <a href="blog/">blog</a>.</p></div></div>
@@ -335,7 +335,7 @@
     }
 
     function recordsForCurrentGame() {
-      return state.data.records.filter((record) => record.game === state.game);
+      return state.data.records.filter((record) => record.game_id === state.game);
     }
 
     function filteredRecords() {
@@ -572,6 +572,29 @@
         row.append(cell);
       });
       elements.head.replaceChildren(row);
+    }
+
+    const GAME_TYPE_LABELS = { game: "Games", synthetic: "Synthetic benchmarks", engine_demo: "Engine demos" };
+
+    // The benchmark picker: option values are game IDs, grouped by registry type.
+    function setGameOptions(select, games, selected) {
+      const groups = Object.entries(GAME_TYPE_LABELS).map(([type, label]) => {
+        const group = document.createElement("optgroup");
+        group.label = label;
+        group.append(...games.filter((game) => game.type === type).map((game) => {
+          const option = document.createElement("option");
+          option.value = game.id;
+          option.textContent = game.name;
+          option.selected = game.id === selected;
+          return option;
+        }));
+        return group;
+      }).filter((group) => group.children.length);
+      select.replaceChildren(...groups);
+    }
+
+    function gameName(id) {
+      return state.data.games.find((game) => game.id === id)?.name ?? id;
     }
 
     function setOptions(select, values, selected) {
@@ -1057,7 +1080,7 @@
       const records = filteredRecords();
       const preset = state.graphicsPreset === "All" ? "All presets" : state.graphicsPreset;
       const oneGpu = singleGpuName(records);
-      elements.description.textContent = `${state.game} · ${state.resolution} · ${preset}${oneGpu ? ` · ${oneGpu}` : ""} · ${records.length} results`;
+      elements.description.textContent = `${gameName(state.game)} · ${state.resolution} · ${preset}${oneGpu ? ` · ${oneGpu}` : ""} · ${records.length} results`;
       elements.count.textContent = records.length;
       elements.selection.textContent = state.selected.size;
       elements.top.textContent = records[0] ? `${plainName(records[0], records)} · ${records[0].avg_fps.toFixed(0)} FPS` : "—";
@@ -1085,9 +1108,10 @@
           renderPicks();
           return;
         }
-        state.game = state.data.games[0];
+        const firstType = Object.keys(GAME_TYPE_LABELS).find((type) => state.data.games.some((game) => game.type === type));
+        state.game = state.data.games.find((game) => game.type === firstType).id;
         refreshResolutionOptions();
-        setOptions(elements.game, state.data.games, state.game);
+        setGameOptions(elements.game, state.data.games, state.game);
         state.graphicsPreset = "All";
         setOptions(elements.preset, ["All", ...state.data.graphics_presets], state.graphicsPreset);
         elements.preset.value = state.graphicsPreset;

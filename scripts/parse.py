@@ -9,7 +9,7 @@ Supports:
 Driver is OPTIONAL for community PRs per your request.
 form_factor supported: desktop, laptop, handheld, igpu
 """
-import argparse, csv, re, sys
+import argparse, csv, sys
 from datetime import datetime
 from pathlib import Path
 try:
@@ -140,7 +140,7 @@ def main():
     p=argparse.ArgumentParser(description="PresentMon/MangoHud -> YAML")
     p.add_argument("csv_file")
     p.add_argument("--gpu-id", required=True, help="Exact catalog ID, the file name under data/gpus/<form_factor>/<gpu_vendor>/")
-    p.add_argument("--game", required=True)
+    p.add_argument("--game-id", required=True, help="The game's ID in data/games.yaml, such as cyberpunk_2077; add a new game there first")
     p.add_argument("--submitted-by", default="", help="OPTIONAL - your GitHub username; leave it out to stay anonymous")
     p.add_argument("--resolution", default="1440p")
     p.add_argument("--graphics-preset", default="Ultra")
@@ -157,6 +157,11 @@ def main():
         print(f"Unknown --gpu-id '{args.gpu_id}'. Use the exact file name of a catalog entry under data/gpus/.")
         sys.exit(1)
     form_factor=args.form_factor or checks.spec(catalog[args.gpu_id], "classification", "form_factor")
+    game_ids=[game["id"] for game in checks.load_games()[0]]
+    if args.game_id not in game_ids:
+        print(f"Unknown --game-id '{args.game_id}'. Known IDs: {', '.join(game_ids)}.")
+        print("If it's a new game, add it to data/games.yaml (id, name, type, year) in the same pull request.")
+        sys.exit(1)
 
     csv_path=Path(args.csv_file)
     result=detect_and_load(csv_path)
@@ -175,7 +180,7 @@ def main():
     data={
         "gpu_id": args.gpu_id,
         "benchmark_type": "game",
-        "game": args.game,
+        "game_id": args.game_id,
         # The file name's YYYYMMDD below; both use today's date.
         "date": today.strftime("%Y-%m-%d"),
         "form_factor": form_factor,
@@ -205,13 +210,12 @@ def main():
         data={"gpu_id": data.pop("gpu_id"), "submitted_by": args.submitted_by, **data}
 
     if not args.output:
-        safe_game=re.sub(r"[^a-z0-9]+", "_", args.game.lower()).strip("_")
         date = today.strftime("%Y%m%d")
         folder = Path(f"data/community/{args.gpu_id}")
-        out = folder / f"result_{date}_{safe_game}.yaml"
+        out = folder / f"result_{date}_{args.game_id}.yaml"
         repeat = 2
         while out.exists():
-            out = folder / f"result_{date}_{safe_game}_{repeat}.yaml"
+            out = folder / f"result_{date}_{args.game_id}_{repeat}.yaml"
             repeat += 1
     else:
         out=Path(args.output)

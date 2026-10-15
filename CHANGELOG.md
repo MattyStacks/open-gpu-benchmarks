@@ -30,6 +30,14 @@ runs" or "New post: <title>". Earlier releases used three parts.
 ## Unreleased
 
 ### Added
+- Game registry: `data/games.yaml` lists every game and benchmark a result can
+  name, with a required `id`, `name`, `type` (`game`, `synthetic`, or
+  `engine_demo`), and `year`, plus optional `steam_appid`, `igdb_id`, `url`, and
+  `notes`. It starts with Cyberpunk 2077, Helldivers 2, and 3DMark Steel Nomad.
+  New checks: `game-registry`, `game-field`, `game-id-format`, and
+  `game-duplicate`. A result for a new game adds its entry in the same pull
+  request; the templates, guides, and pull request template say so.
+- `api/v1/games.json` publishes the registry.
 - Result files require a top-level `date: 'YYYY-MM-DD'` that matches the file
   name's date (a found result uses its publish date), and each run may add an
   optional local `time`. New checks: `result-date`, `result-date-filename`,
@@ -42,6 +50,22 @@ runs" or "New post: <title>". Earlier releases used three parts.
   blocks no longer spill past their panel; code scrolls inside its own box.
 
 ### Changed
+- Results name their game with `game_id` from `data/games.yaml` instead of a
+  free-text `game`, so spelling variants and editions can't split or merge
+  groups. The old key fails `result-game-id`, and an unknown ID fails
+  `result-unknown-game` with an entry to paste in. Existing files were
+  migrated, and re-running `import_cyberpunk.py` upgrades older local files.
+- API schema 0.15: run records add `game_id`, `game_type`, and `game_year`
+  (`game` is now the registry name), summaries group by `game_id`, and
+  `dashboard.json` `games` is a list of `{id, name, type, year}` objects.
+- The dashboard's game picker is now "Benchmark", grouped into games,
+  synthetic benchmarks, and engine demos; the plain tables' column is
+  "Benchmark" too.
+- `parse.py` takes `--game-id` (checked against the registry) instead of
+  `--game`, and `<BenchChart game="...">` takes the exact game ID.
+- `validate.py results` also checks `data/games.yaml`, so a pull request that
+  adds a game is covered by the Benchmark results check.
+- The Steel Nomad template uses 4K, the resolution Steel Nomad renders at.
 - Dashboard header on phones is compact: one brand line with the icon buttons
   beside it and the All/Official/Community switch on a single row below.
 - Blog header on phones is compact too: one line, no subtitle, smaller icons.

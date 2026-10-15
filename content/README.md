@@ -66,12 +66,12 @@ the numbers always match the dashboard:
 
 ```mdx
 <BenchChart gpu="rtx_5080_16gb_fe" game="cyberpunk_2077" resolution="1440p" />
-<BenchChart gpu={["rtx_5080_16gb_fe", "rtx_4090_24gb_fe"]} game="Cyberpunk 2077" resolution="4K" preset="Ray Tracing: Ultra" />
+<BenchChart gpu={["rtx_5080_16gb_fe", "rtx_4090_24gb_fe"]} game="cyberpunk_2077" resolution="4K" preset="Ray Tracing: Ultra" />
 ```
 
 - `gpu` is one catalog ID or a list.
-- `game` is matched loosely, so `cyberpunk_2077` and `Cyberpunk 2077` both
-  work.
+- `game` is the game's exact ID in `data/games.yaml`, such as
+  `cyberpunk_2077`. The display name comes from there too.
 - The optional filters are `resolution`, `preset`, and `os` (`windows` or
   `linux`), plus `source`: `official` (the default), `community`, or `all`.
 - `title` overrides the heading.

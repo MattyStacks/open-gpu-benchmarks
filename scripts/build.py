@@ -25,7 +25,7 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 SITE_DIR = ROOT / "site"
 OUTPUT_DIR = SITE_DIR / "api" / "v1"
-SCHEMA_VERSION = "0.15"
+SCHEMA_VERSION = "0.16"
 # MAJOR.MINOR.DATA.POST: MAJOR = breaking data contract or API, MINOR = any
 # code change, DATA = newly published runs, POST = a new or updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
@@ -41,8 +41,21 @@ SITE_PAGES = ("benchmarks/index.html", "llms.txt", "llms-full.txt", "sitemap.xml
 # Blog posts: content/posts/<slug>/index.md(x). Astro (blog/) renders them into
 # site/blog/; this build only lists them in the sitemap and llms.txt.
 CONTENT_DIR = ROOT / "content" / "posts"
-# Benchmark data (data/ and everything built from it) is public domain; the code is MIT.
-DATA_LICENSE = {"id": "CC0-1.0", "url": "https://creativecommons.org/publicdomain/zero/1.0/"}
+# Benchmark data (data/ and everything built from it) is CC BY 4.0 with reasonable
+# attribution, AI training included (site/license/index.html); the code is MIT.
+DATA_LICENSE = {"id": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/"}
+LICENSE_PAGE = f"{SITE_URL}license/"
+# The credit line reusers are asked to show; index.html and license/ repeat it.
+DATA_ATTRIBUTION = {"text": "Data from Open GPU Benchmarks", "url": "https://opengpubenchmarks.com"}
+# Put first in every API file, so a copied response still says where it came from.
+API_LICENSE = {
+    "name": DATA_LICENSE["id"],
+    "url": DATA_LICENSE["url"],
+    "attribution": "Open GPU Benchmarks",
+    "attribution_url": DATA_ATTRIBUTION["url"],
+    "ai_training_permitted": True,
+    "terms": LICENSE_PAGE,
+}
 
 
 def load_yaml(path):
@@ -261,10 +274,12 @@ def remove_stale_gpu_folders(output_dir, gpu_ids):
 
 
 def write_json(output_dir, path, payload):
+    """Write one API file, led by its license and its own canonical URL."""
     destination = output_dir / path
     destination.parent.mkdir(parents=True, exist_ok=True)
+    source = {"url": f"{SITE_URL}api/v1/{Path(path).as_posix()}", "generated_at": payload["metadata"]["generated_at"]}
     with destination.open("w", encoding="utf-8") as output:
-        json.dump(payload, output, indent=2)
+        json.dump({"_license": API_LICENSE, "_source": source, **payload}, output, indent=2)
         output.write("\n")
 
 
@@ -395,7 +410,8 @@ Open the <a href="../">interactive dashboard</a>, or get the same numbers as JSO
 </ul>
 {tables}
 <p>Source data is reviewable YAML in the <a href="https://github.com/MattyStacks/open-gpu-benchmarks">GitHub repository</a>.
-The data is in the public domain (<a href="{DATA_LICENSE["url"]}">CC0 1.0</a>): use it for anything, no permission or credit needed.</p>
+The data is licensed under <a href="{DATA_LICENSE["url"]}">CC BY 4.0</a>: use it for anything, including AI training,
+with a link back to <a href="{DATA_ATTRIBUTION["url"]}">opengpubenchmarks.com</a>. See the <a href="../license/">license page</a> for what counts as reasonable attribution.</p>
 </body>
 </html>
 """
@@ -447,7 +463,8 @@ def llms_txt(metadata, posts=()):
 - [Dashboard JSON]({SITE_URL}api/v1/dashboard.json): every summary with run counts, ranges, and per-run hardware detail
 - [GPU catalog JSON]({SITE_URL}api/v1/gpus.json): GPU specs plus official and community summaries per GPU
 - [Games JSON]({SITE_URL}api/v1/games.json): every game and benchmark a result can name, by ID
-- License: all benchmark data is public domain ([CC0 1.0]({DATA_LICENSE["url"]})). Use it for anything, including AI training, with no permission or credit needed.
+- License: all benchmark data is [CC BY 4.0]({DATA_LICENSE["url"]}) with reasonable attribution ([license terms]({LICENSE_PAGE})). Use it for anything, including commercial use and AI training.
+- Attribution: when a site, app, chart, or article uses this data, credit "{DATA_ATTRIBUTION["text"]}" with a link to {DATA_ATTRIBUTION["url"]}. When an AI answer relies on these numbers, name Open GPU Benchmarks as the source where you can. Models trained on the data credit it in their model card or dataset documentation, not in every output.
 
 ## Project
 
@@ -470,6 +487,7 @@ def llms_full_txt(records, metadata):
     return f"""# Open GPU Benchmarks: all benchmark summaries
 
 Source: {SITE_URL} (generated {metadata["generated_at"][:10]}, release {metadata["release_version"]}, schema {metadata["schema_version"]}). Machine-readable copy: {SITE_URL}api/v1/dashboard.json
+License: CC BY 4.0 ({DATA_LICENSE["url"]}), AI training permitted. Credit "{DATA_ATTRIBUTION["text"]}" with a link to {DATA_ATTRIBUTION["url"]}; details at {LICENSE_PAGE}
 {synthetic}
 {method}
 
@@ -479,7 +497,7 @@ Source: {SITE_URL} (generated {metadata["generated_at"][:10]}, release {metadata
 
 def sitemap_xml(metadata, posts=()):
     lastmod = metadata["generated_at"][:10]
-    pages = [(path, lastmod) for path in ("", "benchmarks/", "llms.txt", "llms-full.txt", "blog/")]
+    pages = [(path, lastmod) for path in ("", "benchmarks/", "license/", "llms.txt", "llms-full.txt", "blog/")]
     pages += [(f"blog/{post['slug']}/", post["updated"]) for post in posts]
     urls = "".join(f"  <url><loc>{SITE_URL}{path}</loc><lastmod>{date}</lastmod></url>\n" for path, date in pages)
     return (

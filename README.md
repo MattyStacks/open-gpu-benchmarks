@@ -137,6 +137,12 @@ dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.
 
+Schema `0.16` changes the data license to CC BY 4.0 (`metadata.license` is
+`CC-BY-4.0`) and puts two blocks first in every API file: `_license` (`name`,
+`url`, `attribution`, `attribution_url`, `ai_training_permitted`, `terms`) and
+`_source` (the file's canonical `url` and `generated_at`), so a copied
+response still says where it came from.
+
 ## Community contributions
 
 The easiest way to add a result is a
@@ -310,14 +316,21 @@ requirements are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - **Code** (`scripts/`, `site/`, `blog/`, `templates/`, workflows) is under
   the [MIT license](LICENSE).
-- **Benchmark data** is in the public domain under [CC0 1.0](data/LICENSE).
-  That covers everything in `data/` (the catalog, official and community
-  results, raw captures) and everything generated from it (the dashboard
-  data, the JSON API, `benchmarks/`, and `llms*.txt`). Use it for anything,
-  commercial or not, with no permission or credit needed; a link back is
-  appreciated. Submitting a result means agreeing to this; see
-  [Your results become public data](docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data-cc0).
-- **Blog posts, guides, and reviews** in `content/` are the author's
-  writing and aren't covered by either license. Charts in posts are drawn
-  from the CC0 data.
+- **Benchmark data** is under [CC BY 4.0](data/LICENSE) with reasonable
+  attribution. That covers everything in `data/` (the catalog, official and
+  community results, raw captures) and everything generated from it (the
+  dashboard data, the JSON API, `benchmarks/`, and `llms*.txt`). Use it for
+  anything, commercial or not, including AI training. Sites, apps, and
+  articles that use it credit "Data from Open GPU Benchmarks" with a link to
+  <https://opengpubenchmarks.com>; a chart image or video can use a text
+  credit, and AI models credit it in their model card, not in every answer.
+  The [license page](https://opengpubenchmarks.com/license/) has the details.
+  Submitting a result means agreeing to this; see
+  [Your results become public data](docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data).
+  Data published before the switch was CC0, and copies made then keep those
+  terms.
+- **Blog posts, guides, and reviews** in `content/` stay the author's
+  copyright, all rights reserved, and aren't covered by either license. A
+  post marked AI-generated (`ai_generated: true`) claims no copyright in its
+  text. Charts in posts are drawn from the CC BY 4.0 data.
 - GPU and company names are trademarks of their owners.

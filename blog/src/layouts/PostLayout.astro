@@ -6,7 +6,7 @@ import DisclosureBanner from "../components/DisclosureBanner.astro";
 import ReviewSummary from "../components/ReviewSummary.astro";
 import { DEFAULT_AUTHOR, POST_TYPES, SITE_URL } from "../config";
 import { catalogGpu } from "../lib/api";
-import { formatDate, isoDate, type Post } from "../lib/posts";
+import { formatDate, isoDate, siteRoot, type Post } from "../lib/posts";
 import BaseLayout from "./BaseLayout.astro";
 
 interface Props {
@@ -20,6 +20,12 @@ const credit = ai_generated
   ? `Generated with AI and reviewed by ${post.data.author ?? DEFAULT_AUTHOR}.`
   : `Written by ${post.data.author ?? DEFAULT_AUTHOR}.${ai_assistance ? ` AI assistance: ${ai_assistance.replace(/\.$/, "")}.` : ""}`;
 const author = post.data.author ?? DEFAULT_AUTHOR;
+// Post text is the author's (all rights reserved), not CC BY like the data.
+// A fully AI-written post has no human author's copyright, so none is claimed.
+const year = date.getUTCFullYear();
+const rights = ai_generated
+  ? "This post's text was generated with AI, and no copyright is claimed in it."
+  : `Text © ${year} ${author}. All rights reserved.`;
 const base = import.meta.env.BASE_URL;
 const canonical = `${SITE_URL}blog/${post.id}/`;
 
@@ -42,6 +48,7 @@ const posting = {
   keywords: tags.join(", "),
   ...(ogImage ? { image: ogImage } : {}),
   isPartOf: { "@id": `${SITE_URL}#website` },
+  ...(ai_generated ? {} : { copyrightHolder: { "@type": "Person", name: author }, copyrightYear: year }),
 };
 const jsonLd =
   type === "review" && verdict
@@ -79,6 +86,9 @@ const jsonLd =
       <p>
         {credit}
         {affiliate && " Affiliate links are marked and disclosed at the top."}
+      </p>
+      <p>
+        {rights} Benchmark charts and numbers come from the <a href={`${siteRoot()}license/`}>CC BY 4.0</a> data.
       </p>
       {
         tags.length > 0 && (

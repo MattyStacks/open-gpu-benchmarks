@@ -182,20 +182,28 @@ commit everything, push, and open a PR into `main`; one topic per branch.
 ## Licenses
 
 - Code is MIT (`LICENSE`). Benchmark data, meaning `data/` and everything
-  built from it (the API, `benchmarks/`, `llms*.txt`), is CC0 1.0
-  (`data/LICENSE`). Blog writing in `content/` is the author's and is under
-  neither.
-- Submitting a result releases it under CC0. Anyone can use it for anything
-  without permission or credit, and it can't be taken back.
+  built from it (the API, `benchmarks/`, `llms*.txt`), is CC BY 4.0 with
+  reasonable attribution (`data/LICENSE`, `site/license/index.html`).
+- Blog writing in `content/` stays the author's copyright, all rights
+  reserved, under neither license. A post with `ai_generated: true` claims no
+  copyright in its text.
+- Submitting a result releases it under CC BY 4.0, and it can't be taken
+  back. Anyone can use it for anything, AI training included, but sites that
+  use it credit "Data from Open GPU Benchmarks" with a link; AI models credit
+  it in documentation. The submitter's own credit stays with the run here.
+  Data published before the switch was CC0, and copies made then keep it.
   - The plain-English terms live once in `docs/COMMUNITY_SUBMISSIONS.md`
     ("Your results become public data"). CONTRIBUTING,
-    `data/community/README.md`, the community templates, the dashboard, and
-    `.github/pull_request_template.md` link to them.
+    `data/community/README.md`, the community templates, the dashboard, the
+    issue form, `license/`, and `.github/pull_request_template.md` repeat or
+    link to them. Change them together.
   - Found results submit only the numbers and a link, never the creator's
     screenshots or text.
   - A friend's numbers need their agreement to public release.
-- `build.DATA_LICENSE` feeds `metadata.license`, `llms.txt`, and
-  `benchmarks/`, and the `index.html` Dataset JSON-LD repeats the URL.
+- `build.DATA_LICENSE` and `build.API_LICENSE` feed the `_license` block at
+  the top of every API file (with `_source`), `metadata.license`, `llms.txt`,
+  and `benchmarks/`. The `index.html` Dataset JSON-LD and `license/` repeat
+  the URL.
   `test_build.check_licenses()` keeps them in step.
 
 ## Featured GPU picks

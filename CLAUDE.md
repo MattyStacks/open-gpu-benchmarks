@@ -76,8 +76,8 @@ data/gpus/reference/<gpu_vendor>/<ref_id>.yaml
                                    shared chip specs products inherit via base:
 data/gpus/README.md                catalog rules, ID grammar, every check explained
 LICENSE                            MIT, for the code
-data/LICENSE                       CC0 1.0, for all benchmark data (data/ and its API)
-.github/pull_request_template.md   PR checklist, including agreeing to CC0 for results
+data/LICENSE                       CC BY 4.0 (+ reasonable-attribution header), for all benchmark data
+.github/pull_request_template.md   PR checklist, including agreeing to CC BY 4.0 for results
 data/reviews.yaml                  optional review links (still in the API; no longer shown)
 data/games.yaml                    game registry: every game_id a result may use, with
                                    name, type, year, and optional store IDs (game-* rules)
@@ -99,6 +99,7 @@ scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
 site/favicons/                     site icons (favicon.svg is primary, theme-aware)
 site/robots.txt, site/_headers     crawler rules (AI allowed) and Cloudflare headers
+site/license/index.html            the public license page (data CC BY 4.0, posts the author's)
 site/benchmarks/, llms.txt,       generated JS-free summary pages + sitemap.xml
   llms-full.txt, sitemap.xml       (gitignored, written by build.py)
 content/posts/<slug>/index.md(x)  blog posts, guides, and reviews (+ their images)
@@ -292,16 +293,27 @@ unless repository policy changes.
   `blog/src/data/retailers.ts` has no IDs.
 - Licenses:
   - **Code** is MIT (`LICENSE`).
-  - **Benchmark data** is CC0 (`data/LICENSE`). That's everything in `data/`
-    and everything built from it.
-  - **Blog writing** in `content/` is the author's and is under neither.
-  - Submitting a result releases it under CC0. The plain-English terms live
-    once in `docs/COMMUNITY_SUBMISSIONS.md` ("Your results become public
-    data"), and CONTRIBUTING, `data/community/README.md`, the community
-    templates, the dashboard, and `.github/pull_request_template.md` point to
-    them.
-  - `build.DATA_LICENSE` feeds the API metadata, `llms.txt`, and
-    `benchmarks/`, and the `index.html` JSON-LD repeats it.
+  - **Benchmark data** is CC BY 4.0 with reasonable attribution
+    (`data/LICENSE`, explained on `site/license/index.html`). That's
+    everything in `data/` and everything built from it. AI training is
+    explicitly permitted; sites credit "Data from Open GPU Benchmarks" with a
+    link, charts and videos may use a text credit, and AI models credit it
+    in their model card, not in every output. Data published before the
+    switch was CC0, and copies made then keep those terms.
+  - **Blog writing** in `content/` stays the author's copyright, all rights
+    reserved, under neither license. A post with `ai_generated: true` claims
+    no copyright in its text. `PostLayout.astro` prints the line on every post.
+  - Submitting a result releases it under CC BY 4.0. The plain-English terms
+    live once in `docs/COMMUNITY_SUBMISSIONS.md` ("Your results become public
+    data"). The same five points are repeated in full on the dashboard's
+    submission panel, on `license/`, and in the issue form. CONTRIBUTING,
+    `data/community/README.md`, the community templates, and
+    `.github/pull_request_template.md` give a short version plus a link.
+    Change them together.
+  - `build.DATA_LICENSE`, `build.DATA_ATTRIBUTION`, and `build.API_LICENSE`
+    feed the `_license` block that leads every API file (next to `_source`),
+    `metadata.license`, `llms.txt`, and `benchmarks/`. The `index.html`
+    JSON-LD (`license`, `usageInfo`, `creditText`) and `license/` repeat them.
     `test_build.check_licenses()` checks they agree.
   - Never add data under other terms.
 - The dashboard's **Featured GPU picks** come from `data/picks.yaml`:

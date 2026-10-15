@@ -118,11 +118,15 @@ non-draft posts in the sitemap and `llms.txt`. Rules are in
   `ai_generated: true`. Never type benchmark numbers; use `<BenchChart>`. Store links go only through `<AffiliateLink>` with
   `affiliate: true`. See [content/README.md](content/README.md).
 
-Licenses: code is MIT (`LICENSE`), and benchmark data (`data/` and the API
-built from it) is CC0 (`data/LICENSE`). Submitting a result releases it
-under CC0; the plain-English terms are in `docs/COMMUNITY_SUBMISSIONS.md`
-("Your results become public data"). Blog writing in `content/` is the
-author's. `build.DATA_LICENSE`, the `index.html` JSON-LD, and the license
+Licenses: code is MIT (`LICENSE`). Benchmark data (`data/` and the API built
+from it) is CC BY 4.0 with reasonable attribution (`data/LICENSE`,
+`site/license/index.html`), and AI training is explicitly permitted.
+Submitting a result releases it under CC BY 4.0. The plain-English terms are
+in `docs/COMMUNITY_SUBMISSIONS.md` ("Your results become public data") and
+are repeated on the dashboard, on `license/`, and in the issue form. Blog
+writing in `content/` stays the author's copyright, all rights reserved,
+unless the post is `ai_generated: true`. `build.DATA_LICENSE`, the API
+`_license` block, the `index.html` JSON-LD, `license/`, and the license
 files must agree (`test_build.check_licenses()`).
 
 Featured picks: `data/picks.yaml` feeds the dashboard's three GPU cards.

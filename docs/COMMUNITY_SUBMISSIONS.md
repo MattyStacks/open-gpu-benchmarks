@@ -33,7 +33,7 @@ game is added first by its own pull request (see
 issue and it checks again. Preset names that differ only in case from ones
 already on the dashboard are rewritten to match, so groups don't split.
 You stay anonymous unless you tick **Credit me as my GitHub username**, and the
-CC0 box is required (see [below](#your-results-become-public-data-cc0)).
+license box (CC BY 4.0) is required (see [below](#your-results-become-public-data)).
 
 The form covers one game and one day per issue, up to 20 runs, Windows or
 Linux, with an optional proof link. It doesn't yet take raw capture uploads,
@@ -147,22 +147,30 @@ the build includes that run in
 `site/api/v1/community/<gpu_id>/summary.json` and in the GPU-rooted master
 API. There is no separate approved or pending source tree.
 
-## Your results become public data (CC0)
+## Your results become public data
 
-Everything in this repository's `data/` folder is released under
-[CC0 1.0](../data/LICENSE), a public domain dedication. So is everything the
+Everything in this repository's `data/` folder is licensed under
+[CC BY 4.0](../data/LICENSE) with reasonable attribution. So is everything the
 site publishes from it: the dashboard, the JSON API, and the plain-text
-tables.
+tables. The [license page](https://opengpubenchmarks.com/license/) explains
+what counts as reasonable attribution.
 
-**When you open a pull request that adds or changes a result, you agree to
-release what you submit under CC0.** In plain English:
+**When you submit a result (through a benchmark issue or a pull request), you
+agree to release what you submit under CC BY 4.0.** In plain English:
 
 - **Anyone can use your numbers for anything.** They can copy them, share
   them, change them, put them in their own charts, videos, articles, apps,
-  or datasets, use them in something they sell, or give them to AI tools.
-- **No one has to ask you, pay you, or credit you.** The dashboard shows
-  your name if you set `submitted_by`, but that's this site being polite. It
-  isn't a condition on anyone else.
+  or datasets, use them in something they sell, or train AI on them.
+- **Sites have to say where the data came from.** A site, app, or article
+  that uses the data must credit Open GPU Benchmarks and link back, so its
+  readers can find the source, report problems, and contribute their own
+  runs. In a chart image or a video, a text credit ("Source:
+  opengpubenchmarks.com") counts. AI models credit the data in their model
+  card or documentation, not in every answer.
+- **You get credit here.** Your `submitted_by` username, or the `credit` for
+  a result you found, is recorded with the result on this site, in the API,
+  and in the Git history. Reusers credit Open GPU Benchmarks, not each
+  submitter, but your name stays attached to your runs here.
 - **You can't take it back.** You can ask for a result to be removed from the
   site (see [Fixing or removing a result](../CONTRIBUTING.md#fixing-or-removing-a-result)).
   Copies other people already made, and the Git history, stay public.
@@ -173,16 +181,20 @@ release what you submit under CC0.** In plain English:
 - **Only submit what you're allowed to share:**
   - **Your own runs**: yes.
   - **A result you found** in a video, review, or post: you submit the numbers
-    and a link to where you found them, and that's what becomes CC0. Don't
-    upload the creator's screenshots, video frames, or text; the link is
+    and a link to where you found them, and that's what becomes CC BY 4.0.
+    Don't upload the creator's screenshots, video frames, or text; the link is
     enough. Their video or article itself stays theirs.
   - **A friend's unpublished numbers**: they must agree to their numbers being
     published under these terms, and your `permission` note should say so.
 - **No promises.** The data is shared as it is, with no guarantee that it's
-  accurate (CC0 section 4). Reviews and checks catch a lot, not everything.
+  accurate (CC BY 4.0 section 5). Reviews and checks catch a lot, not
+  everything.
 
-This applies to official runs too. The code is separate and uses the
-[MIT license](../LICENSE).
+This applies to official runs too. Data published before the switch to
+CC BY 4.0 was released under CC0 1.0, and copies made under those terms keep
+them. The code is separate and uses the [MIT license](../LICENSE). Blog posts
+are separate too: their text stays the author's copyright, all rights
+reserved, unless the post is marked AI-generated.
 
 ## Date and time
 
@@ -334,7 +346,7 @@ shows a benchmark, you can add it. You don't need the creator's permission, but
 you do need to say where you found it, so a reviewer can check the numbers.
 Submit only the numbers and the link, not the creator's screenshots or text,
 because what you submit becomes public data (see
-[Your results become public data](#your-results-become-public-data-cc0)).
+[Your results become public data](#your-results-become-public-data)).
 Start from
 [`templates/community_found_result.yaml`](../templates/community_found_result.yaml)
 and add a `credit` block:
@@ -375,7 +387,7 @@ credit:
 
 - `note`: a short description of how and when they agreed, including that
   they're fine with the numbers being public data anyone can use (see
-  [Your results become public data](#your-results-become-public-data-cc0));
+  [Your results become public data](#your-results-become-public-data));
 - `screenshot`: an image (for example a message), saved in the same GPU folder,
   such as `data/community/<gpu_id>/raw/permission_example_friend.png`;
 - `url`: an `https://` link showing permission.

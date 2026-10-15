@@ -779,7 +779,7 @@ def check_issue_to_result():
             "is not a number": valid.replace("175.2, 140.1", "fast, 140"),
             "community-outlier": valid.replace("175.2, 140.1", "400, 300"),
             "result-p1-low-required": valid.replace("175.2, 140.1", "175.2"),
-            "CC0": valid.replace("- [X] I release", "- [ ] I release"),
+            "CC BY 4.0": valid.replace("- [X] I release", "- [ ] I release"),
             "YYYY-MM-DD": valid.replace("2026-10-03", "10/03/2026"),
             "its own pull request": valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\nSome Unlisted Game"),
             "Did you mean `cyberpunk_2077`?": valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\ncyberpunk 2078"),
@@ -811,7 +811,7 @@ def check_issue_form_matches_script():
     assert options["graphics_api"] == list(script.GRAPHICS_APIS)
     assert [option["label"] for option in options["credit"]] == [script.CREDIT_ME]
     labels = [option["label"] for option in options["confirmations"]]
-    assert labels[0].startswith(script.FRAME_GENERATION_OFF) and labels[1].startswith(script.CC0_AGREEMENT), labels
+    assert labels[0].startswith(script.FRAME_GENERATION_OFF) and labels[1].startswith(script.LICENSE_AGREEMENT), labels
 
 
 def check_bot_safety():
@@ -953,7 +953,7 @@ def check_real_data():
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.15"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.16"
     group_by = master["metadata"]["comparison_policy"]["group_by"]
     assert {"os", "upscaling", "game_id"} <= set(group_by) and "game" not in group_by
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
@@ -1122,16 +1122,35 @@ def check_site_seo(site_dir):
 
 
 def check_licenses(site_dir):
-    """Code is MIT, data is CC0, and every place that states the data license agrees."""
+    """Code is MIT, data is CC BY 4.0, and every place that states the data license agrees."""
     assert (ROOT / "LICENSE").read_text(encoding="utf-8").startswith("MIT License"), "LICENSE must be the MIT text"
     data_license = (ROOT / "data" / "LICENSE").read_text(encoding="utf-8")
-    assert data_license.startswith("Creative Commons Legal Code\n\nCC0 1.0 Universal"), "data/LICENSE must be CC0 1.0"
+    assert data_license.startswith("Open GPU Benchmarks Data License\n"), "data/LICENSE must start with the project header"
+    assert "Creative Commons Attribution 4.0 International Public License" in data_license, "data/LICENSE must hold the CC BY 4.0 legal code"
     url = build.DATA_LICENSE["url"]
+    assert build.DATA_LICENSE["id"] == build.API_LICENSE["name"] == "CC-BY-4.0" and build.API_LICENSE["url"] == url
     index = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
-    assert f'"license": "{url}"' in index, "the Dataset JSON-LD must name the CC0 license"
-    assert load_json(site_dir / "api" / "v1" / "dashboard.json")["metadata"]["license"] == build.DATA_LICENSE
-    assert url in (site_dir / "llms.txt").read_text(encoding="utf-8")
-    assert url in (site_dir / "benchmarks" / "index.html").read_text(encoding="utf-8")
+    assert f'"license": "{url}"' in index, "the Dataset JSON-LD must name the CC BY 4.0 license"
+    assert f'"usageInfo": "{build.LICENSE_PAGE}"' in index and build.DATA_ATTRIBUTION["text"] in index
+    assert 'href="license/"' in index, "the dashboard must link the license page"
+    license_page = (ROOT / "site" / "license" / "index.html").read_text(encoding="utf-8")
+    assert f'<link rel="canonical" href="{build.LICENSE_PAGE}">' in license_page
+    assert url in license_page and build.DATA_ATTRIBUTION["url"] in license_page
+    api_dir = site_dir / "api" / "v1"
+    api_files = sorted(api_dir.rglob("*.json"))
+    assert api_files, "the build wrote no API files"
+    for path in api_files:
+        payload = load_json(path)
+        relative = path.relative_to(api_dir).as_posix()
+        assert list(payload)[:2] == ["_license", "_source"], f"{relative} must lead with _license and _source"
+        assert payload["_license"] == build.API_LICENSE, relative
+        assert payload["_source"]["url"] == f"{build.SITE_URL}api/v1/{relative}", relative
+        assert payload["_source"]["generated_at"] == payload["metadata"]["generated_at"], relative
+    assert load_json(api_dir / "dashboard.json")["metadata"]["license"] == build.DATA_LICENSE
+    for page in ("llms.txt", "llms-full.txt", "benchmarks/index.html"):
+        text = (site_dir / page).read_text(encoding="utf-8")
+        assert url in text and build.DATA_ATTRIBUTION["url"] in text, f"{page} must state the license and credit link"
+    assert f"<loc>{build.LICENSE_PAGE}</loc>" in (site_dir / "sitemap.xml").read_text(encoding="utf-8")
 
 
 def check_pick_rules():

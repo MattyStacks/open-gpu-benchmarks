@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>License | Open GPU Benchmarks</title>
+<meta name="description" content="Open GPU Benchmarks data is CC BY 4.0: use it for anything, including AI training, with a link back to opengpubenchmarks.com.">
+<link rel="canonical" href="https://opengpubenchmarks.com/license/">
+<link rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Open GPU Benchmarks">
+<meta property="og:title" content="License">
+<meta property="og:description" content="Use the data for anything, including AI training. Just link back to opengpubenchmarks.com whenever you reasonably can.">
+<meta property="og:url" content="https://opengpubenchmarks.com/license/">
+<link rel="icon" href="../favicons/favicon.svg" type="image/svg+xml">
+<style>
+:root { color-scheme: light dark; }
+body { margin: 0 auto; max-width: 760px; padding: 24px 16px 48px; font: 15px/1.6 system-ui, sans-serif; }
+h1 { margin-top: 0; }
+h2 { margin-top: 32px; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid #8888; background: #8881; }
+pre { overflow-x: auto; padding: 12px 14px; background: #8881; border: 1px solid #8884; border-radius: 6px; font-size: 13px; }
+code { font-size: 0.92em; }
+.tldr { padding: 12px 14px; border: 1px solid #8886; border-radius: 8px; }
+.note { font-size: 13px; opacity: 0.8; }
+</style>
+</head>
+<body>
+<p><a href="../">← Dashboard</a></p>
+<h1>License</h1>
+
+<p class="tldr"><strong>TL;DR:</strong> You can use our data for anything, including AI training. Just link back to
+<a href="https://opengpubenchmarks.com">opengpubenchmarks.com</a> whenever you reasonably can.</p>
+
+<h2 id="data">Data license: CC BY 4.0</h2>
+<p>All data on opengpubenchmarks.com, including GPU benchmark results, summaries, comparisons, and API responses, is
+licensed under <strong>Creative Commons Attribution 4.0 International (CC BY 4.0)</strong>.
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode">Read the full legal code</a>.</p>
+
+<h3>You are free to</h3>
+<ul>
+<li>Copy and redistribute the data</li>
+<li>Remix, transform, and build on it, including making your own charts and visualizations</li>
+<li>Use it commercially</li>
+<li><strong>Use it to train AI models, including LLMs and other foundation models</strong></li>
+</ul>
+<p>We explicitly confirm that training AI models is a permitted use under this license.</p>
+
+<h3>Under one condition: reasonable attribution</h3>
+<p>We require attribution that is reasonable for the medium you're using. It tells your readers where the numbers came
+from, so they can check them, report problems, and add their own results.</p>
+
+<h4>1. Websites, apps, blogs, and tools that use the data</h4>
+<p>Include a hyperlink:</p>
+<blockquote>Data from <a href="https://opengpubenchmarks.com">Open GPU Benchmarks</a></blockquote>
+<p>If you used a specific page, such as the <a href="../benchmarks/">benchmark tables</a> or an API file, link to that page.</p>
+
+<h4>2. Charts, images, video, and social posts where a clickable link isn't possible</h4>
+<p>A text credit counts:</p>
+<blockquote>Source: opengpubenchmarks.com</blockquote>
+<p>Put it in the chart footer, the video description, the image alt text, or the caption. We know you can't embed a link
+in a PNG.</p>
+
+<h4>3. AI models trained on this data</h4>
+<p>You do <strong>not</strong> need to attribute in every model output. We consider that unreasonable. Instead, credit
+the data in your model card, dataset documentation, README, or paper:</p>
+<pre><code>training_data:
+  - name: Open GPU Benchmarks
+    url: https://opengpubenchmarks.com
+    license: CC-BY-4.0</code></pre>
+<p>When an AI answer relies on these numbers, we'd appreciate it naming Open GPU Benchmarks as the source.</p>
+
+<h3>What doesn't need inline attribution</h3>
+<ul>
+<li>Model weights and model outputs or generations</li>
+<li>Private, internal analysis</li>
+</ul>
+<p>We still ask that you credit us in your documentation.</p>
+
+<h3>What we ask you not to do</h3>
+<ul>
+<li>Don't imply that Open GPU Benchmarks endorses you or your work.</li>
+<li>Don't use the Open GPU Benchmarks name in a misleading way.</li>
+</ul>
+
+<h2 id="submitting">Submitting results?</h2>
+<p>Here is what you agree to when you send us a benchmark, in plain English:</p>
+<ul>
+<li><strong>Your results become public data under CC BY 4.0.</strong> Anyone can use them for anything: copy them, make
+their own charts, put them on their site, use them commercially, or train AI on them.</li>
+<li><strong>Sites have to say where the data came from.</strong> A site or app that uses the data must credit Open GPU
+Benchmarks and link back, so readers can find the source, report problems, and contribute. In a chart or video, a text
+credit counts. AI models credit us in their documentation, not in every answer.</li>
+<li><strong>You get credit here.</strong> Your name, or the source you found, is recorded with the result on this site,
+in the data, and in the Git history.</li>
+<li><strong>You can't take it back.</strong> You can ask for a result to be removed from this site, but copies other
+people already made stay public.</li>
+<li><strong>It covers everything you submit.</strong> That includes the numbers, machine details, and raw captures, so
+leave out anything you don't want public. Only submit what you're allowed to share.</li>
+</ul>
+<p>The full rules are in
+<a href="https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data">the community submission guide</a>.</p>
+
+<h2 id="api">Using the API</h2>
+<p>Every file under <a href="../api/v1/dashboard.json">api/v1/</a> starts with a <code>_license</code> block (license,
+attribution name and link, <code>ai_training_permitted: true</code>) and a <code>_source</code> block (that file's URL and
+when it was generated), so a copied response still says where it came from.</p>
+
+<h2 id="code">Code license</h2>
+<p>The website code is <a href="https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/LICENSE">MIT</a> unless
+noted otherwise.</p>
+
+<h2 id="articles">Blog posts and articles</h2>
+<p><strong>CC BY 4.0 covers the benchmark data, not the writing.</strong> The text of every blog post, guide, and review
+stays the copyright of its author, all rights reserved, the same as any article they publish elsewhere. Quoting a short
+passage with a link is fine; copying or republishing a post needs the author's permission.</p>
+<ul>
+<li><strong>Written by a person</strong> (including posts where AI only cleaned up grammar or inserted links, which the
+post says): the author keeps full copyright.</li>
+<li><strong>Fully AI-written</strong> (marked "AI-generated" on the post): no copyright is claimed in the text.</li>
+<li><strong>Benchmark charts and numbers</strong> inside a post come from the data, so they are CC BY 4.0 like
+everything else on the dashboard.</li>
+</ul>
+
+<h2 id="faq">FAQ</h2>
+<h4>Can I train a commercial AI model on this?</h4>
+<p>Yes.</p>
+<h4>Do I have to put a link in every chart image?</h4>
+<p>No, but put "Source: opengpubenchmarks.com" in the image or in the text or description around it. That's reasonable
+attribution.</p>
+<h4>Do I have to credit in every LLM answer?</h4>
+<p>No. Credit in the model card or documentation is enough.</p>
+<h4>What if I'm using the API at scale?</h4>
+<p>Each API file carries its own attribution fields. See <a href="#api">Using the API</a>.</p>
+<h4>Can I republish a blog post?</h4>
+<p>Not without the author's permission, unless the post is marked AI-generated. The data and charts in it are free to
+use under CC BY 4.0. See <a href="#articles">Blog posts and articles</a>.</p>
+<h4>What about data published before this license?</h4>
+<p>Data published before the switch to CC BY 4.0 was released under CC0 1.0 (public domain). Copies made under those
+terms keep them. Everything published from now on is CC BY 4.0.</p>
+
+<p class="note">This page is a human-readable summary, not legal advice. The
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode">CC BY 4.0 legal code</a> governs. The source copy is
+<a href="https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/data/LICENSE">data/LICENSE</a>.</p>
+</body>
+</html>

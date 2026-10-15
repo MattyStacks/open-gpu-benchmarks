@@ -1,0 +1,87 @@
+---
+// Page shell matching the dashboard header and footer. Canonical URLs always
+// use the canonical origin, whatever BLOG_BASE this build used.
+import "../styles/tokens.css";
+import "../styles/blog.css";
+import { BLOG_TITLE, GITHUB_URL, SITE_URL } from "../config";
+import { dashboard } from "../lib/api";
+import { siteRoot } from "../lib/posts";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string; // relative to /blog/, "" for the index, "<slug>/" for a post
+  ogType?: "website" | "article";
+  ogImage?: string;
+  jsonLd?: Record<string, unknown>;
+  active?: string;
+}
+
+const { title, description, path, ogType = "website", ogImage, jsonLd, active } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const home = siteRoot();
+const canonical = `${SITE_URL}blog/${path}`;
+const pageTitle = path ? `${title} | ${BLOG_TITLE}` : BLOG_TITLE;
+const image = ogImage ?? `${SITE_URL}favicons/icon-512.png`;
+const { release_version } = dashboard().metadata;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title={BLOG_TITLE} href={`${base}rss.xml`} />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="theme-color" content="#090b10" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="Open GPU Benchmarks" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <link rel="icon" href={`${home}favicons/favicon.ico`} sizes="32x32" />
+    <link rel="icon" href={`${home}favicons/favicon.svg`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`${home}favicons/apple-touch-icon.png`} />
+    <!-- Same theme key as the dashboard, set before paint. The only client JS on blog pages. -->
+    <script is:inline>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem("open-gpu-benchmarks-theme") ||
+          (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <a class="brand" href={home}>OPEN GPU BENCHMARKS<span class="brand-section">Blog, guides, and reviews</span></a>
+        <nav class="header-actions" aria-label="Site">
+          <a class="button header-link" href={home} aria-label="Dashboard"><span class="mono" aria-hidden="true">▤</span><span class="label">Dashboard</span></a>
+          <a class={`button header-link${active === "blog" ? " active" : ""}`} href={base} aria-label="Blog"><span class="mono" aria-hidden="true">¶</span><span class="label">Blog</span></a>
+          <a class="button header-link" href={GITHUB_URL} target="_blank" rel="noreferrer" aria-label="GitHub repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span class="label">GitHub</span></a>
+          <button class="button icon-button" id="theme-toggle" type="button" aria-label="Toggle color theme">◐</button>
+        </nav>
+      </div>
+    </header>
+    <main class="shell">
+      <slot />
+      <footer class="footer">
+        <div><a href={home}>Dashboard</a> · <a href={base}>Blog</a> · <a href={`${base}rss.xml`}>RSS</a> · <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a></div>
+        <div>Open GPU Benchmarks · release <span class="mono">{release_version}</span></div>
+      </footer>
+    </main>
+    <script is:inline>
+      document.querySelector("#theme-toggle").addEventListener("click", () => {
+        const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem("open-gpu-benchmarks-theme", next); } catch {}
+      });
+    </script>
+  </body>
+</html>

@@ -40,6 +40,8 @@ docs, read:
    instead, and remove items when they're done.
 8. [AGENTS.md](AGENTS.md) — the tool-neutral entry point for other AI agents.
    Keep it in step with this file.
+9. [content/README.md](content/README.md) — before writing or editing a blog
+   post, guide, or review: frontmatter, components, and the AI-cleanup rules.
 
 The first five documents overlap on purpose. When a rule changes, it has to change
 in every file that states it, or the next session gets contradictory context.
@@ -53,8 +55,10 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.0.0` (`RELEASE_VERSION` in
-  [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it)
+- Current development version: `v1.1.0.0` (`RELEASE_VERSION` in
+  [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
+  Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
+  Versioning section of [CHANGELOG.md](CHANGELOG.md)
 
 ### Layout
 
@@ -64,7 +68,12 @@ data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml
 data/gpus/reference/<gpu_vendor>/<ref_id>.yaml
                                    shared chip specs products inherit via base:
 data/gpus/README.md                catalog rules, ID grammar, every check explained
-data/reviews.yaml                  optional published-review links
+LICENSE                            MIT, for the code
+data/LICENSE                       CC0 1.0, for all benchmark data (data/ and its API)
+.github/pull_request_template.md   PR checklist, including agreeing to CC0 for results
+data/reviews.yaml                  optional review links (still in the API; no longer shown)
+data/picks.yaml                    featured GPU picks: one dashboard card per GPU maker
+                                   with affiliate store links (pick-* rules)
 data/official/<gpu_id>/result_*.yaml
 data/community/<gpu_id>/result_*.yaml
 data/community/<gpu_id>/raw/**     optional raw capture evidence
@@ -81,6 +90,11 @@ site/favicons/                     site icons (favicon.svg is primary, theme-awa
 site/robots.txt, site/_headers     crawler rules (AI allowed) and Cloudflare headers
 site/benchmarks/, llms.txt,       generated JS-free summary pages + sitemap.xml
   llms-full.txt, sitemap.xml       (gitignored, written by build.py)
+content/posts/<slug>/index.md(x)  blog posts, guides, and reviews (+ their images)
+content/README.md                  how to write a post: frontmatter, components, AI-cleanup rules
+blog/                              Astro project that renders content/ into site/blog/
+                                   (gitignored output; schema in blog/src/content.config.ts)
+blog/src/styles/tokens.css         verbatim copy of the dashboard's color tokens
 templates/                         starting points for runs (incl. community_found_result.yaml) and catalog entries
 requirements.txt                   Python dependencies (pyyaml, numpy); CI and .venv use it
 .venv/                             local virtual environment (gitignored, never committed)
@@ -90,8 +104,8 @@ docs/TODO.md                       backlog: deferred work (update with every cha
 AGENTS.md                          tool-neutral agent entry point (keep in step with this file)
 .github/workflows/build.yml        builds site/api and deploys GitHub Pages + Cloudflare on main
 .github/workflows/preview.yml      Cloudflare PR previews, owner's own PRs only
-.github/workflows/validate.yml     three PR checks: Catalog entries, Benchmark results,
-                                   Build and tests
+.github/workflows/validate.yml     four PR checks: Catalog entries, Benchmark results,
+                                   Build and tests, Blog
 ```
 
 Generated `site/api/` output is gitignored and recreated in CI. Do not commit it
@@ -191,6 +205,57 @@ unless repository policy changes.
   (`benchmarks/`, `llms-full.txt`) because most AI crawlers don't run JS.
 - `preview.yml` deploys Cloudflare previews only for the repo owner's own
   same-repo PRs. Keep it on `pull_request`, never `pull_request_target`.
+- The blog is Astro, scoped to `/blog/`. `build.py` still owns the dashboard,
+  the API, the sitemap, and `llms.txt`, and it lists non-draft posts in both.
+  Astro builds after `build.py`, because `<BenchChart>` and the review spec
+  cards read `site/api/v1/`. Its rules live in
+  `blog/src/content.config.ts` (frontmatter) and `blog/src/lib/posts.ts`
+  (reserved slugs, affiliate disclosure), not in `scripts/checks.py`.
+- `BLOG_BASE` sets the blog's path: `/blog` (the default, Cloudflare) or
+  `/open-gpu-benchmarks/blog` (the GitHub Pages mirror, a second build in
+  `build.yml`). Blog code builds links from `import.meta.env.BASE_URL` and
+  `siteRoot()`, never a hard-coded `/blog/`. Canonical, `og:url`, and RSS
+  links always use `https://opengpubenchmarks.com/blog/`. In Git Bash, set
+  `MSYS_NO_PATHCONV=1` or Git Bash rewrites `BLOG_BASE` into a Windows path.
+- The blog never restyles the dashboard. `blog/src/styles/tokens.css` is a
+  verbatim copy of the `:root` blocks in `site/index.html`, and
+  `test_build.py` fails if they differ, so a color change goes in both.
+- The author writes the content. AI may clean up wording and insert
+  affiliate links, and the post says so in `ai_assistance` (for example
+  "Grammar and flow cleanup"). A post AI wrote sets `ai_generated: true`,
+  which the page marks; see `content/README.md`. Never type benchmark
+  numbers into a post; use `<BenchChart>`. Store links go only
+  through `<AffiliateLink>` with `affiliate: true`, which adds the disclosure
+  banner. The affiliate programs aren't chosen yet, so
+  `blog/src/data/retailers.ts` has no IDs.
+- Licenses:
+  - **Code** is MIT (`LICENSE`).
+  - **Benchmark data** is CC0 (`data/LICENSE`). That's everything in `data/`
+    and everything built from it.
+  - **Blog writing** in `content/` is the author's and is under neither.
+  - Submitting a result releases it under CC0. The plain-English terms live
+    once in `docs/COMMUNITY_SUBMISSIONS.md` ("Your results become public
+    data"), and CONTRIBUTING, `data/community/README.md`, the community
+    templates, the dashboard, and `.github/pull_request_template.md` point to
+    them.
+  - `build.DATA_LICENSE` feeds the API metadata, `llms.txt`, and
+    `benchmarks/`, and the `index.html` JSON-LD repeats it.
+    `test_build.check_licenses()` checks they agree.
+  - Never add data under other terms.
+- The dashboard's **Featured GPU picks** come from `data/picks.yaml`:
+  - Slots are `amd`, `nvidia`, and `intel`, one card each. Empty slots show
+    "coming soon".
+  - A pick needs a `note` and a `name`, or a catalog `gpu_id` whose vendor
+    matches the slot. It also needs `links` (`amazon`/`newegg`/`bestbuy` +
+    https URL).
+  - Never add prices.
+  - `checks.load_picks()` holds the rules, and `checks.PICK_RETAILERS` must
+    match `blog/src/data/retailers.ts`.
+  - Example picks use made-up names and `example.com` URLs.
+- Versions are `MAJOR.MINOR.DATA.POST` with four parts. MINOR is any code
+  change, DATA is new published runs, and POST is a new or updated post.
+  `test_build.py` checks that `RELEASE_VERSION` matches the newest
+  `## x.y.z.w - date` heading in `CHANGELOG.md`.
 
 ## Checks to run before finishing
 
@@ -204,11 +269,15 @@ python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
 python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
+npm --prefix blog run build              # after build.py; writes site/blog/
 git diff --check
 ```
 
 Preview the site with `python -m http.server 8000 --directory site` and open
-<http://localhost:8000>. Stop the server when you're done with it, and run
+<http://localhost:8000> (the blog is at `/blog/`). `npm --prefix blog run dev`
+serves the blog with live reload at <http://localhost:4321/blog/>, drafts
+included. Stop every server when you're done with it, and run
 `deactivate` at the end of the session (see "Wrapping up a session").
 
 Create a Git tag only when explicitly asked, after the commit is reviewed.
@@ -235,10 +304,14 @@ is now stale:
   [docs/TODO.md](docs/TODO.md).
 - **Agent instructions changed** → keep `CLAUDE.md`,
   `.github/copilot-instructions.md`, and `AGENTS.md` consistent.
-- **Version change** → rename `Unreleased` in `CHANGELOG.md` to the new version
-  and date, and update `RELEASE_VERSION` in
+- **Version change** → pick the part from the biggest change since the last
+  release (MAJOR breaking, MINOR code, DATA runs, POST posts), reset the parts
+  to its right, rename `Unreleased` in `CHANGELOG.md` to the new four-part
+  version and date, and update `RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py) plus the version references and feature
   summary in `README.md` and `docs/COPILOT_HANDOFF.md`.
+- **Blog post published** → a POST bump (see above), with a changelog line
+  "New post: <title>".
 - **Fixtures or published runs added/removed** → refresh the counts (catalog
   GPUs, official runs, community runs, dashboard summaries) in `README.md` and
   `docs/COPILOT_HANDOFF.md`, for the published `data/` and the

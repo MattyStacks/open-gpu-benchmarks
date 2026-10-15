@@ -911,3 +911,95 @@ def load_results(catalog, data_dir=DATA_DIR):
     official = [(run, entries) for _, run, entries in runs["official"] if run.get("benchmark_type", "game") == "game"]
     check_outliers(runs["community"], official, issues)
     return {source: [(path, run) for path, run, _ in items] for source, items in runs.items()}, issues
+
+
+# --- Featured picks ------------------------------------------------------------
+
+# One dashboard card per GPU maker, in this order. A slot without a pick shows
+# "coming soon".
+PICK_SLOTS = ("amd", "nvidia", "intel")
+# Keep in step with blog/src/data/retailers.ts.
+PICK_RETAILERS = {"amazon": "Amazon", "newegg": "Newegg", "bestbuy": "Best Buy"}
+PICK_FIELDS = ("slot", "name", "gpu_id", "note", "label", "links")
+PICK_LABEL_MAX = 24
+
+
+def check_pick_links(path, label, links, issues):
+    if not isinstance(links, list) or not links:
+        issues.error(path, "pick-link", f"{label} needs a 'links' list with at least one store link")
+        return []
+    clean = []
+    for number, link in enumerate(links, start=1):
+        where = f"{label} link {number}"
+        if not isinstance(link, dict) or set(link) - {"retailer", "url"}:
+            issues.error(path, "pick-link", f"{where} takes only 'retailer' and 'url'")
+            continue
+        retailer, url = link.get("retailer"), link.get("url")
+        if retailer not in PICK_RETAILERS:
+            issues.error(path, "pick-link", f"{where}: retailer must be one of {', '.join(PICK_RETAILERS)}")
+        elif not is_https(url):
+            issues.error(path, "pick-link", f"{where}: url must be an https:// link")
+        else:
+            clean.append({"retailer": retailer, "retailer_name": PICK_RETAILERS[retailer], "url": url})
+    return clean
+
+
+def load_picks(catalog, data_dir=DATA_DIR):
+    """Return (picks in PICK_SLOTS order, issues) from data/picks.yaml. The file is optional."""
+    issues = Issues()
+    path = data_dir / "picks.yaml"
+    if not path.is_file():
+        return [], issues
+    parsed, data = load_yaml_file(path, issues)
+    if not parsed:
+        return [], issues
+    items = (data or {}).get("picks") or [] if isinstance(data, (dict, type(None))) else None
+    if not isinstance(items, list):
+        issues.error(path, "pick-field", "'picks' must be a list (use '- slot: ...' items, or an empty file)")
+        return [], issues
+    catalog_by_id = {entry["id"]: entry for entry in catalog}
+    picks = {}
+    for number, item in enumerate(items, start=1):
+        label = f"pick {number}"
+        if not isinstance(item, dict):
+            issues.error(path, "pick-field", f"{label} must be a mapping of fields")
+            continue
+        for key in sorted(set(item) - set(PICK_FIELDS)):
+            issues.error(path, "pick-field", f"{label}: unknown field '{key}' (allowed: {', '.join(PICK_FIELDS)})")
+        slot = item.get("slot")
+        if slot not in PICK_SLOTS:
+            issues.error(path, "pick-slot", f"{label}: slot must be one of {', '.join(PICK_SLOTS)}")
+            continue
+        label = f"the {slot} pick"
+        if slot in picks:
+            issues.error(path, "pick-slot", f"{label} is listed twice; each slot holds one card")
+            continue
+        gpu = None
+        gpu_id = item.get("gpu_id")
+        if gpu_id is not None:
+            gpu = catalog_by_id.get(gpu_id)
+            if gpu is None:
+                issues.error(path, "pick-gpu-id", f"{label}: gpu_id '{gpu_id}' is not a catalog product; leave gpu_id out for a card that isn't in the catalog")
+            elif spec(gpu, "identity", "gpu_vendor") != slot:
+                issues.error(path, "pick-gpu-id", f"{label}: {gpu_id} is a {spec(gpu, 'identity', 'gpu_vendor')} GPU, not {slot}")
+        name = item.get("name") if item.get("name") is not None else spec(gpu, "identity", "name")
+        if not is_text(name):
+            issues.error(path, "pick-field", f"{label} needs a 'name' (or a catalog gpu_id to take the name from)")
+        if not is_text(item.get("note")):
+            issues.error(path, "pick-field", f"{label} needs a 'note' saying why you picked it")
+        badge = item.get("label")
+        if badge is not None and (not is_text(badge) or len(badge) > PICK_LABEL_MAX):
+            issues.error(path, "pick-field", f"{label}: 'label' must be short text, at most {PICK_LABEL_MAX} characters")
+        links = check_pick_links(path, label, item.get("links"), issues)
+        picks[slot] = {
+            "slot": slot,
+            "name": name,
+            "gpu_id": gpu_id if gpu else None,
+            "note": item.get("note"),
+            "label": badge,
+            "vram_gb": spec(gpu, "memory", "capacity_gb"),
+            "tdp_w": spec(gpu, "power", "tdp_w"),
+            "form_factor": spec(gpu, "classification", "form_factor"),
+            "links": links,
+        }
+    return [picks[slot] for slot in PICK_SLOTS if slot in picks], issues

@@ -29,6 +29,14 @@ flowchart LR
 
 You need Git, Python 3.11+, and a GitHub account. No other tooling.
 
+> **Your results become public data.** Benchmark data here is released under
+> [CC0](data/LICENSE), which puts it in the public domain. By submitting a
+> result, you agree that anyone can use it for anything (copy it, change it,
+> use it commercially, use it with AI tools) without asking you or crediting
+> you, and that it can't be taken back once it's out. Only include what you're
+> happy to make public. The details, in plain English, are in
+> [Your results become public data](docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data-cc0).
+
 ### Step 1: Fork and clone
 
 Fork the repository on GitHub, clone your fork, and create a branch:
@@ -192,7 +200,11 @@ Open the pull request on GitHub and include:
   OCAT, an in-game benchmark, or a 3DMark result link are also accepted, and
   3DMark runs can start from `templates/community_steel_nomad.yaml`)
 
-GitHub runs the same checks you just ran, as three separate checks (see
+Opening the pull request means you agree to release what you submit under
+[CC0](data/LICENSE): the numbers become public data anyone can use for
+anything. The pull request template asks you to confirm it.
+
+GitHub runs the same checks you just ran, as four separate checks (see
 [Reading a failed check](#reading-a-failed-check)). A maintainer then reviews
 the evidence. After merge, the site rebuilds automatically. You do not need to
 touch `site/api/`, which is generated.
@@ -526,7 +538,7 @@ same chip. See [templates/catalog_handheld.yaml](templates/catalog_handheld.yaml
 
 ## Reading a failed check
 
-A pull request runs three separate checks. The one that fails tells you where
+A pull request runs four separate checks. The one that fails tells you where
 to look:
 
 | Check name | What it covers | Run it locally | Rules explained in |
@@ -534,6 +546,7 @@ to look:
 | **Catalog entries** | `data/gpus/**` | `python scripts/validate.py catalog` | [data/gpus/README.md](data/gpus/README.md#what-the-checks-mean) |
 | **Benchmark results** | `data/official/**`, `data/community/**` | `python scripts/validate.py results` | [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md#what-the-checks-mean) |
 | **Build and tests** | the generated API and regression tests, including the synthetic fixtures in `tests/fixtures/data/` | `python scripts/build.py` then `python scripts/test_build.py` | the error output |
+| **Blog** | `blog/**`, `content/**`: post frontmatter, charts, affiliate disclosure | `python scripts/build.py` then `npm --prefix blog run build` | [content/README.md](content/README.md) |
 
 Open the failed check's log on GitHub. Every problem is listed with its rule
 name in brackets, such as `[id-memory-token]`, and errors are also marked on the
@@ -567,8 +580,12 @@ python scripts/validate.py
 python scripts/build.py
 python scripts/test_build.py
 python -m py_compile scripts\checks.py scripts\build.py scripts\validate.py scripts\parse.py scripts\import_cyberpunk.py scripts\test_build.py
+npm --prefix blog ci                     # Node 22.12+; only if you changed blog/ or content/
+npm --prefix blog run build
 git diff --check
 ```
+
+Blog posts live in `content/posts/`; see [content/README.md](content/README.md).
 
 Every check rule lives once in `scripts/checks.py`; `build.py` and
 `validate.py` both call it. A new rule needs a ``#### `rule-name` `` heading in
@@ -580,9 +597,10 @@ If you changed a rule, update every document that states it:
 `data/gpus/README.md`, and `.github/copilot-instructions.md`.
 
 Do not commit the generated `site/api/` files (or `site/benchmarks/`,
-`llms*.txt`, `sitemap.xml`); the deploy workflow rebuilds them. Cloudflare
-preview deploys run only for the maintainer's own pull requests. Contributor PRs
-get the three Validate checks, and the preview job shows as skipped.
+`site/blog/`, `llms*.txt`, `sitemap.xml`); the deploy workflow rebuilds them.
+Cloudflare preview deploys run only for the maintainer's own pull requests.
+Contributor PRs get the four Validate checks, and the preview job shows as
+skipped.
 
 **Benchmark types:** `benchmark_type` other than `game` is kept in the GPU API
 but isn't shown in the game-FPS dashboard yet.

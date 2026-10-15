@@ -676,7 +676,7 @@ def check_real_data():
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.12"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.13"
     assert {"os", "upscaling"} <= set(master["metadata"]["comparison_policy"]["group_by"])
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
     assert len(by_id) == 11
@@ -745,6 +745,10 @@ def main():
         check_fixture_build(Path(temp))
     with tempfile.TemporaryDirectory() as temp:
         check_site_seo(Path(temp))
+    check_pick_rules()
+    check_blog_tokens()
+    check_blog_posts()
+    check_release_version()
     print("Catalog rules, result rules, aggregation, submitter, and catalog spec checks passed")
 
 
@@ -756,6 +760,10 @@ def check_fixture_build(api_dir):
     assert build.main(FIXTURES_DIR, api_dir) == 0, "the fixtures must pass every check"
     assert not stale.parent.exists(), "a GPU removed from the catalog loses its old summary folder"
     assert load_json(api_dir / "dashboard.json")["metadata"]["synthetic_data"] is True
+    picks = load_json(api_dir / "dashboard.json")["picks"]
+    assert [pick["slot"] for pick in picks] == ["nvidia", "intel"], "picks come out in amd, nvidia, intel order"
+    assert picks[0]["name"] == "GeForce RTX 4090 Founders Edition" and picks[0]["vram_gb"] == 24, picks[0]
+    assert picks[1]["gpu_id"] is None and picks[1]["links"][0]["retailer_name"] == "Newegg", picks[1]
     arc_a770 = load_json(api_dir / "community" / "arc_a770_16gb_le" / "summary.json")
     assert arc_a770["run_count"] == 4
     assert arc_a770["game_summary_count"] == 3
@@ -809,6 +817,102 @@ def check_site_seo(site_dir):
         assert row in full, f"llms-full.txt is missing {record['id']}"
         cells = "".join(f"<td>{build.html.escape(cell)}</td>" for cell in build.summary_row(record))
         assert cells in page, f"benchmarks/index.html is missing {record['id']}"
+    assert f"<loc>{origin}blog/</loc>" in sitemap, "the sitemap must list the blog"
+    check_licenses(site_dir)
+
+
+def check_licenses(site_dir):
+    """Code is MIT, data is CC0, and every place that states the data license agrees."""
+    assert (ROOT / "LICENSE").read_text(encoding="utf-8").startswith("MIT License"), "LICENSE must be the MIT text"
+    data_license = (ROOT / "data" / "LICENSE").read_text(encoding="utf-8")
+    assert data_license.startswith("Creative Commons Legal Code\n\nCC0 1.0 Universal"), "data/LICENSE must be CC0 1.0"
+    url = build.DATA_LICENSE["url"]
+    index = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    assert f'"license": "{url}"' in index, "the Dataset JSON-LD must name the CC0 license"
+    assert load_json(site_dir / "api" / "v1" / "dashboard.json")["metadata"]["license"] == build.DATA_LICENSE
+    assert url in (site_dir / "llms.txt").read_text(encoding="utf-8")
+    assert url in (site_dir / "benchmarks" / "index.html").read_text(encoding="utf-8")
+
+
+def check_pick_rules():
+    """data/picks.yaml: one card per slot, catalog IDs checked, store links validated."""
+    catalog = checks.load_catalog(FIXTURES_DIR)[0]
+    cases = {
+        "slot: amd\n    name: \"Card\"\n    note: \"Why.\"\n    links:\n      - retailer: ebay\n        url: https://www.example.com/x\n": "pick-link",
+        "slot: amd\n    name: \"Card\"\n    note: \"Why.\"\n    links:\n      - retailer: amazon\n        url: http://www.example.com/x\n": "pick-link",
+        "slot: amd\n    name: \"Card\"\n    note: \"Why.\"\n": "pick-link",
+        "slot: arm\n    name: \"Card\"\n    note: \"Why.\"\n": "pick-slot",
+        "slot: amd\n    gpu_id: rtx_4090_24gb_fe\n    note: \"Why.\"\n    links:\n      - retailer: amazon\n        url: https://www.example.com/x\n": "pick-gpu-id",
+        "slot: amd\n    gpu_id: no_such_gpu_8gb\n    note: \"Why.\"\n    links:\n      - retailer: amazon\n        url: https://www.example.com/x\n": "pick-gpu-id",
+        "slot: amd\n    name: \"Card\"\n    links:\n      - retailer: amazon\n        url: https://www.example.com/x\n": "pick-field",
+        "slot: amd\n    name: \"Card\"\n    note: \"Why.\"\n    price: 999\n    links:\n      - retailer: amazon\n        url: https://www.example.com/x\n": "pick-field",
+    }
+    for body, rule in cases.items():
+        with tempfile.TemporaryDirectory() as temp:
+            (Path(temp) / "picks.yaml").write_text(f"picks:\n  - {body}", encoding="utf-8")
+            _, issues = checks.load_picks(catalog, Path(temp))
+        assert rule in {issue.rule for issue in issues.errors}, (rule, body, [issue.format() for issue in issues])
+    with tempfile.TemporaryDirectory() as temp:
+        twice = "  - slot: amd\n    name: \"A\"\n    note: \"Why.\"\n    links:\n      - retailer: amazon\n        url: https://www.example.com/a\n"
+        (Path(temp) / "picks.yaml").write_text("picks:\n" + twice + twice, encoding="utf-8")
+        picks, issues = checks.load_picks(catalog, Path(temp))
+        assert "pick-slot" in {issue.rule for issue in issues.errors} and len(picks) == 1
+        (Path(temp) / "picks.yaml").write_text("picks:\n", encoding="utf-8")
+        assert checks.load_picks(catalog, Path(temp)) == ([], []), "an empty picks file is valid"
+    assert checks.load_picks(catalog, Path("does-not-exist"))[0] == [], "picks.yaml is optional"
+    picks, issues = checks.load_picks(checks.load_catalog()[0])
+    assert not issues.errors, [issue.format() for issue in issues.errors]
+
+
+def css_tokens(text, selector):
+    """The custom properties in the one-line `<selector> { ... }` block."""
+    match = re.search(re.escape(selector) + r" \{([^}]*)\}", text)
+    assert match, f"no {selector} block"
+    return dict(re.findall(r"(--[\w-]+):\s*([^;]+);", match.group(1)))
+
+
+def check_blog_tokens():
+    """The blog copies the dashboard's color tokens; they must not drift."""
+    index = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    blog = (ROOT / "blog" / "src" / "styles" / "tokens.css").read_text(encoding="utf-8")
+    for selector in (":root", ':root[data-theme="light"]'):
+        assert css_tokens(index, selector) == css_tokens(blog, selector), (
+            f"blog/src/styles/tokens.css {selector} differs from site/index.html; copy the block again"
+        )
+
+
+def check_blog_posts():
+    """Drafts never reach the sitemap or llms.txt; published posts do."""
+    with tempfile.TemporaryDirectory() as temp:
+        content = Path(temp)
+        posts = {
+            "live-post": 'title: "Live"\ndescription: "Shown."\ndate: "2026-10-01"\ntype: guide\n',
+            "draft-post": 'title: "Draft"\ndescription: "Hidden."\ndate: "2026-10-02"\ntype: post\ndraft: true\n',
+            "newer-post": 'title: "Newer"\ndescription: "Shown."\ndate: "2026-10-03"\nupdated: "2026-10-05"\ntype: review\n',
+        }
+        for slug, front in posts.items():
+            (content / slug).mkdir()
+            (content / slug / "index.md").write_text(f"---\n{front}---\n\nBody.\n", encoding="utf-8")
+        found = build.blog_posts(content)
+    assert [post["slug"] for post in found] == ["newer-post", "live-post"], found
+    metadata = {"generated_at": "2026-10-14T00:00:00+00:00"}
+    sitemap = build.sitemap_xml(metadata, found)
+    origin = build.SITE_URL
+    assert f"<loc>{origin}blog/newer-post/</loc><lastmod>2026-10-05</lastmod>" in sitemap
+    assert f"<loc>{origin}blog/live-post/</loc>" in sitemap and "draft-post" not in sitemap
+    # The real content folder parses too (every draft is skipped).
+    build.blog_posts()
+
+
+def check_release_version():
+    """RELEASE_VERSION is MAJOR.MINOR.DATA.POST and matches the newest CHANGELOG release."""
+    version = build.RELEASE_VERSION
+    assert re.fullmatch(r"\d+\.\d+\.\d+\.\d+", version), f"RELEASE_VERSION {version} must have four parts"
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    released = re.findall(r"^## (\d[\d.]*) - \d{4}-\d{2}-\d{2}$", changelog, re.MULTILINE)
+    assert released and released[0] == version, (
+        f"newest CHANGELOG release is {released[:1]}, but RELEASE_VERSION is {version}"
+    )
 
 
 if __name__ == "__main__":

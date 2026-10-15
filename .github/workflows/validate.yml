@@ -1,5 +1,5 @@
 name: Validate
-# Three separate checks so a pull request shows exactly which part failed.
+# Four separate checks so a pull request shows exactly which part failed.
 # There is no paths filter on purpose: a required check that is skipped never
 # reports, and that blocks the merge. Each job finishes in seconds.
 on:
@@ -44,3 +44,25 @@ jobs:
       - run: python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/test_build.py
       - run: python scripts/build.py
       - run: python scripts/test_build.py
+
+  blog:
+    name: Blog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      # Charts and review specs read the API, so build it first.
+      - run: python scripts/build.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: blog/package-lock.json
+      - run: npm --prefix blog ci
+      # Fails on bad frontmatter, unknown gpu_ids, affiliate links without the
+      # disclosure, and charts with no matching data.
+      - run: npm --prefix blog run build

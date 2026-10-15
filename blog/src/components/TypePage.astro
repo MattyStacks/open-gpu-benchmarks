@@ -1,0 +1,21 @@
+---
+// Shared body of /blog/posts/, /blog/guides/, and /blog/reviews/.
+import { POST_TYPES, type PostType } from "../config";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { allTags, publishedPosts } from "../lib/posts";
+import PostList from "./PostList.astro";
+
+interface Props {
+  type: PostType;
+  intro: string;
+}
+
+const { type, intro } = Astro.props;
+const all = await publishedPosts();
+const posts = all.filter((post) => post.data.type === type);
+const { plural, path } = POST_TYPES[type];
+---
+
+<BaseLayout title={plural} description={intro} path={`${path}/`} active="blog">
+  <PostList heading={plural} intro={intro} posts={posts} activeFilter={type} tags={allTags(posts)} />
+</BaseLayout>

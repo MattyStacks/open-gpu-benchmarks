@@ -1,0 +1,18 @@
+# Synthetic featured picks for the fixture build (made-up links). The AMD slot
+# is left empty on purpose so the dashboard's "coming soon" card is exercised.
+picks:
+  - slot: intel
+    name: "Example Arc card"
+    note: "A free-form pick that isn't in the catalog."
+    label: "Deal"
+    links:
+      - retailer: newegg
+        url: https://www.example.com/arc-deal
+  - slot: nvidia
+    gpu_id: rtx_4090_24gb_fe
+    note: "A catalog pick: the name, VRAM, and power come from the catalog."
+    links:
+      - retailer: amazon
+        url: https://www.example.com/rtx-4090
+      - retailer: bestbuy
+        url: https://www.example.com/rtx-4090-bestbuy

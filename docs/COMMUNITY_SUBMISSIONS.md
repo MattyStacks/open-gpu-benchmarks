@@ -56,6 +56,43 @@ the build includes that run in
 `site/api/v1/community/<gpu_id>/summary.json` and in the GPU-rooted master
 API. There is no separate approved or pending source tree.
 
+## Your results become public data (CC0)
+
+Everything in this repository's `data/` folder is released under
+[CC0 1.0](../data/LICENSE), a public domain dedication. So is everything the
+site publishes from it: the dashboard, the JSON API, and the plain-text
+tables.
+
+**When you open a pull request that adds or changes a result, you agree to
+release what you submit under CC0.** In plain English:
+
+- **Anyone can use your numbers for anything.** They can copy them, share
+  them, change them, put them in their own charts, videos, articles, apps,
+  or datasets, use them in something they sell, or give them to AI tools.
+- **No one has to ask you, pay you, or credit you.** The dashboard shows
+  your name if you set `submitted_by`, but that's this site being polite. It
+  isn't a condition on anyone else.
+- **You can't take it back.** You can ask for a result to be removed from the
+  site (see [Fixing or removing a result](../CONTRIBUTING.md#fixing-or-removing-a-result)).
+  Copies other people already made, and the Git history, stay public.
+- **It covers everything in your submission.** That means the numbers, any
+  machine details you include (CPU, driver, OS, and so on), and any raw
+  captures or screenshots you add under `raw/`. Leave out anything you don't
+  want public.
+- **Only submit what you're allowed to share:**
+  - **Your own runs**: yes.
+  - **A result you found** in a video, review, or post: you submit the numbers
+    and a link to where you found them, and that's what becomes CC0. Don't
+    upload the creator's screenshots, video frames, or text; the link is
+    enough. Their video or article itself stays theirs.
+  - **A friend's unpublished numbers**: they must agree to their numbers being
+    published under these terms, and your `permission` note should say so.
+- **No promises.** The data is shared as it is, with no guarantee that it's
+  accurate (CC0 section 4). Reviews and checks catch a lot, not everything.
+
+This applies to official runs too. The code is separate and uses the
+[MIT license](../LICENSE).
+
 ## Comparable game runs
 
 Game records use `benchmark_type: game` (the default when omitted) and require:
@@ -171,6 +208,9 @@ didn't report one. `synthetic_benchmark` runs never warn.
 The result doesn't have to be yours. If a YouTube video, review, or forum post
 shows a benchmark, you can add it. You don't need the creator's permission, but
 you do need to say where you found it, so a reviewer can check the numbers.
+Submit only the numbers and the link, not the creator's screenshots or text,
+because what you submit becomes public data (see
+[Your results become public data](#your-results-become-public-data-cc0)).
 Start from
 [`templates/community_found_result.yaml`](../templates/community_found_result.yaml)
 and add a `credit` block:
@@ -208,7 +248,9 @@ credit:
     url: https://example.com/permission
 ```
 
-- `note`: a short description of how and when they agreed;
+- `note`: a short description of how and when they agreed, including that
+  they're fine with the numbers being public data anyone can use (see
+  [Your results become public data](#your-results-become-public-data-cc0));
 - `screenshot`: an image (for example a message), saved in the same GPU folder,
   such as `data/community/<gpu_id>/raw/permission_example_friend.png`;
 - `url`: an `https://` link showing permission.
@@ -343,7 +385,7 @@ profile, or remove it.
 Result files use block-style YAML only: every list item on its own `-` line,
 with no inline `[ ]` or `{ }`.
 
-On a pull request, GitHub runs three separate checks, so you can see which part
+On a pull request, GitHub runs four separate checks, so you can see which part
 failed:
 
 | Check | Runs | Covers |
@@ -351,6 +393,7 @@ failed:
 | **Catalog entries** | `python scripts/validate.py catalog` | `data/gpus/**` (rules in [`data/gpus/README.md`](../data/gpus/README.md#what-the-checks-mean)) |
 | **Benchmark results** | `python scripts/validate.py results` | `data/official/**`, `data/community/**` (rules below) |
 | **Build and tests** | `build.py`, `test_build.py` | the generated API and the regression tests |
+| **Blog** | `npm --prefix blog run build` | blog posts in `content/` (rules in [`content/README.md`](../content/README.md)) |
 
 Every problem is reported at once, each starting with its rule name in
 brackets. Errors block the merge. Warnings are suggestions.

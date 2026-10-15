@@ -1,0 +1,23 @@
+---
+import { POST_TYPES } from "../config";
+import { formatDate, isoDate, postUrl, type Post } from "../lib/posts";
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const { title, description, date, type, tags } = post.data;
+---
+
+<li>
+  <a class="post-card" href={postUrl(post)}>
+    <div class="post-meta">
+      <span class={`pill pill-${type}`}>{POST_TYPES[type].label}</span>
+      <time datetime={isoDate(date)}>{formatDate(date)}</time>
+      {tags.length > 0 && <span>{tags.map((tag) => `#${tag}`).join(" ")}</span>}
+    </div>
+    <h2>{title}</h2>
+    <p>{description}</p>
+  </a>
+</li>

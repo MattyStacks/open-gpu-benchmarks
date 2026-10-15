@@ -35,6 +35,7 @@
         "url": "https://opengpubenchmarks.com/",
         "sameAs": "https://github.com/MattyStacks/open-gpu-benchmarks",
         "isAccessibleForFree": true,
+        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
         "keywords": ["GPU benchmarks", "FPS", "1% low", "graphics cards", "laptop GPUs", "handheld gaming PCs", "integrated graphics"],
         "distribution": [
           { "@type": "DataDownload", "encodingFormat": "application/json", "contentUrl": "https://opengpubenchmarks.com/api/v1/dashboard.json" },
@@ -86,8 +87,8 @@
     .result-meta { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; color:var(--muted); font-size:12px; margin:8px 0 12px; } .run-list { display:grid; gap:8px; margin-bottom:14px; } .run-item { border:1px solid var(--border); border-radius:9px; padding:9px 11px; background:var(--panel); font-size:11px; color:var(--muted); line-height:1.5; } .run-item strong { color:var(--text); font-size:12px; display:block; margin-bottom:2px; }
     .detail-links { display:flex; gap:8px; flex-wrap:wrap; } .detail-links a { text-decoration:none; }
     @media (max-width:900px) { .spec-detail { grid-template-columns:1fr; } .mini-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    .info-panel { margin-top:18px; } .tip { border-left:3px solid var(--accent); padding-left:12px; margin-top:12px; } .review-list { display:grid; gap:10px; } .review { padding:12px; background:var(--panel-strong); border:1px solid var(--border); border-radius:11px; } .review a { color:var(--accent); font-weight:700; } .review .detail { color:var(--muted); font-size:12px; margin-top:4px; }
-    .submission-panel { margin-top:18px; overflow:hidden; } .submission-panel > summary { list-style:none; } .submission-panel > summary::-webkit-details-marker { display:none; } .submission-toggle { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:0; cursor:pointer; } .submission-toggle::after { content:"⌄"; flex:none; color:var(--muted); font-size:22px; line-height:1; transition:transform .16s ease; } .submission-panel[open] .submission-toggle::after { transform:rotate(180deg); } .submission-panel[open] > summary { padding-bottom:18px; border-bottom:1px solid var(--border); margin-bottom:18px; } .submission-intro { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; width:100%; } .submission-intro h2 { display:flex; align-items:center; gap:8px; } .section-kicker { color:var(--accent); font:700 10px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.1em; text-transform:uppercase; margin-bottom:5px; } .workflow { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; } .workflow-step { min-height:148px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--panel-strong); } .step-icon { width:30px; height:30px; display:grid; place-items:center; border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border)); border-radius:9px; color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,var(--panel)); font:700 16px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .workflow-step h3 { margin:12px 0 5px; font-size:13px; } .workflow-step p,.submission-copy,.checklist li { color:var(--muted); font-size:11px; line-height:1.5; } .submission-links a { color:var(--accent); font-weight:700; } .submission-details { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr); gap:18px; margin-top:18px; } .submission-heading { color:var(--text); font:700 11px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.08em; text-transform:uppercase; margin-bottom:9px; } .yaml-example { overflow:auto; margin:0; padding:15px; border:1px solid color-mix(in srgb,var(--accent) 26%,var(--border)); border-radius:12px; background:linear-gradient(145deg,#0b1020,#080b12); color:#d6e4ff; font:11px/1.6 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .yaml-example code { display:block; min-width:max-content; } .yaml-comment { color:#7787a7; } .yaml-key { color:#8ab4ff; } .yaml-string { color:#b9e2a4; } .yaml-number { color:#f5ca8d; } .yaml-boolean { color:#d2a8ff; } .review-guidance { display:grid; gap:12px; } .checklist { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--panel-strong); } .checklist h3 { margin:0 0 7px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; } .checklist ul { margin:0; padding-left:16px; } .checklist li + li { margin-top:4px; } .required { color:var(--community); } .encouraged { color:var(--warning); } .outlier-note { padding:12px 14px; border:1px solid color-mix(in srgb,var(--warning) 42%,var(--border)); border-radius:12px; background:color-mix(in srgb,var(--warning) 8%,var(--panel)); color:var(--text); font-size:12px; line-height:1.5; } .outlier-note strong { color:var(--warning); } .submission-footer { color:var(--muted); font-size:11px; line-height:1.5; }
+    .pick-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; } .pick { --maker:var(--muted); display:flex; flex-direction:column; gap:8px; padding:14px; background:var(--panel-strong); border:1px solid var(--border); border-top:3px solid var(--maker); border-radius:12px; } .pick-amd { --maker:#ed1c24; } .pick-nvidia { --maker:#76b900; } .pick-intel { --maker:#0071c5; } .pick-top { display:flex; justify-content:space-between; align-items:center; gap:8px; } .pick-maker { color:var(--maker); font:700 10px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.1em; text-transform:uppercase; } .pick-label { border:1px solid color-mix(in srgb,var(--warning) 45%,var(--border)); color:var(--warning); border-radius:999px; padding:2px 8px; font-size:10px; font-weight:700; } .pick h3 { font-size:15px; letter-spacing:-.02em; margin:0; } .pick-specs { color:var(--muted); font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .pick-note { color:var(--text); font-size:12px; line-height:1.55; flex:1; } .pick-links { display:flex; flex-wrap:wrap; gap:6px; } .pick-links a { text-decoration:none; } .pick-empty { border-style:dashed; border-top-style:solid; justify-content:center; min-height:150px; } .pick-empty p { color:var(--muted); font-size:12px; } .pick-disclosure { color:var(--muted); font-size:11px; line-height:1.5; margin:-4px 0 12px; } .pick-disclosure strong { color:var(--warning); } .info-panel .subtle a { color:var(--accent); } @media (max-width:850px) { .pick-grid { grid-template-columns:1fr; } }
+    .info-panel { margin-top:18px; } .tip { border-left:3px solid var(--accent); padding-left:12px; margin-top:12px; }    .submission-panel { margin-top:18px; overflow:hidden; } .submission-panel > summary { list-style:none; } .submission-panel > summary::-webkit-details-marker { display:none; } .submission-toggle { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:0; cursor:pointer; } .submission-toggle::after { content:"⌄"; flex:none; color:var(--muted); font-size:22px; line-height:1; transition:transform .16s ease; } .submission-panel[open] .submission-toggle::after { transform:rotate(180deg); } .submission-panel[open] > summary { padding-bottom:18px; border-bottom:1px solid var(--border); margin-bottom:18px; } .submission-intro { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; width:100%; } .submission-intro h2 { display:flex; align-items:center; gap:8px; } .section-kicker { color:var(--accent); font:700 10px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.1em; text-transform:uppercase; margin-bottom:5px; } .workflow { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; } .workflow-step { min-height:148px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--panel-strong); } .step-icon { width:30px; height:30px; display:grid; place-items:center; border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border)); border-radius:9px; color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,var(--panel)); font:700 16px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .workflow-step h3 { margin:12px 0 5px; font-size:13px; } .workflow-step p,.submission-copy,.checklist li { color:var(--muted); font-size:11px; line-height:1.5; } .submission-links a,.submission-copy a { color:var(--accent); font-weight:700; } .submission-details { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr); gap:18px; margin-top:18px; } .submission-heading { color:var(--text); font:700 11px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; letter-spacing:.08em; text-transform:uppercase; margin-bottom:9px; } .yaml-example { overflow:auto; margin:0; padding:15px; border:1px solid color-mix(in srgb,var(--accent) 26%,var(--border)); border-radius:12px; background:linear-gradient(145deg,#0b1020,#080b12); color:#d6e4ff; font:11px/1.6 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .yaml-example code { display:block; min-width:max-content; } .yaml-comment { color:#7787a7; } .yaml-key { color:#8ab4ff; } .yaml-string { color:#b9e2a4; } .yaml-number { color:#f5ca8d; } .yaml-boolean { color:#d2a8ff; } .review-guidance { display:grid; gap:12px; } .checklist { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--panel-strong); } .checklist h3 { margin:0 0 7px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; } .checklist ul { margin:0; padding-left:16px; } .checklist li + li { margin-top:4px; } .required { color:var(--community); } .encouraged { color:var(--warning); } .outlier-note { padding:12px 14px; border:1px solid color-mix(in srgb,var(--warning) 42%,var(--border)); border-radius:12px; background:color-mix(in srgb,var(--warning) 8%,var(--panel)); color:var(--text); font-size:12px; line-height:1.5; } .outlier-note strong { color:var(--warning); } .submission-footer { color:var(--muted); font-size:11px; line-height:1.5; }
     .header-link { display:inline-flex; align-items:center; gap:6px; text-decoration:none; } .header-link svg { width:15px; height:15px; fill:currentColor; flex:none; }
     .api-panel { margin-top:18px; } .api-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; } .api-card { display:flex; flex-direction:column; gap:8px; padding:14px; background:var(--panel-strong); border:1px solid var(--border); border-radius:12px; } .api-card h3 { font:700 12px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; color:var(--text); overflow-wrap:anywhere; } .api-card p { color:var(--muted); font-size:11px; line-height:1.5; flex:1; } .api-actions { display:flex; gap:6px; flex-wrap:wrap; } .api-actions a { text-decoration:none; } .api-usage { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:14px; } .schema-badge { font-size:11px; color:var(--muted); white-space:nowrap; }
     .footer-links { display:flex; justify-content:center; flex-wrap:wrap; gap:6px 16px; margin-bottom:8px; font-size:12px; } .footer a { font-weight:700; text-decoration:none; }
@@ -108,6 +109,7 @@
           <button type="button" data-source="community">Community</button>
         </div>
         <a class="button header-link" href="#data-api" aria-label="JSON API"><span class="mono" aria-hidden="true">{ }</span><span class="label">JSON API</span></a>
+        <a class="button header-link" href="blog/" aria-label="Blog"><span class="mono" aria-hidden="true">¶</span><span class="label">Blog</span></a>
         <a class="button header-link" href="https://github.com/MattyStacks/open-gpu-benchmarks" target="_blank" rel="noreferrer" aria-label="GitHub repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span class="label">GitHub</span></a>
         <button class="button icon-button" id="theme-toggle" type="button" aria-label="Toggle color theme">◐</button>
       </div>
@@ -224,7 +226,7 @@
           <h2 id="submission-title">How community submissions work</h2>
           <p class="subtle">Exact machine runs in; clean, comparable GPU summaries out.</p>
         </div>
-        <p class="submission-copy">Use a pull request to submit a run. The validator checks the profile and a maintainer reviews the evidence before it is included.</p>
+        <p class="submission-copy">Use a pull request to submit a run. The validator checks the profile and a maintainer reviews the evidence before it is included. Submitted results become public data (<a href="https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data-cc0" target="_blank" rel="noreferrer">CC0</a>): anyone can use them for anything, with no permission or credit needed.</p>
         </div>
       </summary>
       <div class="workflow" aria-label="Community submission workflow">
@@ -273,9 +275,10 @@
       </div>
       <p class="submission-footer">Desktop and laptop GPUs never share a group. Game version remains as metadata, while matching summaries use GPU, form factor, known power profile, game, resolution, and graphics settings.</p>
     </details>
-    <section class="panel info-panel">
-      <div class="panel-heading"><div><h2>Official GPU and laptop reviews</h2><p class="subtle">Reviews with detailed methodology and benchmark links will appear here.</p></div></div>
-      <div class="review-list" id="review-list"><p class="subtle">No reviews published yet.</p></div>
+    <section class="panel info-panel" aria-labelledby="picks-title">
+      <div class="panel-heading"><div><h2 id="picks-title">Featured GPU picks</h2><p class="subtle">One favorite from each GPU maker. Reviews and guides are on the <a href="blog/">blog</a>.</p></div></div>
+      <p class="pick-disclosure" id="pick-disclosure"><strong>Affiliate links.</strong> Store buttons below are affiliate links: if you buy through one, the site may earn a commission at no extra cost to you. It never changes the benchmark numbers.</p>
+      <div class="pick-grid" id="pick-grid"></div>
     </section>
     <footer class="footer">
       <nav class="footer-links" aria-label="Project links">
@@ -286,6 +289,7 @@
         <a href="benchmarks/">Plain-text tables</a>
       </nav>
       <p>Source YAML is reviewed in pull requests. Raw capture files remain in the repository and are not sent to every visitor.</p>
+      <p>Benchmark data: <a href="https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/data/LICENSE" target="_blank" rel="noreferrer">CC0 (public domain)</a> · Code: <a href="https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a></p>
     </footer>
   </main>
   <script>
@@ -309,7 +313,7 @@
       count: document.querySelector("#result-count"), selection: document.querySelector("#selection-count"),
       top: document.querySelector("#top-result"), comparison: document.querySelector("#comparison"),
       comparisonText: document.querySelector("#comparison-text"), synthetic: document.querySelector("#synthetic-note"),
-      reviews: document.querySelector("#review-list"), schema: document.querySelector("#schema-version")
+      picks: document.querySelector("#pick-grid"), pickDisclosure: document.querySelector("#pick-disclosure"), schema: document.querySelector("#schema-version")
     };
     let chart;
 
@@ -940,33 +944,55 @@
       return row;
     }
 
-    function renderReviews() {
-      const reviews = state.data.reviews || [];
-      elements.reviews.replaceChildren();
-      if (!reviews.length) {
-        const empty = document.createElement("p");
-        empty.className = "subtle";
-        empty.textContent = "No reviews published yet.";
-        elements.reviews.append(empty);
-        return;
-      }
-      reviews.forEach((review) => {
-        const item = document.createElement("article");
-        item.className = "review";
-        const link = document.createElement("a");
-        link.href = review.url;
-        link.target = "_blank";
-        link.rel = "noreferrer";
-        link.textContent = review.title;
-        item.append(link);
-        if (review.description) {
-          const description = document.createElement("p");
-          description.className = "detail";
-          description.textContent = review.description;
-          item.append(description);
+    // Featured picks from data/picks.yaml: one card per GPU maker, empty slots say "coming soon".
+    function renderPicks() {
+      const slots = [["amd", "AMD"], ["nvidia", "NVIDIA"], ["intel", "Intel"]];
+      const picks = Object.fromEntries((state.data.picks || []).map((pick) => [pick.slot, pick]));
+      const element = (tag, className, text) => {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      };
+      elements.picks.replaceChildren(...slots.map(([slot, maker]) => {
+        const pick = picks[slot];
+        const card = element("article", `pick pick-${slot}${pick ? "" : " pick-empty"}`);
+        const top = element("div", "pick-top");
+        top.append(element("span", "pick-maker", maker));
+        if (pick && pick.label) top.append(element("span", "pick-label", pick.label));
+        card.append(top);
+        if (!pick) {
+          card.append(element("p", "", `${maker} pick coming soon.`));
+          return card;
         }
-        elements.reviews.append(item);
-      });
+        card.append(element("h3", "", pick.name));
+        const specs = [pick.vram_gb ? `${pick.vram_gb} GB` : "", pick.tdp_w ? `${pick.tdp_w} W` : "", pick.form_factor || ""].filter(Boolean);
+        if (specs.length) card.append(element("p", "pick-specs", specs.join(" · ")));
+        card.append(element("p", "pick-note", pick.note));
+        const links = element("div", "pick-links");
+        pick.links.forEach((link) => {
+          const anchor = element("a", "button", `${link.retailer_name} ↗`);
+          anchor.href = link.url;
+          anchor.target = "_blank";
+          anchor.rel = "sponsored nofollow noopener";
+          links.append(anchor);
+        });
+        if (pick.gpu_id && state.data.records.some((record) => record.gpu_id === pick.gpu_id)) {
+          const results = element("button", "button", "See benchmarks");
+          results.type = "button";
+          results.addEventListener("click", () => {
+            state.search = elements.search.value = pick.name;
+            render();
+            elements.body.closest("section").scrollIntoView({ behavior: "smooth" });
+          });
+          links.append(results);
+        }
+        card.append(links);
+        return card;
+      }));
+      const amazon = (state.data.picks || []).some((pick) => pick.links.some((link) => link.retailer === "amazon"));
+      elements.pickDisclosure.classList.toggle("hidden", !(state.data.picks || []).length);
+      elements.pickDisclosure.lastChild.textContent = ` Store buttons below are affiliate links: if you buy through one, the site may earn a commission at no extra cost to you. It never changes the benchmark numbers.${amazon ? " As an Amazon Associate I earn from qualifying purchases." : ""}`;
     }
 
     function apiUrl(path) {
@@ -1054,7 +1080,7 @@
         elements.schema.textContent = `schema v${state.data.metadata.schema_version}`;
         if (!state.data.records.length) {
           showNoBenchmarks();
-          renderReviews();
+          renderPicks();
           return;
         }
         state.game = state.data.games[0];
@@ -1064,7 +1090,7 @@
         setOptions(elements.preset, ["All", ...state.data.graphics_presets], state.graphicsPreset);
         elements.preset.value = state.graphicsPreset;
         elements.synthetic.classList.toggle("hidden", !state.data.metadata.synthetic_data);
-        renderReviews();
+        renderPicks();
         render();
       } catch (error) {
         showError(`Unable to load benchmark data: ${error.message}. Run "python scripts/build.py" before starting a local preview.`);

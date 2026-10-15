@@ -1,0 +1,17 @@
+---
+// Shown at the top of every post with `affiliate: true` (PostLayout adds it).
+import { RETAILERS, type Retailer } from "../data/retailers";
+
+const required = Object.values(RETAILERS as Record<string, Retailer>)
+  .map((retailer) => retailer.disclosure)
+  .filter(Boolean);
+---
+
+<aside class="callout callout-disclosure" role="note" aria-label="Affiliate disclosure">
+  <span class="callout-title">Affiliate links</span>
+  <p>
+    This post contains affiliate links, marked "affiliate". If you buy through one, the site may earn a commission at no
+    extra cost to you. It never changes the benchmark numbers, which come straight from the published data.
+    {required.map((sentence) => ` ${sentence}`)}
+  </p>
+</aside>

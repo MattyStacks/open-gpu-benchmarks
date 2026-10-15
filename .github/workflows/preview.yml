@@ -31,6 +31,13 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: python scripts/build.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: blog/package-lock.json
+      - run: npm --prefix blog ci
+      - run: npm --prefix blog run build
       - name: Deploy preview to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3

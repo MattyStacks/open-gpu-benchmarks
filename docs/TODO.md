@@ -182,21 +182,35 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Content and outreach
 
-- [ ] **Blog, reviews, and possibly a YouTube channel.** Show people the
-  benchmarks and how to read them.
-  - Decide the home: a `site/blog/` section on the same static site (Markdown
-    or HTML rendered at build time, no new backend), with posts in a
-    `content/` folder.
-  - Reviews: `data/reviews.yaml` already feeds the dashboard's reviews panel
-    (empty so far). Link published reviews to products, and show them on the
-    blog too.
-  - Define post types: GPU reviews, methodology, data roundups, and
-    submission how-tos.
-  - YouTube: plan episodes that point back to the dashboard. Video sources can
-    be credited with the `credit` block (see
-    `docs/COMMUNITY_SUBMISSIONS.md`), with permission.
-  - Keep GitHub links absolute and site links relative so a custom domain
-    works.
+- [ ] **Pick affiliate programs.** Amazon Associates, Newegg, and Best Buy are
+  likely. Once approved, set the Amazon `id` in
+  `blog/src/data/retailers.ts`, and check each program's required disclosure
+  wording against `DisclosureBanner.astro`.
+- [ ] **Fill in the featured GPU picks.** `data/picks.yaml` is empty, so all
+  three dashboard cards say "coming soon". Add an AMD, an NVIDIA, and an Intel
+  favorite with affiliate links once the programs are approved.
+- [ ] **Fill the API's `reviews` from blog review posts.** The dashboard no
+  longer shows `reviews`, but `dashboard.json` still carries it from
+  `data/reviews.yaml` (empty). Have `build.py` list non-draft `type: review`
+  posts there, then retire `reviews.yaml`. Also show a product's reviews in
+  its expanded table row.
+- [ ] **Planned content**, in order:
+  - methodology guides (how results are verified, why frame generation is
+    off, Windows vs Linux, average FPS vs 1% low)
+  - capture how-tos (PresentMon, the Cyberpunk 2077 importer, submitting a
+    found result)
+  - the RTX 5080 FE review
+  - data roundups once more cards have runs
+- [ ] **Blog follow-ups.**
+  - A per-post 1200x630 social image (a generated card when there's no
+    `hero`).
+  - Interactive charts, opt-in, keeping the static HTML bars as the
+    no-JS fallback.
+  - Related posts by tag or `gpu_ids`.
+  - Link a GPU's posts from its dashboard row.
+- [ ] **YouTube.** Plan episodes that point back to the dashboard and the
+  posts. Video sources can be credited with the `credit` block (see
+  `docs/COMMUNITY_SUBMISSIONS.md`).
 
 ## Hosting and SEO
 
@@ -204,9 +218,6 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   `docs/COPILOT_HANDOFF.md`: Direct Upload project, custom domains, www and
   pages.dev redirects, API token secrets, AI-bot blocking off, and Search
   Console plus the sitemap.
-- [ ] **Add a LICENSE** for the code and the data, then add `license` to the
-  `Dataset` JSON-LD in `site/index.html`. AI tools and Google Dataset Search
-  treat unlicensed data as less reusable.
 - [ ] **A 1200x630 social share image** for `og:image` (it uses the 512 px
   icon now), and `twitter:card` `summary_large_image`.
 - [ ] **Per-GPU crawlable pages** (`/gpu/<id>.html`) once real runs exist, so
@@ -228,11 +239,22 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   SteamOS/distro `os` value to `system.distro`.
 - [ ] **Changelog check in CI.** Fail or warn on a PR that changes `scripts/`,
   `site/`, `templates/`, or catalog rules without touching `CHANGELOG.md`.
-- [ ] **Branch protection** (manual repo setting): mark the three PR checks
-  (Catalog entries, Benchmark results, Build and tests) as required on
+- [ ] **Branch protection** (manual repo setting): mark the four PR checks
+  (Catalog entries, Benchmark results, Build and tests, Blog) as required on
   `main`. Checked 2026-10-13: `main` has no protection or rulesets.
 
 ## Recently completed
+
+- **v1.1.0.0 (2026-10-14, branch `feature/blog`)**
+  - `/blog/` (Astro) with posts, guides, reviews, tags, RSS, `<BenchChart>`,
+    `<Callout>`, `<AffiliateLink>` and its disclosure banner, and the AI-use
+    footer. The first post, "Why I'm Starting Open GPU Benchmarks".
+  - `MAJOR.MINOR.DATA.POST` versioning and the **Blog** PR check.
+  - Featured GPU picks panel (`data/picks.yaml`, schema 0.13) replacing the
+    empty reviews panel.
+  - `LICENSE` (MIT, code) and `data/LICENSE` (CC0, data), the license in the
+    JSON-LD and API metadata, plain-English submission terms, and a pull
+    request template.
 
 - **v1.0.0 (2026-10-14, branch `release/1.0.0`)**
   - Catalog reset to the GeForce RTX 5080 Founders Edition, with its first

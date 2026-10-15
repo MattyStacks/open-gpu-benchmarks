@@ -568,3 +568,30 @@ product can't use another product as its base.
 The product's `identity.gpu_vendor` differs from its reference's. A product
 always has the same GPU vendor as the chip it's built on. Fix whichever one is
 wrong.
+
+#### `pick-slot`
+
+A card in `data/picks.yaml` (the dashboard's featured GPU picks) has a `slot`
+other than `amd`, `nvidia`, or `intel`, or two cards use the same slot. There
+is one card per GPU maker; a slot without a card shows "coming soon".
+
+#### `pick-field`
+
+A pick is missing its `note` (why you picked it) or its `name`, has a field
+other than `slot`, `name`, `gpu_id`, `note`, `label`, and `links`, or has a
+`label` longer than 24 characters. `name` may be left out when `gpu_id` names
+a catalog product.
+
+#### `pick-gpu-id`
+
+A pick's `gpu_id` isn't a catalog product, or the product's
+`identity.gpu_vendor` doesn't match the slot. `gpu_id` is optional: leave it
+out for a card that isn't in the catalog yet (for example a deal on a card
+with no specs here), and give `name` instead.
+
+#### `pick-link`
+
+Each pick needs a `links` list with at least one store link. Every link has
+only `retailer` (`amazon`, `newegg`, or `bestbuy`) and an `https://` `url`.
+Paste the full affiliate URL from the program (Amazon SiteStripe, or the
+network link for Newegg and Best Buy).

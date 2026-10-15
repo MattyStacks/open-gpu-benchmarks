@@ -1,3 +1,7 @@
+# Submitting this file releases its contents into the public domain (CC0,
+# see data/LICENSE): anyone can use the numbers for anything, without asking or
+# crediting you. Only include what you're happy to make public.
+#
 # Save as data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml,
 # for example data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml.
 # For a second file with the same date and game, add a number:

@@ -1,7 +1,7 @@
 """Check catalog entries and benchmark result files before a pull request.
 
     python scripts/validate.py            # everything
-    python scripts/validate.py catalog    # data/gpus/** only
+    python scripts/validate.py catalog    # data/gpus/** and data/picks.yaml
     python scripts/validate.py results    # data/official/** and data/community/**
     python scripts/validate.py --data-dir tests/fixtures/data   # the synthetic test fixtures
 
@@ -31,6 +31,8 @@ def main(argv=None):
     failed = False
     if args.target in ("all", "catalog"):
         failed |= checks.report(catalog_issues, f"Catalog ({len(catalog)} entries)")
+        picks, pick_issues = checks.load_picks(catalog, data_dir)
+        failed |= checks.report(pick_issues, f"Featured picks ({len(picks)} of {len(checks.PICK_SLOTS)} slots)")
     if args.target in ("all", "results"):
         # Catalog problems are reported by the catalog check; results only need the IDs.
         runs, result_issues = checks.load_results(catalog, data_dir)

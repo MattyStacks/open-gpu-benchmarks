@@ -10,3 +10,7 @@
 /llms*.txt
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=300
+
+# Blog assets are content-hashed by Astro, so they never change in place.
+/blog/_assets/*
+  Cache-Control: public, max-age=31536000, immutable

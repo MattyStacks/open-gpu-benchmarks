@@ -11,7 +11,90 @@ contributor workflow. Data-only result submissions can skip it. When the
 version is bumped, rename `Unreleased` to the new version and date, then start
 a fresh empty `Unreleased` section.
 
+## Versioning
+
+From 1.1.0.0, versions are `MAJOR.MINOR.DATA.POST`, always written with four
+parts (tags are `vMAJOR.MINOR.DATA.POST`):
+
+- **MAJOR**: a breaking change to the data contract or the API.
+- **MINOR**: any code change (features and fixes alike).
+- **DATA**: newly published benchmark runs.
+- **POST**: a new or materially updated blog post, guide, or review.
+
+Bumping one part resets the parts to its right (1.1.2.3 then 1.2.0.0). There is
+one bump per release, not per pull request: the biggest kind of change under
+`Unreleased` picks the part. Community data PRs don't add their own line; a
+DATA or POST release gets one short line, for example "12 new Cyberpunk 2077
+runs" or "New post: <title>". Earlier releases used three parts.
+
 ## Unreleased
+
+## 1.1.0.0 - 2026-10-14
+
+A blog, guides, and reviews section at `/blog/`, featured GPU picks on the
+dashboard, and four-part versions.
+
+New post: "Why I'm Starting Open GPU Benchmarks".
+
+### Added
+- `/blog/`, built with Astro from Markdown and MDX posts in
+  `content/posts/<slug>/`. It has post, guide, and review types, tag pages, an
+  RSS feed, and optimized images. It shares the dashboard's colors and theme
+  setting.
+- Post components:
+  - `<BenchChart>` draws a chart from the published summaries at build time,
+    with no client JavaScript.
+  - `<Callout>` adds a note, tip, or warning banner.
+  - `<AffiliateLink>` marks a link `rel="sponsored"`. Any post with
+    `affiliate: true` gets an automatic disclosure banner, and the build fails
+    if an affiliate link appears without it.
+  - Reviews show the catalog specs, a verdict, and pros and cons.
+- Posts say how AI was used: `ai_assistance` (for example "Grammar and flow
+  cleanup") goes in the footer, and `ai_generated: true` marks a post AI wrote,
+  with an "AI-generated" pill. Unknown
+  frontmatter fields, unquoted dates, and `gpu_ids` that aren't catalog
+  products fail the build.
+- The sitemap and `llms.txt` list the blog and every published post.
+- A "Blog" link in the dashboard header.
+- **Featured GPU picks** on the dashboard, replacing the empty "Official GPU
+  and laptop reviews" panel:
+  - One card each for AMD, NVIDIA, and Intel, from `data/picks.yaml`, with
+    store buttons and an affiliate disclosure. There are no prices, because
+    they go stale and Amazon's rules don't allow typed-in prices.
+  - A pick can name a catalog `gpu_id`, which adds VRAM, power, and a "See
+    benchmarks" button, or be any card by `name`.
+  - Empty slots show "coming soon".
+  - New `pick-slot`, `pick-field`, `pick-gpu-id`, and `pick-link` checks
+    (run by `validate.py catalog` and `build.py`).
+  - API schema 0.13 adds `picks` to `dashboard.json` (and
+    `metadata.license`, below). `reviews` stays in the API, unchanged.
+- A fourth PR check, **Blog**, that builds the blog.
+- `test_build.py` checks that:
+  - the blog's color tokens match `site/index.html`
+  - draft posts stay out of the sitemap
+  - `RELEASE_VERSION` matches the newest release here
+
+- License files:
+  - `LICENSE` puts the code under MIT.
+  - `data/LICENSE` puts the benchmark data under CC0 1.0 (public domain),
+    as the README already stated.
+  - The Dataset JSON-LD, `dashboard.json` `metadata.license`, `llms.txt`,
+    and `benchmarks/` all name the CC0 license, and `test_build.py` checks
+    that they agree.
+- Plain-English submission terms. Submitting a result releases it under
+  CC0: anyone can use it for anything without permission or credit, and it
+  can't be taken back. They're in "Your results become public data" in
+  `docs/COMMUNITY_SUBMISSIONS.md`, with short notices in CONTRIBUTING, the
+  community folder README, the templates, and the dashboard's submission and
+  footer text. A pull request template asks contributors to agree.
+  - Found results submit only the numbers and a link.
+  - A friend's numbers need their agreement to public release.
+
+### Changed
+- Versions are now `MAJOR.MINOR.DATA.POST` (see Versioning above).
+- CI and Cloudflare previews install Node 22 and build the blog after
+  `build.py`. The GitHub Pages mirror gets its own blog build under
+  `/open-gpu-benchmarks/blog/`.
 
 ## 1.0.0 - 2026-10-14
 

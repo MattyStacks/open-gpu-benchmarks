@@ -11,3 +11,7 @@ site/benchmarks/
 site/llms.txt
 site/llms-full.txt
 site/sitemap.xml
+# Generated blog (Astro writes it from blog/ and content/)
+site/blog/
+blog/node_modules/
+blog/.astro/

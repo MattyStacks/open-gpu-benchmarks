@@ -8,7 +8,7 @@ data/gpus/README.md (catalog) or docs/COMMUNITY_SUBMISSIONS.md (results).
 import os
 import re
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import yaml
@@ -31,6 +31,10 @@ COMMUNITY_FILENAME = re.compile(r"^result_\d{8}_[a-z0-9]+(?:[_-][a-z0-9]+)*$", r
 ID_PATTERN = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 MEMORY_TOKEN = re.compile(r"^(\d+)gb$")
 FULL_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# The YYYYMMDD a result file name starts with; the file's date field must match it.
+RESULT_FILE_DATE = re.compile(r"^result_(\d{4})(\d{2})(\d{2})(?:_|$)")
+# A run's optional local time of day: HH:MM or HH:MM:SS, 24-hour, no time zone.
+TIME_OF_DAY = re.compile(r"^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$")
 MONTH_OR_DATE = re.compile(r"^\d{4}-\d{2}(?:-\d{2})?$")
 # A value that starts with { or [ after "key:" or "-" is inline (flow) YAML.
 INLINE_STYLE = re.compile(r"""^\s*(?:-\s+)*(?:[^\s#'"][^:#'"]*:\s+)?[\[{]""")
@@ -655,6 +659,44 @@ def is_https(value):
     return is_text(value) and value.startswith("https://")
 
 
+def check_result_date(path, run, issues):
+    """Every result file states the day it was run (or published, for a found result)."""
+    value = run.get("date")
+    if value is None:
+        issues.error(path, "result-date", "missing date; add the day you ran it as date: 'YYYY-MM-DD', matching the file name")
+        return
+    if not (isinstance(value, str) and FULL_DATE.match(value)):
+        hint = f" (quote it: '{value}')" if isinstance(value, (date, datetime)) else ""
+        issues.error(path, "result-date", f"date must be a quoted 'YYYY-MM-DD' date{hint}")
+        return
+    try:
+        day = date.fromisoformat(value)
+    except ValueError:
+        issues.error(path, "result-date", f"date '{value}' is not a real calendar day")
+        return
+    # One day of slack, because the runner's time zone may be ahead of the checker's.
+    if day > date.today() + timedelta(days=1):
+        issues.error(path, "result-date", f"date '{value}' is in the future")
+    named = RESULT_FILE_DATE.match(path.stem)
+    if named and "-".join(named.groups()) != value:
+        issues.error(
+            path,
+            "result-date-filename",
+            f"date '{value}' doesn't match the file name's {''.join(named.groups())}; fix whichever is wrong",
+        )
+
+
+def check_result_time(path, entry, label, issues):
+    """A run's time is optional, local to the runner, and has no time zone."""
+    value = entry.get("time")
+    if value is None:
+        return
+    if not (isinstance(value, str) and TIME_OF_DAY.match(value)):
+        # Unquoted, YAML reads 14:30 as a base-60 number (870).
+        hint = "; quote it, such as '14:30'" if isinstance(value, int) else ""
+        issues.error(path, "result-time", f"{label} time must be a quoted 24-hour 'HH:MM' or 'HH:MM:SS'{hint}")
+
+
 def credit_errors(path, run, issues, source="community"):
     """Check the optional credit block for results someone else measured.
 
@@ -782,6 +824,7 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
     if source == "community":
         submitter_errors(path, run, issues)
     credit_errors(path, run, issues, source)
+    check_result_date(path, run, issues)
 
     entries = run.get("result")
     if not isinstance(entries, list) or not entries:
@@ -818,6 +861,7 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
     for index, entry in enumerate(entries):
         label = f"result[{index}]"
         entry_ok = True
+        check_result_time(path, entry, label, issues)
         for field in RESULT_ENTRY_REQUIRED:
             if entry.get(field) is None:
                 issues.error(path, "result-field", f"{label} missing {field}")

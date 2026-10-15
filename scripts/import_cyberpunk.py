@@ -141,8 +141,13 @@ def find_input_dir(given):
 
 
 def run_date(folder_name):
-    year, month, day = RUN_FOLDER.match(folder_name).groups()[:3]
-    return f"{year}{month}{day}"
+    """A run folder's day as 'YYYY-MM-DD', the result file's date field."""
+    return "-".join(RUN_FOLDER.match(folder_name).groups()[:3])
+
+
+def run_time(folder_name):
+    """A run folder's local time as 'HH:MM:SS'; the game records no time zone."""
+    return ":".join(RUN_FOLDER.match(folder_name).groups()[3:])
 
 
 def load_run(path):
@@ -174,7 +179,7 @@ def target_file(out_dir, date, run, planned):
     repeat = 1
     while True:
         suffix = "" if repeat == 1 else f"_{repeat}"
-        path = out_dir / f"result_{date}_{GAME_SLUG}{suffix}.yaml"
+        path = out_dir / f"result_{date.replace('-', '')}_{GAME_SLUG}{suffix}.yaml"
         if path not in planned and path.exists():
             existing = load_run(path)
             if existing is not None and isinstance(existing.get("result"), list):
@@ -322,7 +327,7 @@ def frame_stats(folder, data):
 
 def build_entry(data, preset, folder_name, stats):
     """One result list item for one benchmark run."""
-    entry = {RUN_KEY: folder_name, "resolution": resolution(data), "graphics_preset": preset}
+    entry = {RUN_KEY: folder_name, "time": run_time(folder_name), "resolution": resolution(data), "graphics_preset": preset}
     upscaling = upscaler(data)
     if upscaling:
         entry["upscaling"] = upscaling
@@ -341,12 +346,12 @@ def build_entry(data, preset, folder_name, stats):
     return entry
 
 
-def build_run(data, gpu_id, source, os_name, submitted_by):
+def build_run(data, gpu_id, source, os_name, submitted_by, date):
     """The file-level fields shared by every run in one result file."""
     run = {"gpu_id": gpu_id}
     if source == "community" and submitted_by:
         run["submitted_by"] = submitted_by
-    run.update({"benchmark_type": "game", "game": GAME})
+    run.update({"benchmark_type": "game", "game": GAME, "date": date})
     if data.get("gameVersion"):
         run["version"] = str(data["gameVersion"])
     run["frame_generation"] = False
@@ -403,6 +408,36 @@ def add_p1_lows(out_dir, input_dir, planned):
         if path in changed:
             planned[path] = run
     return rows, changed
+
+
+def with_key_after(mapping, key, value, after):
+    """A copy of mapping with key set, placed after the key named by after."""
+    items = [(name, item) for name, item in mapping.items() if name != key]
+    at = next((i + 1 for i, (name, _) in enumerate(items) if name == after), len(items))
+    return dict([*items[:at], (key, value), *items[at:]])
+
+
+def add_dates(out_dir, planned):
+    """Give files imported before the date field existed their date (from the
+    file name) and each run its time (from its run folder). Changed files are
+    added to planned. Returns the changed files."""
+    changed = []
+    for path in sorted(out_dir.glob(f"result_*_{GAME_SLUG}*.yaml")):
+        named = checks.RESULT_FILE_DATE.match(path.stem)
+        run = planned.get(path) or load_run(path)
+        if not named or run is None or not isinstance(run.get("result"), list):
+            continue
+        before = repr(run)
+        if run.get("date") is None:
+            run = with_key_after(run, "date", "-".join(named.groups()), "game")
+        for index, entry in enumerate(run["result"]):
+            folder_name = entry.get(RUN_KEY) if isinstance(entry, dict) else None
+            if folder_name and entry.get("time") is None and RUN_FOLDER.match(str(folder_name)):
+                run["result"][index] = with_key_after(entry, "time", run_time(folder_name), RUN_KEY)
+        if repr(run) != before:
+            planned[path] = run
+            changed.append(path)
+    return changed
 
 
 def write_run(path, run):
@@ -468,6 +503,7 @@ def main(argv=None):
     seen = imported_runs(data_dir)
     planned, added = {}, {}
     rows, updated = add_p1_lows(out_dir, input_dir, planned) if out_dir.is_dir() else ([], [])
+    dated = add_dates(out_dir, planned) if out_dir.is_dir() else []
     for folder in sorted(path for path in input_dir.iterdir() if path.is_dir() and RUN_FOLDER.match(path.name)):
         if folder.name in seen:
             previously += 1
@@ -507,8 +543,9 @@ def main(argv=None):
         else:
             skip(f"unknown preset '{preset_key}'"); continue
 
-        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by)
-        path = target_file(out_dir, run_date(folder.name), run, planned)
+        date = run_date(folder.name)
+        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by, date)
+        path = target_file(out_dir, date, run, planned)
         stats = frame_stats(folder, data)
         planned[path]["result"].append(build_entry(data, preset, folder.name, stats))
         added[path] = added.get(path, 0) + 1
@@ -527,11 +564,13 @@ def main(argv=None):
     print(f"\n{new} {verb}, {skipped} skipped, {previously} already imported earlier")
     if filled:
         print(f"{filled} earlier run(s) {'would get' if args.dry_run else 'got'} a p1_low from {FRAMES_FILE}")
+    if dated:
+        print(f"{len(dated)} earlier file(s) {'would get' if args.dry_run else 'got'} a date and run times")
     for path, count in added.items():
         total = len(planned[path]["result"])
         print(f"  {checks.relative_path(path)}: {count} new, {total} in the file")
 
-    written = list(dict.fromkeys([*updated, *added]))
+    written = list(dict.fromkeys([*updated, *dated, *added]))
     if args.dry_run or not written:
         return 0
     for path in written:

@@ -223,6 +223,7 @@ raw capture or a summary link when you can.
 ```yaml
 gpu_id: rtx_5080_16gb_fe   # must equal the folder name
 game: Cyberpunk 2077
+date: '2026-10-03'         # the day you ran it, quoted; same as the file name
 result:
   - resolution: 1440p
     graphics_preset: Ultra
@@ -245,6 +246,7 @@ placeholders.
 ```yaml
 gpu_id: rtx_5080_16gb_fe
 game: Cyberpunk 2077
+date: '2026-10-13'   # the day the source was published; same as the file name
 credit:
   source_url: https://example.com/example-creator/gpu-review   # required
   name: Example Creator                                        # optional
@@ -268,6 +270,7 @@ gpu_id: rtx_5080_16gb_fe
 submitted_by: mattystacks        # optional; shown as @mattystacks
 benchmark_type: game
 game: Cyberpunk 2077
+date: '2026-10-03'
 version: "2.12"
 frame_generation: false
 device_name: Ryzen 7 7800X3D test bench
@@ -340,6 +343,7 @@ dashboard labels these as summary-only.
 ```yaml
 gpu_id: steam_deck_oled_16gb
 game: Cyberpunk 2077
+date: '2026-10-03'
 version: "2.12"
 frame_generation: false
 result:
@@ -365,6 +369,8 @@ proof:
 | ---------------------------------------------- | --------- | ------------------------------------------------------- |
 | `gpu_id`                                       | **Yes**   | Must match the folder name and a catalog file name under `data/gpus/` |
 | `game`                                         | **Yes**   | Free text, keep spelling consistent for grouping        |
+| `date`                                         | **Yes**   | Quoted `'YYYY-MM-DD'`, the same day as the file name; for a result you found, the publish date. See [date and time](docs/COMMUNITY_SUBMISSIONS.md#date-and-time) |
+| `result[].time`                                | Optional  | Quoted local 24-hour `'HH:MM'` or `'HH:MM:SS'`; no time zone |
 | `result` list                                  | **Yes**   | At least one entry; every entry starts with `-`         |
 | `result[].resolution`, `graphics_preset`       | **Yes**   | Use `graphics_preset`, never `settings`                 |
 | `result[].avg_fps`                             | **Yes**   | Average FPS                                             |
@@ -392,6 +398,9 @@ Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 | File name isn't `result_YYYYMMDD_<game>.yaml` | `[community-filename]` | Rename the file, such as `result_20261003_cyberpunk.yaml` |
 | `submitted_by` with spaces or other characters a GitHub username can't have | `[community-submitter]` | Fix it, or remove the line to stay anonymous |
 | File not named `result_...` | `[result-filename]` | Rename it, or the build would skip it |
+| No `date`, or an unquoted `date: 2026-10-03` | `[result-date]` | Add `date: '2026-10-03'`, quoted |
+| `date` isn't the file name's day | `[result-date-filename]` | Fix whichever is wrong; one file holds one day |
+| An unquoted `time: 14:30` | `[result-time]` | Quote it: `time: '14:30'` |
 | Forgot the `-` or repeated `result:` | `[result-field]` or lost entries | One `result:` key, one `-` per profile |
 | Used `settings:` | `[result-field] ... missing graphics_preset` | Rename to `graphics_preset` |
 | Ran with DLSS/FSR Frame Gen | `[result-frame-generation]` | Re-run with frame generation off |

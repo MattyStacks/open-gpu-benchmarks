@@ -29,6 +29,14 @@ runs" or "New post: <title>". Earlier releases used three parts.
 
 ## Unreleased
 
+### Added
+- Result files require a top-level `date: 'YYYY-MM-DD'` that matches the file
+  name's date (a found result uses its publish date), and each run may add an
+  optional local `time`. New checks: `result-date`, `result-date-filename`,
+  and `result-time`. API schema 0.14 puts `date` and `time` on every run
+  record. The Cyberpunk importer and `parse.py` write them, and existing files
+  were backfilled from their file names.
+
 ### Fixed
 - Dashboard on phones: the submission example, review checklist, and API code
   blocks no longer spill past their panel; code scrolls inside its own box.

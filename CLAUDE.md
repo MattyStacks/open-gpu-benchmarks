@@ -175,7 +175,13 @@ unless repository policy changes.
 - Exact machine metadata stays on each run; charts show grouped summaries.
 - Raw capture evidence is preferred; preserve its reference when correcting or
   removing a record.
-- Community files are anonymous by default. Only `gpu_id`, `game`, the
+- Every result file needs a quoted `date: 'YYYY-MM-DD'` (`result-date`): the
+  day it was run, or a found result's publish date. It must equal the file
+  name's `YYYYMMDD` (`result-date-filename`), because one file holds one day.
+  Each `result` item may add a quoted local `time` (`'HH:MM'` or
+  `'HH:MM:SS'`, no time zone; `result-time`). Neither is a grouping key; the
+  API puts `date` and `time` on every run record.
+- Community files are anonymous by default. Only `gpu_id`, `game`, `date`, the
   `result` list, `system.os`, and `proof.method` are required. `submitted_by`
   is optional (a valid GitHub username when set), and the file name is
   `result_YYYYMMDD_<game>.yaml` (same-day repeats `_<game>_2`; older names

@@ -1,6 +1,7 @@
 gpu_id: rtx_4070_super_12gb_fe
 benchmark_type: game
 game: Cyberpunk 2077
+date: '2026-10-03'
 version: '2.12'
 synthetic: true
 driver: '551.23'

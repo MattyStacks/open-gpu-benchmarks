@@ -54,6 +54,10 @@ Folder rules:
   first or in the same pull request.
 - Use block-style YAML only: one `-` line per list item, and no inline `[ ]` or
   `{ }`.
+- Set `date` to the day you ran it, quoted (`date: '2026-10-03'`), the same
+  day as the file name. For a result you found, use its publish date. Each
+  `result` item may add a quoted local `time` (see
+  [Date and time](../../docs/COMMUNITY_SUBMISSIONS.md#date-and-time)).
 - Set `system.os` to `windows` or `linux` (lowercase). Windows and Linux runs
   are never averaged together, but distros are: put the distro, kernel, Mesa,
   and Proton details in their own `system` fields (see

@@ -121,7 +121,9 @@ adds `source_url` to each summary `credits` entry and `credit_source_url` to
 featured GPU cards from [data/picks.yaml](data/picks.yaml), one per GPU maker,
 each with `slot`, `name`, optional `gpu_id`, `note`, `label`, `vram_gb`,
 `tdp_w`, `form_factor`, and `links` (`retailer`, `retailer_name`, `url`), and
-`metadata.license` (`CC0-1.0`) to every API file. The
+`metadata.license` (`CC0-1.0`) to every API file. Schema `0.14` adds `date`
+(the result file's required `YYYY-MM-DD`) and `time` (the run's optional local
+`HH:MM[:SS]`, `""` when not set) to every run record; neither groups runs. The
 dashboard's **Get the data as JSON** panel lists each endpoint with Open and
 Copy URL actions; copied URLs are built from the page's own location, so they
 stay correct on GitHub Pages or a custom domain.

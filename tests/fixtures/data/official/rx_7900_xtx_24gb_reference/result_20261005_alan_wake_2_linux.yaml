@@ -1,6 +1,7 @@
 gpu_id: rx_7900_xtx_24gb_reference
 benchmark_type: game
 game: Alan Wake 2
+date: '2026-10-05'
 version: '1.2'
 synthetic: true
 result:

@@ -38,6 +38,11 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   `python scripts/build.py --data-dir tests/fixtures/data`.
 - The source schema uses `graphics_preset`; do not add a `settings` fallback.
 - Desktop and laptop GPU records never share a summary group.
+- Every result file needs a quoted `date: 'YYYY-MM-DD'` (`result-date`): the
+  day it was run, or a found result's publish date. It must equal the file
+  name's `YYYYMMDD` (`result-date-filename`). Each `result` item may add a
+  quoted local `time` (`'HH:MM'` or `'HH:MM:SS'`, no time zone;
+  `result-time`). Neither is a grouping key.
 - Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
   grouping key, so Windows and Linux runs are never averaged together; the
   distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
@@ -65,8 +70,8 @@ commit everything, push, and open a PR into `main`; one topic per branch.
 - Community result files are anonymous by default and named
   `result_YYYYMMDD_<game>.yaml` (same-day repeats add `_2`, `_3`).
   `submitted_by` is optional and must be a valid GitHub username when set.
-  Only `gpu_id`, `game`, the `result` list, `system.os`, and `proof.method`
-  are required; community runs with no evidence get `proof_level: none`
+  Only `gpu_id`, `game`, `date`, the `result` list, `system.os`, and
+  `proof.method` are required; community runs with no evidence get `proof_level: none`
   ("Unverified"). Official runs are maintainer-verified by definition
   (`maintainer-verified`, "Verified") and may carry a `credit` with just a
   `name` for a run entered on someone's behalf.

@@ -10,10 +10,12 @@
 gpu_id: rtx_5080_16gb_fe
 benchmark_type: game
 game: Cyberpunk 2077
+date: "2026-10-13" # Required; the day you ran it, the same as the file name's YYYYMMDD
 version: "2.12"
 frame_generation: false
 result:
   - resolution: 1440p
+    time: "18:44" # Optional; your local 24-hour time (HH:MM or HH:MM:SS), quoted
     graphics_preset: "Ray Tracing: Ultra"
     # Upscaling is off by default. Only when the preset turns it on by itself, as
     # Cyberpunk 2077's ray tracing presets do, record it and say so:

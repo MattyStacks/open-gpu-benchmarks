@@ -59,6 +59,13 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Data and submissions
 
+- [ ] **Use the run `date`** (API schema 0.14) now that every run has one.
+  Ideas: a historical chart of a product's results over time (driver and game
+  updates), a "since" filter or download option for the JSON, and a rule or
+  dashboard toggle to hide or retire runs older than a cutoff. Decide whether
+  any of this changes grouping before building it; today `date` never groups
+  runs.
+
 - [ ] **Cyberpunk importer follow-ups** (`scripts/import_cyberpunk.py`).
   - Confirm the upscaler quality indices that weren't checked against
     `UserSettings.json`: DLSS and FSR 2.1 indices other than DLSS 0 (Auto)

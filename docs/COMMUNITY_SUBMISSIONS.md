@@ -32,8 +32,9 @@ For a second file with the same date and game, add a number:
 ## Anonymous by default
 
 You only have to share the result itself. A community run needs the product
-(`gpu_id`), the `game`, the `result` numbers, `system.os`, and `proof.method`
-(see [Comparable game runs](#comparable-game-runs)). Everything else, including
+(`gpu_id`), the `game`, the `date` (see [Date and time](#date-and-time)), the
+`result` numbers, `system.os`, and `proof.method` (see
+[Comparable game runs](#comparable-game-runs)). Everything else, including
 your name, CPU, driver, and raw captures, is optional. Add what you're happy to
 share; more detail makes a run easier to review and compare.
 
@@ -93,6 +94,35 @@ release what you submit under CC0.** In plain English:
 This applies to official runs too. The code is separate and uses the
 [MIT license](../LICENSE).
 
+## Date and time
+
+Every result file, official or community and of any benchmark type, needs a
+`date`: the day you ran it, as a quoted `'YYYY-MM-DD'`. It must be the same day
+as the `YYYYMMDD` in the file name. Each file holds one day of runs, so one
+date covers the whole file. For a
+[result you found](#submitting-a-result-you-found), use the day the video,
+review, or post was published.
+
+Each `result` item can also add a `time`: the local 24-hour time you ran it,
+quoted, as `'HH:MM'` or `'HH:MM:SS'`. It's optional and has no time zone, so
+treat it as the order of runs within the day, not an exact moment.
+
+```yaml
+gpu_id: rtx_5080_16gb_fe
+game: Cyberpunk 2077
+date: '2026-10-13'
+result:
+  - time: '18:44'
+    resolution: 1440p
+    graphics_preset: High
+    avg_fps: 151.2
+```
+
+Neither field groups runs: two runs of the same profile on different days are
+averaged together like any others. The API puts `date` and `time` (`""` when
+not set) on every run, so you can filter runs by age yourself.
+`scripts/parse.py` and `scripts/import_cyberpunk.py` fill both in for you.
+
 ## Comparable game runs
 
 Game records use `benchmark_type: game` (the default when omitted) and require:
@@ -118,6 +148,7 @@ resolution/preset combinations:
 ```yaml
 gpu_id: rtx_5080_16gb_fe
 game: Helldivers 2
+date: '2026-10-03'
 system:
   os: windows
 proof:
@@ -232,7 +263,8 @@ The names and links above are placeholders.
   Without a name, the dashboard shows the site, such as "example.com".
 - `submitted_by` stays optional, the same as for your own runs.
 
-Copy only what the source states. Use the product ID, resolution, and preset
+Copy only what the source states. Set `date`, and the file name's date, to
+the day the source was published. Use the product ID, resolution, and preset
 it tested, and leave out details it doesn't give rather than guessing. Set
 `proof.method` to the tool the source used, `in_game_benchmark` for a game's
 built-in benchmark, or `other` when it doesn't say.
@@ -431,6 +463,25 @@ start at the left margin. Only the items under `result:` start with `-`.
 A YAML file in a GPU folder doesn't start with `result_`, so the build would skip
 it without telling you. Rename it to `result_YYYYMMDD_<game>.yaml` (community)
 or `result_YYYYMMDD_<benchmark>.yaml` (official).
+
+#### `result-date`
+
+The file has no `date`, or it isn't a quoted `'YYYY-MM-DD'` day that has
+already happened. Add `date: '2026-10-03'` near the top, with the quotes;
+without them, YAML reads it as a date object instead of text. For a result you
+found, use the source's publish date. See [Date and time](#date-and-time).
+
+#### `result-date-filename`
+
+`date` and the `YYYYMMDD` at the start of the file name are different days. Fix
+whichever one is wrong. If the file really holds runs from two days, split it
+into one file per day.
+
+#### `result-time`
+
+A `result` item's `time` isn't a quoted 24-hour `'HH:MM'` or `'HH:MM:SS'`, such
+as `'09:05'` or `'21:40:12'`. Quote it: unquoted, YAML reads `14:30` as the
+number 870. `time` is optional, so you can also remove it.
 
 #### `result-folder`
 

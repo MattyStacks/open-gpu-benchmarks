@@ -3,9 +3,9 @@
 # crediting you. Only include what you're happy to make public.
 #
 # 3DMark Steel Nomad. Save as
-# data/community/<gpu_id>/result_YYYYMMDD_steel_nomad.yaml,
-# for example data/community/rtx_5080_16gb_fe/result_20261013_steel_nomad.yaml.
-# Only gpu_id, game, date, result, system.os, and proof.method are required; the
+# data/community/<gpu_id>/result_YYYYMMDD_3dmark_steel_nomad.yaml, for example
+# data/community/rtx_5080_16gb_fe/result_20261013_3dmark_steel_nomad.yaml.
+# Only gpu_id, game_id, date, result, system.os, and proof.method are required; the
 # rest is optional, and you don't have to give your name.
 # The folder name and gpu_id must exactly match a catalog ID, and it must be the
 # GPU that ran the test. 3DMark lists every GPU in the machine under System
@@ -22,7 +22,9 @@
 gpu_id: rtx_5080_16gb_fe
 # submitted_by: your-github-username # Optional; leave it out to stay anonymous
 benchmark_type: game
-game: 3DMark Steel Nomad
+# Steel Nomad Light is a different test. If it isn't in data/games.yaml yet,
+# add it there in the same pull request before using its id.
+game_id: 3dmark_steel_nomad # The test's id in data/games.yaml
 date: "2026-10-13" # Required; the day you ran it, the same as the file name's YYYYMMDD
 version: "1.0" # The benchmark version shown on the results page
 frame_generation: false
@@ -31,7 +33,7 @@ device_name: Ryzen 7 7800X3D test bench # Optional; encouraged for exact machine
 gpu_power_w: 360 # Optional for desktops; strongly encouraged for laptops
 overclocked: false
 result:
-  - resolution: 1440p # Steel Nomad renders at a fixed resolution; use the one the benchmark states
+  - resolution: 4K # Steel Nomad always renders at 4K (Steel Nomad Light is the 1440p test)
     graphics_preset: Default # 3DMark runs a fixed preset
     avg_fps: 71.0 # "Graphics test" FPS on the results page
     score: 7100 # Optional; the Steel Nomad score

@@ -16,6 +16,14 @@ ROOT = Path(__file__).resolve().parent.parent
 FIXTURES_DIR = ROOT / "tests" / "fixtures" / "data"
 TEST_ID = "test_gpu_8gb_fe"
 TEST_CATALOG_PATH = f"gpus/desktop/nvidia/{TEST_ID}.yaml"
+GAMES_PATH = "games.yaml"
+# The registry run_checks writes unless a case brings its own games.yaml.
+TEST_GAMES = {
+    "games": [
+        {"id": "test_game", "name": "Test Game", "type": "game", "year": 2024},
+        {"id": "test_synthetic", "name": "Test Synthetic", "type": "synthetic", "year": 2024},
+    ]
+}
 
 
 def load_json(path):
@@ -27,7 +35,7 @@ def find_summary(summaries, resolution, os_name="windows"):
     return next(
         summary
         for summary in summaries
-        if summary["game"] == "Helldivers 2"
+        if summary["game_id"] == "helldivers_2"
         and summary["resolution"] == resolution
         and summary["graphics_preset"] == "Ultra"
         and summary["os"] == os_name
@@ -65,7 +73,7 @@ def reference_entry(**overrides):
 def result_run(**overrides):
     run = {
         "gpu_id": TEST_ID,
-        "game": "Test Game",
+        "game_id": "test_game",
         # Matches the 20261003 in every test file name below.
         "date": "2026-10-03",
         "result": [{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 100, "p1_low": 80}],
@@ -89,16 +97,18 @@ def dump(value):
 
 
 def run_checks(files):
-    """Write {relative path: data or text} into a temp data dir and run every check."""
+    """Write {relative path: data or text} into a temp data dir and run every check.
+    A games.yaml with test_game and test_synthetic is added unless files has one."""
     with tempfile.TemporaryDirectory() as temp:
         data_dir = Path(temp)
-        for relative, content in files.items():
+        for relative, content in {GAMES_PATH: TEST_GAMES, **files}.items():
             path = data_dir / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(dump(content), encoding="utf-8")
         catalog, issues = checks.load_catalog(data_dir)
-        _, result_issues = checks.load_results(catalog, data_dir)
-        return checks.Issues([*issues, *result_issues])
+        games, game_issues = checks.load_games(data_dir)
+        _, result_issues = checks.load_results(catalog, data_dir, games)
+        return checks.Issues([*issues, *game_issues, *result_issues])
 
 
 def expect_rule(rule, files, level="error"):
@@ -266,6 +276,69 @@ def check_result_rules():
     assert "result-no-baseline" in {issue.rule for issue in issues.warnings}
 
 
+def check_game_rules():
+    """data/games.yaml: four required fields, typed store IDs, no duplicates; results must use its IDs."""
+    catalog = {TEST_CATALOG_PATH: minimal_entry()}
+    game = {"id": "new_game", "name": "New Game", "type": "game", "year": 2024}
+
+    def registry(*items):
+        return {GAMES_PATH: {"games": list(items)}}
+
+    def without(key):
+        return {name: value for name, value in game.items() if name != key}
+
+    cases = {
+        "game-registry (missing file)": None,
+        "game-registry (not a list)": "games: Cyberpunk\n",
+        "game-field (no type)": registry(without("type")),
+        "game-field (bad type)": registry({**game, "type": "benchmark"}),
+        "game-field (no year)": registry(without("year")),
+        "game-field (year range)": registry({**game, "year": 1970}),
+        "game-field (quoted year)": registry({**game, "year": "2024"}),
+        "game-field (steam_appid text)": registry({**game, "steam_appid": "1091500"}),
+        "game-field (igdb_id negative)": registry({**game, "igdb_id": -1}),
+        "game-field (url)": registry({**game, "url": "http://example.com"}),
+        "game-field (unknown)": registry({**game, "platform": "pc"}),
+        "game-id-format": registry({**game, "id": "New-Game"}),
+        "game-duplicate (id)": registry(game, {**game, "name": "Other"}),
+        "game-duplicate (name)": registry(game, {**game, "id": "new_game_2", "name": "new game"}),
+    }
+    for label, games in cases.items():
+        rule = label.split(" ")[0]
+        with tempfile.TemporaryDirectory() as temp:
+            if games is not None:
+                content = games[GAMES_PATH] if isinstance(games, dict) else games
+                (Path(temp) / GAMES_PATH).write_text(dump(content), encoding="utf-8")
+            _, issues = checks.load_games(Path(temp))
+        assert rule in {issue.rule for issue in issues.errors}, (label, [issue.format() for issue in issues])
+        assert all(issue.doc() == checks.RESULTS_DOC for issue in issues), label
+
+    # Store IDs, url, and notes are optional; when set and valid they pass and reach the API.
+    full = {**game, "steam_appid": 1091500, "igdb_id": 1877, "url": "https://example.com/new-game", "notes": "The original release."}
+    with tempfile.TemporaryDirectory() as temp:
+        (Path(temp) / GAMES_PATH).write_text(dump(registry(full)[GAMES_PATH]), encoding="utf-8")
+        games, issues = checks.load_games(Path(temp))
+    assert not issues and games == [full], (games, [issue.format() for issue in issues])
+
+    # A result for a game that isn't registered fails with a stub to paste in...
+    issues = run_checks({**catalog, COMMUNITY_PATH: community_run(game_id="new_game")})
+    (unknown,) = [issue for issue in issues.errors if issue.rule == "result-unknown-game"]
+    assert "data/games.yaml" in unknown.message and "- id: new_game" in unknown.message and "year: YYYY" in unknown.message
+    # ...and passes once the same pull request adds the game to the registry.
+    issues = run_checks({**catalog, **registry(game), COMMUNITY_PATH: community_run(game_id="new_game")})
+    assert not issues.errors, [issue.format() for issue in issues.errors]
+
+    # The old free-text game key is replaced, and the message names the right ID.
+    run = community_run(game="test game")
+    del run["game_id"]
+    issues = run_checks({**catalog, COMMUNITY_PATH: run})
+    (renamed,) = [issue for issue in issues.errors if issue.rule == "result-game-id"]
+    assert "game_id: test_game" in renamed.message, renamed.message
+    run = community_run()
+    del run["game_id"]
+    expect_rule("result-game-id", {**catalog, COMMUNITY_PATH: run})
+
+
 def check_os_grouping():
     """Windows and Linux runs of the same profile build separate summaries."""
     gpu = minimal_entry()
@@ -287,7 +360,7 @@ def check_average_only_runs():
     """A run with no 1% low (3DMark, some in-game benchmarks) passes and aggregates."""
     catalog = {TEST_CATALOG_PATH: minimal_entry()}
     avg_only = [{"resolution": "1440p", "graphics_preset": "Default", "avg_fps": 86.03, "score": 8603}]
-    nomad = community_run(game="3DMark Steel Nomad", result=avg_only, proof={"method": "synthetic_benchmark", "summary_source": "https://www.3dmark.com/sn/1"})
+    nomad = community_run(game_id="test_synthetic", result=avg_only, proof={"method": "synthetic_benchmark", "summary_source": "https://www.3dmark.com/sn/1"})
     issues = run_checks({**catalog, COMMUNITY_PATH: nomad})
     assert not issues.errors, [issue.format() for issue in issues.errors]
     assert "result-no-p1-low" not in {issue.rule for issue in issues}, "synthetic benchmarks never report a 1% low"
@@ -539,6 +612,7 @@ def check_import_cyberpunk():
         temp = Path(temp)
         data_dir = temp / "data"
         shutil.copytree(FIXTURES_DIR / "gpus", data_dir / "gpus")
+        shutil.copy(FIXTURES_DIR / "games.yaml", data_dir / "games.yaml")
         results = temp / "benchmarkResults"
 
         def add_runs(new_runs):
@@ -570,7 +644,7 @@ def check_import_cyberpunk():
         assert day_run["proof"]["method"] == "in_game_benchmark"
         assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
         assert entry["display_mode"] == "Fullscreen" and "display_mode" not in day_run["system"]
-        assert day_run["date"] == "2026-10-13" and list(day_run)[:4] == ["gpu_id", "benchmark_type", "game", "date"]
+        assert day_run["date"] == "2026-10-13" and list(day_run)[:4] == ["gpu_id", "benchmark_type", "game_id", "date"]
         assert entry["time"] == "18:44:57" and custom["time"] == "19:00:00", "time comes from the run folder"
 
         catalog, issues = checks.load_catalog(data_dir)
@@ -586,6 +660,13 @@ def check_import_cyberpunk():
         import_cyberpunk.write_run(day_file, undated)
         assert import_cyberpunk.main(args) == 0
         assert yaml.safe_load(day_file.read_text(encoding="utf-8")) == day_run, "date and time are backfilled"
+
+        # A file imported before the game registry says game: and is upgraded to game_id in place.
+        named = {("game" if key == "game_id" else key): ("Cyberpunk 2077" if key == "game_id" else value) for key, value in day_run.items()}
+        import_cyberpunk.write_run(day_file, named)
+        assert import_cyberpunk.main(args) == 0
+        assert yaml.safe_load(day_file.read_text(encoding="utf-8")) == day_run, "game becomes game_id"
+        assert sorted(path.name for path in out.iterdir()) == [day_file.name], "an upgraded file keeps its runs"
 
         # Later the same day: a new run joins the day's file, and a run after a
         # driver update gets its own file because system applies to the whole file.
@@ -605,6 +686,10 @@ def check_import_cyberpunk():
         updated = yaml.safe_load((out / "result_20261013_cyberpunk_2077_2.yaml").read_text(encoding="utf-8"))
         assert updated["system"]["driver"] == "618.00" and len(updated["result"]) == 1
         assert import_cyberpunk.main([*args[:1], "no_such_gpu", *args[2:]]) == 1
+        registry = (data_dir / "games.yaml").read_text(encoding="utf-8")
+        (data_dir / "games.yaml").write_text("games:\n  - id: other_game\n    name: Other\n    type: game\n    year: 2020\n", encoding="utf-8")
+        assert import_cyberpunk.main(args) == 1, "the importer needs cyberpunk_2077 in data/games.yaml"
+        (data_dir / "games.yaml").write_text(registry, encoding="utf-8")
 
         # frames.csv gives avg_fps and p1_low: earlier runs get them on the next
         # import, new runs when imported, and a frames.csv that doesn't match
@@ -661,8 +746,8 @@ def check_issue_to_result():
         assert status == 0, comment
         path = folder / "result_20261003_cyberpunk_2077.yaml"
         run = yaml.safe_load(path.read_text(encoding="utf-8"))
-        # The product name resolves to its ID; the game and preset reuse existing spellings.
-        assert run["gpu_id"] == "rtx_4090_24gb_fe" and run["game"] == "Cyberpunk 2077", run
+        # The product and game names resolve to their IDs; the preset reuses the existing spelling.
+        assert run["gpu_id"] == "rtx_4090_24gb_fe" and run["game_id"] == "cyberpunk_2077" and "game" not in run, run
         assert [entry["graphics_preset"] for entry in run["result"]] == ["Ultra", "Ultra"], run
         assert run["result"][1]["resolution"] == "1440p" and run["result"][1]["avg_fps"] == 180, run
         assert run["submitted_by"] == "octo-cat" and run["proof"]["method"] == "presentmon", run
@@ -676,6 +761,11 @@ def check_issue_to_result():
         assert run_issue(valid, data_dir, temp / "again")[0] == 0
         assert (folder / "result_20261003_cyberpunk_2077_2.yaml").exists()
 
+        # The game's ID works too.
+        by_id = valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\ncyberpunk_2077")
+        assert by_id != valid and run_issue(by_id, data_dir, temp / "by_id")[0] == 0
+        assert (folder / "result_20261003_cyberpunk_2077_3.yaml").exists()
+
         found = valid.replace("I ran it myself", "Someone else: I found it in a video, review, or post")
         status, comment = run_issue(found, data_dir, temp / "found")
         assert status == 1 and "Source link" in comment, comment
@@ -683,6 +773,7 @@ def check_issue_to_result():
         assert run_issue(found, data_dir, temp / "found2")[0] == 0
 
         before = sorted(folder.iterdir())
+        games_before = (data_dir / "games.yaml").read_text(encoding="utf-8")
         failures = {
             "not in the catalog": valid.replace("GeForce RTX 4090 Founders Edition", "rtx 4090 founders"),
             "is not a number": valid.replace("175.2, 140.1", "fast, 140"),
@@ -690,12 +781,15 @@ def check_issue_to_result():
             "result-p1-low-required": valid.replace("175.2, 140.1", "175.2"),
             "CC0": valid.replace("- [X] I release", "- [ ] I release"),
             "YYYY-MM-DD": valid.replace("2026-10-03", "10/03/2026"),
+            "its own pull request": valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\nSome Unlisted Game"),
+            "Did you mean `cyberpunk_2077`?": valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\ncyberpunk 2078"),
         }
         for expected, body in failures.items():
             status, comment = run_issue(body, data_dir, temp / expected)
             assert status == 1 and expected in comment, (expected, comment)
             assert not (temp / expected / "pr_body.md").exists(), expected
         assert sorted(folder.iterdir()) == before, "a failed issue leaves no file behind"
+        assert (data_dir / "games.yaml").read_text(encoding="utf-8") == games_before, "the bot never adds a game"
 
         # Untrusted text can't break out of the reply's code spans.
         status, comment = run_issue(valid.replace("GeForce RTX 4090 Founders Edition", "x` @someone `y"), data_dir, temp / "md")
@@ -769,8 +863,10 @@ def check_reports_every_error_and_build_stops():
 def check_minimal_entry_builds():
     gpu = minimal_entry()
     run = result_run()
-    record = build.build_record(run, run["result"][0], 0, "official", Path(f"official/{TEST_ID}/result_x.yaml"), {TEST_ID: gpu})
+    games = {game["id"]: game for game in TEST_GAMES["games"]}
+    record = build.build_record(run, run["result"][0], 0, "official", Path(f"official/{TEST_ID}/result_x.yaml"), {TEST_ID: gpu}, games)
     assert record["tdp_w"] is None and record["vram_gb"] == 8 and record["gpu_vendor"] == "nvidia"
+    assert (record["game_id"], record["game"], record["game_type"], record["game_year"]) == ("test_game", "Test Game", "game", 2024)
 
 
 def check_base_merge():
@@ -823,6 +919,7 @@ def check_templates_are_valid():
         path.relative_to(ROOT / "data").as_posix(): path.read_text(encoding="utf-8")
         for path in (ROOT / "data" / "gpus").rglob("*.yaml")
     }
+    catalog[GAMES_PATH] = (ROOT / "data" / "games.yaml").read_text(encoding="utf-8")
     for template in sorted((ROOT / "templates").glob("community_*.yaml")):
         text = template.read_text(encoding="utf-8")
         run = yaml.safe_load(text)
@@ -838,7 +935,7 @@ def check_rules_are_documented():
     rules = set(re.findall(r'issues\.(?:error|warning)\(\s*[\w\[\]]+,\s*"([a-z-]+)"', source))
     assert len(rules) > 20, rules
     for rule in rules:
-        doc = checks.RESULTS_DOC if rule.startswith(("result-", "community-")) else checks.CATALOG_DOC
+        doc = checks.RESULTS_DOC if rule.startswith(checks.RESULTS_DOC_PREFIXES) else checks.CATALOG_DOC
         text = (ROOT / doc).read_text(encoding="utf-8")
         assert f"#### `{rule}`" in text, f"rule '{rule}' needs a '#### `{rule}`' heading in {doc}"
 
@@ -846,8 +943,9 @@ def check_rules_are_documented():
 def check_real_data():
     """data/ is what deploys: it passes every check and never holds synthetic runs."""
     catalog, issues = checks.load_catalog()
-    runs, result_issues = checks.load_results(catalog)
-    issues = checks.Issues([*issues, *result_issues])
+    games, game_issues = checks.load_games()
+    runs, result_issues = checks.load_results(catalog, games=games)
+    issues = checks.Issues([*issues, *game_issues, *result_issues])
     assert not issues.errors, [issue.format() for issue in issues.errors]
     synthetic = [checks.relative_path(path) for items in runs.values() for path, run in items if run.get("synthetic")]
     assert not synthetic, f"synthetic runs belong in tests/fixtures/data, not data/: {synthetic}"
@@ -855,8 +953,9 @@ def check_real_data():
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.14"
-    assert {"os", "upscaling"} <= set(master["metadata"]["comparison_policy"]["group_by"])
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.15"
+    group_by = master["metadata"]["comparison_policy"]["group_by"]
+    assert {"os", "upscaling", "game_id"} <= set(group_by) and "game" not in group_by
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
     assert len(by_id) == 11
     for gpu in master["gpus"]:
@@ -897,7 +996,7 @@ def check_catalog_specs(api_dir):
     assert all(record["os"] in checks.RESULT_OSES for record in dashboard["records"])
     xtx_alan_wake = [
         record for record in dashboard["records"]
-        if record["gpu_id"] == "rx_7900_xtx_24gb_reference" and record["game"] == "Alan Wake 2"
+        if record["gpu_id"] == "rx_7900_xtx_24gb_reference" and record["game_id"] == "alan_wake_2"
     ]
     assert sorted(record["os"] for record in xtx_alan_wake) == ["linux", "windows"], "one summary per OS"
 
@@ -906,6 +1005,7 @@ def main():
     check_valid_fixtures()
     check_catalog_rules()
     check_result_rules()
+    check_game_rules()
     check_os_grouping()
     check_average_only_runs()
     check_outlier_limit()
@@ -974,7 +1074,21 @@ def check_fixture_build(api_dir):
 
     dashboard = load_json(api_dir / "dashboard.json")
     assert len(dashboard["records"]) == 30
+    check_game_payload(api_dir)
     check_catalog_specs(api_dir)
+
+
+def check_game_payload(api_dir):
+    """Names come from games.yaml; the dashboard lists only games with summaries."""
+    dashboard = load_json(api_dir / "dashboard.json")
+    assert [game["id"] for game in dashboard["games"]] == ["alan_wake_2", "baldurs_gate_3", "cyberpunk_2077", "helldivers_2"]
+    assert dashboard["games"][2] == {"id": "cyberpunk_2077", "name": "Cyberpunk 2077", "type": "game", "year": 2020}
+    registry = load_json(api_dir / "games.json")
+    assert registry["count"] == 6 and {game["type"] for game in registry["games"]} == set(checks.GAME_TYPES)
+    assert next(game for game in registry["games"] if game["id"] == "cyberpunk_2077")["steam_appid"] == 1091500
+    names = {game["id"]: game["name"] for game in registry["games"]}
+    for record in dashboard["records"]:
+        assert record["game"] == names[record["game_id"]] and record["game_type"] == "game", record
 
 
 def check_site_seo(site_dir):

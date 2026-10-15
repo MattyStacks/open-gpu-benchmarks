@@ -1,6 +1,6 @@
 gpu_id: rtx_4070_laptop_8gb_generic
 benchmark_type: game
-game: Helldivers 2
+game_id: helldivers_2
 date: '2026-10-03'
 version: '1.001'
 synthetic: true

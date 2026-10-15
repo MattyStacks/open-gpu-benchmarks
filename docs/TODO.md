@@ -40,8 +40,15 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - [ ] **Confirm 3DMark fixed settings.** Check the fixed render resolution and
   preset for Steel Nomad, Steel Nomad Light, and the other benchmarks people
   will submit, and list them in `docs/COMMUNITY_SUBMISSIONS.md`. The Steel
-  Nomad template's `1440p` is unconfirmed. Consider a check that rejects a
-  3DMark `game` with the wrong resolution.
+  Nomad template now says `4K` (Light is the 1440p test); confirm it against
+  3DMark's technical guide. Consider a check that rejects a `synthetic`
+  `game_id` run at the wrong resolution, perhaps with a fixed `resolution` in
+  its `data/games.yaml` entry.
+- [ ] **Add Steel Nomad Light to `data/games.yaml`** when the first Light run
+  arrives (`3dmark_steel_nomad_light`, `type: synthetic`, 1440p).
+- [ ] **Fill in store IDs for the registered games.** `helldivers_2` and
+  `3dmark_steel_nomad` have no `steam_appid` or `url` yet. Add them after
+  checking each store page; never guess.
 - [ ] **Parsers for more capture tools (separate PR).** `parse.py` reads only
   PresentMon and MangoHud CSVs. Add CapFrameX, NVIDIA FrameView, MSI
   Afterburner/RTSS, and AMD Adrenalin exports, writing the matching
@@ -83,21 +90,6 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - [ ] **Benchmark issue follow-ups** (`benchmark-issue.yml`,
   `scripts/issue_to_result.py`). The issue form is now the primary way to
   submit.
-  - **On hold (2026-10-15):** PR #25 (branch `feat/benchmark-issue-form`) is
-    a draft until game linking lands on `main`. When resuming:
-    1. Merge `main` into the branch.
-    2. Rework game handling in `issue_to_result.py` to use the new game
-       IDs and links instead of names. Three places depend on the free-text
-       `game` today:
-       - `canonical()` reuses existing game and preset spellings, ignoring
-         case;
-       - `slug()` builds the file name;
-       - the form's **Game** input.
-
-       It could become a dropdown or an ID input.
-    3. Update `tests/fixtures/issues/valid.md`, `check_issue_to_result`, and
-       `check_issue_form_matches_script` in `test_build.py`.
-    4. Run all checks, then mark the PR ready.
   - Finish the one-time setup in `docs/COPILOT_HANDOFF.md` ("Benchmark issues
     and the bot App"): create and install the App, add
     `BENCHMARK_BOT_APP_ID` and `BENCHMARK_BOT_PRIVATE_KEY`, and set the "Base
@@ -113,6 +105,9 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     kernel, Mesa, Proton, ...), per-run `time`, `gpu_power_w` for laptops,
     `device_name`, and `permission` credits for unpublished numbers.
   - A static web form on the dashboard that prefills the issue.
+  - Maybe later: let the bot add a game that isn't in `data/games.yaml`.
+    For now the form only accepts listed games, and a new game needs its own
+    pull request, so the registry doesn't fill up with one-off entries.
   - Spam: watch whether the 10-open-PR queue cap is enough. Options are a
     per-author limit, or holding first-time submitters until a maintainer
     adds a label.
@@ -171,6 +166,12 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   (see the official cross-check item above).
 
 ## Dashboard
+
+- [ ] **Search in the Benchmark picker.** The picker is a plain `<select>`
+  built from `dashboard.json` `games`, grouped by type. That list will get
+  long as `data/games.yaml` grows. Replace it with a searchable combobox
+  that matches on name and ID (later perhaps year or edition), keeps the
+  type groups, and stays usable with a keyboard and on phones.
 
 - [ ] **Show the internal render resolution of upscaled results**, for example
   "4K, renders at 1440p" for FSR 2.1 Quality, next to the upscaling pill. It
@@ -247,6 +248,10 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Tooling and bugs
 
+- [ ] **Warn when a file name's game part doesn't match `game_id`.** Files are
+  named `result_YYYYMMDD_<game_id>.yaml`, but older community fixtures use
+  short names such as `_cyberpunk`, so this isn't checked yet.
+
 - [ ] **Clear stale build output.** `build.py` never deletes old files under
   `site/api/v1/`. After an ID rename, a local preview still serves the old
   per-product `summary.json` files. CI is unaffected because it starts from a
@@ -266,8 +271,13 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - **Unreleased (branch `feat/benchmark-issue-form`, 2026-10-15)**
   - "Benchmark result" issue form, `benchmark-issue.yml`, and
     `scripts/issue_to_result.py`: an issue becomes a checked community file
-    and a bot pull request from a GitHub App, with no Cloudflare preview.
+    and a bot pull request from a GitHub App, with no Cloudflare preview. The
+    form's Game field takes a `game_id` or registry name; only listed games.
   - `.github/CODEOWNERS` as the maintainer list.
+- **v1.2.0.0 (2026-10-15, branch `feat/game-registry`): game registry**
+  - `data/games.yaml` with `id`, `name`, `type`, `year`, and optional
+    `steam_appid`, `igdb_id`, `url`, `notes`; results use `game_id`
+    (schema 0.15). This unblocks the benchmark issue form PR (#25).
 
 - **v1.1.0.0 (2026-10-14, branch `feature/blog`)**
   - `/blog/` (Astro) with posts, guides, reviews, tags, RSS, `<BenchChart>`,

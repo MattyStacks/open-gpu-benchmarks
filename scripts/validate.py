@@ -1,8 +1,8 @@
 """Check catalog entries and benchmark result files before a pull request.
 
     python scripts/validate.py            # everything
-    python scripts/validate.py catalog    # data/gpus/** and data/picks.yaml
-    python scripts/validate.py results    # data/official/** and data/community/**
+    python scripts/validate.py catalog    # data/gpus/**, data/games.yaml, and data/picks.yaml
+    python scripts/validate.py results    # data/games.yaml, data/official/**, and data/community/**
     python scripts/validate.py --data-dir tests/fixtures/data   # the synthetic test fixtures
 
 Every rule lives in scripts/checks.py; build.py runs the same checks.
@@ -28,14 +28,19 @@ def main(argv=None):
     data_dir = args.data_dir.resolve()
 
     catalog, catalog_issues = checks.load_catalog(data_dir)
+    games, game_issues = checks.load_games(data_dir)
     failed = False
     if args.target in ("all", "catalog"):
         failed |= checks.report(catalog_issues, f"Catalog ({len(catalog)} entries)")
+    # Both pull request checks cover the games file, because a result for a new
+    # game adds its data/games.yaml entry in the same pull request.
+    failed |= checks.report(game_issues, f"Games ({len(games)} entries)")
+    if args.target in ("all", "catalog"):
         picks, pick_issues = checks.load_picks(catalog, data_dir)
         failed |= checks.report(pick_issues, f"Featured picks ({len(picks)} of {len(checks.PICK_SLOTS)} slots)")
     if args.target in ("all", "results"):
         # Catalog problems are reported by the catalog check; results only need the IDs.
-        runs, result_issues = checks.load_results(catalog, data_dir)
+        runs, result_issues = checks.load_results(catalog, data_dir, games)
         count = sum(len(items) for items in runs.values())
         failed |= checks.report(result_issues, f"Results ({count} files)")
     return 1 if failed else 0

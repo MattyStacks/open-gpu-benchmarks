@@ -143,6 +143,8 @@ Run the same command again whenever you've benchmarked more:
 - Runs from a new day go in a new file for that day.
 - Files imported before `date` and `time` existed get them filled in from the
   file name and run folder names.
+- Files imported before the game registry, which say `game: Cyberpunk 2077`,
+  are rewritten to `game_id: cyberpunk_2077`.
 - Runs after a driver or game update, or on a different CPU, memory amount, or
   OS, go in a separate file for the same day: `..._2.yaml`, `..._3.yaml`. The
   game version and everything under `system:` apply to every run in a file,
@@ -197,7 +199,7 @@ item per run:
 # re-running the script skips runs listed here and adds new ones.
 gpu_id: rtx_5080_16gb_fe
 benchmark_type: game
-game: Cyberpunk 2077
+game_id: cyberpunk_2077
 date: '2026-10-13'
 version: '2.31'
 frame_generation: false
@@ -232,6 +234,7 @@ Where each value comes from in the run folder (`summary.json` unless noted):
 
 | Field | From | Notes |
 |---|---|---|
+| `game_id` | | Always `cyberpunk_2077`, its ID in `data/games.yaml`. The script stops if that entry is missing. |
 | `date` | the run folder's name | The day of the runs; the same as the file name. |
 | `version` | `gameVersion` | Same for every run in the file. |
 | `result[].benchmark_run` | the run's folder name | How re-runs recognize imported runs. Don't edit it. |

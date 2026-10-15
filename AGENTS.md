@@ -46,7 +46,12 @@ Preview them with `python scripts/build.py --data-dir tests/fixtures/data`.
 Results: every result file needs a quoted `date: 'YYYY-MM-DD'` equal to the
 file name's `YYYYMMDD` (a found result uses its publish date); each `result`
 item may add a quoted local `time` (`'HH:MM'` or `'HH:MM:SS'`, no time zone).
-Neither groups runs. Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
+Neither groups runs. Every game run names its game with `game_id`, an ID
+from `data/games.yaml` (`id`, `name`, `type`, and `year` are required; `steam_appid`,
+`igdb_id`, and `url` are optional, but add them whenever the game has one, and
+never guess). `game_id` is the grouping key; an edition or a different test gets
+its own ID, and a patch goes in `version`. A result for an unregistered game adds
+the registry entry in the same change. Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
 grouping key, so Windows and Linux runs are never averaged together; the
 distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
 keys or extra chart bars. Linux-only fields on a windows run (or the
@@ -57,7 +62,7 @@ report none). `proof.method` is required on every game run and names the
 capture tool (`checks.PROOF_METHODS`); PresentMon is the recommended default,
 and the method is never a grouping key. Frame-time tools must include
 `p1_low`; on an in-game benchmark a missing one is only an `info` note. Community results are anonymous by default: `submitted_by` is
-optional and the file name is `result_YYYYMMDD_<game>.yaml`. A result someone
+optional and the file name is `result_YYYYMMDD_<game_id>.yaml`. A result someone
 else measured adds a `credit` block with an https `source_url` (where it was
 found) or, for unpublished numbers, a `permission` block; example credits use
 made-up names, never a real creator. Upscaling is off unless the preset turns
@@ -91,6 +96,8 @@ App"):
 - never call a review, approve, or merge API from a workflow;
 - never reference the Cloudflare secrets in `benchmark-issue.yml`;
 - never interpolate the issue body into a shell line;
+- never let the bot add a game: the form accepts only games already in
+  `data/games.yaml`, and a new game comes in its own pull request;
 - never add a bot to CODEOWNERS;
 - keep the form's labels and options in step with `issue_to_result.py` and
   `tests/fixtures/issues/valid.md`.

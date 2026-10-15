@@ -6,7 +6,7 @@ Each community submission lives in the folder whose name exactly matches its
 memory size, such as `rtx_5080_16gb_fe`:
 
 ```text
-data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
 data/community/<gpu_id>/raw/<capture>.csv          (optional evidence)
 data/community/<gpu_id>/raw/permission_<name>.png  (optional permission proof, unpublished third-party results)
 ```
@@ -29,6 +29,12 @@ Bulk or scripted uploads use a pull request instead.
 or [`templates/community_found_result.yaml`](../../templates/community_found_result.yaml)
 for a result you found in a video or review.
 
+**Every result names its game with `game_id`, an ID from
+[`data/games.yaml`](../games.yaml).** If your game or benchmark isn't there
+yet, add it in the same pull request (`id`, `name`, `type`, `year`, plus
+`steam_appid` or `url` when the game has one); see
+[Adding a game or benchmark](../../docs/COMMUNITY_SUBMISSIONS.md#adding-a-game-or-benchmark).
+
 **Everything in these folders is public data under [CC0](../LICENSE).** By
 submitting a result, you agree that anyone can use it for anything, without
 asking or crediting you, and it can't be taken back. See
@@ -36,9 +42,9 @@ asking or crediting you, and it can't be taken back. See
 
 Folder rules:
 
-- Files are anonymous by default and named `result_YYYYMMDD_<game>.yaml`. For
+- Files are anonymous by default and named `result_YYYYMMDD_<game_id>.yaml`. For
   a second file with the same date and game, add a number, such as
-  `result_20261003_cyberpunk_2.yaml`. `submitted_by` (your GitHub username) is
+  `result_20261003_cyberpunk_2077_2.yaml`. `submitted_by` (your GitHub username) is
   optional; see
   [Anonymous by default](../../docs/COMMUNITY_SUBMISSIONS.md#anonymous-by-default).
 - Found a result in a video, review, or post? Add it with a `credit` block whose

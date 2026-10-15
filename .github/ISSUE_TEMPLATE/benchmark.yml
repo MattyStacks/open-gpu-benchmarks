@@ -27,8 +27,12 @@ body:
     id: game
     attributes:
       label: Game
-      description: The game or benchmark, spelled the way the dashboard shows it if it's already there.
-      placeholder: Cyberpunk 2077
+      description: >-
+        The game or benchmark: its ID or exact name from
+        [data/games.yaml](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/data/games.yaml).
+        Only listed games are accepted. A new game has to be added first by its own pull request
+        ([how](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#adding-a-game-or-benchmark)).
+      placeholder: cyberpunk_2077
     validations:
       required: true
   - type: input

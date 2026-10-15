@@ -11,9 +11,15 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.1.0.0` (2026-10-14). Versions are now
+- Current version: `v1.2.0.0` (2026-10-15). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)).
+  - v1.2.0.0: the game registry. `data/games.yaml` (`checks.load_games()`,
+    `game-*` rules) lists every game by `id`, `name`, `type`, and `year`, plus
+    optional `steam_appid`, `igdb_id`, and `url`. Results name their game by
+    `game_id` (schema 0.14 → 0.15, new `games.json`), and the dashboard picker
+    became "Benchmark". It also brings required result `date`s with an
+    optional per-run `time` (schema 0.14), and phone layout fixes.
   - v1.1.0.0: `/blog/` (Astro) for posts, guides, and reviews, with
     data-driven `<BenchChart>`, affiliate links with an automatic disclosure,
     and an AI-editing note. Also four-part versions and a fourth PR check,
@@ -53,9 +59,10 @@ carry the same `gpu_id`.
 
 ```text
 data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml
-data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml
-data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
+data/official/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
 data/community/<gpu_id>/raw/**                         optional raw evidence
+data/games.yaml                                        game registry (game_id -> name, type, year)
                  |
                  v
 python scripts/build.py
@@ -65,6 +72,7 @@ site/api/v1/gpus.json
 site/api/v1/official/<gpu_id>/summary.json
 site/api/v1/community/<gpu_id>/summary.json
 site/api/v1/dashboard.json
+site/api/v1/games.json
 ```
 
 There are no source `summary.yaml` files. Each source file describes one
@@ -107,7 +115,25 @@ item's optional local `'HH:MM'` or `'HH:MM:SS'` (`checks.TIME_OF_DAY`, no
 time zone), `""` when not set. Neither is a grouping key; they exist so old
 runs can be filtered, charted over time, or retired later.
 `import_cyberpunk.py` writes both from the run folder name and backfills
-files that lack them (`add_dates()`); `parse.py` writes today's date.
+files that lack them (`upgrade_files()`); `parse.py` writes today's date.
+
+Schema `0.15` adds the game registry. Result files name their game with
+`game_id`, an ID from `data/games.yaml` (`checks.load_games()`), instead of
+free-text `game`; the old key fails `result-game-id`, and an unregistered ID
+fails `result-unknown-game` with a stub entry to paste in. Each registry entry
+needs `id`, `name`, `type` (`checks.GAME_TYPES`: `game`, `synthetic`,
+`engine_demo`), and `year`; `steam_appid`, `igdb_id` (positive integers), `url`
+(https), and `notes` are optional. Every run record carries `game_id`, `game`
+(the registry name), `game_type`, and `game_year`. Summaries group by `game_id`,
+and `comparison_policy.group_by` says so. `dashboard.json` `games` is now a list
+of `{id, name, type, year}` objects for the games with summaries, sorted by name,
+and the new `games.json` holds the whole registry. The dashboard's picker is
+labeled "Benchmark" and groups options by type; the plain tables' column is
+"Benchmark". `validate.py` reports the registry on both the `catalog` and
+`results` targets, because a result for a new game adds its entry in the same
+pull request. `import_cyberpunk.py` rewrites its older files' `game:` to
+`game_id:` when re-run. A remaster, edition, or different test gets its own ID;
+a patch stays in `version`, which never groups.
 
 Schema `0.6` nests the catalog hardware specs. Each catalog entry keeps its
 `id` at the top level with `identity`, `classification`, `silicon`,
@@ -276,7 +302,7 @@ v1.0.0 these products live only in the test fixtures:
   correcting or removing a record.
 - Community files are anonymous by default. `submitted_by` is optional; when
   set it must be a valid GitHub username (`community-submitter`). The file
-  name is `result_YYYYMMDD_<game>.yaml`, with `_2`, `_3` for same-day repeats
+  name is `result_YYYYMMDD_<game_id>.yaml`, with `_2`, `_3` for same-day repeats
   (`COMMUNITY_FILENAME`, `community-filename`). Older files that end in a
   username still match. Nothing compares the name to the PR author.
 - Upscaling is off by default (missing, `off`, `none`, `native`, or `false`).
@@ -289,7 +315,7 @@ v1.0.0 these products live only in the test fixtures:
 - Data files and templates use block-style YAML only (no inline `[ ]` or
   `{ }`); `checks.py` rejects inline style as `yaml-inline`.
 
-`benchmark_type` defaults to `game`. Game source files need `game` and a
+`benchmark_type` defaults to `game`. Game source files need `game_id` and a
 `result` list whose entries each carry `resolution`, `graphics_preset`, and
 `avg_fps`; `p1_low` is optional (schema `0.11`), so 3DMark and in-game
 benchmark runs that report only an average are valid. A run record's `p1_low`
@@ -325,7 +351,7 @@ source's host name when there's no `name`, and "Anonymous" for a community run
 with neither credit nor username. `templates/community_found_result.yaml` is
 the starting point. Examples always use made-up names and `example.com`
 URLs. A 3DMark run is
-an ordinary game run (`game: 3DMark Steel Nomad`, its fixed resolution, a fixed
+an ordinary game run (`game_id: 3dmark_steel_nomad`, its fixed resolution, a fixed
 preset, `avg_fps` from the "Graphics test" FPS, optional `score`, and the result
 URL as `proof.summary_source`); see `templates/community_steel_nomad.yaml`.
 Each entry is independently validated and expanded.
@@ -410,8 +436,8 @@ and the required status checks; see
 [Benchmark issues and the bot App](#benchmark-issues-and-the-bot-app-manual-setup)
 for the code-owner approval settings.
 [`scripts/parse.py`](../scripts/parse.py) writes converted CSV output directly
-to `data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml`, with the game
-name slugified. `--submitted-by` is optional and only written when given. It
+to `data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml`. `--game-id` must
+be in `data/games.yaml`; an unknown one exits with the known IDs. `--submitted-by` is optional and only written when given. It
 rejects a `--gpu-id` that isn't in the catalog, takes the form factor from the
 catalog entry, and adds `_2`, `_3`, ... rather than overwrite an existing
 file. `--os` is `windows` or
@@ -443,7 +469,7 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
   folder name (it ends up in the API under `metrics`). A run whose
   `benchmark_run` is in any `data/{official,community}/*/` result file is
   skipped. A new same-day run is appended to the day's file when every
-  file-level field matches (`SETUP_KEYS`: `gpu_id`, `submitted_by`, `game`,
+  file-level field matches (`SETUP_KEYS`: `gpu_id`, `submitted_by`, `game_id`,
   `version`, `system`, `proof`); otherwise it goes in `_2`, `_3`, ...
   Appending rewrites the file, so hand-added comments in it are lost.
   `display_mode` (from `windowMode`) goes on each result item, because it
@@ -619,7 +645,7 @@ npm --prefix blog run build -> site/blog/<slug>/, /posts/, /guides/, /reviews/, 
 - **Components** are passed to MDX through `<Content components={...}>` in
   `src/pages/[slug].astro`, so posts don't import them:
   - `<BenchChart>` (`src/components/BenchChart.astro`) filters
-    `dashboard.json` records by gpu, game (normalized), resolution, preset,
+    `dashboard.json` records by gpu, exact `game_id`, resolution, preset,
     os, and source (official by default). It renders HTML/CSS bars, no SVG and
     no JS, so it reflows on phones, and it throws if nothing matches.
   - `<Callout>` is a note, tip, or warning banner.
@@ -779,10 +805,13 @@ is a form that applies the `benchmark` label.
 `issues` (opened, edited, labeled, reopened) when that label is present. It
 checks out `main` and runs
 [`scripts/issue_to_result.py`](../scripts/issue_to_result.py), which parses
-the form and writes `data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml`:
+the form and writes `data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml`:
 
 - the GPU from its ID or exact `identity.name`, with `difflib` suggestions;
-- game and preset spellings reused from existing data, ignoring case;
+- the game from its `game_id` or exact name in `data/games.yaml`
+  (`find_game`, also with suggestions). Only listed games are accepted; the
+  bot never writes `games.yaml`, so a new game needs its own pull request;
+- preset spellings reused from existing runs of that game, ignoring case;
 - `_2`, `_3`, ... for a name that's taken.
 
 The script then runs `checks.load_results` and keeps only the new file's

@@ -13,7 +13,7 @@ and fill in the form. You don't need to fork, install anything, or write YAML.
 1. The form applies the `benchmark` label. A bot
    ([`benchmark-issue.yml`](../.github/workflows/benchmark-issue.yml) running
    [`scripts/issue_to_result.py`](../scripts/issue_to_result.py)) writes
-   `data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml` from your answers and
+   `data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml` from your answers and
    runs the same checks as a pull request.
 2. If something is wrong, such as an unknown GPU or a 1% low missing for a tool
    that reports one, the bot replies on the issue saying what to fix. Edit the
@@ -26,8 +26,12 @@ and fill in the form. You don't need to fork, install anything, or write YAML.
 The **Results** box takes one run per line: resolution, preset, average FPS,
 and optionally the 1% low, separated by commas, such as
 `1440p, Ultra, 79.1, 65.0`. The **GPU** box takes the catalog ID or the
-product's exact name. Game and preset names that differ only in case from
-ones already on the dashboard are rewritten to match, so groups don't split.
+product's exact name. The **Game** box takes the game's ID or exact name from
+[`data/games.yaml`](../data/games.yaml); only listed games are accepted. A new
+game is added first by its own pull request (see
+[Adding a game or benchmark](#adding-a-game-or-benchmark)), then you edit the
+issue and it checks again. Preset names that differ only in case from ones
+already on the dashboard are rewritten to match, so groups don't split.
 You stay anonymous unless you tick **Credit me as my GitHub username**, and the
 CC0 box is required (see [below](#your-results-become-public-data-cc0)).
 
@@ -46,13 +50,13 @@ catalog entry, `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`. Then add one
 result file to its folder:
 
 ```text
-data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml
+data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
 ```
 
 For example:
 
 ```text
-data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk.yaml
+data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077.yaml
 ```
 
 Ran Cyberpunk 2077's built-in benchmark? `scripts/import_cyberpunk.py` writes
@@ -64,15 +68,61 @@ card are separate IDs, and so are two board partners' versions of the same GPU.
 Use the one you actually tested. If your product isn't in the catalog yet, add
 its catalog entry first or in the same pull request (see
 [`data/gpus/README.md`](../data/gpus/README.md)). Results can't point at an ID
-that doesn't exist.
+that doesn't exist. The same goes for the game: `game_id` must be in
+[`data/games.yaml`](../data/games.yaml), and a new game is added there in the
+same pull request (see [Adding a game or benchmark](#adding-a-game-or-benchmark)).
 
 For a second file with the same date and game, add a number:
-`result_20261003_cyberpunk_2.yaml`.
+`result_20261003_cyberpunk_2077_2.yaml`.
+
+## Adding a game or benchmark
+
+Every result names its game with `game_id`, an ID from
+[`data/games.yaml`](../data/games.yaml), never with free text. The dashboard
+shows the registry's name, so `cyberpunk`, `CP2077`, and `Cyberpunk 2077` can't
+end up as three different games.
+
+**If your game or benchmark isn't in `data/games.yaml` yet, add it in the same
+pull request as your results.** Copy an entry and fill in four lines:
+
+```yaml
+  - id: elden_ring
+    name: Elden Ring
+    type: game
+    year: 2022
+    steam_appid: 1245620
+```
+
+| Field | Required | What it is |
+| --- | --- | --- |
+| `id` | yes | Lowercase letters, digits, and single underscores. Results use it, so never change it later. |
+| `name` | yes | The name the game or store shows. |
+| `type` | yes | `game`, `synthetic` (3DMark and similar), or `engine_demo`. |
+| `year` | yes | The year this edition or test came out, such as `2022`. |
+| `steam_appid` | no | The number in the game's `store.steampowered.com/app/` link. |
+| `igdb_id` | no | The game's numeric IGDB ID. |
+| `url` | no | An https link to the game's official or store page. |
+| `notes` | no | Anything that tells it apart from a similar entry. |
+
+The store IDs and `url` are optional because not every game is on Steam or has
+a page. **If the game has one, add it**: it pins down exactly which game the
+entry means. Leave out what doesn't exist or what you can't check, and never
+guess an ID.
+
+**One entry per edition or test.** A remaster, a new edition (Special,
+Anniversary, Enhanced, Next-Gen, VR), or a different test (3DMark Steel Nomad
+and Steel Nomad Light) performs differently, so it gets its own ID, such as
+`skyrim_special_edition` and `skyrim_anniversary_edition`. A patch or a game
+update does not: put that in the result file's `version` field. Version is
+recorded on each run, but it never splits a group.
+
+The `game-*` rules under [What the checks mean](#what-the-checks-mean) explain
+each registry error.
 
 ## Anonymous by default
 
 You only have to share the result itself. A community run needs the product
-(`gpu_id`), the `game`, the `date` (see [Date and time](#date-and-time)), the
+(`gpu_id`), the `game_id`, the `date` (see [Date and time](#date-and-time)), the
 `result` numbers, `system.os`, and `proof.method` (see
 [Comparable game runs](#comparable-game-runs)). Everything else, including
 your name, CPU, driver, and raw captures, is optional. Add what you're happy to
@@ -149,7 +199,7 @@ treat it as the order of runs within the day, not an exact moment.
 
 ```yaml
 gpu_id: rtx_5080_16gb_fe
-game: Cyberpunk 2077
+game_id: cyberpunk_2077
 date: '2026-10-13'
 result:
   - time: '18:44'
@@ -167,7 +217,8 @@ not set) on every run, so you can filter runs by age yourself.
 
 Game records use `benchmark_type: game` (the default when omitted) and require:
 
-- `game`;
+- `game_id`, an ID from `data/games.yaml` (see
+  [Adding a game or benchmark](#adding-a-game-or-benchmark));
 - a non-empty `result` list, where every entry has `resolution`,
   `graphics_preset`, and `avg_fps`. `p1_low` (1% low) is optional, but
   recommended; see [Capture methods](#capture-methods);
@@ -187,7 +238,7 @@ resolution/preset combinations:
 
 ```yaml
 gpu_id: rtx_5080_16gb_fe
-game: Helldivers 2
+game_id: helldivers_2
 date: '2026-10-03'
 system:
   os: windows
@@ -208,7 +259,7 @@ The validator checks every list entry for required profile fields, impossible
 FPS values, disabled frame generation, upscaling, and a matching
 official-baseline outlier. The build expands each entry into an independent
 run, then groups only matching product ID (which already separates memory sizes
-and board partners) and form factor, known laptop TGP/GPU power, game,
+and board partners) and form factor, known laptop TGP/GPU power, `game_id`,
 resolution, `graphics_preset`, upscaling, and OS. Matching entries from multiple files are
 averaged; different profiles remain separate. Game version, distro, kernel, and
 Proton version remain exact-run metadata rather than grouping keys. Desktop and
@@ -341,8 +392,11 @@ run on someone else's behalf. Official runs are verified by the maintainer, so
 an official credit only needs `name` (who ran it); `source_url` and
 `permission` are optional.
 
-**3DMark.** Name the benchmark in `game` (for example `3DMark Steel Nomad`), put
-its version in `version`, and use the fixed resolution and preset it runs at.
+**3DMark.** Set `game_id` to the test's registry ID (for example
+`3dmark_steel_nomad`, a `synthetic` entry; add the test to `data/games.yaml`
+first if it isn't there), put its version in `version`, and use the fixed
+resolution and preset it runs at (Steel Nomad renders at 4K, Steel Nomad Light
+at 1440p).
 Steel Nomad has one graphics test, so its score is the graphics-test FPS times
 100 (a score of 8603 is 86.03 FPS). Copy `avg_fps` from the "Graphics test" box on
 the results page, and add `score` if you like. For a benchmark with more than one
@@ -497,14 +551,13 @@ and leave out empty fields instead of writing `{}` or `[]`.
 
 #### `result-not-mapping`
 
-The file is empty, or it starts with `-`. Fields such as `gpu_id` and `game`
+The file is empty, or it starts with `-`. Fields such as `gpu_id` and `game_id`
 start at the left margin. Only the items under `result:` start with `-`.
 
 #### `result-filename`
 
 A YAML file in a GPU folder doesn't start with `result_`, so the build would skip
-it without telling you. Rename it to `result_YYYYMMDD_<game>.yaml` (community)
-or `result_YYYYMMDD_<benchmark>.yaml` (official).
+it without telling you. Rename it to `result_YYYYMMDD_<game_id>.yaml`.
 
 #### `result-date`
 
@@ -542,6 +595,52 @@ product's entry under `data/gpus/`, or add the entry first. Product IDs such as
 GPU's shared specs, not a product. Use the ID of the exact card, laptop, or
 handheld you tested, such as `rtx_5080_16gb_fe` rather than `rtx_5080_16gb`.
 
+#### `result-game-id`
+
+The file has no `game_id`, or it still uses the old free-text `game` key.
+Replace `game: Cyberpunk 2077` with `game_id: cyberpunk_2077`; the message
+names the ID when the old name matches a registry entry. If the game isn't
+registered yet, add it to `data/games.yaml` in the same pull request (see
+[Adding a game or benchmark](#adding-a-game-or-benchmark)).
+`scripts/import_cyberpunk.py` upgrades its own older files when you run it
+again.
+
+#### `result-unknown-game`
+
+`game_id` isn't an ID in `data/games.yaml`. Check the spelling against the
+file. If it's a new game or benchmark, add its entry in the same pull request:
+the message prints a stub with `id`, `name`, `type`, and `year` to fill in,
+plus `steam_appid` or `url` when the game has one.
+
+#### `game-registry`
+
+`data/games.yaml` is missing, or it doesn't hold a `games:` list. Every result
+needs it. Restore the file, and keep one `- id: ...` item per game under
+`games:`.
+
+#### `game-field`
+
+A `data/games.yaml` entry is wrong. One of these happened:
+
+- `id`, `name`, `type`, or `year` is missing
+- `type` isn't `game`, `synthetic`, or `engine_demo`
+- `year` isn't a release year written as a plain number, such as `2022`
+- `steam_appid` or `igdb_id` isn't a whole number without quotes
+- `url` isn't an https:// link
+- a field isn't one of `id`, `name`, `type`, `year`, `steam_appid`, `igdb_id`,
+  `url`, or `notes`
+
+#### `game-id-format`
+
+A game `id` may only use lowercase letters, digits, and single underscores,
+such as `cyberpunk_2077` or `3dmark_steel_nomad`.
+
+#### `game-duplicate`
+
+Two entries share an `id`, or two share a `name` (ignoring case). Each edition
+or test gets one entry with its own ID and its own name, such as
+`Skyrim Special Edition` and `Skyrim Anniversary Edition`.
+
 #### `result-form-factor`
 
 `form_factor` in the result disagrees with the catalog entry. Remove the field so
@@ -556,7 +655,6 @@ item per resolution/preset profile.
 
 One of these is wrong:
 
-- the result is missing `game`
 - a `result` item is missing `resolution`, `graphics_preset`, or `avg_fps`
 - `avg_fps`, `p1_low`, or `score` isn't a number
 
@@ -642,8 +740,8 @@ the line: `submitted_by` is optional, and runs without it show as "Anonymous".
 
 #### `community-filename`
 
-The file name isn't `result_YYYYMMDD_<game>.yaml`: an eight-digit date, then the
-game, in letters, numbers, `_`, or `-`. For repeats on the same day and game,
+The file name isn't `result_YYYYMMDD_<game_id>.yaml`: an eight-digit date, then
+the game ID, in letters, numbers, `_`, or `-`. For repeats on the same day and game,
 add `_2`, `_3`, and so on. Older files that also end in a username are fine.
 
 #### `community-credit`

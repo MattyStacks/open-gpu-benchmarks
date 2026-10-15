@@ -1,4 +1,4 @@
-# Save as data/official/<gpu_id>/result_YYYYMMDD_<benchmark>.yaml.
+# Save as data/official/<gpu_id>/result_YYYYMMDD_<game_id>.yaml.
 # The build derives all official GPU summaries from individual result files.
 #
 # For Cyberpunk 2077's built-in benchmark, run
@@ -9,7 +9,9 @@
 # resolution/preset profile, and each profile becomes an independent run.
 gpu_id: rtx_5080_16gb_fe
 benchmark_type: game
-game: Cyberpunk 2077
+# New game? Add it to data/games.yaml in the same pull request (id, name, type,
+# year, plus steam_appid or url when the game has one). See docs/COMMUNITY_SUBMISSIONS.md.
+game_id: cyberpunk_2077 # The game's id in data/games.yaml
 date: "2026-10-13" # Required; the day you ran it, the same as the file name's YYYYMMDD
 version: "2.12"
 frame_generation: false

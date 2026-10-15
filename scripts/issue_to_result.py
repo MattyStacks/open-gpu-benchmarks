@@ -3,7 +3,7 @@ issue_to_result.py - a "Benchmark result" GitHub issue -> community result YAML
 
 The issue form (.github/ISSUE_TEMPLATE/benchmark.yml) asks for the same fields
 as templates/community_submission.yaml. This script reads the issue body,
-writes data/community/<gpu_id>/result_YYYYMMDD_<game>.yaml, and runs the
+writes data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml, and runs the
 normal checks on it. .github/workflows/benchmark-issue.yml then pushes the file
 to a benchmark/issue-<N> branch and opens a pull request for a maintainer.
 
@@ -152,10 +152,29 @@ def find_gpu(catalog, text):
     names = {entry["id"]: entry["id"] for entry in catalog}
     names.update({str(checks.spec(entry, "identity", "name", default="")).lower(): entry["id"] for entry in catalog})
     close = difflib.get_close_matches(lowered, list(names), n=3, cutoff=0.5)
-    hint = f" Did you mean {', '.join(f'`{names[name]}`' for name in close)}?" if close else ""
+    hint = f" Did you mean {', '.join(f'`{match}`' for match in dict.fromkeys(names[name] for name in close))}?" if close else ""
     raise SubmissionError(
         f"**GPU** {code(text)} is not in the catalog. Use the exact catalog ID or product name.{hint} "
         "If the GPU is missing from the catalog, say so in a comment and a maintainer will add it."
+    )
+
+
+def find_game(games, text):
+    """A data/games.yaml entry by ID, or by its exact name (any case). The form never adds a game."""
+    lowered = text.strip().lower()
+    for game in games:
+        if lowered in (game["id"], game["name"].lower()):
+            return game
+    names = {game["id"]: game["id"] for game in games}
+    names.update({game["name"].lower(): game["id"] for game in games})
+    close = difflib.get_close_matches(lowered, list(names), n=3, cutoff=0.5)
+    hint = f" Did you mean {', '.join(f'`{match}`' for match in dict.fromkeys(names[name] for name in close))}?" if close else ""
+    raise SubmissionError(
+        f"**Game** {code(text)} is not in data/games.yaml. Use the game's exact ID or name from "
+        f"[data/games.yaml]({checks.REPO_URL}/data/games.yaml).{hint} "
+        "If the game isn't listed, it has to be added first by its own pull request to data/games.yaml "
+        f"(see [Adding a game or benchmark]({docs_link('#adding-a-game-or-benchmark')})); "
+        "once that's merged, edit this issue and it's checked again."
     )
 
 
@@ -173,10 +192,6 @@ def known_runs(data_dir):
 def canonical(value, known):
     """Reuse an existing spelling that differs only in case, so dashboard groups don't split."""
     return next((name for name in sorted(known) if name.lower() == value.lower()), value)
-
-
-def slug(text):
-    return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_") or "game"
 
 
 # --- Building the run ---------------------------------------------------------------
@@ -230,7 +245,7 @@ def parse_results(text, known_presets):
     return entries
 
 
-def build_run(fields, author, catalog, data_dir):
+def build_run(fields, author, catalog, games, data_dir):
     """The result file's contents from the parsed issue form. Raises SubmissionError."""
     confirmations = checked(fields.get("confirmations", ""))
     if not any(label.startswith(CC0_AGREEMENT) for label in confirmations):
@@ -240,7 +255,7 @@ def build_run(fields, author, catalog, data_dir):
 
     gpu = find_gpu(catalog, text_field(fields, "gpu", "GPU", required=True))
     runs = list(known_runs(data_dir))
-    game = canonical(text_field(fields, "game", "Game", required=True), {str(run.get("game")) for run in runs if run.get("game")})
+    game_id = find_game(games, text_field(fields, "game", "Game", required=True))["id"]
     day = text_field(fields, "date", "Date", required=True)
     if not checks.FULL_DATE.match(day):
         raise SubmissionError(f"**Date** {code(day)} must be written YYYY-MM-DD, such as 2026-10-03.")
@@ -251,7 +266,7 @@ def build_run(fields, author, catalog, data_dir):
 
     presets = {
         str(entry.get("graphics_preset"))
-        for run in runs if run.get("game") == game and isinstance(run.get("result"), list)
+        for run in runs if run.get("game_id") == game_id and isinstance(run.get("result"), list)
         for entry in run["result"] if isinstance(entry, dict) and entry.get("graphics_preset")
     }
     entries = parse_results(fields.get("results", ""), presets)
@@ -263,7 +278,7 @@ def build_run(fields, author, catalog, data_dir):
             entry["upscaling"] = upscaler
             entry["preset_upscaling"] = True
 
-    run = {"gpu_id": gpu["id"], "game": game, "date": day}
+    run = {"gpu_id": gpu["id"], "game_id": game_id, "date": day}
     version = text_field(fields, "version", "Game version")
     if version:
         run["version"] = version
@@ -300,9 +315,9 @@ def build_run(fields, author, catalog, data_dir):
 
 
 def target_path(data_dir, run):
-    """The next free result_YYYYMMDD_<game>[_N].yaml in the GPU's community folder."""
+    """The next free result_YYYYMMDD_<game_id>[_N].yaml in the GPU's community folder."""
     folder = data_dir / "community" / run["gpu_id"]
-    stem = f"result_{run['date'].replace('-', '')}_{slug(run['game'])}"
+    stem = f"result_{run['date'].replace('-', '')}_{run['game_id']}"
     repeat = 1
     while True:
         path = folder / f"{stem}{'' if repeat == 1 else f'_{repeat}'}.yaml"
@@ -323,10 +338,10 @@ def file_text(run, issue):
     return header + yaml.dump(run, Dumper=IndentedDumper, sort_keys=False, default_flow_style=False, allow_unicode=True)
 
 
-def check_file(path, data_dir):
+def check_file(path, data_dir, games):
     """The checks' issues for just this file."""
     catalog, _ = checks.load_catalog(data_dir)
-    _, issues = checks.load_results(catalog, data_dir)
+    _, issues = checks.load_results(catalog, data_dir, games)
     mine = checks.relative_path(path)
     return checks.Issues(issue for issue in issues if issue.path == mine)
 
@@ -361,12 +376,12 @@ def failure_comment(problem):
     )
 
 
-def pr_body(run, gpu, text, relative, issue, author, issues):
+def pr_body(run, gpu, game, text, relative, issue, author, issues):
     notes = f"\n### Notes from the checks\n\n{fence(issue_lines(issues))}\n" if issues else ""
     return (
         f"Adds a community result submitted by @{author} in #{issue}.\n\n"
         f"- **GPU:** `{run['gpu_id']}` ({inline(checks.spec(gpu, 'identity', 'name', default=''))})\n"
-        f"- **Game:** {inline(run['game'])}\n"
+        f"- **Game:** `{run['game_id']}` ({inline(game['name'])})\n"
         f"- **Runs:** {len(run['result'])}\n"
         f"- **File:** `{relative}`\n\n"
         f"{fence(text, 'yaml')}\n{notes}\n"
@@ -407,8 +422,9 @@ def main(argv=None):
     if len(body) > MAX_BODY:
         return fail(f"The issue is longer than {MAX_BODY:,} characters. Open a pull request for large submissions.")
     catalog, _ = checks.load_catalog(data_dir)
+    games, _ = checks.load_games(data_dir)
     try:
-        run = build_run(parse_issue_body(body), args.author, catalog, data_dir)
+        run = build_run(parse_issue_body(body), args.author, catalog, games, data_dir)
         path = target_path(data_dir, run)
     except SubmissionError as error:
         return fail(str(error))
@@ -416,7 +432,7 @@ def main(argv=None):
     text = file_text(run, args.issue)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
-    issues = check_file(path, data_dir)
+    issues = check_file(path, data_dir, games)
     if issues.errors:
         path.unlink()
         if not any(path.parent.iterdir()):
@@ -429,9 +445,10 @@ def main(argv=None):
         relative = path.as_posix()
     gpu = next(entry for entry in catalog if entry["id"] == run["gpu_id"])
     name = checks.spec(gpu, "identity", "name", default=run["gpu_id"])
+    game = next(game for game in games if game["id"] == run["game_id"])
     (args.out_dir / "path.txt").write_text(relative, encoding="utf-8")
-    (args.out_dir / "title.txt").write_text(f"Benchmark: {name}, {' '.join(run['game'].split())[:80]} (#{args.issue})", encoding="utf-8")
-    (args.out_dir / "pr_body.md").write_text(pr_body(run, gpu, text, relative, args.issue, args.author, issues), encoding="utf-8")
+    (args.out_dir / "title.txt").write_text(f"Benchmark: {name}, {' '.join(game['name'].split())[:80]} (#{args.issue})", encoding="utf-8")
+    (args.out_dir / "pr_body.md").write_text(pr_body(run, gpu, game, text, relative, args.issue, args.author, issues), encoding="utf-8")
     runs = len(run["result"])
     (args.out_dir / "comment.md").write_text(
         f"{MARKER}\n**Thanks!** This issue became `{relative}` with {runs} run{'s' if runs != 1 else ''}. "

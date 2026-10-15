@@ -1,6 +1,6 @@
 gpu_id: rx_7900_xtx_24gb_reference
 benchmark_type: game
-game: Helldivers 2
+game_id: helldivers_2
 date: '2026-10-05'
 version: '1.001'
 synthetic: true

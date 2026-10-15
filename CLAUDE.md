@@ -82,7 +82,7 @@ scripts/checks.py                  every catalog and result rule, written once
 scripts/build.py                   YAML source -> site/api/v1/** JSON (runs checks first; --data-dir)
 scripts/validate.py                PR validator: validate.py [catalog|results] [--data-dir]
 scripts/parse.py                   PresentMon/MangoHud CSV -> result YAML
-scripts/import_cyberpunk.py        Cyberpunk 2077 benchmarkResults/*/summary.json -> result YAML
+scripts/import_cyberpunk.py        Cyberpunk 2077 benchmarkResults/*/summary.json + frames.csv -> result YAML
                                    (one file per day; re-runs add only new runs)
 scripts/test_build.py              build smoke test (runs in both CI workflows)
 site/index.html                    the whole dashboard, single file
@@ -135,7 +135,9 @@ unless repository policy changes.
   AMD Adrenalin, MangoHud, OCAT, in-game benchmark, synthetic benchmark, or
   other); PresentMon is the recommended default and the method is never a
   grouping key. Frame-time tools (`checks.P1_LOW_METHODS`) must include
-  `p1_low` (`result-p1-low-required`); the rest only warn. A 3DMark run is a normal game run with the
+  `p1_low` (`result-p1-low-required`); Adrenalin and `other` only warn, and
+  an `in_game_benchmark` file gets one `info` note (`checks.P1_LOW_INFO_METHODS`;
+  info never fails and is a GitHub `::notice`). A 3DMark run is a normal game run with the
   graphics-test FPS as `avg_fps` and its result URL as `proof.summary_source`.
 - A community average more than 25% from the matching official average fails
   `community-outlier` (`OUTLIER_RATIO` in `scripts/checks.py`).
@@ -193,8 +195,9 @@ unless repository policy changes.
   `_2` file, because those fields apply to the whole file. It uses the
   in-game preset names (`Ray Tracing: Ultra`) and upscaler labels
   (`DLSS Auto`, `FSR 2.1 Quality`); keep those labels stable, because
-  changing one splits dashboard groups. It reads only `summary.json`, so its
-  runs have no `p1_low`.
+  changing one splits dashboard groups. Settings come from `summary.json`;
+  `avg_fps` and `p1_low` come from the run's `frames.csv` frame times, and a
+  re-import backfills `p1_low` on earlier runs that lack one.
 - Keep GitHub links absolute and API/data links relative to the page, so
   every host works. The one exception is the canonical origin
   `https://opengpubenchmarks.com/` (`build.SITE_URL`): the canonical link,

@@ -126,6 +126,10 @@ AVERAGE_ONLY_METHODS = (
     "synthetic_benchmark",
     "other",
 )
+# A missing p1_low is only an info note with these: a game's built-in benchmark
+# often reports none, or its frame log (Cyberpunk's frames.csv) wasn't kept.
+# synthetic_benchmark (3DMark) never reports one, so it says nothing at all.
+P1_LOW_INFO_METHODS = ("in_game_benchmark",)
 PROOF_METHODS = (*P1_LOW_METHODS, *AVERAGE_ONLY_METHODS)
 RESULT_OSES = ("windows", "linux")
 # Optional OS detail fields under system: (applies to, kind). They are copied to
@@ -171,7 +175,7 @@ SYSTEM_FIELDS = (
 @dataclass
 class Issue:
     path: str
-    level: str  # "error" or "warning"
+    level: str  # "error", "warning", or "info" (a note that never fails a check)
     rule: str
     message: str
 
@@ -182,7 +186,8 @@ class Issue:
     def format(self):
         see = f"See {REPO_URL}/{self.doc()}#{self.rule}"
         if os.getenv("GITHUB_ACTIONS") == "true":
-            return f"::{self.level} file={self.path}::[{self.rule}] {self.message}. {see}"
+            annotation = "notice" if self.level == "info" else self.level
+            return f"::{annotation} file={self.path}::[{self.rule}] {self.message}. {see}"
         return f"{self.level}: {self.path}: [{self.rule}] {self.message}\n    {see}"
 
 
@@ -193,6 +198,9 @@ class Issues(list):
     def warning(self, path, rule, message):
         self.append(Issue(relative_path(path), "warning", rule, message))
 
+    def info(self, path, rule, message):
+        self.append(Issue(relative_path(path), "info", rule, message))
+
     @property
     def errors(self):
         return [issue for issue in self if issue.level == "error"]
@@ -200,6 +208,10 @@ class Issues(list):
     @property
     def warnings(self):
         return [issue for issue in self if issue.level == "warning"]
+
+    @property
+    def infos(self):
+        return [issue for issue in self if issue.level == "info"]
 
 
 def relative_path(path):
@@ -213,10 +225,12 @@ def relative_path(path):
 def report(issues, label, show_warnings=True):
     """Print the issues plus a one-line summary; return True when errors exist."""
     shown = issues if show_warnings else issues.errors
-    for issue in sorted(shown, key=lambda issue: (issue.path, issue.level != "error", issue.rule)):
+    levels = ("error", "warning", "info")
+    for issue in sorted(shown, key=lambda issue: (issue.path, levels.index(issue.level), issue.rule)):
         print(issue.format())
-    errors, warnings = len(issues.errors), len(issues.warnings)
-    print(f"{label}: {errors} error(s), {warnings} warning(s) - {'FAILED' if errors else 'PASSED'}")
+    errors, warnings, infos = len(issues.errors), len(issues.warnings), len(issues.infos)
+    notes = f", {infos} info" if infos and show_warnings else ""
+    print(f"{label}: {errors} error(s), {warnings} warning(s){notes} - {'FAILED' if errors else 'PASSED'}")
     return bool(errors)
 
 
@@ -800,6 +814,7 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
         community_warnings(path, run, gpu, issues)
 
     usable = True
+    no_p1_low = []
     for index, entry in enumerate(entries):
         label = f"result[{index}]"
         entry_ok = True
@@ -819,6 +834,8 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
                     "result-p1-low-required",
                     f"{label} has no p1_low, but {method} reports a 1% low; add it, or fix proof.method if the numbers came from elsewhere",
                 )
+            elif method in P1_LOW_INFO_METHODS:
+                no_p1_low.append(label)
             elif method in AVERAGE_ONLY_METHODS and method != "synthetic_benchmark":
                 issues.warning(
                     path,
@@ -830,6 +847,13 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
         if entry.get("frame_generation", False):
             issues.error(path, "result-frame-generation", f"{label} must disable frame generation for comparable game runs")
         check_upscaling(path, run, entry, label, issues)
+    if no_p1_low:
+        issues.info(
+            path,
+            "result-no-p1-low",
+            f"{len(no_p1_low)} of {len(entries)} run(s) have no p1_low, so only their average is charted; "
+            "fine for a built-in benchmark that doesn't log frame times",
+        )
     return entries if usable else None
 
 

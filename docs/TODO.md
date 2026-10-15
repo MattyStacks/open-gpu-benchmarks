@@ -167,6 +167,12 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Dashboard
 
+- [ ] **Search in the Benchmark picker.** The picker is a plain `<select>`
+  built from `dashboard.json` `games`, grouped by type. That list will get
+  long as `data/games.yaml` grows. Replace it with a searchable combobox
+  that matches on name and ID (later perhaps year or edition), keeps the
+  type groups, and stays usable with a keyboard and on phones.
+
 - [ ] **Show the internal render resolution of upscaled results**, for example
   "4K, renders at 1440p" for FSR 2.1 Quality, next to the upscaling pill. It
   needs confirmed scale factors per upscaler and mode, and Auto modes pick a

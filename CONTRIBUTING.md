@@ -319,7 +319,9 @@ result:
     p1_low: 84.7
 system:
   cpu: AMD Ryzen 7 7800X3D
-  memory: 32 GB DDR5
+  memory_gb: 32                  # optional, a number of GB
+  memory_type: DDR5-6000         # optional, type and speed
+  memory_channels: 2             # optional, 1 single, 2 dual, 4 quad
   power_mode: Performance
   display_mode: direct
   driver: "561.09"
@@ -338,7 +340,7 @@ Laptop results are grouped by GPU power, so always include `gpu_power_w`.
 Validation only warns if it's missing, but your result can't be compared
 properly without it. Use your laptop model's catalog ID, and add the laptop to
 the catalog first if it isn't there yet. Laptop system RAM goes in
-`system.memory`, not in the ID, because it can usually be upgraded.
+`system.memory_gb` (a number), not in the ID, because it can usually be upgraded.
 
 ```yaml
 gpu_id: rtx_4070_laptop_8gb_lenovo_legion_pro_5_gen8
@@ -355,7 +357,8 @@ result:
     p1_low: 61.5
 system:
   cpu: Intel Core i7-13700HX
-  memory: 16 GB DDR5
+  memory_gb: 16
+  memory_type: DDR5-5600
   power_mode: Performance
   display_mode: dGPU only        # MUX switch state
   driver: "560.94"

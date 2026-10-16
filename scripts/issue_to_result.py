@@ -54,7 +54,9 @@ FIELDS = {
     "Capture tool": "method",
     "Proof link": "proof_url",
     "CPU": "cpu",
-    "Memory": "memory",
+    "Memory (GB)": "memory_gb",
+    "Memory type": "memory_type",
+    "Memory channels": "memory_channels",
     "GPU driver": "driver",
     "OS version": "os_detail",
     "Graphics API": "graphics_api",
@@ -295,10 +297,11 @@ def build_run(fields, author, catalog, games, data_dir):
     run["result"] = entries
 
     system = {"os": choice(fields, "os", "Operating system", OSES)}
-    for key, label in (("os_detail", "OS version"), ("cpu", "CPU"), ("memory", "Memory"), ("driver", "GPU driver")):
+    for key, label in (("os_detail", "OS version"), ("cpu", "CPU"), ("driver", "GPU driver")):
         value = text_field(fields, key, label)
         if value:
             system[key] = value
+    memory_fields(fields, system)
     api = text_field(fields, "graphics_api", "Graphics API")
     if api:
         system["graphics_api"] = choice(fields, "graphics_api", "Graphics API", GRAPHICS_APIS)
@@ -312,6 +315,25 @@ def build_run(fields, author, catalog, games, data_dir):
         proof["summary_source"] = proof_url
     run["proof"] = proof
     return run
+
+
+def memory_fields(fields, system):
+    """Optional RAM fields: '32' or '32 GB' -> memory_gb 32; 'dual' or '2' -> memory_channels 2."""
+    size = text_field(fields, "memory_gb", "Memory (GB)")
+    if size:
+        memory_gb = checks.memory_gb_from_text(size)
+        if not memory_gb or memory_gb > checks.MAX_MEMORY_GB:
+            raise SubmissionError(f"**Memory (GB)** must be a number of GB such as `32`, not {code(size)}.")
+        system["memory_gb"] = memory_gb
+    kind = text_field(fields, "memory_type", "Memory type")
+    if kind:
+        system["memory_type"] = kind
+    channels = text_field(fields, "memory_channels", "Memory channels").lower().removesuffix(" channel")
+    if channels:
+        count = checks.CHANNEL_WORDS.get(channels) or (int(channels) if channels.isdigit() else 0)
+        if not 1 <= count <= checks.MAX_MEMORY_CHANNELS:
+            raise SubmissionError(f"**Memory channels** must be a whole number such as `2` (dual channel), not {code(channels)}.")
+        system["memory_channels"] = count
 
 
 def target_path(data_dir, run):

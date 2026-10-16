@@ -162,11 +162,19 @@ OS_FIELDS = {
     "gamemode": ("linux", "bool"),
 }
 RUNTIMES = ("native", "proton", "wine")
+# System RAM: memory_gb is a number of GB, memory_type is "<type>-<MT/s>", and
+# memory_channels is a whole number (1 single, 2 dual, 4 quad, 8 on servers).
+# All three are optional and never group runs.
+MAX_MEMORY_GB = 65536
+MAX_MEMORY_CHANNELS = 32
+MEMORY_TYPE_PATTERN = re.compile(r"^(LP)?DDR\d+X?-\d{3,5}$")
+CHANNEL_WORDS = {"single": 1, "dual": 2, "quad": 4}
 SYSTEM_FIELDS = (
     "os",
     "cpu",
-    "memory",
-    "ram",
+    "memory_gb",
+    "memory_type",
+    "memory_channels",
     "power_mode",
     "tdp_mode",
     "display_mode",
@@ -787,7 +795,10 @@ def check_system_os(path, run, issues):
         issues.error(path, "result-os", f"system.os '{os_name}' must be windows or linux; {hint}")
         os_name = None
 
+    check_system_memory(path, system, issues)
     for key, value in system.items():
+        if key in ("memory", "ram"):
+            continue
         if key not in SYSTEM_FIELDS:
             issues.warning(path, "result-system-field", f"'system.{key}' is not a known system field; check the spelling")
             continue
@@ -803,6 +814,40 @@ def check_system_os(path, run, issues):
             issues.error(path, "result-os-field", f"'system.{key}' must be text{hint}")
         elif key == "runtime" and value not in RUNTIMES:
             issues.error(path, "result-os-field", f"'system.runtime' '{value}' must be one of {', '.join(RUNTIMES)}")
+
+
+def memory_gb_from_text(value):
+    """'64 GB', '64GB', or '64' -> 64; anything else -> None."""
+    match = re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*(?:gb)?\s*", str(value), re.IGNORECASE)
+    if not match:
+        return None
+    number = float(match.group(1))
+    return int(number) if number.is_integer() else number
+
+
+def check_system_memory(path, system, issues):
+    """memory_gb, memory_type, and memory_channels are optional; only a wrong value is reported."""
+    for old in ("memory", "ram"):
+        if old in system:
+            parsed = memory_gb_from_text(str(system[old]).split()[0]) if is_text(system[old]) or is_number(system[old]) else None
+            hint = f"; write 'memory_gb: {parsed}'" if parsed else "; write just the number of GB"
+            issues.error(path, "result-system-memory", f"'system.{old}' is renamed to memory_gb{hint}")
+    size = system.get("memory_gb")
+    if size is not None and not (is_number(size) and 0 < size <= MAX_MEMORY_GB):
+        parsed = memory_gb_from_text(size) if isinstance(size, str) else None
+        hint = f"; write 'memory_gb: {parsed}'" if parsed else ""
+        issues.error(path, "result-system-memory", f"'system.memory_gb' must be a number of GB from 1 to {MAX_MEMORY_GB}, got '{size}'{hint}")
+    kind = system.get("memory_type")
+    if kind is not None and kind != "":
+        if not is_text(kind):
+            issues.error(path, "result-system-memory", f"'system.memory_type' must be text such as 'DDR5-6400', got '{kind}'")
+        elif not MEMORY_TYPE_PATTERN.match(kind.strip()):
+            issues.warning(path, "result-system-memory", f"'system.memory_type' '{kind}' should look like 'DDR5-6400' or 'LPDDR5X-7500'")
+    channels = system.get("memory_channels")
+    if channels is not None and not (isinstance(channels, int) and not isinstance(channels, bool) and 1 <= channels <= MAX_MEMORY_CHANNELS):
+        word = CHANNEL_WORDS.get(str(channels).strip().lower().removesuffix(" channel"))
+        hint = f"; write 'memory_channels: {word}'" if word else ""
+        issues.error(path, "result-system-memory", f"'system.memory_channels' must be a whole number from 1 to {MAX_MEMORY_CHANNELS}, got '{channels}'{hint}")
 
 
 def result_os(run):

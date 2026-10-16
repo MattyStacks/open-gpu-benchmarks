@@ -65,6 +65,12 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
   keys or extra chart bars. Linux-only fields on a windows run (or the
   reverse) are errors. Per-distro comparisons are DIY from the JSON.
+- System RAM is numeric: `system.memory_gb` (a number of GB, never `"32 GB"`),
+  plus optional `memory_type` (`DDR5-6400`: type, dash, MT/s) and
+  `memory_channels` (a whole number: 1 single, 2 dual, 4 quad, 8 on servers).
+  All three are optional, a missing one is never reported, and none of them
+  group runs or appear on charts. The old `memory`/`ram` keys fail
+  `result-system-memory`.
 - Frame generation must be disabled for comparable benchmark runs.
 - `avg_fps` is required on every result entry; `p1_low` is optional (3DMark
   and in-game benchmarks report none) and is `null` in the API when missing.

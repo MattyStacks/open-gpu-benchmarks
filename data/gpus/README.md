@@ -92,7 +92,8 @@ Rules for each part:
   ID and comes last. Leave out the chip only when the device was only ever sold
   with one chip (`steam_deck_oled_16gb`).
 - **Laptop RAM.** Laptop system RAM can usually be upgraded, so it is **not** in
-  the ID. Record it on each run under `system.memory`. The VRAM size is in the ID.
+  the ID. Record it on each run as `system.memory_gb`, a number of GB. The VRAM
+  size is in the ID.
 - **`_generic` (laptops only, temporary).** When the laptop model is unknown, use
   `generic` in place of `<oem>_<model>`, for example
   `rtx_4070_laptop_8gb_generic`. The checks show a warning for each one. Replace

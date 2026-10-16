@@ -267,7 +267,7 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   clean checkout. Fix: clear `OUTPUT_DIR` at the start of a successful build.
 - [ ] **Read more of the MangoHud log header in `parse.py`.** It already
   copies `kernel` and `driver`. The header block also has `os`, `cpu`, `gpu`,
-  and `ram`; map `cpu` to `system.cpu`, `ram` to `system.memory`, and a
+  and `ram`; map `cpu` to `system.cpu`, `ram` to `system.memory_gb` (a number), and a
   SteamOS/distro `os` value to `system.distro`.
 - [ ] **Changelog check in CI.** Fail or warn on a PR that changes `scripts/`,
   `site/`, `templates/`, or catalog rules without touching `CHANGELOG.md`.

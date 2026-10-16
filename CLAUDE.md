@@ -76,7 +76,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.5.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.6.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -169,6 +169,12 @@ unless repository policy changes.
   distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
   keys or extra chart bars. Linux-only fields on a windows run (or the
   reverse) are errors. Per-distro comparisons are DIY from the JSON.
+- System RAM is numeric: `system.memory_gb` (a number of GB, never `"32 GB"`),
+  plus optional `memory_type` (`DDR5-6400`: type, dash, MT/s) and
+  `memory_channels` (a whole number: 1 single, 2 dual, 4 quad, 8 on servers).
+  All three are optional, a missing one is never reported, and none of them
+  group runs or appear on charts. The old `memory`/`ram` keys fail
+  `result-system-memory`.
 - `frame_generation: false` is required for comparable game runs.
 - `avg_fps` is required; `p1_low` is optional (3DMark and in-game benchmarks
   report none) and is `null` in the API when missing. `proof.method` is

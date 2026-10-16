@@ -31,6 +31,29 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.6.0.0 - 2026-10-16
+
+### Changed
+
+- **Breaking:** the free-text `system.memory` (`64 GB`) is renamed to
+  `system.memory_gb`, a number, so API users can filter and sort by it. Run
+  records carry `memory_gb` (a number or `null`) instead of the `memory`
+  string (schema 0.16 → 0.17). The old `memory` and `ram` keys fail the new
+  `result-system-memory` check, and `import_cyberpunk.py` upgrades its older
+  files in place.
+
+### Added
+
+- Optional `system.memory_type` (type and speed, such as `DDR5-6400`) and
+  `system.memory_channels` (a whole number: 1 single, 2 dual, 4 quad, 8 on
+  server boards). Both are in the API, never group runs, and aren't charted.
+  A missing value is never reported; only a wrong one is. The dashboard's run
+  details read like "64 GB DDR5-6400 dual channel".
+- The benchmark issue form asks for Memory (GB), Memory type, and Memory
+  channels. `import_cyberpunk.py` gains `--memory-type` and
+  `--memory-channels`.
+- The published RTX 5080 runs record DDR5-6400 in dual channel.
+
 ## 1.5.0.0 - 2026-10-16
 
 ### Fixed

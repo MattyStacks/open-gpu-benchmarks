@@ -37,7 +37,8 @@ result: # Required; one "-" item per resolution/preset the source tested
     p1_low: 58.0 # Optional; add it if the source shows a 1% low
 system:
   os: windows # Required: windows or linux. Most reviews test on Windows.
-  # Optional, if the source says: cpu, memory, driver, os_detail.
+  # Optional, if the source says: cpu, memory_gb (a number), memory_type
+  # (DDR5-6400), memory_channels (2 for dual), driver, os_detail.
 proof:
   # Required. The tool the source used, if it says. Use in_game_benchmark for
   # a game's built-in benchmark, or other when the source doesn't say. A tool

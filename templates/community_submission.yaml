@@ -47,7 +47,9 @@ system:
   # Everything else under system: is optional.
   os_detail: Windows 11 Pro 24H2 # The full OS name and version
   cpu: AMD Ryzen 7 7800X3D
-  memory: 32 GB DDR5
+  memory_gb: 32 # System RAM in GB, just the number
+  memory_type: DDR5-6000 # Type and speed, if you know it
+  memory_channels: 2 # 1 single, 2 dual, 4 quad, 8 on some servers
   driver: "561.09"
   graphics_api: DX12 # DX12, DX11, or Vulkan
   # More optional machine fields: power_mode, display_mode, resizable_bar (true or false).

@@ -436,7 +436,9 @@ system:
   os_detail: Windows 11 Pro
   os_build: 10.0.26300
   cpu: AMD Ryzen 9 9950X3D 16-Core Processor
-  memory: 64 GB
+  memory_gb: 64
+  memory_type: DDR5-6400
+  memory_channels: 2
   driver: '617.14'
   graphics_api: DX12
 proof:

@@ -109,6 +109,18 @@ When it looks right, run it again without `--dry-run`:
 python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
 ```
 
+`summary.json` records how much RAM you have, but not its type, speed, or
+channel mode. You can add those yourself. Both options are optional:
+
+```powershell
+python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --memory-type DDR5-6400 --memory-channels 2
+```
+
+`--memory-type` is the type and speed, such as `DDR5-6400`. `--memory-channels`
+is a whole number: 1 for single channel, 2 for dual, 4 for quad. Pass the same
+options every time you import on that PC. They go under `system:`, so changing
+them or leaving them out starts a separate `_2` file.
+
 This writes the runs to `data/community/<gpu_id>/`, one file per day with one
 `result` item per run, for example
 `data/community/rtx_5080_16gb_fe/result_20261013_cyberpunk_2077.yaml`. It then
@@ -145,8 +157,10 @@ Run the same command again whenever you've benchmarked more:
   file name and run folder names.
 - Files imported before the game registry, which say `game: Cyberpunk 2077`,
   are rewritten to `game_id: cyberpunk_2077`.
-- Runs after a driver or game update, or on a different CPU, memory amount, or
-  OS, go in a separate file for the same day: `..._2.yaml`, `..._3.yaml`. The
+- Files from older imports with `memory: 64 GB` are rewritten to
+  `memory_gb: 64`.
+- Runs after a driver or game update, or on a different CPU, memory amount,
+  `--memory-type`, `--memory-channels`, or OS, go in a separate file for the same day: `..._2.yaml`, `..._3.yaml`. The
   game version and everything under `system:` apply to every run in a file,
   so runs that differ there can't share one.
 - Skipped runs aren't remembered. Fix the cause (or answer the Custom preset
@@ -222,7 +236,9 @@ system:
   os_detail: Windows 11 Pro
   os_build: 10.0.26300
   cpu: AMD Ryzen 9 9950X3D 16-Core Processor
-  memory: 64 GB
+  memory_gb: 64
+  memory_type: DDR5-6400
+  memory_channels: 2
   driver: '617.14'
   graphics_api: DX12
 proof:
@@ -250,7 +266,9 @@ Where each value comes from in the run folder (`summary.json` unless noted):
 | `system.os` | `--os` | `windows` or `linux`. |
 | `system.os_detail`, `os_build` | `osName`, `osVersion` | Windows only. On Linux, `os_detail` comes from `/etc/os-release`, because Proton reports a Windows version. |
 | `system.cpu` | `cpuName` | |
-| `system.memory` | `systemMemory` | Converted from MB, for example `64 GB`. |
+| `system.memory_gb` | `systemMemory` | Converted from MB to a whole number of GB, for example `64`. |
+| `system.memory_type` | `--memory-type` | Optional, for example `DDR5-6400`. The game doesn't report it. |
+| `system.memory_channels` | `--memory-channels` | Optional whole number: 1 single, 2 dual, 4 quad. |
 | `system.driver` | `gpuDriverVersion` | NVIDIA's `Nvidia v 61714 [r617_07]` becomes `617.14`; other drivers are kept as written. |
 | `system.graphics_api` | | Always `DX12`, the game's only API. |
 | `proof.method` | | Always `in_game_benchmark`. |

@@ -127,10 +127,23 @@ body:
       label: CPU
       placeholder: AMD Ryzen 7 7800X3D
   - type: input
-    id: memory
+    id: memory_gb
     attributes:
-      label: Memory
-      placeholder: 32 GB DDR5
+      label: Memory (GB)
+      description: Optional. Your system RAM in GB, just the number.
+      placeholder: "32"
+  - type: input
+    id: memory_type
+    attributes:
+      label: Memory type
+      description: Optional. The RAM's type and speed, if you know it.
+      placeholder: DDR5-6400
+  - type: input
+    id: memory_channels
+    attributes:
+      label: Memory channels
+      description: Optional. 1 single, 2 dual, 4 quad, 8 for 8-channel server boards.
+      placeholder: "2"
   - type: input
     id: driver
     attributes:

@@ -65,6 +65,12 @@ distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
 keys or extra chart bars. Linux-only fields on a windows run (or the
 reverse) are errors. Per-distro comparisons are DIY from the JSON.
 
+System RAM is numeric: `system.memory_gb` (a number of GB, never `"32 GB"`),
+plus optional `memory_type` (`DDR5-6400`) and `memory_channels` (a whole
+number: 1 single, 2 dual, 4 quad). All three are optional, a missing one is
+never reported, and none of them group runs or appear on charts. The old
+`memory`/`ram` keys fail `result-system-memory`.
+
 `avg_fps` is required; `p1_low` is optional (3DMark and in-game benchmarks
 report none). `proof.method` is required on every game run and names the
 capture tool (`checks.PROOF_METHODS`); PresentMon is the recommended default,
@@ -82,7 +88,9 @@ Cyberpunk 2077 built-in benchmark runs come in through
 `scripts/import_cyberpunk.py` (guide: `docs/CYBERPUNK_BENCHMARK.md`): one
 `result_YYYYMMDD_cyberpunk_2077.yaml` per day and setup, one `result` item per
 run, each naming its run folder in `benchmark_run`; keep its preset and
-upscaler labels stable, because changing one splits dashboard groups.
+upscaler labels stable, because changing one splits dashboard groups. Its
+`--memory-type` and `--memory-channels` default to `DDR5-6000` and `2`, with a
+warning, when left out.
 
 Hosting: the canonical site is <https://opengpubenchmarks.com> (Cloudflare
 Pages). GitHub Pages is a mirror. Only the canonical/SEO URLs are absolute,

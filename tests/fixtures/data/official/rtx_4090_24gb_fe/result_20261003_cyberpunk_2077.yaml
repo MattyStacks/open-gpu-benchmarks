@@ -12,5 +12,8 @@ result:
   graphics_preset: Ultra
 system:
   os: windows
+  memory_gb: 64
+  memory_type: DDR5-6000
+  memory_channels: 2
 proof:
   method: other

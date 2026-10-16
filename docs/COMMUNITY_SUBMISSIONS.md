@@ -484,6 +484,23 @@ overclock status, CPU, memory, power mode, display/MUX mode, driver, and the OS
 details above all help a reviewer, so add whatever you know and are happy to
 share. Laptop GPU power is the one worth adding: laptop runs are grouped by it.
 
+### System memory
+
+Three optional fields describe the system RAM. Leave out any you don't know;
+a missing one is never a warning. None of them group runs or appear on the
+charts. They're in the API, so people using the data can filter by them.
+
+```yaml
+system:
+  memory_gb: 32          # a number of GB, not "32 GB"
+  memory_type: DDR5-6000 # type and speed (MT/s), if you know them
+  memory_channels: 2     # 1 single, 2 dual, 4 quad, 8 on some server boards
+```
+
+`memory_gb` and `memory_channels` are numbers in the API (`null` when missing),
+and `memory_type` is text (`""` when missing). The old free-text `memory:` key
+is now `memory_gb`.
+
 A raw PresentMon capture is the best evidence. Put it under the same GPU
 folder, for example:
 
@@ -740,10 +757,27 @@ See [Operating system](#operating-system) for the fields.
 
 Warning only. A key under `system:` isn't a known field. Check the spelling
 against [Operating system](#operating-system) and the template. The known
-machine fields are `cpu`, `memory`, `power_mode`, `display_mode`, `driver`,
-`device_name`, and `gpu_power_w`. `display_mode` may also go on a single
-`result` item, when it differs between the profiles in one file; the item's
-value wins.
+machine fields are `cpu`, `memory_gb`, `memory_type`, `memory_channels`,
+`power_mode`, `display_mode`, `driver`, `device_name`, and `gpu_power_w`.
+`display_mode` may also go on a single `result` item, when it differs between
+the profiles in one file; the item's value wins.
+
+#### `result-system-memory`
+
+A system memory field is wrong. Each of these fields is optional, and leaving
+one out is never reported. One of these happened:
+
+- `memory_gb` isn't a number from 1 to 65536. Write just the number of GB:
+  `memory_gb: 32`, not `memory_gb: 32 GB`.
+- The file uses the old `memory:` or `ram:` key. Rename it to `memory_gb` and
+  keep only the number.
+- `memory_channels` isn't a whole number from 1 to 32. Write `2` for dual
+  channel, not `dual`.
+- `memory_type` is a number instead of text.
+- Warning only: `memory_type` doesn't look like `DDR5-6400` or `LPDDR5X-7500`,
+  which is the type, a dash, and the speed in MT/s.
+
+See [System memory](#system-memory).
 
 #### `community-submitter`
 

@@ -11,10 +11,16 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.5.0.0` (2026-10-16). Versions are now
+- Current version: `v1.6.0.0` (2026-10-16). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
+  - v1.6.0.0: system RAM in numbers (schema 0.16 → 0.17). `system.memory`
+    (free text) is now `system.memory_gb` (a number), plus optional
+    `memory_type` (`DDR5-6400`) and `memory_channels` (a whole number), rule
+    `result-system-memory`. Added to the issue form and to
+    `import_cyberpunk.py` (`--memory-type`, `--memory-channels`, which default
+    to DDR5-6000 and 2 channels with a warning).
   - v1.5.0.0: the Dataset JSON-LD adds `creator` (Organization) and a
     `CreativeWork` `license`, Google's recommended Dataset fields.
   - v1.4.0.0: README rewritten as a short overview (dashboard, JSON
@@ -130,6 +136,24 @@ runs can be filtered, charted over time, or retired later.
 `import_cyberpunk.py` writes both from the run folder name and backfills
 files that lack them (`upgrade_files()`); `parse.py` writes today's date.
 
+Schema `0.17` makes system RAM numeric. `system.memory_gb` (a number of GB,
+1-65536) replaces the free-text `system.memory`. Optional `memory_type` is
+text such as `DDR5-6400` and only warns when it doesn't look like
+`<type>-<MT/s>` (`checks.MEMORY_TYPE_PATTERN`). Optional `memory_channels` is
+a whole number from 1 to `checks.MAX_MEMORY_CHANNELS` (32). All three are
+checked by `checks.check_system_memory()` (rule `result-system-memory`), and a
+missing one is never reported. The old `memory` and `ram` keys are errors.
+Run records carry `memory_gb` and `memory_channels` as numbers or `null` and
+`memory_type` as a string (`""` when missing). Summary `implementations` list
+the same three keys. None of them group runs or are charted. The dashboard's
+run details join them as "64 GB DDR5-6400 dual channel" (`formatMemory()`).
+Cyberpunk's `summary.json` only reports the size, so `import_cyberpunk.py`
+takes `--memory-type` and `--memory-channels`. When either is left out, it
+records `DEFAULT_MEMORY_TYPE` (`DDR5-6000`) or `DEFAULT_MEMORY_CHANNELS` (2)
+and prints a warning (`memory_defaults()`). Because `system` applies to the
+whole file, a re-import without the same options starts a `_2` file.
+`upgrade_files()` rewrites an older `memory: 64 GB` to `memory_gb: 64`.
+
 Schema `0.16` switches the data license to CC BY 4.0 and leads every API file
 with `_license` and `_source` (see Licenses).
 
@@ -176,7 +200,8 @@ product-level:
   - handheld: `<device>_<chip>_<ram>gb`
 
   Handheld RAM is soldered, so it is part of the ID. Laptop system RAM is
-  upgradeable, so it stays on each run in `system.memory`.
+  upgradeable, so it stays on each run in `system.memory_gb` (a number since
+  schema 0.17).
 - **Vendor field.** `identity.vendor` is renamed to `identity.gpu_vendor`.
   Run records carry `gpu_vendor` instead of `vendor`, and the dashboard
   reads `record.gpu_vendor`.

@@ -51,9 +51,17 @@ https://example.com/screenshot.png
 
 AMD Ryzen 7 7800X3D
 
-### Memory
+### Memory (GB)
 
-32 GB DDR5
+32 GB
+
+### Memory type
+
+DDR5-6000
+
+### Memory channels
+
+dual
 
 ### GPU driver
 

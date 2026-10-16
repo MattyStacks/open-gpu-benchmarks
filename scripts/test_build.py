@@ -1,4 +1,6 @@
 """Regression checks for the catalog, result checks, and aggregation."""
+import contextlib
+import io
 import json
 import re
 import tempfile
@@ -238,6 +240,17 @@ def check_result_rules():
         "result-os-field (bool as text)": community_run(system={"os": "windows", "hags": "yes"}),
         "result-os-field (number as text)": community_run(system={"os": "linux", "kernel": 6.8}),
         "result-os-field (runtime)": community_run(system={"os": "linux", "runtime": "steam"}),
+        "result-system-memory (text size)": community_run(system={"os": "windows", "memory_gb": "32 GB"}),
+        "result-system-memory (bool size)": community_run(system={"os": "windows", "memory_gb": True}),
+        "result-system-memory (zero size)": community_run(system={"os": "windows", "memory_gb": 0}),
+        "result-system-memory (huge size)": community_run(system={"os": "windows", "memory_gb": checks.MAX_MEMORY_GB + 1}),
+        "result-system-memory (old memory key)": community_run(system={"os": "windows", "memory": "32 GB DDR5"}),
+        "result-system-memory (old ram key)": community_run(system={"os": "windows", "ram": 32}),
+        "result-system-memory (zero channels)": community_run(system={"os": "windows", "memory_channels": 0}),
+        "result-system-memory (word channels)": community_run(system={"os": "windows", "memory_channels": "dual"}),
+        "result-system-memory (fraction channels)": community_run(system={"os": "windows", "memory_channels": 2.5}),
+        "result-system-memory (too many channels)": community_run(system={"os": "windows", "memory_channels": 64}),
+        "result-system-memory (number type)": community_run(system={"os": "windows", "memory_type": 6400}),
     }
     for label, run in os_cases.items():
         cases[label] = {COMMUNITY_PATH: run}
@@ -259,6 +272,14 @@ def check_result_rules():
     for rule, files in cases.items():
         expect_rule(rule.split(" (")[0], {**catalog, **files})
     expect_rule("result-system-field", {**catalog, COMMUNITY_PATH: community_run(system={"os": "linux", "kernal": "6.8"})}, level="warning")
+    expect_rule("result-system-memory", {**catalog, COMMUNITY_PATH: community_run(system={"os": "windows", "memory_type": "DDR5 6400"})}, level="warning")
+    # The memory fields are optional: leaving them out, or filling them in right, reports nothing at all.
+    memory = {"memory_gb": 2048, "memory_type": "LPDDR5X-7500", "memory_channels": 12}
+    for system in ({"os": "windows"}, {"os": "windows", **memory}, {"os": "windows", "memory_gb": 15.5, "memory_type": ""}):
+        issues = run_checks({**catalog, COMMUNITY_PATH: community_run(system=system)})
+        assert not [issue for issue in issues if issue.rule in ("result-system-memory", "result-system-field")], system
+    issues = run_checks({**catalog, COMMUNITY_PATH: community_run(system={"os": "windows", "memory": "64 GB"})})
+    assert any("memory_gb: 64" in issue.message for issue in issues.errors), [issue.format() for issue in issues]
     # A quoted local time, with or without seconds, passes; so does a file name with no date to compare.
     for time in ("09:10", "23:59:59"):
         issues = run_checks({**catalog, COMMUNITY_PATH: timed(time)})
@@ -640,7 +661,7 @@ def check_import_cyberpunk():
         assert entry["resolution"] == "1440p" and entry["avg_fps"] == 120.46
         assert entry["upscaling"] == "DLSS Auto" and entry["preset_upscaling"] is True
         assert "p1_low" not in entry and day_run["frame_generation"] is False, "no frames.csv, no p1_low"
-        assert day_run["system"]["driver"] == "617.14" and day_run["system"]["memory"] == "32 GB"
+        assert day_run["system"]["driver"] == "617.14" and day_run["system"]["memory_gb"] == 32
         assert day_run["proof"]["method"] == "in_game_benchmark"
         assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
         assert entry["display_mode"] == "Fullscreen" and "display_mode" not in day_run["system"]
@@ -667,6 +688,28 @@ def check_import_cyberpunk():
         assert import_cyberpunk.main(args) == 0
         assert yaml.safe_load(day_file.read_text(encoding="utf-8")) == day_run, "game becomes game_id"
         assert sorted(path.name for path in out.iterdir()) == [day_file.name], "an upgraded file keeps its runs"
+
+        # A file imported when memory was text ('32 GB') gets memory_gb in the same place.
+        texty = {**day_run, "system": {("memory" if key == "memory_gb" else key): ("32 GB" if key == "memory_gb" else value)
+                                       for key, value in day_run["system"].items()}}
+        import_cyberpunk.write_run(day_file, texty)
+        assert import_cyberpunk.main(args) == 0
+        assert yaml.safe_load(day_file.read_text(encoding="utf-8")) == day_run, "memory becomes memory_gb"
+        assert list(day_run["system"]).index("memory_gb") == list(texty["system"]).index("memory")
+
+        # The RAM type and channels come from the options; summary.json only has the size.
+        system = import_cyberpunk.build_system(cyberpunk_summary()["Data"], "windows", "DDR5-6000", 2)
+        assert (system["memory_gb"], system["memory_type"], system["memory_channels"]) == (32, "DDR5-6000", 2), system
+        assert import_cyberpunk.main([*args, "--memory-channels", "0"]) == 1
+
+        # Left out, the RAM type and channels default to DDR5-6000 dual channel, with a warning on screen.
+        assert (day_run["system"]["memory_type"], day_run["system"]["memory_channels"]) == ("DDR5-6000", 2), day_run["system"]
+        for options, warned in (([], True), (["--memory-type", "DDR5-6000", "--memory-channels", "2"], False)):
+            shown = io.StringIO()
+            with contextlib.redirect_stdout(shown):
+                assert import_cyberpunk.main([*args, "--dry-run", *options]) == 0
+            assert ("WARNING: --memory-type was not given" in shown.getvalue()) is warned, shown.getvalue()
+            assert ("fix memory_type and memory_channels" in shown.getvalue()) is warned, shown.getvalue()
 
         # Later the same day: a new run joins the day's file, and a run after a
         # driver update gets its own file because system applies to the whole file.
@@ -752,6 +795,8 @@ def check_issue_to_result():
         assert run["result"][1]["resolution"] == "1440p" and run["result"][1]["avg_fps"] == 180, run
         assert run["submitted_by"] == "octo-cat" and run["proof"]["method"] == "presentmon", run
         assert run["date"] == "2026-10-03" and "credit" not in run, run
+        memory = {key: run["system"].get(key) for key in ("memory_gb", "memory_type", "memory_channels")}
+        assert memory == {"memory_gb": 32, "memory_type": "DDR5-6000", "memory_channels": 2}, run["system"]
         assert "Closes #42" in (temp / "ok" / "pr_body.md").read_text(encoding="utf-8")
         catalog, _ = checks.load_catalog(data_dir)
         _, issues = checks.load_results(catalog, data_dir)
@@ -781,6 +826,8 @@ def check_issue_to_result():
             "result-p1-low-required": valid.replace("175.2, 140.1", "175.2"),
             "CC BY 4.0": valid.replace("- [X] I release", "- [ ] I release"),
             "YYYY-MM-DD": valid.replace("2026-10-03", "10/03/2026"),
+            "Memory (GB)**": valid.replace("### Memory (GB)\n\n32 GB", "### Memory (GB)\n\n32 GB DDR5"),
+            "Memory channels**": valid.replace("### Memory channels\n\ndual", "### Memory channels\n\ntriple"),
             "its own pull request": valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\nSome Unlisted Game"),
             "Did you mean `cyberpunk_2077`?": valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\ncyberpunk 2078"),
         }
@@ -953,7 +1000,7 @@ def check_real_data():
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.16"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.17"
     group_by = master["metadata"]["comparison_policy"]["group_by"]
     assert {"os", "upscaling", "game_id"} <= set(group_by) and "game" not in group_by
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
@@ -1074,6 +1121,17 @@ def check_fixture_build(api_dir):
 
     dashboard = load_json(api_dir / "dashboard.json")
     assert len(dashboard["records"]) == 30
+    # System RAM: numbers stay numbers, and a run without them gets null.
+    flagship = load_json(api_dir / "official" / "rtx_4090_24gb_fe" / "summary.json")
+    with_memory = [record for record in flagship["records"] if record["memory_gb"] is not None]
+    assert [(record["memory_gb"], record["memory_type"], record["memory_channels"]) for record in with_memory] == [
+        (64, "DDR5-6000", 2)
+    ], with_memory
+    assert all(record["memory_channels"] is None and record["memory_type"] == "" for record in flagship["records"]
+               if record["memory_gb"] is None)
+    implementations = [item for summary in flagship["game_summaries"] for item in summary["implementations"]]
+    assert {"memory_gb": 64, "memory_type": "DDR5-6000", "memory_channels": 2}.items() <= next(
+        item for item in implementations if "memory_gb" in item).items()
     check_game_payload(api_dir)
     check_catalog_specs(api_dir)
 

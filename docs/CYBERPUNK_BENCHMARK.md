@@ -110,16 +110,28 @@ python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
 ```
 
 `summary.json` records how much RAM you have, but not its type, speed, or
-channel mode. You can add those yourself. Both options are optional:
+channel mode. Give those with two options:
 
 ```powershell
-python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --memory-type DDR5-6400 --memory-channels 2
+python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --memory-type DDR5-6000 --memory-channels 2
 ```
 
-`--memory-type` is the type and speed, such as `DDR5-6400`. `--memory-channels`
-is a whole number: 1 for single channel, 2 for dual, 4 for quad. Pass the same
-options every time you import on that PC. They go under `system:`, so changing
-them or leaving them out starts a separate `_2` file.
+`--memory-type` is the type and speed, such as `DDR5-6000`. `--memory-channels`
+is a whole number: 1 for single channel, 2 for dual, 4 for quad. If you leave
+either one out, the script records the default, `DDR5-6000` or `2` (dual
+channel), and prints a warning:
+
+```text
+WARNING: --memory-type was not given, so runs are recorded as DDR5-6000.
+WARNING: --memory-channels was not given, so runs are recorded as 2 (dual channel).
+  If that isn't your RAM, re-run with --memory-type and --memory-channels,
+  or fix memory_type and memory_channels under system: in the files before you submit them.
+```
+
+If the defaults aren't right for your PC, pass the options, or edit
+`memory_type` and `memory_channels` in the files before you open a pull
+request. Use the same values every time you import on that PC. They go under
+`system:`, so a run with different values starts a separate `_2` file.
 
 This writes the runs to `data/community/<gpu_id>/`, one file per day with one
 `result` item per run, for example
@@ -237,7 +249,7 @@ system:
   os_build: 10.0.26300
   cpu: AMD Ryzen 9 9950X3D 16-Core Processor
   memory_gb: 64
-  memory_type: DDR5-6400
+  memory_type: DDR5-6000
   memory_channels: 2
   driver: '617.14'
   graphics_api: DX12
@@ -267,8 +279,8 @@ Where each value comes from in the run folder (`summary.json` unless noted):
 | `system.os_detail`, `os_build` | `osName`, `osVersion` | Windows only. On Linux, `os_detail` comes from `/etc/os-release`, because Proton reports a Windows version. |
 | `system.cpu` | `cpuName` | |
 | `system.memory_gb` | `systemMemory` | Converted from MB to a whole number of GB, for example `64`. |
-| `system.memory_type` | `--memory-type` | Optional, for example `DDR5-6400`. The game doesn't report it. |
-| `system.memory_channels` | `--memory-channels` | Optional whole number: 1 single, 2 dual, 4 quad. |
+| `system.memory_type` | `--memory-type` | For example `DDR5-6000`, the default when the option is left out (with a warning). The game doesn't report it. |
+| `system.memory_channels` | `--memory-channels` | A whole number: 1 single, 2 dual, 4 quad. Defaults to `2` with a warning. |
 | `system.driver` | `gpuDriverVersion` | NVIDIA's `Nvidia v 61714 [r617_07]` becomes `617.14`; other drivers are kept as written. |
 | `system.graphics_api` | | Always `DX12`, the game's only API. |
 | `proof.method` | | Always `in_game_benchmark`. |

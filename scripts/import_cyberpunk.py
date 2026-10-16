@@ -19,11 +19,14 @@ p1_low get one from their frames.csv. A run with a different setup (game
 version, driver, CPU, memory, or OS) goes in its own file, _2, _3, ..., because
 those fields apply to the whole file. That includes --memory-type and
 --memory-channels: pass the same ones every time, or new runs start a _2 file.
+summary.json has no RAM type or channels, so when an option is left out the
+runs get DEFAULT_MEMORY_TYPE (DDR5-6000) or DEFAULT_MEMORY_CHANNELS (2), with a
+warning on screen.
 Full instructions: docs/CYBERPUNK_BENCHMARK.md
 
     python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --dry-run
     python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
-    python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --memory-type DDR5-6400 --memory-channels 2
+    python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --memory-type DDR5-6000 --memory-channels 2
 
 Runs with frame generation, V-Sync, or an FPS limit on are skipped, as are runs
 from a different GPU than --gpu-id. A run on the Custom preset needs a preset
@@ -71,6 +74,9 @@ WINDOW_MODES = {0: "Windowed", 1: "Borderless windowed", 2: "Fullscreen"}
 # Each result item names its run folder here; that is how re-runs skip it.
 RUN_KEY = "benchmark_run"
 PROOF_FORMAT = "cyberpunk_summary_json"
+# summary.json has no RAM type or channel count; these fill in when the options are left out.
+DEFAULT_MEMORY_TYPE = "DDR5-6000"
+DEFAULT_MEMORY_CHANNELS = 2
 FRAMES_FILE = "frames.csv"
 FRAME_TIME_COLUMN = "frame time (ms)"
 # frames.csv is ignored when its average is further than this from summary.json's.
@@ -354,6 +360,23 @@ def build_entry(data, preset, folder_name, stats):
     return entry
 
 
+def memory_defaults(memory_type, memory_channels):
+    """The RAM type and channels to record; a missing one gets its default and a warning."""
+    defaulted = []
+    if not (memory_type or "").strip():
+        memory_type = DEFAULT_MEMORY_TYPE
+        defaulted.append(f"--memory-type was not given, so runs are recorded as {DEFAULT_MEMORY_TYPE}")
+    if memory_channels is None:
+        memory_channels = DEFAULT_MEMORY_CHANNELS
+        defaulted.append(f"--memory-channels was not given, so runs are recorded as {DEFAULT_MEMORY_CHANNELS} (dual channel)")
+    for line in defaulted:
+        print(f"WARNING: {line}.")
+    if defaulted:
+        print("  If that isn't your RAM, re-run with --memory-type and --memory-channels,")
+        print("  or fix memory_type and memory_channels under system: in the files before you submit them.")
+    return memory_type.strip(), memory_channels
+
+
 def build_run(data, gpu_id, source, os_name, submitted_by, date, memory_type="", memory_channels=None):
     """The file-level fields shared by every run in one result file."""
     run = {"gpu_id": gpu_id}
@@ -489,8 +512,8 @@ def main(argv=None):
     parser.add_argument("--submitted-by", default="", help="OPTIONAL - your GitHub username for community runs; leave it out to stay anonymous")
     parser.add_argument("--custom-preset", default="", help="Preset name for every Custom-preset run, for example High when you only turned upscaling off")
     parser.add_argument("--os", default="linux" if sys.platform.startswith("linux") else "windows", choices=checks.RESULT_OSES, help="Defaults to the OS this script runs on")
-    parser.add_argument("--memory-type", default="", help="OPTIONAL - your RAM's type and speed, for example DDR5-6400")
-    parser.add_argument("--memory-channels", type=int, default=None, help="OPTIONAL - RAM channels in use: 1 single, 2 dual, 4 quad, 8 on some servers")
+    parser.add_argument("--memory-type", default=None, help=f"Your RAM's type and speed; defaults to {DEFAULT_MEMORY_TYPE} with a warning")
+    parser.add_argument("--memory-channels", type=int, default=None, help=f"RAM channels in use: 1 single, 2 dual, 4 quad, 8 on some servers; defaults to {DEFAULT_MEMORY_CHANNELS} with a warning")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be imported and write nothing")
     parser.add_argument("--data-dir", default=str(checks.DATA_DIR), help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
@@ -510,6 +533,7 @@ def main(argv=None):
     if args.memory_channels is not None and not 1 <= args.memory_channels <= checks.MAX_MEMORY_CHANNELS:
         print(f"--memory-channels must be a whole number from 1 to {checks.MAX_MEMORY_CHANNELS}")
         return 1
+    memory_type, memory_channels = memory_defaults(args.memory_type, args.memory_channels)
     if args.submitted_by and not checks.GITHUB_USER_PATTERN.match(args.submitted_by):
         print(f"--submitted-by '{args.submitted_by}' isn't a valid GitHub username")
         return 1
@@ -567,7 +591,7 @@ def main(argv=None):
             skip(f"unknown preset '{preset_key}'"); continue
 
         date = run_date(folder.name)
-        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by, date, args.memory_type.strip(), args.memory_channels)
+        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by, date, memory_type, memory_channels)
         path = target_file(out_dir, date, run, planned)
         stats = frame_stats(folder, data)
         planned[path]["result"].append(build_entry(data, preset, folder.name, stats))

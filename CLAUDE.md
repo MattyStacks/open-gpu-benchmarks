@@ -251,7 +251,10 @@ unless repository policy changes.
   (`DLSS Auto`, `FSR 2.1 Quality`); keep those labels stable, because
   changing one splits dashboard groups. Settings come from `summary.json`;
   `avg_fps` and `p1_low` come from the run's `frames.csv` frame times, and a
-  re-import backfills `p1_low` on earlier runs that lack one.
+  re-import backfills `p1_low` on earlier runs that lack one. The game
+  doesn't report RAM type or channels, so `--memory-type` and
+  `--memory-channels` default to `DDR5-6000` and `2` with an on-screen
+  warning when they're left out.
 - Keep GitHub links absolute and API/data links relative to the page, so
   every host works. The one exception is the canonical origin
   `https://opengpubenchmarks.com/` (`build.SITE_URL`): the canonical link,

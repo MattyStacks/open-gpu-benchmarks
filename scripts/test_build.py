@@ -1,4 +1,6 @@
 """Regression checks for the catalog, result checks, and aggregation."""
+import contextlib
+import io
 import json
 import re
 import tempfile
@@ -699,6 +701,15 @@ def check_import_cyberpunk():
         system = import_cyberpunk.build_system(cyberpunk_summary()["Data"], "windows", "DDR5-6000", 2)
         assert (system["memory_gb"], system["memory_type"], system["memory_channels"]) == (32, "DDR5-6000", 2), system
         assert import_cyberpunk.main([*args, "--memory-channels", "0"]) == 1
+
+        # Left out, the RAM type and channels default to DDR5-6000 dual channel, with a warning on screen.
+        assert (day_run["system"]["memory_type"], day_run["system"]["memory_channels"]) == ("DDR5-6000", 2), day_run["system"]
+        for options, warned in (([], True), (["--memory-type", "DDR5-6000", "--memory-channels", "2"], False)):
+            shown = io.StringIO()
+            with contextlib.redirect_stdout(shown):
+                assert import_cyberpunk.main([*args, "--dry-run", *options]) == 0
+            assert ("WARNING: --memory-type was not given" in shown.getvalue()) is warned, shown.getvalue()
+            assert ("fix memory_type and memory_channels" in shown.getvalue()) is warned, shown.getvalue()
 
         # Later the same day: a new run joins the day's file, and a run after a
         # driver update gets its own file because system applies to the whole file.

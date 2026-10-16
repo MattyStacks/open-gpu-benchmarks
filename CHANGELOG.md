@@ -51,8 +51,10 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
   details read like "64 GB DDR5-6400 dual channel".
 - The benchmark issue form asks for Memory (GB), Memory type, and Memory
   channels. `import_cyberpunk.py` gains `--memory-type` and
-  `--memory-channels`.
-- The published RTX 5080 runs record DDR5-6400 in dual channel.
+  `--memory-channels`. When either is left out, it records the default
+  (`DDR5-6000`, 2 channels) and prints a warning to use the options or fix
+  the files before submitting.
+- The published RTX 5080 runs record DDR5-6000 in dual channel.
 
 ## 1.5.0.0 - 2026-10-16
 

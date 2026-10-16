@@ -88,7 +88,9 @@ Cyberpunk 2077 built-in benchmark runs come in through
 `scripts/import_cyberpunk.py` (guide: `docs/CYBERPUNK_BENCHMARK.md`): one
 `result_YYYYMMDD_cyberpunk_2077.yaml` per day and setup, one `result` item per
 run, each naming its run folder in `benchmark_run`; keep its preset and
-upscaler labels stable, because changing one splits dashboard groups.
+upscaler labels stable, because changing one splits dashboard groups. Its
+`--memory-type` and `--memory-channels` default to `DDR5-6000` and `2`, with a
+warning, when left out.
 
 Hosting: the canonical site is <https://opengpubenchmarks.com> (Cloudflare
 Pages). GitHub Pages is a mirror. Only the canonical/SEO URLs are absolute,

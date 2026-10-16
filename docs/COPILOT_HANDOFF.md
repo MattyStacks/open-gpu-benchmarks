@@ -19,7 +19,8 @@
     (free text) is now `system.memory_gb` (a number), plus optional
     `memory_type` (`DDR5-6400`) and `memory_channels` (a whole number), rule
     `result-system-memory`. Added to the issue form and to
-    `import_cyberpunk.py` (`--memory-type`, `--memory-channels`).
+    `import_cyberpunk.py` (`--memory-type`, `--memory-channels`, which default
+    to DDR5-6000 and 2 channels with a warning).
   - v1.5.0.0: the Dataset JSON-LD adds `creator` (Organization) and a
     `CreativeWork` `license`, Google's recommended Dataset fields.
   - v1.4.0.0: README rewritten as a short overview (dashboard, JSON
@@ -147,7 +148,9 @@ Run records carry `memory_gb` and `memory_channels` as numbers or `null` and
 the same three keys. None of them group runs or are charted. The dashboard's
 run details join them as "64 GB DDR5-6400 dual channel" (`formatMemory()`).
 Cyberpunk's `summary.json` only reports the size, so `import_cyberpunk.py`
-takes `--memory-type` and `--memory-channels`. Because `system` applies to the
+takes `--memory-type` and `--memory-channels`. When either is left out, it
+records `DEFAULT_MEMORY_TYPE` (`DDR5-6000`) or `DEFAULT_MEMORY_CHANNELS` (2)
+and prints a warning (`memory_defaults()`). Because `system` applies to the
 whole file, a re-import without the same options starts a `_2` file.
 `upgrade_files()` rewrites an older `memory: 64 GB` to `memory_gb: 64`.
 

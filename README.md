@@ -15,8 +15,9 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.4.0.0`, which reorganizes this README into a short
-overview. v1.3.0.0 moved the benchmark data to CC BY 4.0 and added the
+Current version: `v1.5.0.0`, which adds `creator` and a typed `license` to
+the Dataset structured data for Google Search. v1.4.0.0 reorganized this
+README into a short overview, and v1.3.0.0 moved the benchmark data to CC BY 4.0 and added the
 benchmark issue form. See [CHANGELOG.md](CHANGELOG.md) for every release and
 [docs/TODO.md](docs/TODO.md) for planned work.
 

@@ -76,7 +76,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.4.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.5.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -327,7 +327,7 @@ unless repository policy changes.
   - `build.DATA_LICENSE`, `build.DATA_ATTRIBUTION`, and `build.API_LICENSE`
     feed the `_license` block that leads every API file (next to `_source`),
     `metadata.license`, `llms.txt`, and `benchmarks/`. The `index.html`
-    JSON-LD (`license`, `usageInfo`, `creditText`) and `license/` repeat them.
+    JSON-LD (`creator`, `license`, `usageInfo`, `creditText`) and `license/` repeat them.
     `test_build.check_licenses()` checks they agree.
   - Never add data under other terms.
 - The dashboard's **Featured GPU picks** come from `data/picks.yaml`:

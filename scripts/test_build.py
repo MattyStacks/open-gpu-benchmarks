@@ -1130,7 +1130,12 @@ def check_licenses(site_dir):
     url = build.DATA_LICENSE["url"]
     assert build.DATA_LICENSE["id"] == build.API_LICENSE["name"] == "CC-BY-4.0" and build.API_LICENSE["url"] == url
     index = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
-    assert f'"license": "{url}"' in index, "the Dataset JSON-LD must name the CC BY 4.0 license"
+    json_ld = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', index, re.S).group(1))
+    dataset = next(node for node in json_ld["@graph"] if node["@type"] == "Dataset")
+    assert dataset["license"]["url"] == url, "the Dataset JSON-LD must name the CC BY 4.0 license"
+    creator = dataset["creator"]
+    assert creator["@type"] in {"Organization", "Person"} and creator["name"], "the Dataset JSON-LD needs a typed creator"
+    assert creator["url"] == build.SITE_URL, "the Dataset creator must link the canonical origin"
     assert f'"usageInfo": "{build.LICENSE_PAGE}"' in index and build.DATA_ATTRIBUTION["text"] in index
     assert 'href="license/"' in index, "the dashboard must link the license page"
     license_page = (ROOT / "site" / "license" / "index.html").read_text(encoding="utf-8")

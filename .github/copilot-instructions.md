@@ -208,8 +208,8 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   - A friend's numbers need their agreement to public release.
 - `build.DATA_LICENSE` and `build.API_LICENSE` feed the `_license` block at
   the top of every API file (with `_source`), `metadata.license`, `llms.txt`,
-  and `benchmarks/`. The `index.html` Dataset JSON-LD and `license/` repeat
-  the URL.
+  and `benchmarks/`. The `index.html` Dataset JSON-LD (which also needs a
+  typed `creator`) and `license/` repeat the URL.
   `test_build.check_licenses()` keeps them in step.
 
 ## Featured GPU picks

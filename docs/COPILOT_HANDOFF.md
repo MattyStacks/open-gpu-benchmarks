@@ -11,10 +11,12 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.4.0.0` (2026-10-15). Versions are now
+- Current version: `v1.5.0.0` (2026-10-16). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
+  - v1.5.0.0: the Dataset JSON-LD adds `creator` (Organization) and a
+    `CreativeWork` `license`, Google's recommended Dataset fields.
   - v1.4.0.0: README rewritten as a short overview (dashboard, JSON
     endpoints, contributing, local dev, layout). Catalog usage notes moved
     to `data/gpus/README.md`; schema history and fixture details live only
@@ -710,7 +712,9 @@ npm --prefix blog run build -> site/blog/<slug>/, /posts/, /guides/, /reviews/, 
   every API file. `metadata.license` is still written too. `llms.txt`,
   `llms-full.txt`, and `benchmarks/index.html` carry the license and the
   credit line, and the sitemap lists `license/`. `site/index.html`'s Dataset
-  JSON-LD has `license`, `usageInfo` (the license page), and `creditText`.
+  JSON-LD has `creator` (an `Organization`), `license` (a `CreativeWork`
+  with the CC BY 4.0 URL), `usageInfo` (the license page), and `creditText`;
+  Google lists `creator` and `license` as recommended Dataset fields.
   The footers of the dashboard and the blog link `license/`.
 - **Blog writing** (`content/`) stays the author's copyright, all rights
   reserved, and is under neither license. A post with `ai_generated: true`

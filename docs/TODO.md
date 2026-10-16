@@ -277,6 +277,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **v1.5.0.0 (2026-10-16, branch `fix/dataset-jsonld`): Dataset JSON-LD**
+  - Added `creator` and a `CreativeWork` `license` to the dashboard's Dataset
+    JSON-LD after Google Search flagged them as missing.
+  - Follow-up: after deploy, run the Rich Results Test on the homepage and
+    click "Validate fix" in Search Console.
 - **v1.4.0.0 (2026-10-15, branch `docs/readme-cleanup`): README overview**
   - README cut to a short overview with an endpoint table, a "where the
     rules live" table, grouped local setup, and a repository layout. Catalog

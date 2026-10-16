@@ -31,6 +31,15 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.5.0.0 - 2026-10-16
+
+### Fixed
+
+- The dashboard's Dataset JSON-LD adds a `creator` (an `Organization` with
+  the site URL and GitHub repo) and states `license` as a `CreativeWork`,
+  the two recommended fields Google Search reported missing.
+  `test_build.py` checks both.
+
 ## 1.4.0.0 - 2026-10-15
 
 ### Changed

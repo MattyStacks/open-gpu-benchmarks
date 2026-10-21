@@ -35,3 +35,9 @@ games:
     name: Helldivers 2
     type: game
     year: 2024
+  - id: openbenchmarker_neon_flythrough
+    name: OpenBenchmarker Neon Flythrough
+    type: synthetic
+    year: 2026
+    url: https://opengpubenchmarker.com/
+    notes: Browser WebGL2 benchmark; fixed-path neon city flythrough with per-frame timing.

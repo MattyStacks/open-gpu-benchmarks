@@ -1,0 +1,53 @@
+# Reference specs shared by every product with `base: rx_6600s_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_6600s_4gb
+identity:
+  name: Radeon RX 6600S
+  codename: Navi 23
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 2
+silicon:
+  process: TSMC N7
+  die_size_mm2: 237
+  transistors_b: 11.1
+  shader_cores: 1792
+  rt_cores: 28
+  rops: 64
+  cache_mb: 32
+memory:
+  capacity_gb: 4
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 224
+  speed_gbps: 14
+clocks:
+  game_mhz: 1881
+power:
+  tdp_w: 80
+features:
+  av1: decode
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC, AV1
+  technologies:
+    - AMD Smart Access Memory
+    - AMD SmartShift Technology
+notes: Board power up to 80 W.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

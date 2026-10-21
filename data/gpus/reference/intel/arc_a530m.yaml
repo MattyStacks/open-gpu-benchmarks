@@ -1,0 +1,66 @@
+# Reference specs shared by every product with `base: arc_a530m`.
+# Rules: data/gpus/README.md#reference-files
+id: arc_a530m
+identity:
+  name: Arc A530M
+  codename: ACM-G12
+  gpu_vendor: intel
+classification:
+  architecture: Xe HPG
+silicon:
+  process: TSMC N6
+  shader_cores: 1536
+  rt_cores: 12
+  tensor_cores: 192
+  tmus: 96
+  rops: 48
+memory:
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 224
+clocks:
+  game_mhz: 1200
+power:
+  tdp_w: 95
+  pcie: 4.0 x16
+features:
+  av1: encode+decode
+  ai_tops: 96
+  encoder: H.264, H.265/HEVC, AV1
+  decoder: H.264, H.265/HEVC, AV1
+  directx: 12 Ultimate
+  vulkan: '1.3'
+  opengl: '4.6'
+  technologies:
+    - oneAPI
+    - OpenVINO
+    - OpenCL 3.0
+    - VESA Adaptive Sync
+    - Intel Deep Link Dynamic Power Share
+    - Intel Deep Link Hyper Compute
+    - Intel Deep Link Hyper Encode
+    - Intel Deep Link Stream Assist
+notes: 12 Xe-cores; TGP 65-95 W; Intel lists 4-8 GB of GDDR6, so the ID has no memory size.
+sources:
+  - url: https://www.intel.com/content/www/us/en/products/sku/232776/intel-arc-a530m-graphics/specifications.html
+    title: Intel Arc A530M Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.intel.com/content/www/us/en/products/details/discrete-gpus/arc/desktop/a-series.html
+    title: Intel Arc A-Series Graphics
+    accessed: '2026-10-20'
+    covers:
+      - identity
+  - url: https://en.wikipedia.org/wiki/Intel_Arc
+    title: Wikipedia - Intel Arc
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon

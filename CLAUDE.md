@@ -76,7 +76,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.6.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.7.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -208,7 +208,9 @@ unless repository policy changes.
   laptops only, and `board_partner` is for desktop cards only.
 - Catalog files list `sources` (https URLs, `covers` = sections that page
   actually backs). Never invent a source or a spec value; leave unknowns out.
-  Quote source titles that contain `: `.
+  Quote source titles that contain `: `. The GPU vendor's own spec page
+  (nvidia.com, amd.com, intel.com) wins every conflict; Wikipedia or
+  TechPowerUp only fill fields the vendor doesn't publish. Cite the card's own vendor page as well as any overview page.
 - Block-style YAML only in data and templates: no inline `[ ]` or `{ }`.
 - Every rule lives once in `scripts/checks.py`. A new rule needs a
   ``#### `rule-name` `` heading in `data/gpus/README.md` or

@@ -1,0 +1,25 @@
+# Reference specs shared by every product with `base: hd_8590m_2gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_8590m_2gb
+identity:
+  name: Radeon HD 8590M Series GPU
+  gpu_vendor: amd
+memory:
+  capacity_gb: 2
+  type: GDDR5
+  bus_width_bits: 64
+  bandwidth_gbs: 36
+clocks:
+  boost_mhz: 750
+features:
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+      - clocks
+      - features

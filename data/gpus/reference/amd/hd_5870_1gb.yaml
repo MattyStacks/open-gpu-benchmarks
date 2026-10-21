@@ -1,0 +1,32 @@
+# Reference specs shared by every product with `base: hd_5870_1gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_5870_1gb
+identity:
+  name: Radeon HD 5870
+  gpu_vendor: amd
+silicon:
+  process: 40 nm
+  die_size_mm2: 334
+  transistors_b: 2.154
+memory:
+  capacity_gb: 1
+clocks:
+  boost_mhz: 850
+features:
+  directx: '11'
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - silicon

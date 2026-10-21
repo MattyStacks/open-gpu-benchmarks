@@ -1,0 +1,80 @@
+# Reference specs shared by every product with `base: rx_9060_xt_16gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_9060_xt_16gb
+identity:
+  name: Radeon RX 9060 XT
+  codename: Navi 44
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 4
+silicon:
+  process: TSMC N4P
+  die_size_mm2: 199
+  transistors_b: 29.7
+  shader_cores: 2048
+  rt_cores: 32
+  tensor_cores: 64
+  tmus: 128
+  rops: 64
+  cache_mb: 32
+memory:
+  capacity_gb: 16
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 320
+  speed_gbps: 20
+clocks:
+  game_mhz: 2530
+  boost_mhz: 3130
+power:
+  tdp_w: 160
+  psu_w: 450
+  pcie: 5.0 x16
+features:
+  fsr: Redstone
+  av1: encode+decode
+  encoder: H.264, H.265/HEVC, AV1
+  decoder: H.264, H.265/HEVC, AV1
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD Fluid Motion Frames
+    - AMD Noise Suppression
+    - AMD Radeon Super Resolution
+    - AMD Smart Access Memory
+    - AMD Smart Access Video
+    - AMD Privacy View
+    - AMD Radeon Boost
+    - AMD Enhanced Sync Technology
+    - AMD FreeSync Technology
+    - AMD Radeon Chill
+    - AMD Virtual Super Resolution
+    - AMD Radeon Anti-Lag 2
+    - AMD Radeon Image Sharpening 2
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.amd.com/en/products/graphics/desktops/radeon/9000-series/amd-radeon-rx-9060xt.html
+    title: AMD Radeon RX 9060 XT (16GB)
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

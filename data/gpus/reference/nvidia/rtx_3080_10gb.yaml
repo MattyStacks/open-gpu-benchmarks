@@ -1,0 +1,92 @@
+# Reference specs shared by every product with `base: rtx_3080_10gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_3080_10gb
+identity:
+  name: GeForce RTX 3080 10 GB
+  codename: GA102
+  gpu_vendor: nvidia
+classification:
+  architecture: Ampere
+silicon:
+  process: Samsung 8N
+  die_size_mm2: 628.4
+  transistors_b: 28.3
+  shader_cores: 8704
+  rt_cores: 68
+  tensor_cores: 272
+  tmus: 272
+  rops: 96
+  cache_mb: 5
+memory:
+  capacity_gb: 10
+  type: GDDR6X
+  bus_width_bits: 320
+  bandwidth_gbs: 760.3
+  speed_gbps: 19
+clocks:
+  base_mhz: 1440
+  boost_mhz: 1710
+power:
+  tdp_w: 320
+  psu_w: 750
+  pcie: 4.0 x16
+features:
+  dlss: '2'
+  av1: decode
+  ray_tracing: 2nd Generation
+  encoder: 7th Generation
+  decoder: 5th Generation
+  directx: 12 Ultimate
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '8.6'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA Broadcast
+    - Resizable BAR
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - RTX Remix
+    - NVIDIA GPU Boost
+    - VR Ready
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - RTX HDR
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3080-3080ti/
+    title: GeForce RTX 3080 Family of Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

@@ -1,0 +1,69 @@
+# Reference specs shared by every product with `base: gtx_1060_6gb`.
+# Rules: data/gpus/README.md#reference-files
+id: gtx_1060_6gb
+identity:
+  name: GeForce GTX 1060 6 GB
+  codename: GP106
+  gpu_vendor: nvidia
+classification:
+  architecture: Pascal
+silicon:
+  process: TSMC 16FF
+  die_size_mm2: 200
+  transistors_b: 4.4
+  shader_cores: 1280
+  tmus: 80
+  rops: 48
+  cache_mb: 1.5
+memory:
+  capacity_gb: 6
+  type: GDDR5
+  bus_width_bits: 192
+  bandwidth_gbs: 192
+  speed_gbps: 8
+clocks:
+  base_mhz: 1506
+  boost_mhz: 1708
+power:
+  tdp_w: 120
+  pcie: 3.0 x16
+features:
+  encoder: 6th Generation
+  decoder: 3rd Generation
+  directx: '12'
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '6.1'
+  technologies:
+    - Reflex Low Latency Mode
+    - NVIDIA App
+    - NVIDIA G-SYNC
+    - VR Ready
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/news/nvidia-geforce-gtx-1060/
+    title: 'GeForce GTX 1060 Out Now. GTX 980-Class Performance Starting At $249 | GeForce News'
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features

@@ -1,0 +1,79 @@
+# Reference specs shared by every product with `base: rx_6650_xt_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_6650_xt_8gb
+identity:
+  name: Radeon RX 6650 XT
+  codename: Navi 23
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 2
+silicon:
+  process: TSMC N7
+  die_size_mm2: 237
+  transistors_b: 11.1
+  shader_cores: 2048
+  rt_cores: 32
+  tmus: 128
+  rops: 64
+  cache_mb: 32
+memory:
+  capacity_gb: 8
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 280
+  speed_gbps: 17.5
+clocks:
+  base_mhz: 2055
+  game_mhz: 2410
+  boost_mhz: 2635
+power:
+  tdp_w: 180
+  psu_w: 500
+features:
+  av1: decode
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC, AV1
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD Noise Suppression
+    - AMD Radeon Super Resolution
+    - AMD Smart Access Memory
+    - VSR(4K)
+    - AMD Privacy View
+    - AMD Radeon Boost
+    - AMD Radeon Anti-Lag
+    - AMD Radeon Image Sharpening
+    - AMD Enhanced Sync Technology
+    - AMD FreeSync Technology
+    - AMD Radeon Chill
+    - TrueAudio Next
+    - The Vulkan API
+    - AMD Mantle API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.amd.com/en/products/graphics/desktops/radeon/6000-series/amd-radeon-rx-6650-xt.html
+    title: Radeon RX 6650 XT Desktop Graphics Card
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

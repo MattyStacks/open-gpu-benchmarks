@@ -1,0 +1,77 @@
+# Reference specs shared by every product with `base: rtx_3080_laptop_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_3080_laptop_8gb
+identity:
+  name: GeForce RTX 3080 Laptop GPU 8 GB
+  codename: GA104
+  gpu_vendor: nvidia
+classification:
+  architecture: Ampere
+silicon:
+  process: Samsung 8N
+  die_size_mm2: 392
+  transistors_b: 17.4
+  shader_cores: 6144
+  rt_cores: 48
+  tensor_cores: 192
+  tmus: 192
+  rops: 96
+  cache_mb: 4
+memory:
+  capacity_gb: 8
+  type: GDDR6
+  bus_width_bits: 256
+clocks:
+  boost_mhz: 1710
+power:
+  tdp_w: 150
+  pcie: '4.0'
+features:
+  dlss: '2'
+  av1: decode
+  ray_tracing: 2nd Generation
+  encoder: 7th Generation
+  decoder: 5th Generation
+  directx: 12 Ultimate
+  cuda: '8.6'
+  technologies:
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - Reflex Low Latency Mode
+    - NVIDIA Broadcast
+    - NVIDIA App
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA Freestyle
+    - VR Ready
+    - NVIDIA Omniverse
+    - RTX Remix
+notes: Boost clock 1245-1710 MHz depending on the laptop's power limit; TGP 80-150 W.
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/laptops/30-series/
+    title: GeForce RTX 30-Series Laptops
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+  - url: https://www.nvidia.com/en-us/geforce/laptops/compare/
+    title: NVIDIA - Compare GeForce RTX Laptops
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

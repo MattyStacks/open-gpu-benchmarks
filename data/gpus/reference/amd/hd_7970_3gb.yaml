@@ -1,0 +1,43 @@
+# Reference specs shared by every product with `base: hd_7970_3gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_7970_3gb
+identity:
+  name: Radeon HD 7970
+  gpu_vendor: amd
+classification:
+  architecture: GCN 1
+silicon:
+  process: 28 nm
+  die_size_mm2: 352
+  transistors_b: 4.313
+  shader_cores: 2048
+  tmus: 128
+  rops: 32
+memory:
+  capacity_gb: 3
+  bandwidth_gbs: 264
+clocks:
+  boost_mhz: 925
+power:
+  tdp_w: 300
+features:
+  directx: '11'
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - silicon

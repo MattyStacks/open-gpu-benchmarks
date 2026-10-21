@@ -1,0 +1,49 @@
+# Reference specs shared by every product with `base: rx_5500_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_5500_4gb
+identity:
+  name: Radeon RX 5500
+  codename: Navi 14
+  gpu_vendor: amd
+classification:
+  architecture: RDNA
+silicon:
+  process: TSMC N7
+  die_size_mm2: 158
+  transistors_b: 6.4
+  shader_cores: 1408
+  tmus: 88
+  rops: 32
+memory:
+  capacity_gb: 4
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 224
+  speed_gbps: 14
+clocks:
+  game_mhz: 1670
+  boost_mhz: 1845
+power:
+  tdp_w: 150
+  psu_w: 550
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

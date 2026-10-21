@@ -1,0 +1,49 @@
+# Reference specs shared by every product with `base: rx_5600_xt_6gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_5600_xt_6gb
+identity:
+  name: Radeon RX 5600 XT
+  codename: Navi 10
+  gpu_vendor: amd
+classification:
+  architecture: RDNA
+silicon:
+  process: TSMC N7
+  die_size_mm2: 251
+  transistors_b: 10.3
+  shader_cores: 2304
+  tmus: 144
+  rops: 64
+memory:
+  capacity_gb: 6
+  type: GDDR6
+  bus_width_bits: 192
+  bandwidth_gbs: 336
+clocks:
+  game_mhz: 1375
+  boost_mhz: 1560
+power:
+  tdp_w: 150
+  psu_w: 550
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+notes: Memory speed 12 or 14 Gbps depending on the board.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

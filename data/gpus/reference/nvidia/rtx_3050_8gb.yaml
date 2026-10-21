@@ -1,0 +1,90 @@
+# Reference specs shared by every product with `base: rtx_3050_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_3050_8gb
+identity:
+  name: GeForce RTX 3050 8 GB
+  codename: GA106
+  gpu_vendor: nvidia
+classification:
+  architecture: Ampere
+silicon:
+  process: Samsung 8N
+  die_size_mm2: 276
+  shader_cores: 2560
+  rt_cores: 20
+  tensor_cores: 80
+  tmus: 80
+  rops: 32
+  cache_mb: 2
+memory:
+  capacity_gb: 8
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 224
+  speed_gbps: 14
+clocks:
+  base_mhz: 1550
+  boost_mhz: 1780
+power:
+  tdp_w: 130
+  psu_w: 550
+  pcie: 4.0 x8
+features:
+  dlss: '2'
+  av1: decode
+  ray_tracing: 2nd Generation
+  encoder: 7th Generation
+  decoder: 5th Generation
+  directx: 12 Ultimate
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '8.6'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA Broadcast
+    - Resizable BAR
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - RTX Remix
+    - NVIDIA GPU Boost
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - RTX HDR
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3050/
+    title: GeForce RTX 3050 Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

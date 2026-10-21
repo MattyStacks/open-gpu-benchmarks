@@ -15,9 +15,11 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.6.0.0`, which records system RAM as numbers in the API:
-`memory_gb`, plus optional `memory_type` (`DDR5-6400`) and `memory_channels`.
-v1.5.0.0 added `creator` and a typed `license` to the Dataset structured data
+Current version: `v1.7.0.0`, which adds 309 reference GPU specs from NVIDIA,
+AMD, and Intel's own spec pages, with new fields for ray tracing, encoders, API
+versions, and each vendor's feature list. v1.6.0.0 records system RAM as
+numbers in the API: `memory_gb`, plus optional `memory_type` (`DDR5-6400`) and
+`memory_channels`. v1.5.0.0 added `creator` and a typed `license` to the Dataset structured data
 for Google Search. v1.4.0.0 reorganized this
 README into a short overview, and v1.3.0.0 moved the benchmark data to CC BY 4.0 and added the
 benchmark issue form. See [CHANGELOG.md](CHANGELOG.md) for every release and
@@ -25,7 +27,8 @@ benchmark issue form. See [CHANGELOG.md](CHANGELOG.md) for every release and
 
 ## What's on the dashboard
 
-Published so far: 1 catalog GPU (the GeForce RTX 5080 Founders Edition), 34
+Published so far: 1 catalog GPU (the GeForce RTX 5080 Founders Edition), 309
+reference GPU specs ready for products to build on, 34
 official runs, no community runs, and 30 dashboard summaries, all Cyberpunk
 2077 built-in benchmark runs on Windows.
 

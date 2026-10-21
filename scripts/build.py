@@ -25,11 +25,11 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 SITE_DIR = ROOT / "site"
 OUTPUT_DIR = SITE_DIR / "api" / "v1"
-SCHEMA_VERSION = "0.17"
+SCHEMA_VERSION = "0.18"
 # MAJOR.MINOR.DATA.POST: MAJOR = breaking data contract or API, MINOR = any
 # code change, DATA = newly published runs, POST = a new or updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
-RELEASE_VERSION = "1.6.0.0"
+RELEASE_VERSION = "1.7.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.

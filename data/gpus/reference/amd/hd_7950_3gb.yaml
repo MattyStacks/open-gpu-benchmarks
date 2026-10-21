@@ -1,0 +1,47 @@
+# Reference specs shared by every product with `base: hd_7950_3gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_7950_3gb
+identity:
+  name: Radeon HD 7950
+  gpu_vendor: amd
+classification:
+  architecture: GCN 1
+silicon:
+  process: 28 nm
+  die_size_mm2: 352
+  transistors_b: 4.313
+  shader_cores: 1792
+  tmus: 112
+  rops: 32
+memory:
+  capacity_gb: 3
+  type: GDDR5
+  bandwidth_gbs: 240
+clocks:
+  boost_mhz: 1250
+power:
+  tdp_w: 300
+features:
+  directx: '11'
+  technologies:
+    - AMD App Acceleration
+    - Catalyst Software
+    - AMD PowerTune Technology
+    - AMD ZeroCore Power Technology
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - silicon

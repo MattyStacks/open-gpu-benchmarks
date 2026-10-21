@@ -1,0 +1,42 @@
+# Reference specs shared by every product with `base: hd_5670_1gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_5670_1gb
+identity:
+  name: Radeon HD 5670
+  codename: Redwood XT
+  gpu_vendor: amd
+silicon:
+  process: 40 nm
+  die_size_mm2: 104
+  transistors_b: 0.627
+  shader_cores: 400
+  tmus: 20
+  rops: 8
+memory:
+  capacity_gb: 1
+  type: GDDR5
+  bandwidth_gbs: 64
+clocks:
+  boost_mhz: 775
+features:
+  directx: '11'
+  technologies:
+    - Catalyst Software
+    - AMD Radeon Dual Graphics
+    - Unified Video Decoder (UVD)
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon

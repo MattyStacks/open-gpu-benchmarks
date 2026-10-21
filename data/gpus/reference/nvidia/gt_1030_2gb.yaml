@@ -1,0 +1,59 @@
+# Reference specs shared by every product with `base: gt_1030_2gb`.
+# Rules: data/gpus/README.md#reference-files
+id: gt_1030_2gb
+identity:
+  name: GeForce GT 1030
+  codename: GP108
+  gpu_vendor: nvidia
+classification:
+  architecture: Pascal
+silicon:
+  process: Samsung 14LPP
+  die_size_mm2: 74
+  transistors_b: 1.8
+  shader_cores: 384
+  tmus: 24
+  rops: 16
+  cache_mb: 0.5
+memory:
+  capacity_gb: 2
+  type: GDDR5
+  bus_width_bits: 64
+  bandwidth_gbs: 48.1
+  speed_gbps: 6
+clocks:
+  base_mhz: 1228
+  boost_mhz: 1468
+power:
+  tdp_w: 30
+  pcie: 3.0 x4
+features:
+  encoder: 6th Generation
+  decoder: 3rd Generation
+  directx: '12'
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '6.1'
+  technologies:
+    - Reflex Low Latency Mode
+    - NVIDIA App
+    - NVIDIA G-SYNC
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features

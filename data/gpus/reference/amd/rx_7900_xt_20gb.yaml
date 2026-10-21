@@ -1,0 +1,76 @@
+# Reference specs shared by every product with `base: rx_7900_xt_20gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_7900_xt_20gb
+identity:
+  name: Radeon RX 7900 XT
+  codename: Navi 31
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 3
+silicon:
+  process: TSMC N5 (GCD) + TSMC N6 (MCD)
+  die_size_mm2: 529
+  transistors_b: 58
+  shader_cores: 5376
+  rt_cores: 84
+  tensor_cores: 168
+  tmus: 336
+  rops: 192
+  cache_mb: 80
+memory:
+  capacity_gb: 20
+  type: GDDR6
+  bandwidth_gbs: 800
+  speed_gbps: 20
+clocks:
+  game_mhz: 2000
+  boost_mhz: 2400
+power:
+  tdp_w: 315
+  psu_w: 750
+features:
+  av1: encode+decode
+  encoder: H.264, H.265/HEVC, AV1
+  decoder: H.264, H.265/HEVC, AV1
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD Noise Suppression
+    - AMD Radeon Super Resolution
+    - AMD Smart Access Memory
+    - AMD Smart Access Video
+    - AMD Privacy View
+    - AMD Radeon Boost
+    - AMD Radeon Anti-Lag
+    - AMD Radeon Image Sharpening
+    - AMD Enhanced Sync Technology
+    - AMD FreeSync Technology
+    - AMD Radeon Chill
+    - AMD Virtual Super Resolution
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.amd.com/en/products/graphics/desktops/radeon/7000-series/amd-radeon-rx-7900xt.html
+    title: Radeon RX 7900 XT
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

@@ -1,0 +1,50 @@
+# Reference specs shared by every product with `base: rx_6500_xt_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_6500_xt_4gb
+identity:
+  name: Radeon RX 6500 XT (4GB)
+  codename: Navi 24
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 2
+silicon:
+  process: TSMC N6
+  die_size_mm2: 107
+  transistors_b: 5.4
+  shader_cores: 1024
+  rt_cores: 16
+  tmus: 64
+  rops: 32
+  cache_mb: 16
+memory:
+  capacity_gb: 4
+  type: GDDR6
+  bus_width_bits: 64
+  bandwidth_gbs: 144
+  speed_gbps: 18
+clocks:
+  game_mhz: 2610
+  boost_mhz: 2815
+power:
+  tdp_w: 107
+  psu_w: 400
+features:
+  decoder: H.264, H.265/HEVC
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

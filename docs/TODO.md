@@ -13,13 +13,41 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
 
 The four-step catalog plan is complete. These items finish it off.
 
-- [ ] **Re-validate the RTX 5080 sources by hand.** `rtx_5080_16gb` and
-  `rtx_5080_16gb_fe` cite NVIDIA's product page and Wikipedia (2026-10-14),
-  because TechPowerUp blocks scripts with a bot check. The clocks are written
-  from NVIDIA's rounded 2.30/2.62 GHz as 2300/2620 MHz, and `mem_mhz` and
-  `features.fsr` are left out. Check them against TechPowerUp or NVIDIA's
-  Blackwell whitepaper (Appendix B) and add a TechPowerUp source.
-- [ ] **Require `sources`.** After the re-validation above, turn the
+- [ ] **Hand-check the reference files against TechPowerUp.** The 309
+  reference files (v1.7.0.0) come from the vendors' pages, with Wikipedia
+  filling chip details. TechPowerUp blocks scripts (a bot check for curl, a
+  403 for fetch tools), so none of them cite it yet. Spot-check them in a
+  browser, especially the silicon fields that cite only Wikipedia, and add
+  TechPowerUp as a source where it agrees. NVIDIA clocks stay as NVIDIA
+  rounds them (2.62 GHz is written 2620 MHz).
+- [ ] **Show reference files in the API or the dashboard.** References are
+  only visible through a product's `base:`, so the 309 new files don't
+  appear in `gpus.json` yet. Consider a `references.json` endpoint, or
+  creating the vendor-made products (`_fe`, `_reference`, `_le`) that point
+  at them.
+- [ ] **Add NVIDIA's RTX 20, GTX 16, and GTX 10 laptop GPUs.** NVIDIA's
+  laptop compare page lists only series-level specs for them, and the old
+  per-series laptop pages now return 404, so v1.7.0.0 left them out. Find a
+  vendor source (NVIDIA spec PDFs or archived product pages) before adding
+  them.
+- [ ] **Resolve amd.com values that contradict amd.com.** These were left
+  out of the reference files, and each file's `notes` says why:
+  - Radeon 520/530/535/610/620/625: 4.5 Gbps memory and 48 GB/s can't both
+    be right on a 64-bit bus.
+  - Radeon VII: 4 Gbps memory vs 1024 GB/s on a 4096-bit bus.
+  - R9 380X: a 64-bit bus can't carry 182 GB/s.
+  - RX 6450M/6550M/6550S: 64 ROPs, more than the full Navi 24 chip's 32.
+- [ ] **Fill silicon values the two Wikipedia pages disagree on.** The
+  NVIDIA cross-check removed 14 Wikipedia-only values where the GPU list and
+  the per-series article differ: die size (RTX 4060/4060 Ti, 4070/4060/4050
+  Laptop), transistors (RTX 3060 8/12 GB, 3050 8 GB, 4060 Laptop, GTX 1080
+  Ti), ROPs (RTX 3080 Ti/3050 Ti Laptop), and L2 (RTX 5060). Fill them from
+  an NVIDIA whitepaper or TechPowerUp.
+- [ ] **Watch NVIDIA's DLSS labels.** The compare page says DLSS 5 for RTX
+  50 and DLSS 3 for RTX 40 (and 2 for RTX 30/20), but the card pages still
+  say DLSS 4 and DLSS 3.5. The references follow the compare page. Update
+  them when NVIDIA changes either page.
+- [ ] **Require `sources`.** After the hand check above, turn the
   `sources-missing` warning into an error.
 - [ ] **Make `_generic` laptop IDs an error.** Since v1.0.0 the published
   catalog has no `_generic` IDs (only the test fixtures do), so `id-generic`
@@ -257,6 +285,14 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Tooling and bugs
 
+- [ ] **Fix the VRAM column (bug since v1.6.0.0).** `site/index.html`
+  declares `formatMemory` twice: `formatMemory(record)` for GPU VRAM and,
+  later, `formatMemory(run)` for system RAM. In a classic script the second
+  one wins, so the table's VRAM column (`formatMemory(record)`) renders the
+  system-RAM formatter and shows nothing useful. Rename the second to
+  `formatSystemMemory` and update its call in the run line. Found while
+  checking v1.7.0.0; left out of that PR to keep it one topic.
+
 - [ ] **Warn when a file name's game part doesn't match `game_id`.** Files are
   named `result_YYYYMMDD_<game_id>.yaml`, but older community fixtures use
   short names such as `_cyberpunk`, so this isn't checked yet.
@@ -277,6 +313,10 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **v1.7.0.0 (2026-10-20, branch `data/reference-gpus`): reference GPUs**
+  - 309 reference files from NVIDIA, AMD, and Intel spec pages, with new
+    catalog fields for the features vendors publish (schema 0.18), and the
+    RTX 5080 DLSS fix.
 - **v1.5.0.0 (2026-10-16, branch `fix/dataset-jsonld`): Dataset JSON-LD**
   - Added `creator` and a `CreativeWork` `license` to the dashboard's Dataset
     JSON-LD after Google Search flagged them as missing.

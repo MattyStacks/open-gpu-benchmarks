@@ -1,0 +1,22 @@
+# Reference specs shared by every product with `base: arc_140t`.
+# Rules: data/gpus/README.md#reference-files
+id: arc_140t
+identity:
+  name: Arc 140T GPU
+  gpu_vendor: intel
+memory:
+  shared: true
+clocks:
+  boost_mhz: 2350
+features:
+  ai_tops: 77
+notes: Built into Intel Core Ultra processors; 8 GPU cores; clock is the graphics max dynamic frequency.
+sources:
+  - url: https://www.intel.com/content/www/us/en/products/details/discrete-gpus/arc/laptops.html
+    title: Intel Arc Graphics for Laptops
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+      - clocks
+      - features

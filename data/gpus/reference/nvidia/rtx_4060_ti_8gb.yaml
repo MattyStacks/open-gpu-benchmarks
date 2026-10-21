@@ -1,0 +1,93 @@
+# Reference specs shared by every product with `base: rtx_4060_ti_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_4060_ti_8gb
+identity:
+  name: GeForce RTX 4060 Ti 8 GB
+  codename: AD106
+  gpu_vendor: nvidia
+classification:
+  architecture: Ada Lovelace
+silicon:
+  process: TSMC 4N
+  transistors_b: 22.9
+  shader_cores: 4352
+  rt_cores: 34
+  tensor_cores: 136
+  tmus: 136
+  rops: 48
+  cache_mb: 32
+memory:
+  capacity_gb: 8
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 288
+  speed_gbps: 18
+clocks:
+  base_mhz: 2310
+  boost_mhz: 2540
+power:
+  tdp_w: 160
+  psu_w: 550
+  pcie: 4.0 x8
+features:
+  dlss: '3'
+  av1: encode+decode
+  ray_tracing: 3rd Generation
+  ai_tops: 353
+  encoder: 1x 8th Generation
+  decoder: 5th Generation
+  directx: 12 Ultimate
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '8.9'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA Broadcast
+    - Resizable BAR
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - RTX Remix
+    - NVIDIA GPU Boost
+    - VR Ready
+    - DLSS Frame Generation
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - RTX HDR
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4060-4060ti/
+    title: 'GeForce RTX 4060 Ti & 4060 Graphics Cards'
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

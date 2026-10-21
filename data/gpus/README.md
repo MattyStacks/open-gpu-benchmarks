@@ -52,8 +52,11 @@ data/gpus/
 ```
 
 The file names above are examples of the layout. The published catalog holds
-one product today, `desktop/nvidia/rtx_5080_16gb_fe.yaml`, with its reference
-`reference/nvidia/rtx_5080_16gb.yaml`.
+one product today, `desktop/nvidia/rtx_5080_16gb_fe.yaml`, built on
+`reference/nvidia/rtx_5080_16gb.yaml`. The `reference/` folder also holds 309
+reference files (79 NVIDIA, 203 AMD, 27 Intel) taken from the vendors' spec
+pages, ready for products to use with `base:`. See
+[Where the reference specs come from](#where-the-reference-specs-come-from).
 
 The `reference/` folder is different: it holds
 [reference files](#reference-files), not products, and nothing is benchmarked
@@ -270,6 +273,28 @@ Rules for reference files:
 - **`base` is optional.** A product used by only one device can hold every
   field itself. `steam_deck_oled_16gb` does.
 
+### Where the reference specs come from
+
+The vendor's own page always wins:
+
+1. **NVIDIA:** the [desktop compare page](https://www.nvidia.com/en-us/geforce/graphics-cards/compare/)
+   and the [laptop compare page](https://www.nvidia.com/en-us/geforce/laptops/compare/),
+   plus each card's family page. GTX 10 desktop values come from NVIDIA's
+   launch articles where they state one.
+2. **AMD:** the [graphics specifications list](https://www.amd.com/en/products/specifications/graphics.html),
+   checked against each card's product page where AMD still has one.
+3. **Intel:** each Arc card's `products/sku/.../specifications.html` page,
+   plus the B-series, A-series, and laptop overview pages.
+4. **Wikipedia** fills only what the vendor doesn't publish: the die
+   codename, die size, transistors, TMUs, ROPs, L2, and PCIe lane count. A
+   value is used only when it agrees with the vendor's own counts. NVIDIA
+   values are also checked against the per-series article and dropped when
+   the two disagree.
+
+When a vendor lists two configurations (`512 or 640` stream processors), or
+its numbers contradict each other, the field is left out and `notes` says
+why. TechPowerUp blocks automated fetches, so no reference cites it yet.
+
 ## Product-only fields
 
 | Field                    | For              | What it is |
@@ -365,20 +390,30 @@ sources.
 | `classification` | `form_factor`     | `desktop`, `laptop`, `handheld`, `igpu` | Required. Also the folder name. |
 | `classification` | `architecture`    | text                         | Such as `Ada Lovelace` or `RDNA 3`. |
 | `silicon`        | `process`         | text                         | Such as `TSMC 4N`. |
-| `silicon`        | `die_size_mm2`, `transistors_b`, `shader_cores`, `rt_cores`, `tmus`, `rops` | number | |
+| `silicon`        | `die_size_mm2`, `transistors_b`, `shader_cores`, `rt_cores`, `tmus`, `rops` | number | `rt_cores` also holds AMD ray accelerators and Intel ray tracing units. |
+| `silicon`        | `tensor_cores`    | number                       | NVIDIA tensor cores, AMD AI accelerators, or Intel XMX engines. |
+| `silicon`        | `cache_mb`        | number                       | The last-level cache: L2 on NVIDIA and Intel, Infinity Cache on AMD. |
 | `memory`         | `capacity_gb`     | number, 1-512                | Required. Must match the ID's `<N>gb`. |
 | `memory`         | `type`            | text                         | Such as `GDDR6X` or `LPDDR5X`. |
-| `memory`         | `bus_width_bits`  | number, 32-512               | |
+| `memory`         | `bus_width_bits`  | number, 32-4096              | HBM cards use 2048 or 4096 bits. |
 | `memory`         | `bandwidth_gbs`   | number                       | |
+| `memory`         | `speed_gbps`      | number                       | Effective memory speed per pin, such as `20` for 20 Gbps GDDR6. |
 | `memory`         | `shared`          | `true` or `false`            | `true` when the GPU uses system RAM (handhelds, iGPUs). |
-| `clocks`         | `base_mhz`, `boost_mhz`, `mem_mhz` | number      | |
+| `clocks`         | `base_mhz`, `boost_mhz`, `mem_mhz` | number      | Laptop references give the top of the vendor's boost range. |
+| `clocks`         | `game_mhz`        | number                       | The typical clock while gaming: AMD's game frequency, Intel's graphics clock. |
 | `power`          | `tdp_w`           | number, 5-600                | Board power, or the top of the power range for laptops and handhelds. |
+| `power`          | `psu_w`           | number, 100-2000             | The vendor's required or minimum system power. |
 | `power`          | `connectors`      | list of text                 | One `-` line per connector. |
 | `power`          | `pcie`            | text                         | Such as `4.0 x16`. |
 | `release`        | `date`            | quoted `'YYYY-MM-DD'`        | |
 | `release`        | `msrp_usd`        | number                       | |
 | `release`        | `msrp_history`    | list                         | Each item has `date` (`'YYYY-MM'` or `'YYYY-MM-DD'`), `price_usd`, and optional `label` and `source` (an `https://` link). |
-| `features`       | `dlss`, `fsr`, `xess`, `av1` | text              | Quote version numbers: `'3.1'`. |
+| `features`       | `dlss`, `fsr`, `xess`, `av1` | text              | Quote version numbers: `'3.1'`. Only a version or name the vendor states, such as `'5'` or `Redstone`. |
+| `features`       | `ray_tracing`     | text                         | The vendor's ray tracing generation, such as `4th Generation`. |
+| `features`       | `ai_tops`         | number                       | The vendor's own AI TOPS figure. NVIDIA and Intel measure it differently, so don't compare it across vendors. |
+| `features`       | `encoder`, `decoder` | text                      | As the vendor writes it: `2x 9th Generation` (NVENC/NVDEC) or `H.264, H.265/HEVC, AV1`. |
+| `features`       | `directx`, `vulkan`, `opengl`, `cuda` | text     | API versions, quoted when they look like numbers: `12 Ultimate`, `'1.4'`, `'4.6'`, `'12.0'`. |
+| `features`       | `technologies`    | list of text                 | The vendor's own feature names, written as its spec page does (trademark symbols dropped), such as `DLSS Frame Generation` or `AMD Fluid Motion Frames`. |
 | `features`       | `outputs`         | list of text                 | One `-` line per output. |
 | `platform`       | see [Device specs](#device-specs-platform) | | Handheld and laptop products only. |
 
@@ -529,8 +564,9 @@ A number is outside its allowed range:
 | Field | Allowed range |
 | ----- | ------------- |
 | `memory.capacity_gb` | 1-512 GB |
-| `memory.bus_width_bits` | 32-512 bits |
+| `memory.bus_width_bits` | 32-4096 bits |
 | `power.tdp_w` | 5-600 W |
+| `power.psu_w` | 100-2000 W |
 | `platform.ram_mts` | 1000-20000 MT/s |
 | `platform.power_min_w`, `platform.power_max_w` | 1-600 W |
 | `platform.battery_wh` | 1-200 Wh |

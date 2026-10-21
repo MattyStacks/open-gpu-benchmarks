@@ -1,0 +1,70 @@
+# Reference specs shared by every product with `base: gtx_1630_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: gtx_1630_4gb
+identity:
+  name: GeForce GTX 1630
+  codename: TU117
+  gpu_vendor: nvidia
+classification:
+  architecture: Turing
+silicon:
+  process: TSMC 12FFN
+  die_size_mm2: 200
+  transistors_b: 4.7
+  shader_cores: 512
+  tmus: 32
+  rops: 16
+  cache_mb: 1
+memory:
+  capacity_gb: 4
+  type: GDDR6
+  bus_width_bits: 64
+  bandwidth_gbs: 96
+  speed_gbps: 12
+clocks:
+  base_mhz: 1740
+  boost_mhz: 1785
+power:
+  tdp_w: 75
+  psu_w: 300
+  pcie: 3.0 x16
+features:
+  encoder: Yes (Volta)
+  decoder: 'Yes'
+  directx: '12'
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '7.5'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA GPU Boost
+    - NVIDIA Decoder (NVDEC)
+    - Multi Monitor
+    - HDCP
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

@@ -1,0 +1,42 @@
+# Reference specs shared by every product with `base: rx_570x_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_570x_8gb
+identity:
+  name: Radeon RX 570X
+  gpu_vendor: amd
+silicon:
+  transistors_b: 5.7
+  shader_cores: 2048
+  tmus: 128
+  rops: 32
+memory:
+  capacity_gb: 8
+  type: GDDR5
+  bus_width_bits: 256
+  bandwidth_gbs: 224
+  speed_gbps: 7
+clocks:
+  base_mhz: 1168
+  boost_mhz: 1244
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+  directx: '12'
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD FreeSync Technology
+    - 4th Gen GCN Architecture
+    - AMD Radeon Chill
+    - AMD Radeon ReLive
+    - AMD App Acceleration
+    - The Vulkan API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - features

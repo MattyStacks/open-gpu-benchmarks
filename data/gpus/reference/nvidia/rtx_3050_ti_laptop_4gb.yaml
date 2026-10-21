@@ -1,0 +1,73 @@
+# Reference specs shared by every product with `base: rtx_3050_ti_laptop_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_3050_ti_laptop_4gb
+identity:
+  name: GeForce RTX 3050 Ti Laptop GPU
+  codename: GA107
+  gpu_vendor: nvidia
+classification:
+  architecture: Ampere
+silicon:
+  process: Samsung 8N
+  die_size_mm2: 200
+  transistors_b: 8.7
+  shader_cores: 2560
+  rt_cores: 20
+  tensor_cores: 80
+  tmus: 80
+  cache_mb: 2
+memory:
+  capacity_gb: 4
+  type: GDDR6
+  bus_width_bits: 128
+clocks:
+  boost_mhz: 1695
+power:
+  pcie: '4.0'
+features:
+  dlss: '2'
+  av1: decode
+  ray_tracing: 2nd Generation
+  encoder: 7th Generation
+  decoder: 5th Generation
+  directx: 12 Ultimate
+  cuda: '8.6'
+  technologies:
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - Reflex Low Latency Mode
+    - NVIDIA Broadcast
+    - NVIDIA App
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA Freestyle
+    - VR Ready
+    - NVIDIA Omniverse
+notes: Boost clock 1035-1695 MHz depending on the laptop's power limit.
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/laptops/30-series/
+    title: GeForce RTX 30-Series Laptops
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+  - url: https://www.nvidia.com/en-us/geforce/laptops/compare/
+    title: NVIDIA - Compare GeForce RTX Laptops
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory

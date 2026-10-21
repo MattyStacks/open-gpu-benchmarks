@@ -1,0 +1,22 @@
+# Reference specs shared by every product with `base: r7_m265ae`.
+# Rules: data/gpus/README.md#reference-files
+id: r7_m265ae
+identity:
+  name: Radeon R7 M265AE
+  gpu_vendor: amd
+features:
+  directx: '11'
+  opengl: '4.4'
+  technologies:
+    - Catalyst Software
+    - AMD PowerTune Technology
+    - AMD Radeon Dual Graphics
+    - AMD ZeroCore Power Technology
+    - Switchable Graphics
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - features

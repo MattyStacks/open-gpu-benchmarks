@@ -160,7 +160,9 @@ Every PR but a data-only submission bumps it (see the top of this file).
 
 Catalog data must be accurate. Cite real pages in `sources`, list in
 `covers` only the sections a page backs, and leave a value out rather than
-guess it.
+guess it. The GPU vendor's own spec page (nvidia.com, amd.com, intel.com) wins
+every conflict; Wikipedia or TechPowerUp only fill fields the vendor doesn't
+publish. Cite the card's own vendor page as well as any overview page.
 
 ## Checks to run before finishing
 

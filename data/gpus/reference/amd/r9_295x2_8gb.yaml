@@ -1,0 +1,47 @@
+# Reference specs shared by every product with `base: r9_295x2_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: r9_295x2_8gb
+identity:
+  name: Radeon R9 295X2
+  codename: Vesuvius
+  gpu_vendor: amd
+classification:
+  architecture: GCN 2
+silicon:
+  process: 28 nm
+  shader_cores: 5632
+memory:
+  capacity_gb: 8
+  bandwidth_gbs: 640
+clocks:
+  boost_mhz: 1018
+power:
+  tdp_w: 500
+features:
+  directx: '12'
+  technologies:
+    - Catalyst Software
+    - AMD HD3D Technology
+    - Unified Video Decoder (UVD)
+    - AMD Gaming Evolved Client
+    - AMD LiquidVR Technology
+    - AMD TressFX Hair
+    - The Vulkan API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

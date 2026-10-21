@@ -1,0 +1,71 @@
+# Reference specs shared by every product with `base: arc_b570_10gb`.
+# Rules: data/gpus/README.md#reference-files
+id: arc_b570_10gb
+identity:
+  name: Arc B570
+  codename: BMG-G21
+  gpu_vendor: intel
+classification:
+  architecture: Xe2
+silicon:
+  process: TSMC N5
+  die_size_mm2: 272
+  transistors_b: 19.6
+  shader_cores: 2304
+  rt_cores: 18
+  tensor_cores: 144
+  tmus: 144
+  rops: 72
+memory:
+  capacity_gb: 10
+  type: GDDR6
+  bus_width_bits: 160
+  bandwidth_gbs: 380
+  speed_gbps: 19
+clocks:
+  game_mhz: 2500
+power:
+  tdp_w: 150
+  pcie: 4.0 x8
+features:
+  av1: encode+decode
+  ai_tops: 203
+  encoder: H.264, H.265/HEVC, AV1
+  decoder: H.264, H.265/HEVC, AV1
+  directx: 12 Ultimate
+  vulkan: '1.3'
+  opengl: '4.6'
+  technologies:
+    - oneAPI
+    - OpenVINO
+    - OpenCL 3.0
+    - VESA Adaptive Sync
+    - Intel Xe Super Sampling (XeSS)
+    - Intel Extension for PyTorch (IPEX)
+notes: 18 Xe-cores.
+sources:
+  - url: https://www.intel.com/content/www/us/en/products/sku/241676/intel-arc-b570-graphics/specifications.html
+    title: Intel Arc B570 Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.intel.com/content/www/us/en/products/details/discrete-gpus/arc/desktop/b-series.html
+    title: Intel Arc B-Series Desktop Graphics
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - features
+  - url: https://en.wikipedia.org/wiki/Intel_Arc
+    title: Wikipedia - Intel Arc
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon

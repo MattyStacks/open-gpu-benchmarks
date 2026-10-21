@@ -1,0 +1,40 @@
+# Reference specs shared by every product with `base: hd_6770_1gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_6770_1gb
+identity:
+  name: Radeon HD 6770
+  codename: Juniper XT
+  gpu_vendor: amd
+classification:
+  architecture: TeraScale 2
+silicon:
+  process: 40 nm
+  die_size_mm2: 166
+  transistors_b: 1.04
+  shader_cores: 800
+  tmus: 40
+  rops: 16
+memory:
+  capacity_gb: 1
+clocks:
+  boost_mhz: 900
+features:
+  directx: '11'
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

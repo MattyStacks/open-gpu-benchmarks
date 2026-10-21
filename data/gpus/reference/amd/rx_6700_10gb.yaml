@@ -1,0 +1,79 @@
+# Reference specs shared by every product with `base: rx_6700_10gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_6700_10gb
+identity:
+  name: Radeon RX 6700
+  codename: Navi 22
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 2
+silicon:
+  process: TSMC N7
+  die_size_mm2: 335
+  transistors_b: 17.2
+  shader_cores: 2304
+  rt_cores: 36
+  tmus: 144
+  rops: 64
+  cache_mb: 80
+memory:
+  capacity_gb: 10
+  type: GDDR6
+  bus_width_bits: 160
+  bandwidth_gbs: 320
+clocks:
+  base_mhz: 1941
+  game_mhz: 2174
+  boost_mhz: 2450
+power:
+  tdp_w: 175
+  psu_w: 600
+features:
+  av1: decode
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC, AV1
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD Noise Suppression
+    - AMD Radeon Super Resolution
+    - AMD Smart Access Memory
+    - VSR(4K)
+    - AMD Privacy View
+    - AMD Radeon Boost
+    - AMD Radeon Anti-Lag
+    - AMD Radeon Image Sharpening
+    - AMD Enhanced Sync Technology
+    - AMD FreeSync Technology
+    - AMD Radeon Chill
+    - TrueAudio Next
+    - The Vulkan API
+    - AMD Mantle API
+notes: Memory speed 16 or 14 Gbps depending on the board.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.amd.com/en/products/graphics/desktops/radeon/6000-series/amd-radeon-rx-6700.html
+    title: Radeon RX 6700
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

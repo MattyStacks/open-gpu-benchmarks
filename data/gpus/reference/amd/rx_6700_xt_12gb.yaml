@@ -1,0 +1,79 @@
+# Reference specs shared by every product with `base: rx_6700_xt_12gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_6700_xt_12gb
+identity:
+  name: Radeon RX 6700 XT
+  codename: Navi 22
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 2
+silicon:
+  process: TSMC N7
+  die_size_mm2: 335
+  transistors_b: 17.2
+  shader_cores: 2560
+  rt_cores: 40
+  tmus: 160
+  rops: 64
+  cache_mb: 96
+memory:
+  capacity_gb: 12
+  type: GDDR6
+  bus_width_bits: 192
+  bandwidth_gbs: 384
+  speed_gbps: 16
+clocks:
+  base_mhz: 2321
+  game_mhz: 2424
+  boost_mhz: 2581
+power:
+  tdp_w: 230
+  psu_w: 650
+features:
+  av1: decode
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC, AV1
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD Noise Suppression
+    - AMD Radeon Super Resolution
+    - AMD Smart Access Memory
+    - VSR(4K)
+    - AMD Privacy View
+    - AMD Radeon Boost
+    - AMD Radeon Anti-Lag
+    - AMD Radeon Image Sharpening
+    - AMD Enhanced Sync Technology
+    - AMD FreeSync Technology
+    - AMD Radeon Chill
+    - TrueAudio Next
+    - The Vulkan API
+    - AMD Mantle API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.amd.com/en/products/graphics/desktops/radeon/6000-series/amd-radeon-rx-6700-xt.html
+    title: Radeon RX 6700 XT Graphics Card
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

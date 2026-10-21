@@ -1,0 +1,22 @@
+# Reference specs shared by every product with `base: arc_130v`.
+# Rules: data/gpus/README.md#reference-files
+id: arc_130v
+identity:
+  name: Arc 130V GPU
+  gpu_vendor: intel
+memory:
+  shared: true
+clocks:
+  boost_mhz: 2200
+features:
+  ai_tops: 63
+notes: Built into Intel Core Ultra processors; 7 GPU cores; clock is the graphics max dynamic frequency.
+sources:
+  - url: https://www.intel.com/content/www/us/en/products/details/discrete-gpus/arc/laptops.html
+    title: Intel Arc Graphics for Laptops
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+      - clocks
+      - features

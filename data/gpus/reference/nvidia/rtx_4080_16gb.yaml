@@ -1,0 +1,94 @@
+# Reference specs shared by every product with `base: rtx_4080_16gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_4080_16gb
+identity:
+  name: GeForce RTX 4080
+  codename: AD103
+  gpu_vendor: nvidia
+classification:
+  architecture: Ada Lovelace
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 378.6
+  transistors_b: 45.9
+  shader_cores: 9728
+  rt_cores: 76
+  tensor_cores: 304
+  tmus: 304
+  rops: 112
+  cache_mb: 64
+memory:
+  capacity_gb: 16
+  type: GDDR6X
+  bus_width_bits: 256
+  bandwidth_gbs: 716.8
+  speed_gbps: 22.4
+clocks:
+  base_mhz: 2210
+  boost_mhz: 2510
+power:
+  tdp_w: 320
+  psu_w: 750
+  pcie: 4.0 x16
+features:
+  dlss: '3'
+  av1: encode+decode
+  ray_tracing: 3rd Generation
+  ai_tops: 780
+  encoder: 2x 8th Generation
+  decoder: 5th Generation
+  directx: 12 Ultimate
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '8.9'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA Broadcast
+    - Resizable BAR
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - RTX Remix
+    - NVIDIA GPU Boost
+    - VR Ready
+    - DLSS Frame Generation
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - RTX HDR
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4080-family/
+    title: GeForce RTX 4080 SUPER and RTX 4080 Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

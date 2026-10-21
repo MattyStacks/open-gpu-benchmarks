@@ -1,0 +1,80 @@
+# Reference specs shared by every product with `base: rtx_2080_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_2080_8gb
+identity:
+  name: GeForce RTX 2080
+  codename: TU104
+  gpu_vendor: nvidia
+classification:
+  architecture: Turing
+silicon:
+  process: TSMC 12FFN
+  die_size_mm2: 545
+  transistors_b: 13.6
+  shader_cores: 2944
+  rt_cores: 46
+  tensor_cores: 368
+  tmus: 184
+  rops: 64
+  cache_mb: 4
+memory:
+  capacity_gb: 8
+  type: GDDR6
+  bus_width_bits: 256
+  bandwidth_gbs: 448
+  speed_gbps: 14
+clocks:
+  base_mhz: 1520
+  boost_mhz: 1800
+power:
+  tdp_w: 225
+  psu_w: 650
+  pcie: 3.0 x16
+features:
+  dlss: '2'
+  ray_tracing: 1st Generation
+  encoder: 7th Generation
+  decoder: 4th Generation
+  directx: 12 Ultimate
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '7.5'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA Broadcast
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - NVIDIA GPU Boost
+    - NVIDIA NVLink (SLI-Ready)
+    - VR Ready
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - RTX HDR
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

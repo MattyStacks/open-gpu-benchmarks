@@ -1,0 +1,58 @@
+# Reference specs shared by every product with `base: rx_5700_xt_50th_anniversary_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_5700_xt_50th_anniversary_8gb
+identity:
+  name: Radeon RX 5700 XT 50th Anniversary
+  codename: Navi 10
+  gpu_vendor: amd
+classification:
+  architecture: RDNA
+silicon:
+  process: TSMC N7
+  die_size_mm2: 251
+  transistors_b: 10.3
+  shader_cores: 2560
+  tmus: 160
+  rops: 64
+memory:
+  capacity_gb: 8
+  type: GDDR6
+  bus_width_bits: 256
+  bandwidth_gbs: 448
+  speed_gbps: 14
+clocks:
+  game_mhz: 1830
+  boost_mhz: 1980
+power:
+  tdp_w: 235
+  psu_w: 600
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+  directx: '12'
+  technologies:
+    - VSR(4K)
+    - AMD RDNA Architecture
+    - AMD Radeon Media Engine
+    - AMD Radeon VR Ready Premium
+    - AMD FreeSync Technology
+    - TrueAudio Next
+    - The Vulkan API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

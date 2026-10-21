@@ -1,0 +1,48 @@
+# Reference specs shared by every product with `base: r7_370_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: r7_370_4gb
+identity:
+  name: Radeon R7 370
+  codename: Pitcairn Pro
+  gpu_vendor: amd
+classification:
+  architecture: GCN 1
+silicon:
+  process: 28 nm
+  die_size_mm2: 212
+  transistors_b: 2.8
+  shader_cores: 1024
+  tmus: 64
+  rops: 32
+memory:
+  capacity_gb: 4
+  type: GDDR5
+  bus_width_bits: 256
+  bandwidth_gbs: 179
+clocks:
+  boost_mhz: 975
+features:
+  directx: '12'
+  technologies:
+    - Catalyst Software
+    - AMD Mantle API
+    - AMD TrueAudio Technology
+    - Video Code Engine (VCE)
+    - OpenCL 2.0
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

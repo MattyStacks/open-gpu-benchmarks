@@ -1,0 +1,49 @@
+# Reference specs shared by every product with `base: rx_570_oem_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_570_oem_8gb
+identity:
+  name: Radeon RX 570 (OEM)
+  gpu_vendor: amd
+silicon:
+  transistors_b: 5.7
+  shader_cores: 2048
+  tmus: 128
+  rops: 32
+memory:
+  capacity_gb: 8
+  type: GDDR5
+  bus_width_bits: 256
+  bandwidth_gbs: 224
+  speed_gbps: 7
+power:
+  tdp_w: 150
+  psu_w: 450
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+  opengl: '4.6'
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD FreeSync Technology
+    - 4th Gen GCN Architecture
+    - AMD Radeon Chill
+    - AMD Radeon ReLive
+    - AMD CrossFire Technology
+    - AMD CrossFire (Bridgeless)
+    - AMD Frame Rate Target Control
+    - OpenCL 2.0
+    - AMD PowerTune Technology
+    - Unified Video Decoder (UVD)
+    - AMD Virtual Super Resolution
+    - The Vulkan API
+notes: Base clock 926 MHz or 1168 MHz; boost clock 1206 MHz or 1244 MHz.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power
+      - features

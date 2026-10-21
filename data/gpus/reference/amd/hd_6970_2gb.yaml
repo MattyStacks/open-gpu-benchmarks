@@ -1,0 +1,43 @@
+# Reference specs shared by every product with `base: hd_6970_2gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_6970_2gb
+identity:
+  name: Radeon HD 6970
+  codename: Cayman XT
+  gpu_vendor: amd
+classification:
+  architecture: TeraScale 3
+silicon:
+  process: 40 nm
+  die_size_mm2: 389
+  transistors_b: 2.64
+  shader_cores: 1536
+  tmus: 96
+  rops: 32
+memory:
+  capacity_gb: 2
+clocks:
+  boost_mhz: 880
+power:
+  tdp_w: 550
+features:
+  directx: '11'
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

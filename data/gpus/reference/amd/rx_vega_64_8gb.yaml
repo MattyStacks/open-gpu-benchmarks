@@ -1,0 +1,65 @@
+# Reference specs shared by every product with `base: rx_vega_64_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_vega_64_8gb
+identity:
+  name: Radeon RX Vega 64
+  codename: Vega 10
+  gpu_vendor: amd
+classification:
+  architecture: GCN 5
+silicon:
+  process: GloFo 14LPP
+  die_size_mm2: 486
+  transistors_b: 12.5
+  shader_cores: 4096
+  tmus: 256
+  rops: 64
+memory:
+  capacity_gb: 8
+  type: HBM2
+  bus_width_bits: 2048
+  bandwidth_gbs: 484
+  speed_gbps: 1.89
+clocks:
+  base_mhz: 1247
+  boost_mhz: 1546
+power:
+  tdp_w: 295
+  psu_w: 750
+features:
+  directx: '12'
+  opengl: '4.5'
+  technologies:
+    - AMD Radeon VR Ready Premium
+    - AMD FreeSync Technology
+    - AMD Radeon Chill
+    - AMD Radeon ReLive
+    - Catalyst Software
+    - AMD Frame Rate Target Control
+    - OpenCL 2.0
+    - AMD PowerTune Technology
+    - AMD TressFX Hair
+    - TrueAudio Next
+    - Unified Video Decoder (UVD)
+    - Video Code Engine (VCE)
+    - AMD Virtual Super Resolution
+    - The Vulkan API
+    - AMD ZeroCore Power Technology
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

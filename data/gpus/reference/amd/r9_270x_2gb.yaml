@@ -1,0 +1,52 @@
+# Reference specs shared by every product with `base: r9_270x_2gb`.
+# Rules: data/gpus/README.md#reference-files
+id: r9_270x_2gb
+identity:
+  name: Radeon R9 270X
+  codename: Pitcairn XT
+  gpu_vendor: amd
+classification:
+  architecture: GCN 1
+silicon:
+  process: 28 nm
+  die_size_mm2: 212
+  transistors_b: 2.8
+  shader_cores: 1280
+  tmus: 80
+  rops: 32
+memory:
+  capacity_gb: 2
+  bandwidth_gbs: 179
+clocks:
+  boost_mhz: 1050
+power:
+  tdp_w: 180
+features:
+  directx: '12'
+  technologies:
+    - Catalyst Software
+    - AMD HD3D Technology
+    - AMD TrueAudio Technology
+    - Unified Video Decoder (UVD)
+    - AMD Gaming Evolved Client
+    - AMD LiquidVR Technology
+    - AMD TressFX Hair
+    - The Vulkan API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

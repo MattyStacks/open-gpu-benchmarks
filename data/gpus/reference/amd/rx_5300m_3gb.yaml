@@ -1,0 +1,45 @@
+# Reference specs shared by every product with `base: rx_5300m_3gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_5300m_3gb
+identity:
+  name: Radeon RX 5300M
+  codename: Navi 14
+  gpu_vendor: amd
+classification:
+  architecture: RDNA
+silicon:
+  process: TSMC N7
+  die_size_mm2: 158
+  transistors_b: 6.4
+  shader_cores: 1408
+  tmus: 88
+  rops: 32
+memory:
+  capacity_gb: 3
+  type: GDDR6
+  bus_width_bits: 96
+  bandwidth_gbs: 168
+  speed_gbps: 14
+clocks:
+  game_mhz: 1181
+  boost_mhz: 1445
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

@@ -1,0 +1,77 @@
+# Reference specs shared by every product with `base: rtx_3060_laptop_6gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_3060_laptop_6gb
+identity:
+  name: GeForce RTX 3060 Laptop GPU
+  codename: GA106
+  gpu_vendor: nvidia
+classification:
+  architecture: Ampere
+silicon:
+  process: Samsung 8N
+  die_size_mm2: 276
+  transistors_b: 12
+  shader_cores: 3840
+  rt_cores: 30
+  tensor_cores: 120
+  tmus: 120
+  rops: 48
+  cache_mb: 3
+memory:
+  capacity_gb: 6
+  type: GDDR6
+  bus_width_bits: 192
+clocks:
+  boost_mhz: 1703
+power:
+  tdp_w: 115
+  pcie: '4.0'
+features:
+  dlss: '2'
+  av1: decode
+  ray_tracing: 2nd Generation
+  encoder: 7th Generation
+  decoder: 5th Generation
+  directx: 12 Ultimate
+  cuda: '8.6'
+  technologies:
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - Reflex Low Latency Mode
+    - NVIDIA Broadcast
+    - NVIDIA App
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA Freestyle
+    - VR Ready
+    - NVIDIA Omniverse
+    - RTX Remix
+notes: Boost clock 1283-1703 MHz depending on the laptop's power limit; TGP 60-115 W.
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/laptops/30-series/
+    title: GeForce RTX 30-Series Laptops
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+  - url: https://www.nvidia.com/en-us/geforce/laptops/compare/
+    title: NVIDIA - Compare GeForce RTX Laptops
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

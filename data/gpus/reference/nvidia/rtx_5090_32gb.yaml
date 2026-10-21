@@ -1,0 +1,90 @@
+# Reference specs shared by every product with `base: rtx_5090_32gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_5090_32gb
+identity:
+  name: GeForce RTX 5090
+  codename: GB202
+  gpu_vendor: nvidia
+classification:
+  architecture: Blackwell
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 750
+  transistors_b: 92.2
+  shader_cores: 21760
+  rt_cores: 170
+  tensor_cores: 680
+  tmus: 680
+  rops: 176
+  cache_mb: 96
+memory:
+  capacity_gb: 32
+  type: GDDR7
+  bus_width_bits: 512
+  bandwidth_gbs: 1792
+  speed_gbps: 28
+clocks:
+  base_mhz: 2010
+  boost_mhz: 2410
+power:
+  tdp_w: 575
+  psu_w: 1000
+  pcie: 5.0 x16
+features:
+  dlss: '5'
+  av1: encode+decode
+  ray_tracing: 4th Generation
+  ai_tops: 3352
+  encoder: 3x 9th Generation
+  decoder: 2x 6th Generation
+  directx: 12 Ultimate
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '12.0'
+  technologies:
+    - DLSS 3D-Guided Neural Rendering
+    - DLSS Dynamic Multi Frame Generation
+    - DLSS Frame Generation
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - Reflex Low Latency Mode
+    - NVIDIA App
+    - NVIDIA G-SYNC
+    - RTX Remix
+    - NVIDIA Broadcast
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - RTX HDR
+    - VR Ready
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/
+    title: GeForce RTX 5090 Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

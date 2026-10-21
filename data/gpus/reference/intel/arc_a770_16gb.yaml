@@ -1,0 +1,71 @@
+# Reference specs shared by every product with `base: arc_a770_16gb`.
+# Rules: data/gpus/README.md#reference-files
+id: arc_a770_16gb
+identity:
+  name: Arc A770 (16GB)
+  codename: ACM-G10
+  gpu_vendor: intel
+classification:
+  architecture: Xe HPG
+silicon:
+  process: TSMC N6
+  die_size_mm2: 406
+  transistors_b: 21.7
+  shader_cores: 4096
+  rt_cores: 32
+  tensor_cores: 512
+  tmus: 256
+  rops: 128
+memory:
+  capacity_gb: 16
+  type: GDDR6
+  bus_width_bits: 256
+  bandwidth_gbs: 560
+  speed_gbps: 17.5
+clocks:
+  game_mhz: 2100
+power:
+  tdp_w: 225
+  pcie: 4.0 x16
+features:
+  av1: encode+decode
+  ai_tops: 262
+  encoder: H.264, H.265/HEVC, AV1
+  decoder: H.264, H.265/HEVC, AV1
+  directx: 12 Ultimate
+  vulkan: '1.3'
+  opengl: '4.6'
+  technologies:
+    - oneAPI
+    - OpenVINO
+    - OpenCL 3.0
+    - VESA Adaptive Sync
+    - Intel Xe Super Sampling (XeSS)
+    - Intel Extension for PyTorch (IPEX)
+    - Intel Deep Link Hyper Compute
+    - Intel Deep Link Hyper Encode
+    - Intel Deep Link Stream Assist
+notes: 32 Xe-cores.
+sources:
+  - url: https://www.intel.com/content/www/us/en/products/sku/229151/intel-arc-a770-graphics-16gb/specifications.html
+    title: Intel Arc A770 (16GB) Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.intel.com/content/www/us/en/products/details/discrete-gpus/arc/desktop/a-series.html
+    title: Intel Arc A-Series Graphics
+    accessed: '2026-10-20'
+    covers:
+      - identity
+  - url: https://en.wikipedia.org/wiki/Intel_Arc
+    title: Wikipedia - Intel Arc
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon

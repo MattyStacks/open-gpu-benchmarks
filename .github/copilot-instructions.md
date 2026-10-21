@@ -149,7 +149,9 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   covers}` with `https://` URLs. Only cite pages you actually used, and only
   list sections in `covers` that the page backs. Never invent a source or a
   spec value; leave unknown values out. A missing `sources` list is a warning
-  for now.
+  for now. The GPU vendor's own spec page (nvidia.com, amd.com, intel.com)
+  wins every conflict; Wikipedia or TechPowerUp only fill fields the vendor
+  doesn't publish. Cite the card's own vendor page as well as any overview page.
 - Every check rule lives once in `scripts/checks.py` (used by `build.py` and
   `validate.py`). Each rule name needs a ``#### `rule-name` `` heading in
   `data/gpus/README.md` or `docs/COMMUNITY_SUBMISSIONS.md`; `test_build.py`

@@ -1,0 +1,37 @@
+# Reference specs shared by every product with `base: r5_235_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: r5_235_4gb
+identity:
+  name: Radeon R5 235
+  codename: Caicos XT
+  gpu_vendor: amd
+classification:
+  architecture: TeraScale 2
+silicon:
+  process: 40 nm
+  die_size_mm2: 67
+  transistors_b: 0.37
+  shader_cores: 160
+  tmus: 8
+  rops: 4
+memory:
+  capacity_gb: 4
+features:
+  directx: '11'
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

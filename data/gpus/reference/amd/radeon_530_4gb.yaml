@@ -1,0 +1,55 @@
+# Reference specs shared by every product with `base: radeon_530_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: radeon_530_4gb
+identity:
+  name: Radeon 530
+  codename: Weston
+  gpu_vendor: amd
+classification:
+  architecture: GCN 3
+silicon:
+  process: 28 nm
+  die_size_mm2: 125
+  rops: 8
+memory:
+  capacity_gb: 4
+  bus_width_bits: 64
+clocks:
+  boost_mhz: 1024
+features:
+  directx: '12'
+  opengl: '4.5'
+  technologies:
+    - AMD Software Adrenalin Edition
+    - Graphics Core Next Architecture
+    - 3rd Gen GCN Architecture
+    - AMD Radeon ReLive
+    - AMD App Acceleration
+    - AMD Enduro Technology
+    - AMD Frame Rate Target Control
+    - 28nm Process Technology
+    - OpenCL 2.0
+    - AMD PowerTune Technology
+    - AMD Radeon Dual Graphics
+    - AMD TressFX Hair
+    - Unified Video Decoder (UVD)
+    - Video Code Engine (VCE)
+    - The Vulkan API
+notes: AMD lists 320 or 384 stream processors; memory is DDR3 or GDDR5 depending on the board; amd.com lists 4.5 Gbps memory and 48 GB/s, which disagree on a 64-bit bus.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

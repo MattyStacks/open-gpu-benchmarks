@@ -1,0 +1,52 @@
+# Reference specs shared by every product with `base: rx_7600m_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_7600m_8gb
+identity:
+  name: Radeon RX 7600M
+  codename: Navi 33
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 3
+silicon:
+  process: TSMC N6
+  die_size_mm2: 204
+  transistors_b: 13.3
+  shader_cores: 1792
+  rt_cores: 28
+  tensor_cores: 56
+  tmus: 112
+  rops: 64
+  cache_mb: 32
+memory:
+  capacity_gb: 8
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 256
+  speed_gbps: 16
+clocks:
+  game_mhz: 2070
+power:
+  tdp_w: 90
+features:
+  av1: encode+decode
+  encoder: H.264, H.265/HEVC, AV1
+  decoder: H.264, H.265/HEVC, AV1
+notes: Board power up to 90 W.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

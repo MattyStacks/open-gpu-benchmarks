@@ -1,0 +1,87 @@
+# Reference specs shared by every product with `base: rtx_5050_laptop_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_5050_laptop_8gb
+identity:
+  name: GeForce RTX 5050 Laptop GPU
+  codename: GB207
+  gpu_vendor: nvidia
+classification:
+  architecture: Blackwell
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 149
+  transistors_b: 16.9
+  shader_cores: 2560
+  rt_cores: 20
+  tensor_cores: 80
+  tmus: 80
+  rops: 32
+  cache_mb: 32
+memory:
+  capacity_gb: 8
+  type: GDDR7
+  bus_width_bits: 128
+  bandwidth_gbs: 384
+  speed_gbps: 24
+clocks:
+  boost_mhz: 2662
+power:
+  tdp_w: 100
+  pcie: '5.0'
+features:
+  dlss: '5'
+  av1: encode+decode
+  ray_tracing: 4th Generation
+  ai_tops: 440
+  encoder: 1x 9th Generation
+  decoder: 1x 6th Generation
+  directx: 12 Ultimate
+  cuda: '12.8'
+  technologies:
+    - DLSS 3D-Guided Neural Rendering
+    - DLSS Dynamic Multi Frame Generation
+    - DLSS Frame Generation
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - Reflex Low Latency Mode
+    - NVIDIA Broadcast
+    - Resizable BAR
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - RTX Remix
+    - NVIDIA GPU Boost
+    - VR Ready
+    - NVIDIA Smooth Motion
+notes: Boost clock 1500-2662 MHz depending on the laptop's power limit; GPU subsystem power 35-100 W.
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/laptops/compare/
+    title: NVIDIA - Compare GeForce RTX Laptops
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/laptops/50-series/
+    title: GeForce RTX 50 Series Gaming Laptops
+    accessed: '2026-10-20'
+    covers:
+      - memory
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory

@@ -1000,7 +1000,7 @@ def check_real_data():
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.17"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.18"
     group_by = master["metadata"]["comparison_policy"]["group_by"]
     assert {"os", "upscaling", "game_id"} <= set(group_by) and "game" not in group_by
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}

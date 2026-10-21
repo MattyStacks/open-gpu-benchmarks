@@ -1,0 +1,77 @@
+# Reference specs shared by every product with `base: rx_6800_xt_16gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_6800_xt_16gb
+identity:
+  name: Radeon RX 6800 XT
+  codename: Navi 21
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 2
+silicon:
+  process: TSMC N7
+  die_size_mm2: 520
+  transistors_b: 26.8
+  shader_cores: 4608
+  rt_cores: 72
+  tmus: 288
+  rops: 128
+  cache_mb: 128
+memory:
+  capacity_gb: 16
+  type: GDDR6
+  bus_width_bits: 256
+  bandwidth_gbs: 512
+  speed_gbps: 16
+clocks:
+  game_mhz: 2015
+  boost_mhz: 2250
+power:
+  tdp_w: 300
+  psu_w: 750
+features:
+  av1: decode
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC, AV1
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD Noise Suppression
+    - AMD Radeon Super Resolution
+    - AMD Smart Access Memory
+    - VSR(4K)
+    - AMD Privacy View
+    - AMD Radeon Boost
+    - AMD Radeon Anti-Lag
+    - AMD Radeon Image Sharpening
+    - AMD Enhanced Sync Technology
+    - AMD FreeSync Technology
+    - AMD Radeon Chill
+    - TrueAudio Next
+    - The Vulkan API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.amd.com/en/products/graphics/desktops/radeon/6000-series/amd-radeon-rx-6800-xt.html
+    title: Radeon RX 6800 XT Graphics Card
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

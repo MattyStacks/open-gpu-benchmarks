@@ -1,0 +1,58 @@
+# Reference specs shared by every product with `base: r9_380_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: r9_380_4gb
+identity:
+  name: Radeon R9 380
+  codename: Tonga Pro
+  gpu_vendor: amd
+classification:
+  architecture: GCN 3
+silicon:
+  process: 28 nm
+  die_size_mm2: 359
+  transistors_b: 5
+  shader_cores: 1792
+  tmus: 112
+  rops: 32
+memory:
+  capacity_gb: 4
+  type: GDDR5
+  bus_width_bits: 256
+  bandwidth_gbs: 182
+clocks:
+  boost_mhz: 970
+features:
+  directx: '12'
+  opengl: '4.5'
+  technologies:
+    - Catalyst Software
+    - AMD Frame Rate Target Control
+    - AMD FreeSync Technology
+    - AMD HD3D Technology
+    - AMD Mantle API
+    - AMD PowerTune Technology
+    - AMD TrueAudio Technology
+    - AMD ZeroCore Power Technology
+    - Video Code Engine (VCE)
+    - AMD LiquidVR Technology
+    - AMD Virtual Super Resolution
+    - The Vulkan API
+    - TrueAudio Next
+    - OpenCL 2.0
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

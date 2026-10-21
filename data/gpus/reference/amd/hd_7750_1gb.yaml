@@ -1,0 +1,45 @@
+# Reference specs shared by every product with `base: hd_7750_1gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_7750_1gb
+identity:
+  name: Radeon HD 7750
+  codename: Cape Verde Pro
+  gpu_vendor: amd
+classification:
+  architecture: GCN 1
+silicon:
+  process: 28 nm
+  die_size_mm2: 123
+  transistors_b: 1.5
+  shader_cores: 512
+  tmus: 32
+  rops: 16
+memory:
+  capacity_gb: 1
+  bandwidth_gbs: 72
+clocks:
+  boost_mhz: 800
+power:
+  tdp_w: 75
+features:
+  directx: '11'
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

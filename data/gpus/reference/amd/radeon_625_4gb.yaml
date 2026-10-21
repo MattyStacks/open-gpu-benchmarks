@@ -1,0 +1,58 @@
+# Reference specs shared by every product with `base: radeon_625_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: radeon_625_4gb
+identity:
+  name: Radeon 625
+  codename: Polaris 24
+  gpu_vendor: amd
+classification:
+  architecture: GCN 3
+silicon:
+  process: TSMC 28 nm
+  die_size_mm2: 125
+  transistors_b: 1.55
+  shader_cores: 384
+  tmus: 24
+  rops: 8
+memory:
+  capacity_gb: 4
+  type: GDDR5
+  bus_width_bits: 64
+clocks:
+  boost_mhz: 1024
+features:
+  directx: '12'
+  opengl: '4.5'
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD FreeSync Technology
+    - 4th Gen GCN Architecture
+    - AMD Radeon Chill
+    - AMD App Acceleration
+    - AMD Enduro Technology
+    - 3rd Gen 14nm Process Technology
+    - OpenCL 2.0
+    - AMD PowerTune Technology
+    - AMD TressFX Hair
+    - AMD TrueAudio Technology
+    - Unified Video Decoder (UVD)
+    - Video Code Engine (VCE)
+    - The Vulkan API
+notes: Amd.com lists 4.5 Gbps memory and 48 GB/s, which disagree on a 64-bit bus.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

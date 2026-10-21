@@ -1,0 +1,62 @@
+# Reference specs shared by every product with `base: rx_640_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_640_4gb
+identity:
+  name: Radeon RX 640
+  codename: Polaris 23
+  gpu_vendor: amd
+classification:
+  architecture: GCN 4
+silicon:
+  process: GloFo 14 nm
+  die_size_mm2: 103
+  transistors_b: 2.2
+  tmus: 40
+  rops: 16
+memory:
+  capacity_gb: 4
+  type: GDDR5
+  bus_width_bits: 64
+  bandwidth_gbs: 56
+  speed_gbps: 7
+clocks:
+  boost_mhz: 1287
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+  directx: '12'
+  opengl: '4.5'
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD FreeSync Technology
+    - 4th Gen GCN Architecture
+    - AMD Radeon Chill
+    - AMD Radeon ReLive
+    - AMD App Acceleration
+    - AMD Enduro Technology
+    - 3rd Gen 14nm Process Technology
+    - OpenCL 2.0
+    - AMD PowerTune Technology
+    - AMD TressFX Hair
+    - TrueAudio Next
+    - Unified Video Decoder (UVD)
+    - Video Code Engine (VCE)
+    - The Vulkan API
+notes: AMD lists 512 or 640 stream processors.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

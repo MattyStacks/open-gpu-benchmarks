@@ -1,0 +1,66 @@
+# Reference specs shared by every product with `base: rx_570_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_570_8gb
+identity:
+  name: Radeon RX 570
+  gpu_vendor: amd
+classification:
+  architecture: GCN 4
+silicon:
+  die_size_mm2: 232
+  transistors_b: 5.7
+  shader_cores: 2048
+  tmus: 128
+  rops: 32
+memory:
+  capacity_gb: 8
+  type: GDDR5
+  bus_width_bits: 256
+  bandwidth_gbs: 224
+  speed_gbps: 7
+clocks:
+  base_mhz: 1168
+  boost_mhz: 1244
+power:
+  tdp_w: 150
+  psu_w: 450
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+  directx: '12'
+  opengl: '4.5'
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD FreeSync Technology
+    - 4th Gen GCN Architecture
+    - AMD Radeon Chill
+    - AMD Radeon ReLive
+    - AMD App Acceleration
+    - AMD CrossFire Technology
+    - AMD CrossFire (Bridgeless)
+    - AMD Frame Rate Target Control
+    - 3rd Gen 14nm Process Technology
+    - OpenCL 2.0
+    - AMD PowerTune Technology
+    - TrueAudio Next
+    - Unified Video Decoder (UVD)
+    - Video Code Engine (VCE)
+    - AMD Virtual Super Resolution
+    - The Vulkan API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - silicon

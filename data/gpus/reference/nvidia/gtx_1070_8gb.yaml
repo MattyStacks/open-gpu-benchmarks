@@ -1,0 +1,66 @@
+# Reference specs shared by every product with `base: gtx_1070_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: gtx_1070_8gb
+identity:
+  name: GeForce GTX 1070
+  codename: GP104
+  gpu_vendor: nvidia
+classification:
+  architecture: Pascal
+silicon:
+  process: TSMC 16FF
+  die_size_mm2: 314
+  transistors_b: 7.2
+  shader_cores: 1920
+  tmus: 120
+  rops: 64
+  cache_mb: 2
+memory:
+  capacity_gb: 8
+  type: GDDR5
+  bus_width_bits: 256
+  bandwidth_gbs: 256.3
+  speed_gbps: 8
+clocks:
+  base_mhz: 1506
+  boost_mhz: 1683
+power:
+  tdp_w: 150
+  pcie: 3.0 x16
+features:
+  encoder: 6th Generation
+  decoder: 3rd Generation
+  directx: '12'
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '6.1'
+  technologies:
+    - Reflex Low Latency Mode
+    - NVIDIA App
+    - NVIDIA G-SYNC
+    - VR Ready
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/news/geforce-gtx-1070/
+    title: 'GeForce GTX 1070 Out Now: Great Performance At A Great Price | GeForce News'
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features

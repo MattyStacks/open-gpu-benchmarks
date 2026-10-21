@@ -31,6 +31,41 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.7.0.0 - 2026-10-20
+
+### Added
+
+- 309 reference GPU files under `data/gpus/reference/`, built from the
+  vendors' own spec pages: 79 NVIDIA (desktop GeForce RTX 50/40/30/20 and
+  GTX 16/10, plus RTX 50/40/30 laptop GPUs), 203 AMD (every Radeon desktop
+  and mobile GPU on amd.com's graphics specification list, back to the
+  HD 5000 series), and 27 Intel (Arc B- and A-series desktop, mobile, and
+  embedded cards, plus the integrated Arc GPUs on Intel's laptop page). Each
+  file cites the vendor's compare or spec-list page and the card's own page.
+  Wikipedia fills only the chip details a vendor doesn't publish (codename,
+  die size, transistors, TMUs/ROPs), and the vendor's value wins on every
+  conflict.
+- Catalog fields for the specs vendors now publish (schema 0.17 → 0.18):
+  `silicon.tensor_cores` and `cache_mb`, `memory.speed_gbps`,
+  `clocks.game_mhz`, `power.psu_w`, and `features.ray_tracing`, `ai_tops`,
+  `encoder`, `decoder`, `directx`, `vulkan`, `opengl`, `cuda`, and
+  `technologies` (the vendor's own feature names, such as
+  `DLSS Multi Frame Generation` or `AMD Fluid Motion Frames`).
+- The dashboard's spec panel shows the new feature chips, a technologies
+  list, cache, game clock, AI cores, and the minimum PSU. The clocks column
+  falls back to the game clock when a GPU has no boost clock.
+
+### Changed
+
+- `memory.bus_width_bits` now allows 32-4096 bits (was 32-512), because HBM
+  cards such as the Radeon VII and R9 Fury use a 4096-bit bus.
+
+### Fixed
+
+- The RTX 5080 reference now says DLSS 5, as NVIDIA's compare page does
+  (it said 4), and lists its DLSS, Reflex, encoder, decoder, and API
+  features.
+
 ## 1.6.0.0 - 2026-10-16
 
 ### Changed

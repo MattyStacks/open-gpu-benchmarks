@@ -1,0 +1,64 @@
+# Reference specs shared by every product with `base: radeon_vii_16gb`.
+# Rules: data/gpus/README.md#reference-files
+id: radeon_vii_16gb
+identity:
+  name: Radeon VII
+  codename: Vega 20
+  gpu_vendor: amd
+classification:
+  architecture: GCN 5
+silicon:
+  process: TSMC CLN7FF
+  die_size_mm2: 331
+  transistors_b: 13.2
+  shader_cores: 3840
+  tmus: 240
+  rops: 64
+memory:
+  capacity_gb: 16
+  type: HBM2
+  bus_width_bits: 4096
+  bandwidth_gbs: 1024
+clocks:
+  base_mhz: 1400
+  boost_mhz: 1750
+power:
+  tdp_w: 300
+  psu_w: 750
+features:
+  directx: '12'
+  opengl: '4.6'
+  technologies:
+    - AMD Radeon VR Ready Premium
+    - AMD FreeSync Technology
+    - AMD Radeon Chill
+    - AMD Radeon ReLive
+    - Catalyst Software
+    - OpenCL 2.0
+    - AMD PowerTune Technology
+    - AMD TressFX Hair
+    - TrueAudio Next
+    - Unified Video Decoder (UVD)
+    - Video Code Engine (VCE)
+    - AMD Virtual Super Resolution
+    - The Vulkan API
+    - AMD ZeroCore Power Technology
+notes: Amd.com lists 4 Gbps memory, which disagrees with its 1024 GB/s on a 4096-bit bus.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

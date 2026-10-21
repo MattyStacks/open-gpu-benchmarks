@@ -53,22 +53,35 @@ CATALOG_FIELDS = {
         "rt_cores": "number",
         "tmus": "number",
         "rops": "number",
+        "tensor_cores": "number",
+        "cache_mb": "number",
     },
     "memory": {
         "capacity_gb": "number",
         "type": "string",
         "bus_width_bits": "number",
         "bandwidth_gbs": "number",
+        "speed_gbps": "number",
         "shared": "bool",
     },
-    "clocks": {"base_mhz": "number", "boost_mhz": "number", "mem_mhz": "number"},
-    "power": {"tdp_w": "number", "connectors": "string_list", "pcie": "string"},
+    "clocks": {"base_mhz": "number", "game_mhz": "number", "boost_mhz": "number", "mem_mhz": "number"},
+    "power": {"tdp_w": "number", "psu_w": "number", "connectors": "string_list", "pcie": "string"},
     "release": {"date": "full_date", "msrp_usd": "number", "msrp_history": "msrp_history"},
     "features": {
         "dlss": "string",
         "fsr": "string",
         "xess": "string",
         "av1": "string",
+        "ray_tracing": "string",
+        "ai_tops": "number",
+        "encoder": "string",
+        "decoder": "string",
+        "directx": "string",
+        "vulkan": "string",
+        "opengl": "string",
+        "cuda": "string",
+        # The vendor's own feature names, written exactly as its spec page does.
+        "technologies": "string_list",
         "outputs": "string_list",
     },
     # System specs for handhelds and laptops; not allowed on desktop cards.
@@ -101,7 +114,9 @@ CATALOG_REQUIRED = (
 )
 CATALOG_RANGES = {
     ("memory", "capacity_gb"): (1, 512, "GB"),
-    ("memory", "bus_width_bits"): (32, 512, "bits"),
+    # HBM cards (Radeon VII, R9 Fury) use a 4096-bit bus.
+    ("memory", "bus_width_bits"): (32, 4096, "bits"),
+    ("power", "psu_w"): (100, 2000, "W"),
     ("power", "tdp_w"): (5, 600, "W"),
     ("platform", "ram_mts"): (1000, 20000, "MT/s"),
     ("platform", "power_min_w"): (1, 600, "W"),

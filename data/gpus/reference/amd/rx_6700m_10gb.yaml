@@ -1,0 +1,53 @@
+# Reference specs shared by every product with `base: rx_6700m_10gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_6700m_10gb
+identity:
+  name: Radeon RX 6700M
+  codename: Navi 22
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 2
+silicon:
+  process: TSMC N7
+  die_size_mm2: 335
+  transistors_b: 17.2
+  shader_cores: 2304
+  rt_cores: 36
+  rops: 64
+  cache_mb: 80
+memory:
+  capacity_gb: 10
+  type: GDDR6
+  bus_width_bits: 160
+  bandwidth_gbs: 320
+  speed_gbps: 16
+clocks:
+  game_mhz: 2300
+power:
+  tdp_w: 135
+features:
+  av1: decode
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC, AV1
+  technologies:
+    - AMD Smart Access Memory
+    - AMD SmartShift Technology
+notes: Board power up to 135 W.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

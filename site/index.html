@@ -553,9 +553,16 @@
 
     function formatClocks(record) {
       const boost = specValue(record, "clocks", "boost_mhz");
-      if (boost === null) return MISSING;
+      if (boost === null) {
+        const game = specValue(record, "clocks", "game_mhz");
+        return game === null ? MISSING : `${game} MHz game`;
+      }
       const base = specValue(record, "clocks", "base_mhz");
       return `${base === null ? MISSING : base} / ${boost} MHz`;
+    }
+
+    function formatUnit(value, unit) {
+      return value === null || value === undefined ? MISSING : `${Number(value).toLocaleString()} ${unit}`;
     }
 
     function formatCount(value) {
@@ -871,10 +878,23 @@
       const features = [["DLSS", specValue(record, "features", "dlss")],
         ["FSR", specValue(record, "features", "fsr")],
         ["XeSS", specValue(record, "features", "xess")],
-        ["AV1", specValue(record, "features", "av1")]].filter(([, value]) => value);
-      if (!features.length) return `<p class="spec-notes">No feature data recorded.</p>`;
-      return `<div class="feature-row">${features.map(([label, value]) =>
-        `<span class="feature-chip"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></span>`).join("")}</div>`;
+        ["AV1", specValue(record, "features", "av1")],
+        ["Ray tracing", specValue(record, "features", "ray_tracing")],
+        ["AI TOPS", specValue(record, "features", "ai_tops")],
+        ["Encoder", specValue(record, "features", "encoder")],
+        ["Decoder", specValue(record, "features", "decoder")],
+        ["DirectX", specValue(record, "features", "directx")],
+        ["Vulkan", specValue(record, "features", "vulkan")],
+        ["OpenGL", specValue(record, "features", "opengl")],
+        ["CUDA", specValue(record, "features", "cuda")]].filter(([, value]) => value !== null && value !== undefined && value !== "");
+      const technologies = specValue(record, "features", "technologies");
+      if (!features.length && !(Array.isArray(technologies) && technologies.length)) return `<p class="spec-notes">No feature data recorded.</p>`;
+      const chips = features.length ? `<div class="feature-row">${features.map(([label, value]) =>
+        `<span class="feature-chip"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></span>`).join("")}</div>` : "";
+      const techList = Array.isArray(technologies) && technologies.length
+        ? `<p class="section-kicker">Technologies</p><div class="feature-row">${technologies.map((name) =>
+          `<span class="feature-chip"><b>${escapeHtml(name)}</b></span>`).join("")}</div>` : "";
+      return chips + techList;
     }
 
     function formatPriceHistory(record) {
@@ -978,6 +998,10 @@
             <div class="mini-stat"><span>Transistors</span><strong>${escapeHtml(formatTransistors(record))}</strong></div>
             <div class="mini-stat"><span>Power conn.</span><strong>${escapeHtml(formatList(record, "power", "connectors"))}</strong></div>
             <div class="mini-stat"><span>Display out</span><strong>${escapeHtml(formatList(record, "features", "outputs"))}</strong></div>
+            <div class="mini-stat"><span>Cache</span><strong>${escapeHtml(formatUnit(specValue(record, "silicon", "cache_mb"), "MB"))}</strong></div>
+            <div class="mini-stat"><span>Game clock</span><strong>${escapeHtml(formatUnit(specValue(record, "clocks", "game_mhz"), "MHz"))}</strong></div>
+            <div class="mini-stat"><span>AI cores</span><strong>${escapeHtml(formatCount(specValue(record, "silicon", "tensor_cores")))}</strong></div>
+            <div class="mini-stat"><span>Min. PSU</span><strong>${escapeHtml(formatUnit(specValue(record, "power", "psu_w"), "W"))}</strong></div>
           </div>
           ${formatPlatform(record)}
           ${formatFeatureChips(record)}

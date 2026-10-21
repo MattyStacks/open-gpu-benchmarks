@@ -1,0 +1,34 @@
+# Reference specs shared by every product with `base: r9_m280x`.
+# Rules: data/gpus/README.md#reference-files
+id: r9_m280x
+identity:
+  name: Radeon R9 M280X
+  codename: Saturn XT
+  gpu_vendor: amd
+classification:
+  architecture: GCN 2
+silicon:
+  process: 28 nm
+features:
+  directx: '11'
+  opengl: '4.4'
+  technologies:
+    - Catalyst Software
+    - AMD PowerTune Technology
+    - AMD Radeon Dual Graphics
+    - AMD ZeroCore Power Technology
+    - Switchable Graphics
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

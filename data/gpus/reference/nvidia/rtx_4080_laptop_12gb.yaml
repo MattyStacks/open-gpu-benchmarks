@@ -1,0 +1,77 @@
+# Reference specs shared by every product with `base: rtx_4080_laptop_12gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_4080_laptop_12gb
+identity:
+  name: GeForce RTX 4080 Laptop GPU
+  codename: AD104
+  gpu_vendor: nvidia
+classification:
+  architecture: Ada Lovelace
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 295
+  transistors_b: 35.8
+  shader_cores: 7424
+  rt_cores: 58
+  tensor_cores: 232
+  tmus: 232
+  rops: 80
+  cache_mb: 48
+memory:
+  capacity_gb: 12
+  type: GDDR6
+  bus_width_bits: 192
+clocks:
+  boost_mhz: 2280
+power:
+  tdp_w: 150
+  pcie: '4.0'
+features:
+  dlss: '3'
+  av1: encode+decode
+  ray_tracing: 3rd Generation
+  ai_tops: 542
+  encoder: 2x 8th Generation
+  decoder: 5th Generation
+  directx: 12 Ultimate
+  cuda: '8.9'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA Broadcast
+    - Resizable BAR
+    - NVIDIA GeForce Experience
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - NVIDIA GPU Boost
+    - DLSS Frame Generation
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - NVIDIA App
+    - VR Ready
+    - RTX Remix
+notes: Boost clock 1350-2280 MHz depending on the laptop's power limit; GPU subsystem power 60-150 W.
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/laptops/compare/
+    title: NVIDIA - Compare GeForce RTX Laptops
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon

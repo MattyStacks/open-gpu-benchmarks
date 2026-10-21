@@ -1,0 +1,40 @@
+# Reference specs shared by every product with `base: hd_8750m_2gb`.
+# Rules: data/gpus/README.md#reference-files
+id: hd_8750m_2gb
+identity:
+  name: Radeon HD 8750M Series GPU
+  codename: Mars Pro
+  gpu_vendor: amd
+classification:
+  architecture: GCN 1
+silicon:
+  process: 28 nm
+  shader_cores: 384
+  tmus: 24
+  rops: 8
+memory:
+  capacity_gb: 2
+  type: GDDR5
+clocks:
+  boost_mhz: 775
+features:
+  directx: '11'
+  opengl: '4.4'
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - memory
+      - clocks
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

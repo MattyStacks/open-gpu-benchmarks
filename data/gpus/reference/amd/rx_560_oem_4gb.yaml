@@ -1,0 +1,54 @@
+# Reference specs shared by every product with `base: rx_560_oem_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_560_oem_4gb
+identity:
+  name: Radeon RX 560 (OEM)
+  gpu_vendor: amd
+silicon:
+  transistors_b: 3
+  tmus: 64
+  rops: 16
+memory:
+  capacity_gb: 4
+  type: GDDR5
+  bus_width_bits: 128
+  bandwidth_gbs: 112
+  speed_gbps: 7
+power:
+  tdp_w: 80
+  psu_w: 450
+features:
+  encoder: H.264, H.265/HEVC
+  decoder: H.264, H.265/HEVC
+  directx: '12'
+  opengl: '4.5'
+  technologies:
+    - AMD Software Adrenalin Edition
+    - AMD FreeSync Technology
+    - AMD LiquidVR Technology
+    - 4th Gen GCN Architecture
+    - AMD Radeon Chill
+    - AMD Radeon ReLive
+    - AMD App Acceleration
+    - AMD CrossFire Technology
+    - AMD CrossFire (Bridgeless)
+    - AMD Frame Rate Target Control
+    - 3rd Gen 14nm Process Technology
+    - OpenCL 2.0
+    - AMD PowerTune Technology
+    - TrueAudio Next
+    - Unified Video Decoder (UVD)
+    - Video Code Engine (VCE)
+    - AMD Virtual Super Resolution
+    - The Vulkan API
+notes: AMD lists 896 or 1024 stream processors; base clock 1090 MHz or 1175 MHz; boost clock 1200 MHz or 1275 MHz; board power 60-80 W.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power
+      - features

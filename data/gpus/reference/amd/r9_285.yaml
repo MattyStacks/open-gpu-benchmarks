@@ -1,0 +1,41 @@
+# Reference specs shared by every product with `base: r9_285`.
+# Rules: data/gpus/README.md#reference-files
+id: r9_285
+identity:
+  name: Radeon R9 285
+  codename: Tonga Pro
+  gpu_vendor: amd
+classification:
+  architecture: GCN 3
+silicon:
+  process: 28 nm
+  die_size_mm2: 359
+  transistors_b: 5
+  shader_cores: 1792
+  tmus: 112
+  rops: 32
+features:
+  directx: '12'
+  technologies:
+    - Catalyst Software
+    - AMD HD3D Technology
+    - AMD TrueAudio Technology
+    - Unified Video Decoder (UVD)
+    - AMD Gaming Evolved Client
+    - AMD LiquidVR Technology
+    - AMD TressFX Hair
+    - The Vulkan API
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

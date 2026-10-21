@@ -1,0 +1,79 @@
+# Reference specs shared by every product with `base: rtx_2060_6gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_2060_6gb
+identity:
+  name: GeForce RTX 2060 6 GB
+  codename: TU106
+  gpu_vendor: nvidia
+classification:
+  architecture: Turing
+silicon:
+  process: TSMC 12FFN
+  die_size_mm2: 445
+  transistors_b: 10.8
+  shader_cores: 1920
+  rt_cores: 30
+  tensor_cores: 240
+  tmus: 120
+  rops: 48
+  cache_mb: 3
+memory:
+  capacity_gb: 6
+  type: GDDR6
+  bus_width_bits: 192
+  bandwidth_gbs: 336
+  speed_gbps: 14
+clocks:
+  base_mhz: 1370
+  boost_mhz: 1680
+power:
+  tdp_w: 160
+  psu_w: 500
+  pcie: 3.0 x16
+features:
+  dlss: '2'
+  ray_tracing: 1st Generation
+  encoder: 7th Generation
+  decoder: 4th Generation
+  directx: 12 Ultimate
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '7.5'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA Broadcast
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - NVIDIA GPU Boost
+    - VR Ready
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - RTX HDR
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

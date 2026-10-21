@@ -1,0 +1,87 @@
+# Reference specs shared by every product with `base: rtx_5070_ti_laptop_12gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_5070_ti_laptop_12gb
+identity:
+  name: GeForce RTX 5070 Ti Laptop GPU
+  codename: GB205
+  gpu_vendor: nvidia
+classification:
+  architecture: Blackwell
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 263
+  transistors_b: 31.1
+  shader_cores: 5888
+  rt_cores: 46
+  tensor_cores: 184
+  tmus: 184
+  rops: 64
+  cache_mb: 48
+memory:
+  capacity_gb: 12
+  type: GDDR7
+  bus_width_bits: 192
+  bandwidth_gbs: 672
+  speed_gbps: 28
+clocks:
+  boost_mhz: 2220
+power:
+  tdp_w: 115
+  pcie: '5.0'
+features:
+  dlss: '5'
+  av1: encode+decode
+  ray_tracing: 4th Generation
+  ai_tops: 992
+  encoder: 1x 9th Generation
+  decoder: 1x 6th Generation
+  directx: 12 Ultimate
+  cuda: '12.8'
+  technologies:
+    - DLSS 3D-Guided Neural Rendering
+    - DLSS Dynamic Multi Frame Generation
+    - DLSS Frame Generation
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - Reflex Low Latency Mode
+    - NVIDIA Broadcast
+    - Resizable BAR
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA Omniverse
+    - RTX Remix
+    - NVIDIA GPU Boost
+    - VR Ready
+    - NVIDIA Smooth Motion
+notes: Boost clock 1447-2220 MHz depending on the laptop's power limit; GPU subsystem power 60-115 W.
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/laptops/compare/
+    title: NVIDIA - Compare GeForce RTX Laptops
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/laptops/50-series/
+    title: GeForce RTX 50 Series Gaming Laptops
+    accessed: '2026-10-20'
+    covers:
+      - memory
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory

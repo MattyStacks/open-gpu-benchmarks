@@ -1,0 +1,71 @@
+# Reference specs shared by every product with `base: gtx_1650_super_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: gtx_1650_super_4gb
+identity:
+  name: GeForce GTX 1650 Super
+  codename: TU116
+  gpu_vendor: nvidia
+classification:
+  architecture: Turing
+silicon:
+  process: TSMC 12FFN
+  die_size_mm2: 284
+  transistors_b: 6.6
+  shader_cores: 1280
+  tmus: 80
+  rops: 32
+  cache_mb: 1
+memory:
+  capacity_gb: 4
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 192
+  speed_gbps: 12
+clocks:
+  base_mhz: 1530
+  boost_mhz: 1725
+power:
+  tdp_w: 100
+  psu_w: 350
+  pcie: 3.0 x16
+features:
+  encoder: Yes (Turing)
+  decoder: 'Yes'
+  directx: '12'
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '7.5'
+  technologies:
+    - NVIDIA Reflex
+    - NVIDIA App
+    - NVIDIA FreeStyle
+    - NVIDIA ShadowPlay
+    - NVIDIA Highlights
+    - NVIDIA G-SYNC
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - NVIDIA GPU Boost
+    - NVIDIA Decoder (NVDEC)
+    - VR Ready
+    - Multi Monitor
+    - HDCP
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

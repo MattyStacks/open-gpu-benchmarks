@@ -1,0 +1,90 @@
+# Reference specs shared by every product with `base: rtx_5050_8gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rtx_5050_8gb
+identity:
+  name: GeForce RTX 5050
+  codename: GB207
+  gpu_vendor: nvidia
+classification:
+  architecture: Blackwell
+silicon:
+  process: TSMC 4N
+  die_size_mm2: 149
+  transistors_b: 16.9
+  shader_cores: 2560
+  rt_cores: 20
+  tensor_cores: 80
+  tmus: 80
+  rops: 32
+  cache_mb: 24
+memory:
+  capacity_gb: 8
+  type: GDDR6
+  bus_width_bits: 128
+  bandwidth_gbs: 320
+  speed_gbps: 20
+clocks:
+  base_mhz: 2310
+  boost_mhz: 2570
+power:
+  tdp_w: 130
+  psu_w: 550
+  pcie: 5.0 x8
+features:
+  dlss: '5'
+  av1: encode+decode
+  ray_tracing: 4th Generation
+  ai_tops: 421
+  encoder: 1x 9th Generation
+  decoder: 1x 6th Generation
+  directx: 12 Ultimate
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '12.0'
+  technologies:
+    - DLSS 3D-Guided Neural Rendering
+    - DLSS Dynamic Multi Frame Generation
+    - DLSS Frame Generation
+    - DLSS Ray Reconstruction
+    - DLSS Super Resolution
+    - DLAA
+    - Reflex Frame Warp (Coming Soon)
+    - Reflex Low Latency Mode
+    - NVIDIA App
+    - NVIDIA G-SYNC
+    - RTX Remix
+    - NVIDIA Broadcast
+    - Game Ready Drivers
+    - NVIDIA Studio Drivers
+    - RTX HDR
+    - VR Ready
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5050/
+    title: GeForce RTX 5050 Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - power

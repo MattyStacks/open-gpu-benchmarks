@@ -1,0 +1,61 @@
+# Reference specs shared by every product with `base: rx_7800m_12gb`.
+# Rules: data/gpus/README.md#reference-files
+id: rx_7800m_12gb
+identity:
+  name: Radeon RX 7800M
+  codename: Navi 32
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 3
+silicon:
+  process: TSMC N5 (GCD) + TSMC N6 (MCD)
+  die_size_mm2: 346
+  transistors_b: 28.1
+  shader_cores: 3840
+  rt_cores: 60
+  tensor_cores: 120
+  tmus: 240
+  rops: 96
+  cache_mb: 48
+memory:
+  capacity_gb: 12
+  type: GDDR6
+  bandwidth_gbs: 432
+  speed_gbps: 18
+clocks:
+  game_mhz: 2145
+power:
+  tdp_w: 180
+features:
+  av1: encode+decode
+  encoder: H.264, H.265/HEVC, AV1
+  decoder: H.264, H.265/HEVC, AV1
+notes: Board power up to 180W.
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://www.amd.com/en/products/graphics/laptops/radeon/7000-series/amd-radeon-rx-7800m.html
+    title: AMD Radeon RX 7800M
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

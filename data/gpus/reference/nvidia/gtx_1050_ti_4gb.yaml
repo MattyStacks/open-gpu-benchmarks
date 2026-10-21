@@ -1,0 +1,59 @@
+# Reference specs shared by every product with `base: gtx_1050_ti_4gb`.
+# Rules: data/gpus/README.md#reference-files
+id: gtx_1050_ti_4gb
+identity:
+  name: GeForce GTX 1050 Ti
+  codename: GP107
+  gpu_vendor: nvidia
+classification:
+  architecture: Pascal
+silicon:
+  process: Samsung 14LPP
+  die_size_mm2: 132
+  transistors_b: 3.3
+  shader_cores: 768
+  tmus: 48
+  rops: 32
+  cache_mb: 1
+memory:
+  capacity_gb: 4
+  type: GDDR5
+  bus_width_bits: 128
+  bandwidth_gbs: 112.1
+  speed_gbps: 7
+clocks:
+  base_mhz: 1291
+  boost_mhz: 1392
+power:
+  tdp_w: 75
+  pcie: 3.0 x16
+features:
+  encoder: 6th Generation
+  decoder: 3rd Generation
+  directx: '12'
+  vulkan: '1.4'
+  opengl: '4.6'
+  cuda: '6.1'
+  technologies:
+    - Reflex Low Latency Mode
+    - NVIDIA App
+    - NVIDIA G-SYNC
+sources:
+  - url: https://www.nvidia.com/en-us/geforce/graphics-cards/compare/
+    title: NVIDIA - Compare GeForce Graphics Cards
+    accessed: '2026-10-20'
+    covers:
+      - classification
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units
+    title: Wikipedia - List of Nvidia graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features

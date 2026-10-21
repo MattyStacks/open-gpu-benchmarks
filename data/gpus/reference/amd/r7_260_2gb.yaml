@@ -1,0 +1,43 @@
+# Reference specs shared by every product with `base: r7_260_2gb`.
+# Rules: data/gpus/README.md#reference-files
+id: r7_260_2gb
+identity:
+  name: Radeon R7 260
+  codename: Bonaire
+  gpu_vendor: amd
+classification:
+  architecture: GCN 2
+silicon:
+  process: 28 nm
+  die_size_mm2: 160
+  transistors_b: 2.08
+  shader_cores: 896
+memory:
+  capacity_gb: 2
+  bandwidth_gbs: 104
+clocks:
+  boost_mhz: 1100
+power:
+  tdp_w: 115
+features:
+  directx: '12'
+  technologies:
+    - Catalyst Software
+sources:
+  - url: https://www.amd.com/en/products/specifications/graphics.html
+    title: AMD - Graphics Specifications
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - power
+      - features
+  - url: https://en.wikipedia.org/wiki/List_of_AMD_graphics_processing_units
+    title: Wikipedia - List of AMD graphics processing units
+    accessed: '2026-10-20'
+    covers:
+      - identity
+      - classification
+      - silicon

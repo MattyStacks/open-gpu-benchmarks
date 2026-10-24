@@ -31,6 +31,13 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.8.0.0 - 2026-10-24
+
+### Added
+
+- `.github/FUNDING.yml` turns on the GitHub Sponsors button for
+  [@MattyStacks](https://github.com/sponsors/MattyStacks).
+
 ## 1.7.0.0 - 2026-10-20
 
 ### Added

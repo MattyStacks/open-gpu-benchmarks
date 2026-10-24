@@ -15,8 +15,8 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.7.0.0`, which adds 309 reference GPU specs from NVIDIA,
-AMD, and Intel's own spec pages, with new fields for ray tracing, encoders, API
+Current version: `v1.8.0.0`, which adds a GitHub Sponsors button. v1.7.0.0
+added 309 reference GPU specs from NVIDIA, AMD, and Intel's own spec pages, with new fields for ray tracing, encoders, API
 versions, and each vendor's feature list. v1.6.0.0 records system RAM as
 numbers in the API: `memory_gb`, plus optional `memory_type` (`DDR5-6400`) and
 `memory_channels`. v1.5.0.0 added `creator` and a typed `license` to the Dataset structured data
@@ -221,7 +221,7 @@ content/posts/        blog posts, guides, and reviews
 templates/            starting points for result files and catalog entries
 tests/fixtures/       synthetic test data and issue bodies (never deployed)
 docs/                 contributor guides, the project handoff, and the backlog
-.github/              CI workflows, the benchmark issue form, CODEOWNERS
+.github/              CI workflows, the benchmark issue form, CODEOWNERS, FUNDING.yml
 ```
 
 ## Deployment

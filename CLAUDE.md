@@ -76,7 +76,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.7.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.8.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -135,6 +135,7 @@ AGENTS.md                          tool-neutral agent entry point (keep in step 
 .github/ISSUE_TEMPLATE/benchmark.yml
                                    the "Benchmark result" issue form (applies the benchmark label)
 .github/CODEOWNERS                 maintainers; a code owner's approval is required to merge
+.github/FUNDING.yml                GitHub Sponsors button (github: MattyStacks)
 .github/workflows/validate.yml     four PR checks: Catalog entries, Benchmark results,
                                    Build and tests, Blog
 ```

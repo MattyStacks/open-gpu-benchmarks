@@ -11,10 +11,12 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.7.0.0` (2026-10-20). Versions are now
+- Current version: `v1.8.0.0` (2026-10-24). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
+  - v1.8.0.0: `.github/FUNDING.yml` adds the GitHub Sponsors button
+    (`github: MattyStacks`). No code, data, or API change.
   - v1.7.0.0: 309 reference GPU files (79 NVIDIA, 203 AMD, 27 Intel) from
     the vendors' spec pages, and new catalog fields for what vendors publish
     (schema 0.17 → 0.18): `silicon.tensor_cores`/`cache_mb`,
@@ -992,6 +994,10 @@ parts it can:
 maintainers, and a code owner's approval is required to merge. To add one,
 append their `@username` to the `*` line and give them write access
 (Settings → Collaborators). Never add a bot or an App.
+
+**Sponsors.** [`.github/FUNDING.yml`](../.github/FUNDING.yml) shows the
+Sponsor button on the repo (`github: MattyStacks`, GitHub Sponsors). Add
+more platforms there if needed.
 
 ### Cloudflare Pages (manual setup)
 

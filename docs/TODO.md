@@ -313,6 +313,8 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **v1.8.0.0 (2026-10-24, branch `chore/github-sponsors`): GitHub Sponsors**
+  - Added `.github/FUNDING.yml` for the repo's Sponsor button.
 - **v1.7.0.0 (2026-10-20, branch `data/reference-gpus`): reference GPUs**
   - 309 reference files from NVIDIA, AMD, and Intel spec pages, with new
     catalog fields for the features vendors publish (schema 0.18), and the

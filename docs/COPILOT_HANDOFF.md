@@ -11,10 +11,14 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.9.0.0` (2026-10-25). Versions are now
+- Current version: `v1.10.0.0` (2026-10-26). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
+  - v1.10.0.0: fixes the summaries table's VRAM column, which showed the
+    test system's RAM because two dashboard functions were both named
+    `formatMemory`. `test_build.check_unique_site_functions()` now fails on
+    a duplicate function name in `site/index.html`.
   - v1.9.0.0: official test benches (schema 0.18 → 0.19). The registry
     `data/testbenches.yaml` (`checks.load_testbenches()`, `testbench-*`
     rules) lists the maintainer's systems, each labeled by its memory type:

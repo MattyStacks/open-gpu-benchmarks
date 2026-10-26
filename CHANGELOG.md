@@ -31,6 +31,16 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.10.0.0 - 2026-10-26
+
+### Fixed
+
+- The summaries table's VRAM column showed the test system's RAM (such as
+  "64 GB DDR5-6000 dual channel") instead of the card's VRAM, since 1.6.0.0.
+  Two dashboard functions shared the name `formatMemory`; the run-details one
+  is now `formatSystemMemory`, and `test_build.py` fails on a duplicate
+  function name in `site/index.html`.
+
 ## 1.9.0.0 - 2026-10-25
 
 ### Added

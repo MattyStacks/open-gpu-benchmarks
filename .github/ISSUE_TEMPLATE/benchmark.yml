@@ -11,6 +11,8 @@ body:
 
         Results are anonymous unless you tick **Credit me** below. Leave out anything you don't know or don't want to share.
 
+        Already have a result file, such as an Open GPU Benchmarker export? Use the [Benchmark result (file)](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark_file.yml) form instead.
+
         Uploading many results at once, or results from a script such as the [Cyberpunk 2077 importer](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/CYBERPUNK_BENCHMARK.md)? Open a pull request instead; see [COMMUNITY_SUBMISSIONS.md](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md).
   - type: input
     id: gpu
@@ -74,7 +76,7 @@ body:
       label: Results
       description: >-
         One run per line: resolution, graphics preset, average FPS, and the 1% low if you have it, separated by commas.
-        Use the preset name the game shows. Upscaling and frame generation should be off.
+        Use the preset name the game shows. Upscaling should be off, and frame generation must be off.
       placeholder: |
         1440p, Ultra, 79.1, 65.0
         1080p, Ultra, 103.4, 84.7
@@ -173,7 +175,7 @@ body:
       value: |
         ### Your results become public data
 
-        In plain English, here is what you agree to by submitting:
+        Submitting this issue releases your results under CC BY 4.0. In plain English, here is what you agree to by submitting:
 
         - **Anyone can use your numbers for anything** under [CC BY 4.0](https://opengpubenchmarks.com/license/): copy them, make their own charts, put them on their site, use them commercially, or train AI on them.
         - **Sites have to say where the data came from.** A site or app that uses the data must credit Open GPU Benchmarks and link back, so readers can find the source, report problems, and contribute. In a chart or video, a text credit counts. AI models credit us in their documentation, not in every answer.
@@ -182,16 +184,3 @@ body:
         - **It covers everything you submit**, including machine details and links, so leave out anything you don't want public. Only submit what you're allowed to share.
 
         [Full submission rules](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data) · [License terms](https://opengpubenchmarks.com/license/)
-  - type: checkboxes
-    id: confirmations
-    attributes:
-      label: Confirmations
-      options:
-        - label: Frame generation was off for every run.
-          required: true
-        - label: >-
-            I release these results under CC BY 4.0. In plain English, anyone can use these numbers for anything,
-            including AI training, as long as they credit Open GPU Benchmarks, and I can't take that back. I only
-            included what I'm allowed to share and happy to make public
-            ([details](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data)).
-          required: true

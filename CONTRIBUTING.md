@@ -5,6 +5,10 @@ dashboard comes from a small YAML file in this repository. **The easiest way
 to add a result is a [Benchmark result issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark.yml):**
 fill in the form and a bot writes the file and opens the pull request for you
 (see [Submit through an issue](docs/COMMUNITY_SUBMISSIONS.md#submit-through-an-issue)).
+Already have a result file, such as an Open GPU Benchmarker export? Attach it to a
+[Benchmark result (file) issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark_file.yml)
+(see [Submit a result file](docs/COMMUNITY_SUBMISSIONS.md#submit-a-result-file)).
+Submitting is the CC BY 4.0 agreement; there's no box to tick.
 The pull request steps below are for bulk or scripted uploads, raw captures,
 and anything the form doesn't cover.
 
@@ -13,6 +17,7 @@ and anything the form doesn't cover.
 | I want to...                              | Go to                                                  |
 | ----------------------------------------- | ------------------------------------------------------ |
 | **Add my FPS results** (most people)      | [Open a Benchmark result issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark.yml) |
+| Submit a result file I already have       | [Open a Benchmark result (file) issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark_file.yml) |
 | Add many results, or results with raw captures | [Submit a result in 5 steps](#submit-a-result-in-5-steps) (pull request) |
 | Add a card, laptop, or handheld that isn't in the catalog | [Adding a card, laptop, or handheld](#adding-a-card-laptop-or-handheld) |
 | Fix or remove a result I submitted        | [Fixing or removing a result](#fixing-or-removing-a-result) |

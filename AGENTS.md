@@ -108,7 +108,9 @@ owner's own PRs (`preview.yml`), never for `benchmark/*` branches.
 
 Benchmark issues: the primary way to submit a result is the "Benchmark
 result" issue form (`.github/ISSUE_TEMPLATE/benchmark.yml`, label
-`benchmark`). `.github/workflows/benchmark-issue.yml` runs
+`benchmark`), or the "Benchmark result (file)" form (`benchmark_file.yml`) or
+any `benchmark` issue with one attached or pasted result file. Submitting is
+the CC BY 4.0 agreement; no form has a required checkbox. `.github/workflows/benchmark-issue.yml` runs
 `scripts/issue_to_result.py`, commits the one generated file to
 `benchmark/issue-<N>`, and opens a pull request with a GitHub App token for a
 code owner (`.github/CODEOWNERS`, the maintainer list) to approve. Pull
@@ -123,9 +125,13 @@ App"):
 - never interpolate the issue body into a shell line;
 - never let the bot add a game: the form accepts only games already in
   `data/games.yaml`, and a new game comes in its own pull request;
+- download attachments only from `github.com/user-attachments/files/` into
+  `$OUT`, never the checkout; never pass `--attachment-dir` (tests only) from
+  the workflow. Unconvertible attachments get `needs-maintainer`
+  (`docs/PROCESSING_ISSUES.md`);
 - never add a bot to CODEOWNERS;
-- keep the form's labels and options in step with `issue_to_result.py` and
-  `tests/fixtures/issues/valid.md`.
+- keep the forms' labels and options in step with `issue_to_result.py`
+  (`FIELDS`, `FILE_FIELDS`) and `tests/fixtures/issues/`.
 
 `test_build.py` enforces the parts it can.
 

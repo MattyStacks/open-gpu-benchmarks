@@ -76,7 +76,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.11.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.12.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -136,6 +136,9 @@ AGENTS.md                          tool-neutral agent entry point (keep in step 
                                    benchmark issue -> result file -> bot PR (GitHub App token)
 .github/ISSUE_TEMPLATE/benchmark.yml
                                    the "Benchmark result" issue form (applies the benchmark label)
+.github/ISSUE_TEMPLATE/benchmark_file.yml
+                                   the "Benchmark result (file)" form: one attached or pasted result file
+docs/PROCESSING_ISSUES.md          what a maintainer does with a needs-maintainer benchmark issue
 .github/CODEOWNERS                 maintainers; a code owner's approval is required to merge
 .github/FUNDING.yml                GitHub Sponsors button (github: MattyStacks)
 .github/workflows/validate.yml     four PR checks: Catalog entries, Benchmark results,
@@ -303,12 +306,20 @@ unless repository policy changes.
     through the `ISSUE_BODY` env var).
   - never let the bot add a game: the form accepts only a `game_id` or name
     already in `data/games.yaml`, and a new game comes in its own pull request.
+  - a result file (the `benchmark_file.yml` form, or any `benchmark` issue
+    with one attached or pasted file) is downloaded only from
+    `github.com/user-attachments/files/` via `*.githubusercontent.com`, into
+    `$OUT`, never the checkout; the workflow never passes `--attachment-dir`
+    (tests only). Attachments it can't convert exit 3 and get the
+    `needs-maintainer` label (`docs/PROCESSING_ISSUES.md`).
+  - submitting the issue is the CC BY 4.0 agreement: no form has a required
+    checkbox, and a result file needs no license line.
 - `.github/CODEOWNERS` is the maintainer list, and a code owner's approval is
   required to merge. Adding a maintainer means adding their `@username` there
   and giving them write access. Never add a bot.
-- A change to the issue form's labels or options goes in
-  `issue_to_result.py` (`FIELDS`, `CAPTURE_TOOLS`, `WHO_RAN_IT`, `OSES`,
-  `GRAPHICS_APIS`) and `tests/fixtures/issues/valid.md` in the same commit.
+- A change to the issue forms' labels or options goes in
+  `issue_to_result.py` (`FIELDS`, `FILE_FIELDS`, `CAPTURE_TOOLS`,
+  `WHO_RAN_IT`, `OSES`, `GRAPHICS_APIS`) and `tests/fixtures/issues/valid.md` in the same commit.
   `test_build.check_issue_form_matches_script()` fails otherwise, and a new
   `checks.PROOF_METHODS` value needs a form option.
 - The blog is Astro, scoped to `/blog/`. `build.py` still owns the dashboard,

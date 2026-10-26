@@ -1,0 +1,43 @@
+name: Benchmark result (file)
+description: Submit a result file you already have, such as an Open GPU Benchmarker export. A bot turns it into a pull request for a maintainer to review.
+title: "Benchmark: "
+labels:
+  - benchmark
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Attach one result file (`.yaml`, `.yml`, or `.json`) below and a bot checks it, writes it into the data, and opens a pull request. A maintainer reviews it before anything reaches the dashboard. If something needs fixing, the bot replies here; edit the issue and it checks again.
+
+        The file needs `gpu_id`, `game_id`, `date`, and `result`, like the [community template](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/templates/community_submission.yaml). The game must already be in [data/games.yaml](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/data/games.yaml). No result file? Use the [Benchmark result](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark.yml) form and type the numbers in.
+
+        Results are anonymous unless you tick **Credit me** below.
+  - type: textarea
+    id: file
+    attributes:
+      label: Result file
+      description: >-
+        Drag the file into this box, or paste its contents. One file per issue. Raw captures (PresentMon or
+        MangoHud CSVs, Cyberpunk benchmarkResults) are welcome too; a maintainer converts those by hand.
+    validations:
+      required: true
+  - type: checkboxes
+    id: credit
+    attributes:
+      label: Credit
+      options:
+        - label: Credit me as my GitHub username
+  - type: markdown
+    attributes:
+      value: |
+        ### Your results become public data
+
+        Submitting this issue releases your results under CC BY 4.0. In plain English, here is what you agree to by submitting:
+
+        - **Anyone can use your numbers for anything** under [CC BY 4.0](https://opengpubenchmarks.com/license/): copy them, make their own charts, put them on their site, use them commercially, or train AI on them.
+        - **Sites have to say where the data came from.** A site or app that uses the data must credit Open GPU Benchmarks and link back, so readers can find the source, report problems, and contribute. In a chart or video, a text credit counts. AI models credit us in their documentation, not in every answer.
+        - **You get credit here.** If you tick "Credit me", your username is recorded with the result on the site, in the data, and in the Git history.
+        - **You can't take it back.** You can ask for a result to be removed from the site, but copies other people already made stay public.
+        - **It covers everything you submit**, including machine details and links, so leave out anything you don't want public. Only submit what you're allowed to share.
+
+        [Full submission rules](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#your-results-become-public-data) · [License terms](https://opengpubenchmarks.com/license/)

@@ -11,10 +11,15 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.11.0.0` (2026-10-26). Versions are now
+- Current version: `v1.12.0.0` (2026-10-26). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
+  - v1.12.0.0: the benchmark bot takes one attached or pasted result file
+    (the new "Benchmark result (file)" form, or any `benchmark` issue), and
+    submitting is the CC BY 4.0 agreement: the forms have no required
+    checkboxes. Unconvertible attachments get `needs-maintainer`
+    (`docs/PROCESSING_ISSUES.md`).
   - v1.11.0.0: every release gets an annotated `v<version>` tag on its
     merge commit once the pull request merges; tags v1.3.0.0 through
     v1.10.0.0 were backfilled.
@@ -883,8 +888,9 @@ npm --prefix blog run build -> site/blog/<slug>/, /posts/, /guides/, /reviews/, 
   5. it covers raw captures and machine details.
 
   The same five points appear in full on the dashboard's submission panel, on
-  `license/`, and in the issue form (a markdown block above the checkbox,
-  whose label starts with `issue_to_result.LICENSE_AGREEMENT`). Found results
+  `license/`, and in both issue forms (a markdown notice: submitting the
+  issue is the agreement, so there's no checkbox, and a result file needs no
+  license line). Found results
   contribute only the numbers and a link, and a friend's numbers need their
   agreement to public release. `.github/pull_request_template.md` has a
   CC BY 4.0 checkbox for results and an MIT checkbox for code.
@@ -994,7 +1000,9 @@ The issue is the primary way to submit a result. Pull requests are for bulk
 or scripted uploads (the Cyberpunk importer, many files, raw captures).
 
 **Flow.** [`.github/ISSUE_TEMPLATE/benchmark.yml`](../.github/ISSUE_TEMPLATE/benchmark.yml)
-is a form that applies the `benchmark` label.
+(fields) and [`benchmark_file.yml`](../.github/ISSUE_TEMPLATE/benchmark_file.yml)
+(one result file) are forms that apply the `benchmark` label; any other issue
+with that label is read too.
 [`benchmark-issue.yml`](../.github/workflows/benchmark-issue.yml) runs on
 `issues` (opened, edited, labeled, reopened) when that label is present. It
 checks out `main` and runs
@@ -1007,6 +1015,28 @@ the form and writes `data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml`:
   bot never writes `games.yaml`, so a new game needs its own pull request;
 - preset spellings reused from existing runs of that game, ignoring case;
 - `_2`, `_3`, ... for a name that's taken.
+
+Without the form's `### GPU` heading, the script looks for one result file
+instead (`issue_file`): a `github.com/user-attachments/files/<id>/<name>` link
+ending `.yaml`/`.yml`/`.json`, a ```` ```yaml ````/```` ```json ```` block, or
+the file form's **Result file** box pasted as plain text. Downloads follow
+redirects only to `*.githubusercontent.com` (`GitHubRedirects`), stop at
+`MAX_FILE_BYTES` (1 MB) and `DOWNLOAD_SECONDS` (20), and are saved under
+`$OUT/attachments`, outside the checkout. YAML loads with `NoAliasLoader`
+(aliases refused). `run_from_file` requires `gpu_id`, `game_id`, `date`, and
+`result`, resolves the GPU and game like the form, drops `DROPPED_KEYS`
+(`submitted_by`, `testbench_id`, `source`, `synthetic`), sets `submitted_by`
+only from the Credit box, and keeps every other field. Two result files fail
+("one per issue"). Attachments with no result file exit 3: the workflow
+replies and adds the `needs-maintainer` label, and a maintainer follows
+[PROCESSING_ISSUES.md](PROCESSING_ISSUES.md). An issue with nothing to read
+gets a reply linking both forms. Tests pass the hidden `--attachment-dir`
+(`tests/fixtures/issues/attachments/<id>/<name>`), so they never touch the
+network; the workflow must never pass it (`check_bot_safety`).
+
+Submitting the issue is the CC BY 4.0 agreement. Neither form has a required
+checkbox (`check_issue_form_matches_script` fails on one), and the pull request
+body says the result was submitted under CC BY 4.0.
 
 The script then runs `checks.load_results` and keeps only the new file's
 issues. On errors it writes nothing, and the bot updates one marker comment
@@ -1021,11 +1051,13 @@ Editing the issue reruns the whole flow on the same branch. While
 `MAX_OPEN_PRS` (10) `benchmark/issue-*` pull requests are open, new issues get
 a "queue full" reply instead.
 
-The form's labels and options must match `FIELDS`, `CAPTURE_TOOLS`,
-`WHO_RAN_IT`, `OSES`, and `GRAPHICS_APIS` in the script. The capture-tool
+The forms' labels and options must match `FIELDS`, `FILE_FIELDS`,
+`CAPTURE_TOOLS`, `WHO_RAN_IT`, `OSES`, and `GRAPHICS_APIS` in the script. The capture-tool
 options must also match `checks.PROOF_METHODS`. `test_build.py`
 (`check_issue_form_matches_script`) enforces both, and
-`tests/fixtures/issues/valid.md` is a rendered issue body for the tests.
+`tests/fixtures/issues/` holds rendered issue bodies for the tests
+(`valid.md`, `file_attached.md`, `file_form.md`, `csv_attached.md`) and
+their attachments.
 
 **Why a GitHub App and not `GITHUB_TOKEN` or a personal token.**
 

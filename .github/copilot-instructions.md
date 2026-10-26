@@ -202,12 +202,20 @@ commit everything, push, and open a PR into `main`; one topic per branch.
     through the `ISSUE_BODY` env var).
   - never let the bot add a game: the form accepts only a `game_id` or name
     already in `data/games.yaml`, and a new game comes in its own pull request.
+  - a result file (the `benchmark_file.yml` form, or any `benchmark` issue
+    with one attached or pasted file) is downloaded only from
+    `github.com/user-attachments/files/` via `*.githubusercontent.com`, into
+    `$OUT`, never the checkout; the workflow never passes `--attachment-dir`
+    (tests only). Attachments it can't convert exit 3 and get the
+    `needs-maintainer` label (`docs/PROCESSING_ISSUES.md`).
+  - submitting the issue is the CC BY 4.0 agreement: no form has a required
+    checkbox, and a result file needs no license line.
 - `.github/CODEOWNERS` is the maintainer list, and a code owner's approval is
   required to merge. Adding a maintainer means adding their `@username` there
   and giving them write access. Never add a bot.
-- A change to the issue form's labels or options goes in
-  `issue_to_result.py` (`FIELDS`, `CAPTURE_TOOLS`, `WHO_RAN_IT`, `OSES`,
-  `GRAPHICS_APIS`) and `tests/fixtures/issues/valid.md` in the same commit.
+- A change to the issue forms' labels or options goes in
+  `issue_to_result.py` (`FIELDS`, `FILE_FIELDS`, `CAPTURE_TOOLS`,
+  `WHO_RAN_IT`, `OSES`, `GRAPHICS_APIS`) and `tests/fixtures/issues/valid.md` in the same commit.
   `test_build.check_issue_form_matches_script()` fails otherwise, and a new
   `checks.PROOF_METHODS` value needs a form option.
 

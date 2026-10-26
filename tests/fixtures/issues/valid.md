@@ -78,8 +78,3 @@ DX12
 ### Credit
 
 - [X] Credit me as my GitHub username
-
-### Confirmations
-
-- [X] Frame generation was off for every run.
-- [X] I release these results under CC BY 4.0. In plain English, anyone can use these numbers for anything, as long as they credit Open GPU Benchmarks.

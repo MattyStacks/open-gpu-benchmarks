@@ -1,0 +1,27 @@
+# Captured by Example Benchmarker 1.0 (https://example.com/), benchmark "Cyberpunk 2077".
+# Submitted data is public under CC BY 4.0 (data/LICENSE) and cannot be taken back.
+gpu_id: rtx_4090_24gb_fe
+testbench_id: ddr5_bench
+submitted_by: someone-else
+synthetic: true
+game_id: cyberpunk_2077
+date: "2026-10-03"
+version: "2.12"
+frame_generation: false
+result:
+  - resolution: 1440p
+    time: "16:59"
+    graphics_preset: Ultra
+    avg_fps: 178.4
+    p1_low: 146.2
+    diagnostics:
+      limit: gpu
+      gpu_busy_pct: 98.3
+system:
+  os: windows
+  cpu: AMD Ryzen 7 7800X3D
+  memory_gb: 32
+detected:
+  browser: Example Browser 1
+proof:
+  method: presentmon

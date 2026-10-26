@@ -1,11 +1,19 @@
 """
 issue_to_result.py - a "Benchmark result" GitHub issue -> community result YAML
 
-The issue form (.github/ISSUE_TEMPLATE/benchmark.yml) asks for the same fields
-as templates/community_submission.yaml. This script reads the issue body,
-writes data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml, and runs the
-normal checks on it. .github/workflows/benchmark-issue.yml then pushes the file
-to a benchmark/issue-<N> branch and opens a pull request for a maintainer.
+It reads three kinds of issue:
+- the "Benchmark result" form (.github/ISSUE_TEMPLATE/benchmark.yml), which
+  asks for the same fields as templates/community_submission.yaml;
+- the "Benchmark result (file)" form (benchmark_file.yml), with a result file
+  attached or pasted;
+- any other issue with the benchmark label and one attached
+  (github.com/user-attachments/files/...) or pasted (```yaml / ```json)
+  result file, such as an Open GPU Benchmarker export.
+Submitting the issue releases the results under CC BY 4.0; there is no box to
+tick. The script writes data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
+and runs the normal checks on it. .github/workflows/benchmark-issue.yml then
+pushes the file to a benchmark/issue-<N> branch and opens a pull request for a
+maintainer.
 
     python scripts/issue_to_result.py --body-file body.md --issue 42 --author octocat --out-dir out
 
@@ -16,18 +24,27 @@ It writes these into --out-dir:
     path.txt     the new file's path relative to the repo (only on success)
 
 Exit codes: 0 the file was written and passes the checks, 1 the issue needs a
-fix (comment.md says what), 2 a usage error.
+fix (comment.md says what), 2 a usage error, 3 the issue has attachments the
+bot can't convert (raw captures, screenshots), so a maintainer takes it over
+(docs/PROCESSING_ISSUES.md).
 
 Everything in the issue is untrusted text. It reaches the YAML file only
-through yaml.dump, and the markdown output escapes it.
+through yaml.dump, and the markdown output escapes it. Attachments are fetched
+only from github.com/user-attachments/files/, through redirects to
+*.githubusercontent.com, with a size and time cap, and saved under --out-dir.
 
-Keep FIELDS, CAPTURE_TOOLS, WHO_RAN_IT, OSES, and GRAPHICS_APIS in step with
-the issue form; scripts/test_build.py checks that they match.
+Keep FIELDS, FILE_FIELDS, CAPTURE_TOOLS, WHO_RAN_IT, OSES, and GRAPHICS_APIS in
+step with the issue forms; scripts/test_build.py checks that they match.
 """
 import argparse
 import difflib
+import json
 import re
 import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import date
 from pathlib import Path
 
@@ -61,7 +78,11 @@ FIELDS = {
     "OS version": "os_detail",
     "Graphics API": "graphics_api",
     "Credit": "credit",
-    "Confirmations": "confirmations",
+}
+# The file form's headings.
+FILE_FIELDS = {
+    "Result file": "file",
+    "Credit": "credit",
 }
 # Dropdown option -> proof.method. One option per checks.PROOF_METHODS value.
 CAPTURE_TOOLS = {
@@ -82,8 +103,6 @@ WHO_RAN_IT = (SELF, FOUND)
 OSES = {"Windows": "windows", "Linux": "linux"}
 GRAPHICS_APIS = ("DX12", "DX11", "Vulkan")
 CREDIT_ME = "Credit me as my GitHub username"
-FRAME_GENERATION_OFF = "Frame generation was off"
-LICENSE_AGREEMENT = "I release these results under CC BY 4.0"
 NO_RESPONSE = ("", "_no response_", "none")
 MAX_BODY = 20_000
 MAX_TEXT = 200
@@ -91,10 +110,28 @@ MAX_RUNS = 20
 CHECKBOX = re.compile(r"^\s*[-*]\s*\[([ xX])\]\s*(.+?)\s*$")
 RESOLUTION_SIZE = re.compile(r"^(\d{3,5})\s*[x×]\s*(\d{3,5})$", re.IGNORECASE)
 MARKER = "<!-- benchmark-bot -->"
+ISSUES_URL = "https://github.com/MattyStacks/open-gpu-benchmarks/issues/new"
+LICENSE_URL = f"{checks.REPO_URL}/data/LICENSE"
+
+# Attached or pasted result files.
+ATTACHMENT = re.compile(r"https://github\.com/user-attachments/files/(\d+)/([\w.-]+)")
+ANY_ATTACHMENT = re.compile(r"https://github\.com/user-attachments/(?:files|assets)/[\w./-]+")
+FENCED = re.compile(r"^(`{3,}|~{3,})[ \t]*(yaml|yml|json)[ \t]*\n(.*?)^\1[ \t]*$", re.MULTILINE | re.DOTALL | re.IGNORECASE)
+RESULT_SUFFIXES = (".yaml", ".yml", ".json")
+DOWNLOAD_HOSTS = (".githubusercontent.com",)
+MAX_FILE_BYTES = 1_000_000
+DOWNLOAD_SECONDS = 20
+# Never taken from a submitted file: the bot sets submitted_by from the Credit
+# box, and the others belong to official or test data only.
+DROPPED_KEYS = ("submitted_by", "testbench_id", "source", "synthetic")
 
 
 class SubmissionError(Exception):
     """A problem the submitter can fix by editing the issue."""
+
+
+class NeedsMaintainer(Exception):
+    """Attachments the bot can't convert; a maintainer takes the issue over."""
 
 
 def code(text):
@@ -112,7 +149,8 @@ def parse_issue_body(body):
         if line.startswith("### "):
             if key:
                 sections[key] = "\n".join(lines).strip()
-            key, lines = FIELDS.get(line[4:].strip()), []
+            heading = line[4:].strip()
+            key, lines = FIELDS.get(heading) or FILE_FIELDS.get(heading), []
         elif key:
             lines.append(line)
     if key:
@@ -247,24 +285,22 @@ def parse_results(text, known_presets):
     return entries
 
 
-def build_run(fields, author, catalog, games, data_dir):
-    """The result file's contents from the parsed issue form. Raises SubmissionError."""
-    confirmations = checked(fields.get("confirmations", ""))
-    if not any(label.startswith(LICENSE_AGREEMENT) for label in confirmations):
-        raise SubmissionError("Tick the **CC BY 4.0** box: results are only accepted as public data.")
-    if not any(label.startswith(FRAME_GENERATION_OFF) for label in confirmations):
-        raise SubmissionError("Tick the **frame generation** box. Runs with frame generation on aren't accepted.")
-
-    gpu = find_gpu(catalog, text_field(fields, "gpu", "GPU", required=True))
-    runs = list(known_runs(data_dir))
-    game_id = find_game(games, text_field(fields, "game", "Game", required=True))["id"]
-    day = text_field(fields, "date", "Date", required=True)
+def check_day(day):
     if not checks.FULL_DATE.match(day):
         raise SubmissionError(f"**Date** {code(day)} must be written YYYY-MM-DD, such as 2026-10-03.")
     try:
         date.fromisoformat(day)
     except ValueError:
         raise SubmissionError(f"**Date** {code(day)} is not a real calendar day.") from None
+    return day
+
+
+def build_run(fields, author, catalog, games, data_dir):
+    """The result file's contents from the parsed issue form. Raises SubmissionError."""
+    gpu = find_gpu(catalog, text_field(fields, "gpu", "GPU", required=True))
+    runs = list(known_runs(data_dir))
+    game_id = find_game(games, text_field(fields, "game", "Game", required=True))["id"]
+    day = check_day(text_field(fields, "date", "Date", required=True))
 
     presets = {
         str(entry.get("graphics_preset"))
@@ -334,6 +370,129 @@ def memory_fields(fields, system):
         if not 1 <= count <= checks.MAX_MEMORY_CHANNELS:
             raise SubmissionError(f"**Memory channels** must be a whole number such as `2` (dual channel), not {code(channels)}.")
         system["memory_channels"] = count
+
+
+# --- Attached or pasted result files -------------------------------------------------
+
+
+class GitHubRedirects(urllib.request.HTTPRedirectHandler):
+    """Follow an attachment's redirect only to GitHub's own file storage."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        parts = urllib.parse.urlsplit(newurl)
+        if parts.scheme != "https" or not (parts.hostname or "").endswith(DOWNLOAD_HOSTS):
+            raise SubmissionError("The attached file redirected somewhere other than GitHub's file storage.")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def fetch_attachment(url, attachment_dir):
+    """An attachment's text: from GitHub, or from attachment_dir/<id>/<name> in tests."""
+    file_id, name = ATTACHMENT.fullmatch(url).groups()
+    if attachment_dir:
+        path = attachment_dir / file_id / name
+        if not path.is_file():
+            raise SubmissionError(f"The attached file {code(name)} couldn't be downloaded.")
+        data = path.read_bytes()
+    else:
+        deadline = time.monotonic() + DOWNLOAD_SECONDS
+        chunks, size = [], 0
+        try:
+            with urllib.request.build_opener(GitHubRedirects).open(url, timeout=DOWNLOAD_SECONDS) as response:
+                while size <= MAX_FILE_BYTES and time.monotonic() < deadline:
+                    chunk = response.read(65536)
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                    size += len(chunk)
+                else:
+                    if size <= MAX_FILE_BYTES:
+                        raise SubmissionError(f"The attached file {code(name)} took too long to download.")
+        except (urllib.error.URLError, OSError, ValueError):
+            raise SubmissionError(f"The attached file {code(name)} couldn't be downloaded. Attach it again.") from None
+        data = b"".join(chunks)
+    if len(data) > MAX_FILE_BYTES:
+        raise SubmissionError(f"The attached file {code(name)} is larger than {MAX_FILE_BYTES // 1000:,} KB.")
+    try:
+        return data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise SubmissionError(f"The attached file {code(name)} is not UTF-8 text.") from None
+
+
+def issue_file(body, fields, attachment_dir=None, save_dir=None):
+    """(label, text, is_json) for the one result file attached to or pasted into the issue."""
+    links = list(dict.fromkeys(match.group(0) for match in ATTACHMENT.finditer(body)))
+    attached = [url for url in links if url.lower().endswith(RESULT_SUFFIXES)]
+    pasted = [(match.group(2).lower(), match.group(3)) for match in FENCED.finditer(body)]
+    section = fields.get("file", "")
+    if not attached and not pasted and section and not ANY_ATTACHMENT.search(section):
+        # The file form's box with the file pasted in as plain text.
+        pasted = [("yaml", section)]
+    found = len(attached) + len(pasted)
+    if found > 1:
+        raise SubmissionError(
+            f"This issue has {found} result files. Put one result file in each issue, "
+            "or open a pull request for bulk uploads."
+        )
+    if attached:
+        url = attached[0]
+        name = ATTACHMENT.fullmatch(url).group(2)
+        text = fetch_attachment(url, attachment_dir)
+        if save_dir:
+            save_dir.mkdir(parents=True, exist_ok=True)
+            (save_dir / name).write_text(text, encoding="utf-8")
+        return f"the attached file {code(name)}", text, name.lower().endswith(".json")
+    if pasted:
+        language, text = pasted[0]
+        return "the pasted file", text, language == "json"
+    if ANY_ATTACHMENT.search(body):
+        raise NeedsMaintainer()
+    raise SubmissionError(
+        "The bot couldn't find a result in this issue. Fill in the "
+        f"[Benchmark result]({ISSUES_URL}?template=benchmark.yml) form, or attach a result file "
+        "(`.yaml`, `.yml`, or `.json`) with the "
+        f"[Benchmark result (file)]({ISSUES_URL}?template=benchmark_file.yml) form "
+        "or by dragging it into this issue's description."
+    )
+
+
+class NoAliasLoader(yaml.SafeLoader):
+    """A SafeLoader that refuses YAML aliases, so a small file can't expand into a huge one."""
+
+    def compose_node(self, parent, index):
+        if self.check_event(yaml.AliasEvent):
+            raise SubmissionError("The result file uses a YAML alias (`*name`). Write each value out instead.")
+        return super().compose_node(parent, index)
+
+
+def load_file(label, text, is_json):
+    try:
+        data = json.loads(text) if is_json else yaml.load(text, Loader=NoAliasLoader)
+    except (json.JSONDecodeError, yaml.YAMLError) as error:
+        problem = " ".join(str(error).split())[:300]
+        raise SubmissionError(f"{label[0].upper()}{label[1:]} isn't valid {'JSON' if is_json else 'YAML'}:\n\n{fence(problem)}") from None
+    if not isinstance(data, dict):
+        raise SubmissionError(f"{label[0].upper()}{label[1:]} isn't a result file: it needs `gpu_id`, `game_id`, `date`, and `result`.")
+    return data
+
+
+def run_from_file(data, author, credit_me, catalog, games):
+    """A submitted result file, cleaned up for the community folder. Raises SubmissionError."""
+    missing = [key for key in ("gpu_id", "game_id", "date", "result") if not data.get(key)]
+    if missing:
+        raise SubmissionError(f"The result file is missing {', '.join(f'`{key}`' for key in missing)}.")
+    data = {key: value for key, value in data.items() if key not in DROPPED_KEYS}
+    gpu = find_gpu(catalog, str(data.pop("gpu_id")))
+    run = {"gpu_id": gpu["id"]}
+    if credit_me:
+        run["submitted_by"] = author
+    run.update(data)
+    run["game_id"] = find_game(games, str(run["game_id"]))["id"]
+    if isinstance(run["date"], date):
+        run["date"] = run["date"].isoformat()
+    check_day(str(run["date"]))
+    if isinstance(run.get("result"), list) and len(run["result"]) > MAX_RUNS:
+        raise SubmissionError(f"The result file has more than {MAX_RUNS} runs. Open a pull request for bulk uploads.")
+    return run
 
 
 def target_path(data_dir, run):
@@ -407,10 +566,10 @@ def pr_body(run, gpu, game, text, relative, issue, author, issues):
         f"- **Runs:** {len(run['result'])}\n"
         f"- **File:** `{relative}`\n\n"
         f"{fence(text, 'yaml')}\n{notes}\n"
-        "The submitter ticked the box releasing these results under "
-        f"[CC BY 4.0]({checks.REPO_URL}/data/LICENSE).\n\n"
+        f"Submitted under [CC BY 4.0]({LICENSE_URL}): submitting the issue releases the results.\n\n"
         "### Reviewer checklist\n\n"
         "- [ ] The numbers look plausible for this GPU, game, and preset.\n"
+        "- [ ] Nothing suggests frame generation was on.\n"
         "- [ ] The proof or source link, if any, backs them up.\n"
         "- [ ] The preset and resolution names match the existing dashboard groups.\n\n"
         "Fix anything small by pushing to this branch, or ask on the issue. "
@@ -429,6 +588,8 @@ def main(argv=None):
     parser.add_argument("--author", required=True, help="the issue author's GitHub username")
     parser.add_argument("--out-dir", type=Path, required=True, help="where to write comment.md, pr_body.md, title.txt, path.txt")
     parser.add_argument("--data-dir", type=Path, default=checks.DATA_DIR, help="source tree to write into (default: data)")
+    # Tests read attachments from <dir>/<id>/<name> instead of GitHub.
+    parser.add_argument("--attachment-dir", type=Path, default=None, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if not checks.GITHUB_USER_PATTERN.match(args.author):
         parser.error(f"--author '{args.author}' is not a GitHub username")
@@ -445,9 +606,25 @@ def main(argv=None):
         return fail(f"The issue is longer than {MAX_BODY:,} characters. Open a pull request for large submissions.")
     catalog, _ = checks.load_catalog(data_dir)
     games, _ = checks.load_games(data_dir)
+    fields = parse_issue_body(body)
     try:
-        run = build_run(parse_issue_body(body), args.author, catalog, games, data_dir)
+        if "gpu" in fields:
+            run = build_run(fields, args.author, catalog, games, data_dir)
+        else:
+            label, text, is_json = issue_file(body, fields, args.attachment_dir, args.out_dir / "attachments")
+            credit_me = CREDIT_ME in checked(fields.get("credit", ""))
+            run = run_from_file(load_file(label, text, is_json), args.author, credit_me, catalog, games)
         path = target_path(data_dir, run)
+    except NeedsMaintainer:
+        (args.out_dir / "comment.md").write_text(
+            f"{MARKER}\n**Thanks! A maintainer will add this one by hand.** "
+            "The bot only reads result files (`.yaml`, `.yml`, or `.json`), and this issue has other attachments, "
+            "such as a raw capture or a screenshot. "
+            f"Submitting it releases the results under [CC BY 4.0]({LICENSE_URL}).",
+            encoding="utf-8",
+        )
+        print("Attachments need a maintainer")
+        return 3
     except SubmissionError as error:
         return fail(str(error))
 
@@ -475,7 +652,8 @@ def main(argv=None):
     (args.out_dir / "comment.md").write_text(
         f"{MARKER}\n**Thanks!** This issue became `{relative}` with {runs} run{'s' if runs != 1 else ''}. "
         "A maintainer will review the pull request below. "
-        "Edit this issue if something is wrong and the pull request updates by itself.",
+        "Edit this issue if something is wrong and the pull request updates by itself. "
+        f"Your results are public data under [CC BY 4.0]({LICENSE_URL}).",
         encoding="utf-8",
     )
     print(f"Wrote {relative}")

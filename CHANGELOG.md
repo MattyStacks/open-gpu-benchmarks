@@ -31,6 +31,31 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.12.0.0 - 2026-10-26
+
+### Added
+
+- The benchmark bot takes result files. A new **Benchmark result (file)**
+  issue form takes one attached or pasted `.yaml`, `.yml`, or `.json` result
+  file, such as an Open GPU Benchmarker export, and any issue with the
+  `benchmark` label and one attached or pasted result file works the same
+  way. The bot downloads only from `github.com/user-attachments/files/`,
+  caps the size and time, refuses YAML aliases, keeps the file's fields,
+  sets `submitted_by` only from the Credit box, and drops `testbench_id`,
+  `source`, and `synthetic`.
+- Attachments the bot can't convert yet (raw CSV captures, screenshots) get
+  a reply and the `needs-maintainer` label (exit code 3), and
+  `docs/PROCESSING_ISSUES.md` says how a maintainer handles them.
+
+### Changed
+
+- Submitting a benchmark issue is the CC BY 4.0 agreement. The forms show the
+  license as a notice, and the required "CC BY 4.0" and "frame generation was
+  off" checkboxes are gone; the Results box says frame generation must be
+  off, and reviewers check it.
+- An issue with neither the form's fields nor a result file gets a reply that
+  links both forms, instead of asking for the first missing field.
+
 ## 1.11.0.0 - 2026-10-26
 
 ### Changed

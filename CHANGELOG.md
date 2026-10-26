@@ -31,6 +31,16 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.11.0.0 - 2026-10-26
+
+### Changed
+
+- Every release is tagged. After a version-bump pull request merges, the
+  merge commit gets an annotated `v<version>` tag, without anyone having to
+  ask; `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and
+  `docs/COPILOT_HANDOFF.md` say so. The missing tags `v1.3.0.0` through
+  `v1.10.0.0` were added on their merge commits.
+
 ## 1.10.0.0 - 2026-10-26
 
 ### Fixed

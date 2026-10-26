@@ -29,7 +29,7 @@ SCHEMA_VERSION = "0.19"
 # MAJOR.MINOR.DATA.POST: MAJOR = breaking data contract or API, MINOR = any
 # code change, DATA = newly published runs, POST = a new or updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
-RELEASE_VERSION = "1.10.0.0"
+RELEASE_VERSION = "1.11.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.

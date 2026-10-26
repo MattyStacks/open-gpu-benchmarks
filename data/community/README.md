@@ -21,6 +21,9 @@ Cyberpunk 2077 built-in benchmark runs can be imported with
 a bot (`scripts/issue_to_result.py`) writes the file into this folder and opens
 a pull request for a maintainer; see
 [Submit through an issue](../../docs/COMMUNITY_SUBMISSIONS.md#submit-through-an-issue).
+A ready-made result file can be attached to a
+[Benchmark result (file) issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark_file.yml)
+instead; submitting is the CC BY 4.0 agreement.
 Bulk or scripted uploads use a pull request instead.
 
 **Writing the file yourself? Follow the step-by-step guide with examples in

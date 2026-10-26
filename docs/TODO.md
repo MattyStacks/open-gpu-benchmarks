@@ -142,17 +142,17 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     (2026-10-15): the App is installed, `BENCHMARK_BOT_APP_ID` and
     `BENCHMARK_BOT_PRIVATE_KEY` are set, and "Base Rules" requires a
     code-owner approval with a Repository admin bypass for pull requests only.
-  - Parse or scrape what people attach, into the same run dict
-    `build_run()` returns:
-    - a PresentMon, CapFrameX, or MangoHud CSV attached to the issue, through
-      `parse.py`, kept under `raw/`;
-    - a Cyberpunk `summary.json`, through `import_cyberpunk.py`;
-    - a screenshot;
-    - a review URL.
-  - Fields the form doesn't take yet: Linux-only `system` fields (distro,
+  - Raw captures attached to an issue: see the next item. Screenshots and
+    review URLs could be scraped too, someday.
+  - Fields the field-by-field form doesn't take yet (a result file can carry
+    them): Linux-only `system` fields (distro,
     kernel, Mesa, Proton, ...), per-run `time`, `gpu_power_w` for laptops,
     `device_name`, and `permission` credits for unpublished numbers.
   - A static web form on the dashboard that prefills the issue.
+  - Try the `benchmark-processor` Copilot agent on a real issue once 1.12.0.0
+    is on `main` (#36 or a raw-capture test issue): run "Copilot Setup Steps"
+    once, and add `objects.githubusercontent.com` to the Copilot
+    internet-access allowlist if downloads are blocked.
   - Maybe later: let the bot add a game that isn't in `data/games.yaml`.
     For now the form only accepts listed games, and a new game needs its own
     pull request, so the registry doesn't fill up with one-off entries.
@@ -161,43 +161,23 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     adds a label.
   - An "Official benchmark review" or "Report a bad result" form could reuse
     the same bot (see the items below).
-- [ ] **Let the bot process attached or pasted result files.** Issue #36 (an
-  RTX 5080 FE Open GPU Benchmarker run) is a free-form issue with the
-  `benchmark` label and only an attached `.yaml`. The bot answered "Tick the
-  CC BY 4.0 box", which can't be done without the form. Process #36 by hand,
-  or with the bot once this lands.
-  - Fix first: when `issue_to_result.py` finds neither the form's headings nor
-    a file, say so and link both forms, instead of reporting the first
-    missing field.
-  - A "Benchmark result (file)" issue form, with the same `benchmark` label so
-    the same workflow runs. It has one box to drag a file into or paste it,
-    optional GPU/Game/Resolution/Preset/OS/Date for raw captures, the Credit
-    box, and the CC BY 4.0 box. Also detect free-form issues that have
-    attachment links or a fenced yaml/json block.
-  - Consent: a ticked box, or the sentence "I release these results under
-    CC BY 4.0" typed in the issue. A license line inside the file doesn't
-    count.
-  - Downloads: only `https://github.com/user-attachments/files/<id>/<name>`,
-    redirecting only to `*.githubusercontent.com`. Cap the file count, the
-    size, and the time. Save into the workflow's `$OUT`, never the checkout.
-    Verified on #36: no auth needed, and `.yaml` attachments are accepted.
-  - Result YAML/JSON (for example the Open GPU Benchmarker export,
-    `toYaml()` in the openbenchmarker repo): load it with a SafeLoader that
-    rejects aliases. Keep `detected`, `diagnostics`, and the other extras.
-    Set `submitted_by` only from the Credit box. Drop `testbench_id`,
-    `source`, and `synthetic`. The bot writes its own header and file name.
-  - Raw captures: a PresentMon/MangoHud CSV through a function pulled out of
+- [ ] **Let the bot convert raw captures attached to benchmark issues.**
+  Today they get `needs-maintainer` (exit code 3), and the
+  `benchmark-processor` Copilot agent (or a maintainer, per
+  `docs/PROCESSING_ISSUES.md`) converts them. Result files (YAML/JSON) are handled since
+  1.12.0.0.
+  - A PresentMon/MangoHud CSV through a function pulled out of
     `parse.main()`, and a Cyberpunk `summary.json` (+ `frames.csv`) through
-    `import_cyberpunk`, with the date from the form.
-  - What the bot can't convert gets a new exit code: the bot replies, adds a
-    `needs-maintainer` label, and a maintainer follows a new
-    `docs/PROCESSING_ISSUES.md`.
-  - Tests: issue fixtures for each kind, with a hidden `--attachment-dir` so
-    there's no network. Extend `check_issue_form_matches_script()` and
-    `check_bot_safety()`.
-  - In the openbenchmarker repo: point the export's "Save as … in a PR"
-    header and the submit steps at the issue form. Maybe prefill it by URL
-    (`?template=benchmark_file.yml&<field>=<yaml>`).
+    `import_cyberpunk`, kept under `raw/`.
+  - Needs GPU/Game/Resolution/Preset/OS/Date boxes on the file form (or a
+    third form), since a raw capture doesn't name them.
+  - Tests: CSV and Cyberpunk issue fixtures under
+    `tests/fixtures/issues/attachments/`.
+- [ ] **Point the Open GPU Benchmarker export at the file issue form** (in
+  the openbenchmarker repo). Change the export's "Save as … in a PR" header
+  and the submit steps to the "Benchmark result (file)" form. Maybe prefill
+  it by URL (`?template=benchmark_file.yml&file=<yaml>`). The CC BY line in
+  the export's header can go; submitting is the agreement.
 - [ ] **Flesh out official benchmarks and cross-check them against community
   data.** Official runs must stay close to community runs for the same
   product, game, resolution, preset, and OS. Today only the reverse exists:

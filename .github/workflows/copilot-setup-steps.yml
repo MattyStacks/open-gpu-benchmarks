@@ -1,0 +1,28 @@
+name: Copilot Setup Steps
+# The environment for the Copilot coding agent, including the
+# benchmark-processor agent (.github/agents/benchmark-processor.agent.md).
+# Copilot reads this file only from main, and only the copilot-setup-steps job.
+# It installs the Python dependencies so the agent can run validate.py,
+# build.py, test_build.py, parse.py, and import_cyberpunk.py. No secrets are used.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt

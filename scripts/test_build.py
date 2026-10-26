@@ -789,7 +789,8 @@ def check_import_cyberpunk():
         assert latest[-1]["benchmark_run"] == "benchmark_2026-10-14_10-00-00" and latest[-1]["p1_low"] == 66.67, latest
 
 
-ISSUE_FIXTURE = ROOT / "tests" / "fixtures" / "issues" / "valid.md"
+ISSUES_DIR = ROOT / "tests" / "fixtures" / "issues"
+ISSUE_FIXTURE = ISSUES_DIR / "valid.md"
 
 
 def run_issue(body, data_dir, out_dir):
@@ -800,7 +801,8 @@ def run_issue(body, data_dir, out_dir):
     out_dir.mkdir(parents=True, exist_ok=True)
     body_file.write_text(body, encoding="utf-8")
     args = ["--body-file", str(body_file), "--issue", "42", "--author", "octo-cat",
-            "--data-dir", str(data_dir), "--out-dir", str(out_dir)]
+            "--data-dir", str(data_dir), "--out-dir", str(out_dir),
+            "--attachment-dir", str(ISSUES_DIR / "attachments")]
     status = issue_to_result.main(args)
     return status, (out_dir / "comment.md").read_text(encoding="utf-8")
 
@@ -855,7 +857,6 @@ def check_issue_to_result():
             "is not a number": valid.replace("175.2, 140.1", "fast, 140"),
             "community-outlier": valid.replace("175.2, 140.1", "400, 300"),
             "result-p1-low-required": valid.replace("175.2, 140.1", "175.2"),
-            "CC BY 4.0": valid.replace("- [X] I release", "- [ ] I release"),
             "YYYY-MM-DD": valid.replace("2026-10-03", "10/03/2026"),
             "Memory (GB)**": valid.replace("### Memory (GB)\n\n32 GB", "### Memory (GB)\n\n32 GB DDR5"),
             "Memory channels**": valid.replace("### Memory channels\n\ndual", "### Memory channels\n\ntriple"),
@@ -874,12 +875,96 @@ def check_issue_to_result():
         assert status == 1 and "`x' @someone 'y`" in comment, comment
 
 
+def check_issue_files():
+    """An attached or pasted result file becomes one checked community file; what the bot can't read gets a reply."""
+    import shutil
+    import urllib.request
+
+    import issue_to_result
+
+    def body(name):
+        return (ISSUES_DIR / name).read_text(encoding="utf-8")
+
+    with tempfile.TemporaryDirectory() as temp:
+        temp = Path(temp)
+        data_dir = temp / "data"
+        shutil.copytree(FIXTURES_DIR, data_dir)
+        folder = data_dir / "community" / "rtx_4090_24gb_fe"
+
+        # A free-form issue with one attached file, like an Open GPU Benchmarker export.
+        status, comment = run_issue(body("file_attached.md"), data_dir, temp / "attached")
+        assert status == 0, comment
+        run = yaml.safe_load((folder / "result_20261003_cyberpunk_2077.yaml").read_text(encoding="utf-8"))
+        assert list(run)[:2] == ["gpu_id", "game_id"], run
+        for key in ("submitted_by", "testbench_id", "synthetic"):
+            assert key not in run, (key, run)
+        assert run["detected"] == {"browser": "Example Browser 1"} and run["result"][0]["diagnostics"]["limit"] == "gpu", run
+        assert (temp / "attached" / "attachments" / "result_20261003_cyberpunk_2077.yaml").exists()
+        assert "CC BY 4.0" in (temp / "attached" / "pr_body.md").read_text(encoding="utf-8")
+
+        # The file form, pasted: the product name resolves, an unquoted date is fine, and Credit me sets submitted_by.
+        status, comment = run_issue(body("file_form.md"), data_dir, temp / "form")
+        assert status == 0, comment
+        run = yaml.safe_load((folder / "result_20261003_cyberpunk_2077_2.yaml").read_text(encoding="utf-8"))
+        assert run["gpu_id"] == "rtx_4090_24gb_fe" and run["submitted_by"] == "octo-cat" and run["date"] == "2026-10-03", run
+
+        # A pasted ```json block in a free-form issue.
+        pasted = json.dumps({"gpu_id": "rtx_4090_24gb_fe", "game_id": "cyberpunk_2077", "date": "2026-10-03",
+                             "result": [{"resolution": "1440p", "graphics_preset": "Ultra", "avg_fps": 176, "p1_low": 144}],
+                             "system": {"os": "windows"}, "proof": {"method": "presentmon"}})
+        status, comment = run_issue(f"Here it is:\n\n```json\n{pasted}\n```\n", data_dir, temp / "json")
+        assert status == 0, comment
+
+        # Attachments that aren't result files go to a maintainer.
+        status, comment = run_issue(body("csv_attached.md"), data_dir, temp / "csv")
+        assert status == 3 and "maintainer" in comment and not (temp / "csv" / "pr_body.md").exists(), comment
+
+        before = sorted(folder.iterdir())
+        attached = body("file_attached.md")
+        form = body("file_form.md")
+        failures = {
+            "couldn't find a result": "Please add my run, thanks!",
+            "Benchmark result (file)": "### Result file\n\n_No response_\n",
+            "2 result files": attached + "\n" + form,
+            "YAML alias": form.replace("avg_fps: 177.9", "avg_fps: &fps 177.9").replace("p1_low: 145.5", "p1_low: *fps"),
+            "isn't valid YAML": form.replace("avg_fps: 177.9", "avg_fps: [177.9"),
+            "missing `date`": form.replace("date: 2026-10-03\n", ""),
+            "its own pull request": form.replace("game_id: cyberpunk_2077", "game_id: some_unlisted_game"),
+            "couldn't be downloaded": attached.replace("files/1001/", "files/9999/"),
+            "community-outlier": form.replace("avg_fps: 177.9", "avg_fps: 400").replace("p1_low: 145.5", "p1_low: 300"),
+        }
+        for expected, text in failures.items():
+            status, comment = run_issue(text, data_dir, temp / f"bad{len(expected)}")
+            assert status == 1 and expected in comment, (expected, status, comment)
+        assert sorted(folder.iterdir()) == before, "a failed issue leaves no file behind"
+
+    # Redirects only go to GitHub's file storage.
+    request = urllib.request.Request("https://github.com/user-attachments/files/1/a.yaml")
+    redirects = issue_to_result.GitHubRedirects()
+    assert redirects.redirect_request(request, None, 302, "Found", {}, "https://objects.githubusercontent.com/x")
+    for target in ("https://example.com/x", "http://objects.githubusercontent.com/x", "https://githubusercontent.com.example.com/x"):
+        try:
+            redirects.redirect_request(request, None, 302, "Found", {}, target)
+        except issue_to_result.SubmissionError:
+            continue
+        raise AssertionError(f"redirect to {target} was followed")
+
+
 def check_issue_form_matches_script():
-    """The issue form's labels and options are the ones issue_to_result.py reads."""
+    """The issue forms' labels and options are the ones issue_to_result.py reads."""
     import issue_to_result as script
 
-    form = yaml.safe_load((ROOT / ".github" / "ISSUE_TEMPLATE" / "benchmark.yml").read_text(encoding="utf-8"))
-    assert form["labels"] == ["benchmark"], form["labels"]
+    templates = ROOT / ".github" / "ISSUE_TEMPLATE"
+    file_form = yaml.safe_load((templates / "benchmark_file.yml").read_text(encoding="utf-8"))
+    form = yaml.safe_load((templates / "benchmark.yml").read_text(encoding="utf-8"))
+    for each in (form, file_form):
+        assert each["labels"] == ["benchmark"], each["labels"]
+        # Submitting is consent: no form asks for a box to be ticked.
+        for item in each["body"]:
+            for option in item.get("attributes", {}).get("options", []):
+                assert not (isinstance(option, dict) and option.get("required")), option
+    file_fields = {item["attributes"]["label"]: item["id"] for item in file_form["body"] if item["type"] != "markdown"}
+    assert file_fields == script.FILE_FIELDS, file_fields
     fields = {item["id"]: item for item in form["body"] if item["type"] != "markdown"}
     assert {item["attributes"]["label"]: key for key, item in fields.items()} == script.FIELDS
     options = {key: item["attributes"].get("options") for key, item in fields.items()}
@@ -888,8 +973,6 @@ def check_issue_form_matches_script():
     assert options["who"] == list(script.WHO_RAN_IT) and options["os"] == list(script.OSES)
     assert options["graphics_api"] == list(script.GRAPHICS_APIS)
     assert [option["label"] for option in options["credit"]] == [script.CREDIT_ME]
-    labels = [option["label"] for option in options["confirmations"]]
-    assert labels[0].startswith(script.FRAME_GENERATION_OFF) and labels[1].startswith(script.LICENSE_AGREEMENT), labels
 
 
 def check_bot_safety():
@@ -916,6 +999,20 @@ def check_bot_safety():
     # The issue body only ever reaches the shell through an env var.
     assert re.search(r"ISSUE_BODY: \$\{\{ github\.event\.issue\.body \}\}", bot)
     assert bot.count("github.event.issue.body") == 1, "use the issue body only through ISSUE_BODY"
+    # Attachments are fetched from GitHub, never read from a path the workflow passes.
+    assert "--attachment-dir" not in bot, "--attachment-dir is for tests only"
+
+    # The benchmark-processor Copilot agent and its setup job: one job, read-only, no secrets.
+    agent = (ROOT / ".github" / "agents" / "benchmark-processor.agent.md").read_text(encoding="utf-8")
+    frontmatter = agent.split("---\n")[1] if agent.startswith("---\n") else ""
+    profile = yaml.safe_load(frontmatter) or {}
+    assert profile.get("name") == "benchmark-processor" and profile.get("description"), "the agent profile needs a name and description"
+    setup_text = (workflows / "copilot-setup-steps.yml").read_text(encoding="utf-8")
+    setup = yaml.safe_load(setup_text)
+    assert list(setup["jobs"]) == ["copilot-setup-steps"], "Copilot reads only a single job named copilot-setup-steps"
+    assert setup["jobs"]["copilot-setup-steps"]["permissions"] == {"contents": "read"}
+    for text in (agent, setup_text):
+        assert "secrets." not in text and "CLOUDFLARE" not in text, "the Copilot agent never sees secrets"
 
 
 def check_reports_every_error_and_build_stops():
@@ -1094,6 +1191,7 @@ def main():
     check_parse_mangohud()
     check_import_cyberpunk()
     check_issue_to_result()
+    check_issue_files()
     check_issue_form_matches_script()
     check_bot_safety()
     check_reports_every_error_and_build_stops()

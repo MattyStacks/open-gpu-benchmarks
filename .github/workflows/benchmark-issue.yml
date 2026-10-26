@@ -1,8 +1,11 @@
 name: Benchmark issue
-# Turns a "Benchmark result" issue (.github/ISSUE_TEMPLATE/benchmark.yml, which
-# applies the benchmark label) into data/community/<gpu_id>/result_*.yaml on a
-# benchmark/issue-<N> branch, and opens a pull request for a code owner
+# Turns a benchmark issue (the .github/ISSUE_TEMPLATE/benchmark.yml or
+# benchmark_file.yml form, or any issue with the benchmark label and one
+# attached or pasted result file) into data/community/<gpu_id>/result_*.yaml on
+# a benchmark/issue-<N> branch, and opens a pull request for a code owner
 # (.github/CODEOWNERS) to review. Editing the issue rebuilds the same branch.
+# Attachments the script can't convert get the needs-maintainer label
+# (docs/PROCESSING_ISSUES.md).
 #
 # Safety, in short (details in docs/COPILOT_HANDOFF.md):
 # - Writes use a short-lived token from the repo's own GitHub App, never
@@ -13,7 +16,8 @@ name: Benchmark issue
 #   and benchmark/* branches, and build.yml deploys only from main.
 # - The issue text is untrusted. It reaches the script through an env var and a
 #   file, never through ${{ }} in a shell line, and only the one generated file
-#   is committed.
+#   is committed. The script downloads attachments only from
+#   github.com/user-attachments into $OUT, outside the checkout.
 on:
   issues:
     types: [opened, edited, labeled, reopened]
@@ -94,6 +98,7 @@ jobs:
           case "$status" in
             0) echo "ok=true" >> "$GITHUB_OUTPUT" ;;
             1) echo "ok=false" >> "$GITHUB_OUTPUT" ;;
+            3) printf 'ok=false\nmaintainer=true\n' >> "$GITHUB_OUTPUT" ;;
             *) exit "$status" ;;
           esac
 
@@ -137,6 +142,7 @@ jobs:
         env:
           PR_URL: ${{ steps.pr.outputs.url }}
           OK: ${{ steps.result.outputs.ok }}
+          MAINTAINER: ${{ steps.result.outputs.maintainer }}
         with:
           github-token: ${{ steps.app.outputs.token }}
           script: |
@@ -157,4 +163,7 @@ jobs:
               await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
             } else {
               await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+            if (process.env.MAINTAINER === "true") {
+              await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["needs-maintainer"] });
             }

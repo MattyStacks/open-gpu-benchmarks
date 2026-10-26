@@ -32,15 +32,43 @@ game is added first by its own pull request (see
 [Adding a game or benchmark](#adding-a-game-or-benchmark)), then you edit the
 issue and it checks again. Preset names that differ only in case from ones
 already on the dashboard are rewritten to match, so groups don't split.
-You stay anonymous unless you tick **Credit me as my GitHub username**, and the
-license box (CC BY 4.0) is required (see [below](#your-results-become-public-data)).
+You stay anonymous unless you tick **Credit me as my GitHub username**.
+Submitting the issue releases the results under CC BY 4.0 (see
+[below](#your-results-become-public-data)); there's no box to tick.
 
 The form covers one game and one day per issue, up to 20 runs, Windows or
-Linux, with an optional proof link. It doesn't yet take raw capture uploads,
-Linux-only system fields, per-run times, or `permission` credits. For those,
-or for many results at once (for example the
+Linux, with an optional proof link. It doesn't take Linux-only system fields,
+per-run times, or `permission` credits. For those, use a result file (next
+section) or a pull request. For many results at once (for example the
 [Cyberpunk 2077 importer](CYBERPUNK_BENCHMARK.md)), open a pull request as
 [CONTRIBUTING.md](../CONTRIBUTING.md) describes.
+
+### Submit a result file
+
+Already have a result file, such as an
+[Open GPU Benchmarker](https://opengpubenchmarker.com/) export or one you
+wrote from [the template](../templates/community_submission.yaml)? Open a
+[**Benchmark result (file)** issue](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=benchmark_file.yml)
+and drag the file into the **Result file** box, or paste its contents. Any
+issue with the `benchmark` label works the same way, so a plain issue with the
+file attached, or pasted in a ```` ```yaml ```` or ```` ```json ```` block,
+is fine too.
+
+- **One result file per issue**, `.yaml`, `.yml`, or `.json`, up to 1 MB. It
+  needs `gpu_id`, `game_id`, `date`, and `result`; the game must already be in
+  [`data/games.yaml`](../data/games.yaml).
+- The bot keeps your file's fields, including extras such as `detected` or
+  `diagnostics`, and writes its own header and file name. It sets
+  `submitted_by` only from the **Credit me** box (a plain issue stays
+  anonymous) and drops `testbench_id`, `source`, and `synthetic`, which
+  community files can't use. YAML aliases (`*name`) aren't accepted.
+- A license line inside the file isn't needed; submitting the issue is what
+  releases it.
+- **Raw captures** (a PresentMon or MangoHud CSV, Cyberpunk
+  `benchmarkResults`) and screenshots are welcome, but the bot doesn't convert
+  them yet. It replies, adds the `needs-maintainer` label, and a maintainer
+  turns them into a result file
+  ([PROCESSING_ISSUES.md](PROCESSING_ISSUES.md)).
 
 ## The result file
 
@@ -156,7 +184,9 @@ tables. The [license page](https://opengpubenchmarks.com/license/) explains
 what counts as reasonable attribution.
 
 **When you submit a result (through a benchmark issue or a pull request), you
-agree to release what you submit under CC BY 4.0.** In plain English:
+agree to release what you submit under CC BY 4.0.** Submitting is the
+agreement: there's no box to tick, and a result file doesn't need a license
+line. In plain English:
 
 - **Anyone can use your numbers for anything.** They can copy them, share
   them, change them, put them in their own charts, videos, articles, apps,

@@ -981,7 +981,7 @@
         run.upscaling ? `Upscaling ${run.upscaling} (set by preset)` : "",
         runtime, run.graphics_api, run.session, run.launcher, run.power_plan, ...flags,
         run.testbench_source_id ? `Bench: ${benchName(run.testbench_source_id)}` : "",
-        run.cpu, formatMemory(run),
+        run.cpu, formatSystemMemory(run),
         run.driver ? `Driver ${run.driver}` : "",
         run.gpu_power_w ? `${run.gpu_power_w} W` : "",
         run.power_mode, run.display_mode,
@@ -992,7 +992,7 @@
     }
 
     // System RAM as "64 GB DDR5-6400 dual channel"; every part is optional.
-    function formatMemory(run) {
+    function formatSystemMemory(run) {
       const channels = { 1: "single channel", 2: "dual channel", 4: "quad channel" }[run.memory_channels] ||
         (run.memory_channels ? `${run.memory_channels}-channel` : "");
       return [run.memory_gb ? `${run.memory_gb} GB` : "", run.memory_type, channels].filter(Boolean).join(" ");

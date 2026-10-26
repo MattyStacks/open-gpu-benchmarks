@@ -1108,6 +1108,7 @@ def main():
         check_site_seo(Path(temp))
     check_pick_rules()
     check_blog_tokens()
+    check_unique_site_functions()
     check_blog_posts()
     check_release_version()
     print("Catalog rules, result rules, aggregation, submitter, and catalog spec checks passed")
@@ -1392,6 +1393,14 @@ def check_blog_tokens():
         assert css_tokens(index, selector) == css_tokens(blog, selector), (
             f"blog/src/styles/tokens.css {selector} differs from site/index.html; copy the block again"
         )
+
+
+def check_unique_site_functions():
+    """No dashboard function is declared twice: the later one silently replaces the first."""
+    index = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    names = re.findall(r"^\s*(?:async\s+)?function\s+(\w+)\s*\(", index, re.MULTILINE)
+    duplicates = sorted({name for name in names if names.count(name) > 1})
+    assert not duplicates, f"site/index.html declares these functions more than once: {duplicates}"
 
 
 def check_blog_posts():

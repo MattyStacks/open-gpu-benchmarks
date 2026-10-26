@@ -15,7 +15,8 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.9.0.0`, which adds official test benches: desktop GPUs
+Current version: `v1.10.0.0`, which fixes the summaries table's VRAM column
+(it showed the test system's RAM). v1.9.0.0 added official test benches: desktop GPUs
 are tested on a DDR5, a DDR4, and a DDR3 system, and the dashboard's
 **Platform** filter shows each as its own bar. v1.8.0.0 added a
 GitHub Sponsors button. v1.7.0.0

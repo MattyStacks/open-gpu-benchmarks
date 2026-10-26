@@ -3,7 +3,7 @@ name: Copilot Setup Steps
 # benchmark-processor agent (.github/agents/benchmark-processor.agent.md).
 # Copilot reads this file only from main, and only the copilot-setup-steps job.
 # It installs the Python dependencies so the agent can run validate.py,
-# build.py, test_build.py, parse.py, and import_cyberpunk.py. It uses no secrets
+# build.py, test_build.py, parse.py, and import_cyberpunk.py. No secrets are used.
 on:
   workflow_dispatch:
   push:

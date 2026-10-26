@@ -150,6 +150,7 @@ def main():
     p.add_argument("--os", default=None, choices=list(checks.RESULT_OSES), help="Defaults to linux for MangoHud captures, windows for PresentMon")
     p.add_argument("--os-detail", default="", help="OPTIONAL - full OS name, e.g. 'Windows 11 Pro 24H2' or 'SteamOS 3.6.19'")
     p.add_argument("--testbench", default="", help="Official desktop runs only: the test bench ID from data/testbenches.yaml")
+    p.add_argument("--date", default="", help="OPTIONAL - the day you ran it, YYYY-MM-DD; defaults to today. Sets date and the file name")
     p.add_argument("--output", default="")
     args=p.parse_args()
 
@@ -177,12 +178,16 @@ def main():
     if driver: system["driver"]=driver
     if os_name=="linux" and result.get("kernel"): system["kernel"]=result["kernel"]
 
-    today = datetime.now()
+    try:
+        today = datetime.strptime(args.date, "%Y-%m-%d") if args.date else datetime.now()
+    except ValueError:
+        print(f"--date '{args.date}' must be a real day written YYYY-MM-DD, such as 2026-10-03.")
+        sys.exit(1)
     data={
         "gpu_id": args.gpu_id,
         "benchmark_type": "game",
         "game_id": args.game_id,
-        # The file name's YYYYMMDD below; both use today's date.
+        # The file name's YYYYMMDD below; both use --date or today.
         "date": today.strftime("%Y-%m-%d"),
         "form_factor": form_factor,
         "result": [{

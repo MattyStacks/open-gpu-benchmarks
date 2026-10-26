@@ -1002,6 +1002,18 @@ def check_bot_safety():
     # Attachments are fetched from GitHub, never read from a path the workflow passes.
     assert "--attachment-dir" not in bot, "--attachment-dir is for tests only"
 
+    # The benchmark-processor Copilot agent and its setup job: one job, read-only, no secrets.
+    agent = (ROOT / ".github" / "agents" / "benchmark-processor.agent.md").read_text(encoding="utf-8")
+    frontmatter = agent.split("---\n")[1] if agent.startswith("---\n") else ""
+    profile = yaml.safe_load(frontmatter) or {}
+    assert profile.get("name") == "benchmark-processor" and profile.get("description"), "the agent profile needs a name and description"
+    setup_text = (workflows / "copilot-setup-steps.yml").read_text(encoding="utf-8")
+    setup = yaml.safe_load(setup_text)
+    assert list(setup["jobs"]) == ["copilot-setup-steps"], "Copilot reads only a single job named copilot-setup-steps"
+    assert setup["jobs"]["copilot-setup-steps"]["permissions"] == {"contents": "read"}
+    for text in (agent, setup_text):
+        assert "secrets." not in text and "CLOUDFLARE" not in text, "the Copilot agent never sees secrets"
+
 
 def check_reports_every_error_and_build_stops():
     files = {

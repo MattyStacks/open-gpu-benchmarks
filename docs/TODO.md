@@ -149,6 +149,10 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     kernel, Mesa, Proton, ...), per-run `time`, `gpu_power_w` for laptops,
     `device_name`, and `permission` credits for unpublished numbers.
   - A static web form on the dashboard that prefills the issue.
+  - Try the `benchmark-processor` Copilot agent on a real issue once 1.12.0.0
+    is on `main` (#36 or a raw-capture test issue): run "Copilot Setup Steps"
+    once, and add `objects.githubusercontent.com` to the Copilot
+    internet-access allowlist if downloads are blocked.
   - Maybe later: let the bot add a game that isn't in `data/games.yaml`.
     For now the form only accepts listed games, and a new game needs its own
     pull request, so the registry doesn't fill up with one-off entries.
@@ -158,8 +162,9 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   - An "Official benchmark review" or "Report a bad result" form could reuse
     the same bot (see the items below).
 - [ ] **Let the bot convert raw captures attached to benchmark issues.**
-  Today they get `needs-maintainer` (exit code 3) and
-  `docs/PROCESSING_ISSUES.md`. Result files (YAML/JSON) are handled since
+  Today they get `needs-maintainer` (exit code 3), and the
+  `benchmark-processor` Copilot agent (or a maintainer, per
+  `docs/PROCESSING_ISSUES.md`) converts them. Result files (YAML/JSON) are handled since
   1.12.0.0.
   - A PresentMon/MangoHud CSV through a function pulled out of
     `parse.main()`, and a Cyberpunk `summary.json` (+ `frames.csv`) through

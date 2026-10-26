@@ -130,6 +130,9 @@ App"):
   the workflow. Unconvertible attachments get `needs-maintainer`
   (`docs/PROCESSING_ISSUES.md`);
 - never add a bot to CODEOWNERS;
+- the `benchmark-processor` Copilot agent (`.github/agents/`, environment
+  from `.github/workflows/copilot-setup-steps.yml`) edits only data and never
+  bumps the version; keep its prompt in step with the data rules;
 - keep the forms' labels and options in step with `issue_to_result.py`
   (`FIELDS`, `FILE_FIELDS`) and `tests/fixtures/issues/`.
 

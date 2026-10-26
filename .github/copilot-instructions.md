@@ -210,6 +210,15 @@ commit everything, push, and open a PR into `main`; one topic per branch.
     `needs-maintainer` label (`docs/PROCESSING_ISSUES.md`).
   - submitting the issue is the CC BY 4.0 agreement: no form has a required
     checkbox, and a result file needs no license line.
+- The `benchmark-processor` Copilot agent
+  (`.github/agents/benchmark-processor.agent.md`, environment from
+  `.github/workflows/copilot-setup-steps.yml`) turns an assigned benchmark
+  issue into a data-only pull request. It may change only
+  `data/community/` and, when a submission needs one, a new catalog or
+  `data/games.yaml` entry; it never bumps the version or edits code, docs,
+  or `.github/`. Keep its prompt in step with the data rules here, and
+  `test_build.check_bot_safety()` keeps its setup job read-only and
+  secret-free.
 - `.github/CODEOWNERS` is the maintainer list, and a code owner's approval is
   required to merge. Adding a maintainer means adding their `@username` there
   and giving them write access. Never add a bot.

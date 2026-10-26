@@ -4,7 +4,41 @@ The benchmark bot ([`benchmark-issue.yml`](../.github/workflows/benchmark-issue.
 running [`scripts/issue_to_result.py`](../scripts/issue_to_result.py)) turns a
 benchmark issue into a pull request by itself when the issue uses the
 **Benchmark result** form or has one result file (`.yaml`, `.yml`, `.json`)
-attached or pasted. Everything else needs a maintainer.
+attached or pasted. Everything else needs a maintainer, or the
+benchmark-processor agent.
+
+## Assign it to the agent
+
+The usual way: open the issue, choose **Assign to Copilot**, and pick
+**benchmark-processor** from the agent dropdown
+([`.github/agents/benchmark-processor.agent.md`](../.github/agents/benchmark-processor.agent.md)).
+It reads the issue, the bot's reply, and any attachments. It writes the result
+YAML itself whenever the issue has enough to go on (pasted numbers, a plain
+description, a file, a capture, or a screenshot), using `parse.py` or
+`import_cyberpunk.py` when they fit. It runs the checks and opens a data-only
+pull request with `Closes #<N>`, every assumption it made, and the reviewer
+checklist. It adds a missing GPU or game too, with sources. When something
+can't be worked out, the pull request stays a draft with the questions at the
+top; ask the submitter and comment `@copilot` on the pull request with the
+answer.
+
+You review and approve; Copilot can't approve or merge. Remove the
+`needs-maintainer` label once the pull request is open.
+
+**One-time setup:**
+
+- The agent's environment comes from
+  [`copilot-setup-steps.yml`](../.github/workflows/copilot-setup-steps.yml),
+  which Copilot reads from `main` only. Run it once from the Actions tab to
+  check that it goes green.
+- If the agent reports that downloading an attachment was blocked, add
+  `objects.githubusercontent.com` under **Settings → Copilot → Internet
+  access → Custom allowlist**. Attachment links redirect there.
+- Workflows on Copilot's pull requests wait for **Approve and run workflows**
+  on the pull request before the checks show.
+
+The steps below are what the agent does, and the fallback when you'd rather do
+it by hand.
 
 ## When an issue gets `needs-maintainer`
 
@@ -22,8 +56,8 @@ submitter a maintainer will take it.
 3. Convert the capture with the existing tools, in the `.venv`, from a branch
    off `main`:
    - PresentMon or MangoHud CSV: `python scripts/parse.py <csv> --gpu-id <id>
-     --game-id <game_id> --resolution <res> --graphics-preset <preset>`. It
-     writes today's date, so fix `date` and the file name to the run's day.
+     --game-id <game_id> --resolution <res> --graphics-preset <preset>
+     --date <YYYY-MM-DD>`.
    - Cyberpunk 2077: `python scripts/import_cyberpunk.py --gpu-id <id>
      --input <benchmarkResults folder>` (see
      [CYBERPUNK_BENCHMARK.md](CYBERPUNK_BENCHMARK.md)).

@@ -16,8 +16,9 @@ mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
 Current version: `v1.12.0.0`: the benchmark bot also takes an attached or
-pasted result file, and submitting an issue is the CC BY 4.0 agreement, with
-no boxes to tick. v1.11.0.0 tags every release on GitHub. v1.10.0.0
+pasted result file, submitting an issue is the CC BY 4.0 agreement, with no
+boxes to tick, and a `benchmark-processor` Copilot agent turns any other
+benchmark issue into a pull request ready to approve. v1.11.0.0 tags every release on GitHub. v1.10.0.0
 fixed the summaries table's VRAM column (it showed the test system's RAM).
 v1.9.0.0 added official test benches: desktop GPUs
 are tested on a DDR5, a DDR4, and a DDR3 system, and the dashboard's

@@ -15,7 +15,9 @@
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
-  - v1.12.0.0: the benchmark bot takes one attached or pasted result file
+  - v1.12.0.0: a `benchmark-processor` Copilot agent turns an assigned
+    benchmark issue into a ready-to-approve data pull request, and
+    `parse.py` takes `--date`. The benchmark bot takes one attached or pasted result file
     (the new "Benchmark result (file)" form, or any `benchmark` issue), and
     submitting is the CC BY 4.0 agreement: the forms have no required
     checkboxes. Unconvertible attachments get `needs-maintainer`
@@ -1033,6 +1035,22 @@ replies and adds the `needs-maintainer` label, and a maintainer follows
 gets a reply linking both forms. Tests pass the hidden `--attachment-dir`
 (`tests/fixtures/issues/attachments/<id>/<name>`), so they never touch the
 network; the workflow must never pass it (`check_bot_safety`).
+
+**The benchmark-processor agent.** For a `needs-maintainer` issue, or any
+benchmark issue the bot couldn't finish, a maintainer assigns the issue to
+Copilot and picks the `benchmark-processor` custom agent
+([`.github/agents/benchmark-processor.agent.md`](../.github/agents/benchmark-processor.agent.md)).
+It writes the result YAML from whatever the issue holds, using `parse.py`
+(with `--date`) or `import_cyberpunk.py` when they fit, adds a missing GPU or
+game with sources, runs `validate.py`, `build.py`, and `test_build.py`, and
+opens a data-only pull request (no version bump) listing its assumptions, or
+a draft with questions. Its environment is
+[`copilot-setup-steps.yml`](../.github/workflows/copilot-setup-steps.yml)
+(one read-only job; Copilot reads it from `main` only). Attachment downloads
+may need `objects.githubusercontent.com` on the repository's Copilot
+internet-access allowlist. `check_bot_safety` checks the profile's
+frontmatter and that the setup job is the only job, read-only, and
+secret-free. Setup and usage are in [PROCESSING_ISSUES.md](PROCESSING_ISSUES.md).
 
 Submitting the issue is the CC BY 4.0 agreement. Neither form has a required
 checkbox (`check_issue_form_matches_script` fails on one), and the pull request

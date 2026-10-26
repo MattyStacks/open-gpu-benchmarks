@@ -46,6 +46,15 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 - Attachments the bot can't convert yet (raw CSV captures, screenshots) get
   a reply and the `needs-maintainer` label (exit code 3), and
   `docs/PROCESSING_ISSUES.md` says how a maintainer handles them.
+- A `benchmark-processor` Copilot agent
+  (`.github/agents/benchmark-processor.agent.md`). Assign a benchmark issue
+  to it and it writes the result YAML from whatever the issue holds (pasted
+  numbers, a file, a capture, or a screenshot), adds a missing GPU or game
+  with sources, runs the checks, and opens a data-only pull request ready to
+  approve. `.github/workflows/copilot-setup-steps.yml` installs its Python
+  dependencies.
+- `scripts/parse.py --date YYYY-MM-DD` sets the run's date and file name
+  instead of today's.
 
 ### Changed
 

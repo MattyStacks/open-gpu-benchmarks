@@ -196,6 +196,7 @@ python scripts/import_cyberpunk.py --gpu-id <id> [options]
 | `--input <folder>` | The `benchmarkResults` folder, if the script can't find it on its own. |
 | `--os windows` or `--os linux` | The OS the benchmarks ran on. It defaults to the OS you run the script on. |
 | `--source community` or `--source official` | Where the files go. `community` (`data/community/`) is the default; `official` (`data/official/`) is for maintainers. |
+| `--testbench <id>` | Official desktop runs only, and required there: the test bench from `data/testbenches.yaml` the runs were made on, such as `am5_9800x3d_ddr5`. It also fills in `--memory-type` and `--memory-channels`. |
 | `-h`, `--help` | Shows the options. |
 
 The script looks for the benchmark folder here, in order:
@@ -279,8 +280,9 @@ Where each value comes from in the run folder (`summary.json` unless noted):
 | `system.os_detail`, `os_build` | `osName`, `osVersion` | Windows only. On Linux, `os_detail` comes from `/etc/os-release`, because Proton reports a Windows version. |
 | `system.cpu` | `cpuName` | |
 | `system.memory_gb` | `systemMemory` | Converted from MB to a whole number of GB, for example `64`. |
-| `system.memory_type` | `--memory-type` | For example `DDR5-6000`, the default when the option is left out (with a warning). The game doesn't report it. |
-| `system.memory_channels` | `--memory-channels` | A whole number: 1 single, 2 dual, 4 quad. Defaults to `2` with a warning. |
+| `system.memory_type` | `--memory-type` | For example `DDR5-6000`, the default when the option is left out (with a warning). The game doesn't report it. With `--testbench`, the bench's type is used. |
+| `system.memory_channels` | `--memory-channels` | A whole number: 1 single, 2 dual, 4 quad. Defaults to `2` with a warning, or the bench's with `--testbench`. |
+| `testbench_id` | `--testbench` | Official desktop runs only. |
 | `system.driver` | `gpuDriverVersion` | NVIDIA's `Nvidia v 61714 [r617_07]` becomes `617.14`; other drivers are kept as written. |
 | `system.graphics_api` | | Always `DX12`, the game's only API. |
 | `proof.method` | | Always `in_game_benchmark`. |
@@ -367,7 +369,11 @@ delete the file and import again with the right `--custom-preset`.
 
 ## For maintainers
 
-- Official runs: add `--source official` to write to `data/official/`.
+- Official runs: add `--source official` to write to `data/official/`. A
+  desktop GPU also needs `--testbench <id>`, the bench from
+  `data/testbenches.yaml` it ran on, for example
+  `--source official --testbench am5_9800x3d_ddr5`. The bench is part of
+  `SETUP_KEYS`, so runs from two benches on one day go in separate files.
 - The code is in [`scripts/import_cyberpunk.py`](../scripts/import_cyberpunk.py).
   The preset, upscaler, and display mode names are the `PRESETS`,
   `QUALITY_MODES`, and `WINDOW_MODES` tables at the top. Changing a name

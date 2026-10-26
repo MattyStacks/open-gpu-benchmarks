@@ -80,7 +80,7 @@
     .sort-button { background:none; border:0; padding:0; color:inherit; font:inherit; letter-spacing:inherit; text-transform:inherit; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; } .sort-button:hover { color:var(--text); } .sort-indicator { font-size:9px; opacity:.35; } .sort-indicator.active { opacity:1; color:var(--accent); }
     tr.expandable { cursor:pointer; } tr.expanded { background:color-mix(in srgb,var(--accent) 6%,transparent); }
     .gpu-cell { display:flex; align-items:flex-start; gap:8px; } .expander { background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); width:22px; height:22px; line-height:1; padding:0; flex:none; font-size:11px; } .expander:hover { color:var(--text); border-color:var(--accent); }
-    .form-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; } .form-desktop { color:var(--form-desktop); border-color:color-mix(in srgb,var(--form-desktop) 45%,var(--border)); background:color-mix(in srgb,var(--form-desktop) 10%,transparent); } .form-laptop { color:var(--form-laptop); border-color:color-mix(in srgb,var(--form-laptop) 45%,var(--border)); background:color-mix(in srgb,var(--form-laptop) 10%,transparent); } .form-handheld { color:var(--form-handheld); border-color:color-mix(in srgb,var(--form-handheld) 45%,var(--border)); background:color-mix(in srgb,var(--form-handheld) 10%,transparent); } .form-igpu { color:var(--form-igpu); border-color:color-mix(in srgb,var(--form-igpu) 45%,var(--border)); background:color-mix(in srgb,var(--form-igpu) 10%,transparent); }
+    .form-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; } .form-desktop { color:var(--form-desktop); border-color:color-mix(in srgb,var(--form-desktop) 45%,var(--border)); background:color-mix(in srgb,var(--form-desktop) 10%,transparent); } .form-laptop { color:var(--form-laptop); border-color:color-mix(in srgb,var(--form-laptop) 45%,var(--border)); background:color-mix(in srgb,var(--form-laptop) 10%,transparent); } .form-handheld { color:var(--form-handheld); border-color:color-mix(in srgb,var(--form-handheld) 45%,var(--border)); background:color-mix(in srgb,var(--form-handheld) 10%,transparent); } .form-desktop-community { color:color-mix(in srgb,var(--form-desktop) 75%,var(--community)); } .form-igpu { color:var(--form-igpu); border-color:color-mix(in srgb,var(--form-igpu) 45%,var(--border)); background:color-mix(in srgb,var(--form-igpu) 10%,transparent); }
     .os-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; white-space:nowrap; } .os-windows { color:var(--os-windows); border-color:color-mix(in srgb,var(--os-windows) 45%,var(--border)); background:color-mix(in srgb,var(--os-windows) 10%,transparent); } .upscale-badge { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:999px; padding:2px 7px; font-size:10px; font-weight:700; white-space:nowrap; }
     .upscale-upscaled { --pill:var(--upscaled); }
     .upscale-dlss { --pill:var(--up-dlss); }
@@ -145,7 +145,7 @@
         <select id="preset-select" autocomplete="off"></select>
       </div>
       <div>
-        <label>Form factor</label>
+        <label>Platform</label>
         <div class="chip-row" id="factor-filters"></div>
       </div>
       <div>
@@ -322,7 +322,11 @@
   <script>
     "use strict";
     const state = { source: "all", game: "", resolution: "", graphicsPreset: "All", factors: new Set(), oses: new Set(["windows", "linux"]), upscaling: new Set(["native", "upscaled"]), search: "", showAvg: true, showP1: true, selected: new Set(), data: null, specs: null, sortKey: "avg_fps", sortDir: "desc", expanded: new Set() };
-    const factors = ["Desktop", "Laptop", "Handheld", "Igpu"];
+    // Platform chips: one per test bench memory type ("DDR5 Bench", newest
+    // first), then community desktop runs and the other form factors. Every
+    // chip starts on.
+    const otherPlatforms = ["desktop:community", "Laptop", "Handheld", "Igpu"];
+    const platformLabels = { "desktop:community": "Desktop · community", Laptop: "Laptop", Handheld: "Handheld", Igpu: "iGPU" };
     const oses = ["windows", "linux"];
     const osLabels = { windows: "Windows", linux: "Linux" };
     const upscalingKinds = ["native", "upscaled"];
@@ -368,7 +372,7 @@
         .filter((record) => record.resolution === state.resolution)
         .filter((record) => state.graphicsPreset === "All" || record.graphics_preset.toLowerCase() === state.graphicsPreset.toLowerCase())
         .filter((record) => state.source === "all" || record.source === state.source)
-        .filter((record) => state.factors.size === 0 || state.factors.has(record.form_factor))
+        .filter((record) => state.factors.size === 0 || platformShown(record))
         .filter((record) => state.oses.size === 0 || state.oses.has(record.os))
         .filter((record) => state.upscaling.has(upscalingKind(record)))
         .filter(matchesSearch)
@@ -380,7 +384,7 @@
       { key: "compare", label: "Compare", sortable: false },
       { key: "gpu", label: "GPU", sortable: true },
       { key: "vendor", label: "Vendor", sortable: true },
-      { key: "form", label: "Form", sortable: true },
+      { key: "form", label: "Platform", sortable: true },
       { key: "os", label: "OS", sortable: true },
       { key: "settings", label: "Settings", sortable: true },
       { key: "arch", label: "Architecture", sortable: true },
@@ -423,7 +427,8 @@
       switch (key) {
         case "gpu": return record.gpu_name;
         case "vendor": return record.gpu_vendor;
-        case "form": return record.form_factor;
+        // Platform order (DDR5, DDR4, DDR3 benches, community, laptop, handheld, iGPU), then GPU, so a GPU's benches sit together.
+        case "form": return `${platformRank(record)} ${record.gpu_name}`;
         case "os": return record.os;
         // Native rows sort together ahead of the upscalers, then by preset.
         case "settings": return `${record.upscaling ? `1 ${record.upscaling}` : "0"} ${record.graphics_preset}`;
@@ -464,7 +469,7 @@
       const query = state.search.toLowerCase();
       if (!query) return true;
       return [record.gpu_name, record.gpu_id, record.gpu_vendor, record.form_factor,
-        record.os, record.os_detail, record.distro,
+        record.os, record.os_detail, record.distro, record.testbench_name, formatForm(record),
         specValue(record, "classification", "architecture"),
         specValue(record, "identity", "codename")].some((value) => value && String(value).toLowerCase().includes(query));
     }
@@ -508,6 +513,8 @@
     function displayParts(record, records) {
       const parts = [record.gpu_name];
       if (new Set(records.map((other) => other.graphics_preset)).size > 1) parts.push(record.graphics_preset);
+      const bench = benchSuffix(record, records);
+      if (bench) parts.push(bench);
       if (mixedOs(records)) {
         const paired = records.some((other) => other.gpu_id === record.gpu_id && other.os !== record.os);
         if (record.os === "linux" || paired) parts.push(formatOs(record));
@@ -530,8 +537,57 @@
       return `${displayName(record, records)} (${record.upscaling || "native"})`;
     }
 
+    // "desktop:DDR5" for an official desktop run, "desktop:community" for a
+    // community one (it has no bench), else the form factor.
+    function platformKey(record) {
+      if (record.form_factor !== "Desktop") return record.form_factor;
+      return record.testbench_memory ? `desktop:${record.testbench_memory}` : "desktop:community";
+    }
+
+    function platformShown(record) {
+      return state.factors.has(platformKey(record));
+    }
+
+    const ddrNumber = (key) => Number(key.replace(/\D/g, "")) || 0;
+
+    // Every platform with records, in chip order: benches newest memory first.
+    function platforms() {
+      const present = new Set(state.data.records.map(platformKey));
+      const benches = [...present].filter((key) => key.startsWith("desktop:DDR")).sort((a, b) => ddrNumber(b) - ddrNumber(a));
+      return [...benches, ...otherPlatforms.filter((key) => present.has(key))];
+    }
+
+    function platformLabel(key) {
+      return key.startsWith("desktop:DDR") ? `${key.slice("desktop:".length)} Bench` : platformLabels[key] || key;
+    }
+
+    function platformRank(record) {
+      const index = platforms().indexOf(platformKey(record));
+      return index === -1 ? 99 : index;
+    }
+
+    // The summaries table's Platform column: "Desktop: DDR5", "Desktop: community", "Laptop".
     function formatForm(record) {
-      return record.form_factor === "Igpu" ? "iGPU" : record.form_factor;
+      const key = platformKey(record);
+      return key.startsWith("desktop:") ? `Desktop: ${key.slice("desktop:".length)}` : platformLabel(key);
+    }
+
+    // Every bench badge looks alike; only community desktop rows get their own shade.
+    function platformClass(record) {
+      return platformKey(record) === "desktop:community" ? "form-desktop-community" : "";
+    }
+
+    // The bench, only when the same GPU is on more than one bench in view:
+    // "DDR5 Bench", or the bench's name when two benches share that label.
+    function benchSuffix(record, records) {
+      if (!record.testbench_id) return "";
+      const others = records.filter((other) => other.gpu_id === record.gpu_id && other.testbench_id && other.testbench_id !== record.testbench_id);
+      if (!others.length) return "";
+      return others.some((other) => other.testbench_label === record.testbench_label) ? record.testbench_name : record.testbench_label;
+    }
+
+    function benchName(id) {
+      return (state.data.testbenches || []).find((bench) => bench.id === id)?.name ?? id;
     }
 
     function formatMemory(record) {
@@ -645,12 +701,14 @@
       setOptions(elements.resolution, resolutions, state.resolution);
     }
 
+    // Only platforms with results get a chip, so the DDR3 Bench stays hidden until its first run.
     function renderFactorFilters() {
-      elements.factors.replaceChildren(...factors.map((factor) => {
+      elements.factors.replaceChildren(...platforms().map((factor) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = `chip${state.factors.has(factor) ? " active" : ""}`;
-        button.textContent = factor === "Igpu" ? "iGPU" : factor;
+        button.textContent = platformLabel(factor);
+        button.setAttribute("aria-pressed", String(state.factors.has(factor)));
         button.addEventListener("click", () => {
           state.factors.has(factor) ? state.factors.delete(factor) : state.factors.add(factor);
           render();
@@ -770,7 +828,8 @@
       // A run without a 1% low (for example 3DMark) has no value for that series.
       const lines = params.map((param) => `${param.marker}${escapeHtml(param.seriesName)}: <b>${typeof param.value === "number" ? `${param.value} FPS` : "not reported"}</b>`);
       const settings = `${record.graphics_preset} · ${record.upscaling ? `${record.upscaling} (set by preset)` : "Native resolution"}`;
-      return `<b>${escapeHtml(record.gpu_name)}</b><br>${escapeHtml(settings)}<br>${escapeHtml(os)} · ${escapeHtml(record.source)}<br>${lines.join("<br>")}`;
+      const bench = record.testbench_name ? `<br>${escapeHtml(`Bench: ${record.testbench_name}`)}` : "";
+      return `<b>${escapeHtml(record.gpu_name)}</b><br>${escapeHtml(settings)}<br>${escapeHtml(os)} · ${escapeHtml(record.source)}${bench}<br>${lines.join("<br>")}`;
     }
 
     function renderTable(records) {
@@ -786,7 +845,7 @@
         row.innerHTML = `<td><input type="checkbox" aria-label="Select ${escapeHtml(record.gpu_name)}" ${selected ? "checked" : ""}></td>
           <td><div class="gpu-cell"><button type="button" class="expander" aria-expanded="${expanded}" aria-label="${expanded ? "Collapse" : "Expand"} ${escapeHtml(record.gpu_name)} details">${expanded ? "▾" : "▸"}</button><div><div class="name">${escapeHtml(record.gpu_name)}</div><div class="detail mono">${escapeHtml(record.gpu_id)}</div></div></div></td>
           <td class="mono">${escapeHtml(formatVendor(record))}</td>
-          <td><span class="form-badge form-${escapeHtml(record.form_factor.toLowerCase())}">${escapeHtml(formatForm(record))}</span></td>
+          <td><span class="form-badge form-${escapeHtml(record.form_factor.toLowerCase())} ${platformClass(record)}" title="${escapeHtml(record.testbench_name || "")}">${escapeHtml(formatForm(record))}</span></td>
           <td><span class="os-badge os-${escapeHtml(record.os)}" title="${escapeHtml(record.os_detail || record.distro || "")}">${escapeHtml(formatOs(record))}</span></td>
           <td class="settings-cell"><div>${escapeHtml(record.graphics_preset)}</div><span class="upscale-badge upscale-${upscalerFamily(record)}" title="${record.upscaling ? "Upscaler turned on by the preset" : "Rendered at full resolution"}">${escapeHtml(upscalingLabel(record))}</span></td>
           <td><div>${escapeHtml(architecture || MISSING)}</div><div class="detail mono">${escapeHtml(codename || "")}</div></td>
@@ -921,6 +980,7 @@
         run.mesa && !String(run.driver || "").includes(run.mesa) ? `Mesa ${run.mesa}` : "",
         run.upscaling ? `Upscaling ${run.upscaling} (set by preset)` : "",
         runtime, run.graphics_api, run.session, run.launcher, run.power_plan, ...flags,
+        run.testbench_source_id ? `Bench: ${benchName(run.testbench_source_id)}` : "",
         run.cpu, formatMemory(run),
         run.driver ? `Driver ${run.driver}` : "",
         run.gpu_power_w ? `${run.gpu_power_w} W` : "",
@@ -1168,6 +1228,7 @@
         state.game = state.data.games.find((game) => game.type === firstType).id;
         refreshResolutionOptions();
         setGameOptions(elements.game, state.data.games, state.game);
+        state.factors = new Set(platforms());
         state.graphicsPreset = "All";
         setOptions(elements.preset, ["All", ...state.data.graphics_presets], state.graphicsPreset);
         elements.preset.value = state.graphicsPreset;

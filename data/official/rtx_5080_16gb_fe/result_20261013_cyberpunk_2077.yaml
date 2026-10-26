@@ -2,6 +2,7 @@
 # benchmark. Each benchmark_run is a folder in the game's benchmarkResults;
 # re-running the script skips runs listed here and adds new ones.
 gpu_id: rtx_5080_16gb_fe
+testbench_id: am5_9950x3d_ddr5
 benchmark_type: game
 game_id: cyberpunk_2077
 date: '2026-10-13'

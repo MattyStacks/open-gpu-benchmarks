@@ -74,6 +74,9 @@ the numbers always match the dashboard:
   `cyberpunk_2077`. The display name comes from there too.
 - The optional filters are `resolution`, `preset`, and `os` (`windows` or
   `linux`), plus `source`: `official` (the default), `community`, or `all`.
+- `bench` (a memory type, such as `DDR5`) keeps one test bench. Without it,
+  a GPU tested on two benches gets two bars, each labeled with its bench
+  (`DDR5 Bench`, `DDR4 Bench`).
 - `title` overrides the heading.
 
 The build fails if nothing matches, so a typo can't publish an empty chart.

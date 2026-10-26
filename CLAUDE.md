@@ -76,7 +76,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.8.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.9.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -95,6 +95,8 @@ data/LICENSE                       CC BY 4.0 (+ reasonable-attribution header), 
 data/reviews.yaml                  optional review links (still in the API; no longer shown)
 data/games.yaml                    game registry: every game_id a result may use, with
                                    name, type, year, and optional store IDs (game-* rules)
+data/testbenches.yaml              test bench registry: the systems official desktop runs
+                                   name with testbench_id (testbench-* rules)
 data/picks.yaml                    featured GPU picks: one dashboard card per GPU maker
                                    with affiliate store links (pick-* rules)
 data/official/<gpu_id>/result_*.yaml
@@ -154,6 +156,18 @@ unless repository policy changes.
 - `result:` is always a YAML list; every resolution/preset profile needs its
   leading `-`. A duplicated `result:` key silently drops data.
 - Desktop and laptop GPU records never share a summary group.
+- Official desktop runs name their test bench with a top-level `testbench_id`,
+  an ID from `data/testbenches.yaml` (`checks.load_testbenches()`, rules
+  `testbench-*`, `result-testbench-id`, `result-unknown-testbench`,
+  `result-testbench-community`, and the `result-testbench-mismatch`
+  warning). A bench is labeled by the DDR type in its `memory_type`
+  ("DDR5 Bench", "DDR4 Bench", "DDR3 Bench"), so a DDR6 system needs no code
+  change; there is no generation field. Exactly one bench is `primary`. The
+  bench is a grouping key, so one GPU on two benches is two bars; `counts_as`
+  folds a bench into another with the same DDR type. Laptops, handhelds,
+  iGPUs, and every community file leave it out. The community outlier
+  baseline is the primary bench only. The dashboard's "Platform" chips show
+  one chip per DDR type, newest first, and every chip starts on.
 - Every game run names its game with `game_id`, an ID from
   `data/games.yaml` (`checks.load_games()`, rules `game-*`,
   `result-game-id`, `result-unknown-game`). The registry supplies the
@@ -257,7 +271,10 @@ unless repository policy changes.
   re-import backfills `p1_low` on earlier runs that lack one. The game
   doesn't report RAM type or channels, so `--memory-type` and
   `--memory-channels` default to `DDR5-6000` and `2` with an on-screen
-  warning when they're left out.
+  warning when they're left out. Official desktop runs need
+  `--testbench <id>`, which writes `testbench_id` and takes the RAM type and
+  channels from the bench; a different bench on the same day goes in a `_2`
+  file.
 - Keep GitHub links absolute and API/data links relative to the page, so
   every host works. The one exception is the canonical origin
   `https://opengpubenchmarks.com/` (`build.SITE_URL`): the canonical link,

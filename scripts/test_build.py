@@ -19,6 +19,14 @@ FIXTURES_DIR = ROOT / "tests" / "fixtures" / "data"
 TEST_ID = "test_gpu_8gb_fe"
 TEST_CATALOG_PATH = f"gpus/desktop/nvidia/{TEST_ID}.yaml"
 GAMES_PATH = "games.yaml"
+TESTBENCHES_PATH = "testbenches.yaml"
+TEST_BENCH = "test_bench_ddr5"
+TEST_BENCH_ENTRY = {
+    "id": TEST_BENCH, "name": "Test CPU · DDR5-6000", "status": "active", "primary": True,
+    "cpu": "Test CPU 9000", "memory_gb": 32, "memory_type": "DDR5-6000", "memory_channels": 2,
+}
+# The bench registry run_checks writes unless a case brings its own testbenches.yaml.
+TEST_TESTBENCHES = {"testbenches": [TEST_BENCH_ENTRY]}
 # The registry run_checks writes unless a case brings its own games.yaml.
 TEST_GAMES = {
     "games": [
@@ -86,6 +94,11 @@ def result_run(**overrides):
     return run
 
 
+def official_run(**overrides):
+    """An official desktop run on the test bench run_checks registers."""
+    return result_run(**{"testbench_id": TEST_BENCH, **overrides})
+
+
 def community_run(**overrides):
     """An anonymous community run: no submitted_by, and no username in the file name."""
     return result_run(**overrides)
@@ -100,17 +113,19 @@ def dump(value):
 
 def run_checks(files):
     """Write {relative path: data or text} into a temp data dir and run every check.
-    A games.yaml with test_game and test_synthetic is added unless files has one."""
+    A games.yaml with test_game and test_synthetic, and a testbenches.yaml with
+    TEST_BENCH, are added unless files has its own."""
     with tempfile.TemporaryDirectory() as temp:
         data_dir = Path(temp)
-        for relative, content in {GAMES_PATH: TEST_GAMES, **files}.items():
+        for relative, content in {GAMES_PATH: TEST_GAMES, TESTBENCHES_PATH: TEST_TESTBENCHES, **files}.items():
             path = data_dir / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(dump(content), encoding="utf-8")
         catalog, issues = checks.load_catalog(data_dir)
         games, game_issues = checks.load_games(data_dir)
-        _, result_issues = checks.load_results(catalog, data_dir, games)
-        return checks.Issues([*issues, *game_issues, *result_issues])
+        testbenches, testbench_issues = checks.load_testbenches(data_dir)
+        _, result_issues = checks.load_results(catalog, data_dir, games, testbenches)
+        return checks.Issues([*issues, *game_issues, *testbench_issues, *result_issues])
 
 
 def expect_rule(rule, files, level="error"):
@@ -224,7 +239,7 @@ def check_result_rules():
         "community-submitter": {COMMUNITY_PATH: community_run(submitted_by="not a username")},
         "community-filename": {f"{folder}/result_test.yaml": community_run()},
         "community-outlier": {
-            f"official/{TEST_ID}/result_20261003_test.yaml": result_run(),
+            f"official/{TEST_ID}/result_20261003_test.yaml": official_run(),
             COMMUNITY_PATH: community_run(result=[{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 10, "p1_low": 8}]),
         },
     }
@@ -284,7 +299,7 @@ def check_result_rules():
     for time in ("09:10", "23:59:59"):
         issues = run_checks({**catalog, COMMUNITY_PATH: timed(time)})
         assert not issues.errors, (time, [issue.format() for issue in issues.errors])
-    issues = run_checks({**catalog, f"official/{TEST_ID}/result_launch_day.yaml": result_run()})
+    issues = run_checks({**catalog, f"official/{TEST_ID}/result_launch_day.yaml": official_run()})
     assert not issues.errors, [issue.format() for issue in issues.errors]
     # A full Linux run passes; a Linux community run is never outlier-checked against Windows numbers.
     linux = {
@@ -292,7 +307,7 @@ def check_result_rules():
         "proton": "GE-Proton9-20", "gamemode": True, "resizable_bar": True,
     }
     slow_linux = community_run(system=linux, result=[{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 10, "p1_low": 8}])
-    issues = run_checks({**catalog, f"official/{TEST_ID}/result_20261003_test.yaml": result_run(), COMMUNITY_PATH: slow_linux})
+    issues = run_checks({**catalog, f"official/{TEST_ID}/result_20261003_test.yaml": official_run(), COMMUNITY_PATH: slow_linux})
     assert not issues.errors, [issue.format() for issue in issues.errors]
     assert "result-no-baseline" in {issue.rule for issue in issues.warnings}
 
@@ -429,7 +444,7 @@ def check_outlier_limit():
     """A community average more than 25% from the official average is an error."""
     assert checks.OUTLIER_RATIO == 0.25
     catalog = {TEST_CATALOG_PATH: minimal_entry()}
-    official = {f"official/{TEST_ID}/result_20261003_test.yaml": result_run()}  # 100 FPS
+    official = {f"official/{TEST_ID}/result_20261003_test.yaml": official_run()}  # 100 FPS
 
     def run_at(avg_fps):
         entry = {"resolution": "1080p", "graphics_preset": "High", "avg_fps": avg_fps, "p1_low": avg_fps * 0.8}
@@ -497,7 +512,7 @@ def check_upscaling():
     assert sorted(summary["avg_fps"] for summary in summaries) == [100, 140], "upscaled runs never average with native"
 
     # An upscaled community run is not outlier-checked against a native official run.
-    official = {f"official/{TEST_ID}/result_20261003_test.yaml": result_run()}
+    official = {f"official/{TEST_ID}/result_20261003_test.yaml": official_run()}
     issues = run_checks({**catalog, **official, COMMUNITY_PATH: upscaled})
     assert "community-outlier" not in {issue.rule for issue in issues.errors}
 
@@ -549,9 +564,9 @@ def check_third_party_credit():
         expect_rule(label.split(" (")[0], {**catalog, **screenshot, COMMUNITY_PATH: run})
     # Official runs are maintainer-verified: a credit only needs who ran it.
     official_path = f"official/{TEST_ID}/result_20261003_test.yaml"
-    issues = run_checks({**catalog, official_path: result_run(credit={"name": "Example Friend"})})
+    issues = run_checks({**catalog, official_path: official_run(credit={"name": "Example Friend"})})
     assert not issues.errors, [issue.format() for issue in issues.errors]
-    expect_rule("community-credit", {**catalog, official_path: result_run(credit={"url": "https://example.com/friend"})})
+    expect_rule("community-credit", {**catalog, official_path: official_run(credit={"url": "https://example.com/friend"})})
     official = result_run()
     record = build.build_record(official, official["result"][0], 0, "official", Path(official_path), {TEST_ID: minimal_entry()})
     assert record["proof_level"] == "maintainer-verified", record["proof_level"]
@@ -634,6 +649,7 @@ def check_import_cyberpunk():
         data_dir = temp / "data"
         shutil.copytree(FIXTURES_DIR / "gpus", data_dir / "gpus")
         shutil.copy(FIXTURES_DIR / "games.yaml", data_dir / "games.yaml")
+        shutil.copy(FIXTURES_DIR / "testbenches.yaml", data_dir / "testbenches.yaml")
         results = temp / "benchmarkResults"
 
         def add_runs(new_runs):
@@ -642,8 +658,14 @@ def check_import_cyberpunk():
                 (results / name / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
 
         add_runs(runs)
-        args = ["--gpu-id", "rtx_4090_24gb_fe", "--input", str(results), "--source", "official",
-                "--custom-preset", "High", "--os", "windows", "--data-dir", str(data_dir)]
+        community_args = ["--gpu-id", "rtx_4090_24gb_fe", "--input", str(results),
+                          "--custom-preset", "High", "--os", "windows", "--data-dir", str(data_dir)]
+        args = [*community_args, "--source", "official", "--testbench", "am5_9800x3d_ddr5"]
+
+        # Official desktop runs need a known bench; community runs never take one.
+        assert import_cyberpunk.main([*community_args, "--source", "official", "--dry-run"]) == 1
+        assert import_cyberpunk.main([*community_args, "--source", "official", "--testbench", "no_such_bench", "--dry-run"]) == 1
+        assert import_cyberpunk.main([*community_args, "--testbench", "am5_9800x3d_ddr5", "--dry-run"]) == 1
 
         assert import_cyberpunk.main([*args, "--dry-run"]) == 0
         assert not (data_dir / "official").exists(), "a dry run writes nothing"
@@ -665,7 +687,8 @@ def check_import_cyberpunk():
         assert day_run["proof"]["method"] == "in_game_benchmark"
         assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
         assert entry["display_mode"] == "Fullscreen" and "display_mode" not in day_run["system"]
-        assert day_run["date"] == "2026-10-13" and list(day_run)[:4] == ["gpu_id", "benchmark_type", "game_id", "date"]
+        assert day_run["date"] == "2026-10-13" and list(day_run)[:5] == ["gpu_id", "testbench_id", "benchmark_type", "game_id", "date"]
+        assert day_run["testbench_id"] == "am5_9800x3d_ddr5"
         assert entry["time"] == "18:44:57" and custom["time"] == "19:00:00", "time comes from the run folder"
 
         catalog, issues = checks.load_catalog(data_dir)
@@ -702,12 +725,20 @@ def check_import_cyberpunk():
         assert (system["memory_gb"], system["memory_type"], system["memory_channels"]) == (32, "DDR5-6000", 2), system
         assert import_cyberpunk.main([*args, "--memory-channels", "0"]) == 1
 
-        # Left out, the RAM type and channels default to DDR5-6000 dual channel, with a warning on screen.
+        # The bench fills in the RAM type and channels, so official runs get no warning.
         assert (day_run["system"]["memory_type"], day_run["system"]["memory_channels"]) == ("DDR5-6000", 2), day_run["system"]
-        for options, warned in (([], True), (["--memory-type", "DDR5-6000", "--memory-channels", "2"], False)):
+        # A different bench on the same day goes in a _2 file, because the bench applies to the whole file.
+        other_bench = {**day_run, "testbench_id": "am4_5600x3d_ddr4", "result": []}
+        assert import_cyberpunk.target_file(out, "2026-10-13", other_bench, {}).name == "result_20261013_cyberpunk_2077_2.yaml"
+        # Left out on a community run, they default to DDR5-6000 dual channel, with a warning on screen.
+        for run_args, options, warned in (
+            (community_args, [], True),
+            (community_args, ["--memory-type", "DDR5-6000", "--memory-channels", "2"], False),
+            (args, [], False),
+        ):
             shown = io.StringIO()
             with contextlib.redirect_stdout(shown):
-                assert import_cyberpunk.main([*args, "--dry-run", *options]) == 0
+                assert import_cyberpunk.main([*run_args, "--dry-run", *options]) == 0
             assert ("WARNING: --memory-type was not given" in shown.getvalue()) is warned, shown.getvalue()
             assert ("fix memory_type and memory_channels" in shown.getvalue()) is warned, shown.getvalue()
 
@@ -1000,9 +1031,9 @@ def check_real_data():
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.18"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.19"
     group_by = master["metadata"]["comparison_policy"]["group_by"]
-    assert {"os", "upscaling", "game_id"} <= set(group_by) and "game" not in group_by
+    assert {"os", "upscaling", "game_id", "testbench_id"} <= set(group_by) and "game" not in group_by
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
     assert len(by_id) == 11
     for gpu in master["gpus"]:
@@ -1053,6 +1084,7 @@ def main():
     check_catalog_rules()
     check_result_rules()
     check_game_rules()
+    check_testbench_rules()
     check_os_grouping()
     check_average_only_runs()
     check_outlier_limit()
@@ -1120,7 +1152,8 @@ def check_fixture_build(api_dir):
     assert summary_1440p["p1_low"] == 42.3
 
     dashboard = load_json(api_dir / "dashboard.json")
-    assert len(dashboard["records"]) == 30
+    assert len(dashboard["records"]) == 31
+    check_testbench_payload(api_dir, dashboard)
     # System RAM: numbers stay numbers, and a run without them gets null.
     flagship = load_json(api_dir / "official" / "rtx_4090_24gb_fe" / "summary.json")
     with_memory = [record for record in flagship["records"] if record["memory_gb"] is not None]
@@ -1134,6 +1167,104 @@ def check_fixture_build(api_dir):
         item for item in implementations if "memory_gb" in item).items()
     check_game_payload(api_dir)
     check_catalog_specs(api_dir)
+
+
+def check_testbench_payload(api_dir, dashboard):
+    """One GPU on two benches is two summaries; a counts_as bench joins its target's."""
+    benches = load_json(api_dir / "testbenches.json")
+    assert benches["count"] == 4 and benches["testbenches"][0]["id"] == "am5_9800x3d_ddr5", benches
+    super_cyberpunk = sorted(
+        (record["testbench_memory"], record["run_count"], record["avg_fps"], record["testbench_label"])
+        for record in dashboard["records"]
+        if record["gpu_id"] == "rtx_4070_super_12gb_fe" and record["game_id"] == "cyberpunk_2077"
+    )
+    assert super_cyberpunk == [("DDR4", 1, 84.0, "DDR4 Bench"), ("DDR5", 1, 96.0, "DDR5 Bench")], super_cyberpunk
+    (folded,) = [
+        record for record in dashboard["records"]
+        if record["gpu_id"] == "rtx_4090_24gb_fe" and record["game_id"] == "cyberpunk_2077" and record["os"] == "windows"
+    ]
+    assert folded["run_count"] == 2 and folded["avg_fps"] == 179.0 and folded["testbench_id"] == "am5_9800x3d_ddr5", folded
+    assert sorted(run.get("testbench_source_id") for run in folded["implementations"]) == ["am5_9800x3d_ddr5", "am5_9950x3d_ddr5"]
+    for record in dashboard["records"]:
+        official_desktop = record["source"] == "official" and record["form_factor"] == "Desktop"
+        assert bool(record["testbench_id"]) == official_desktop, record["id"]
+    tables = build.llms_full_txt(dashboard["records"], dashboard["metadata"])
+    assert "| Test bench |" in tables and "DDR4 Bench: Ryzen 5 5600X3D · DDR4-3200" in tables
+    assert tables.index("DDR5 Bench: Ryzen 7") < tables.index("DDR4 Bench: Ryzen 5"), "newest memory first"
+
+
+def check_testbench_rules():
+    """data/testbenches.yaml shape, and which runs must, may, or must not name a bench."""
+    bench = TEST_BENCH_ENTRY
+    other = {**bench, "id": "ddr4_bench", "name": "DDR4 test bench", "primary": False, "memory_type": "DDR4-3200"}
+
+    def registry(*items):
+        return {TESTBENCHES_PATH: {"testbenches": list(items)}}
+
+    def without(key):
+        return {name: value for name, value in bench.items() if name != key}
+
+    cases = {
+        "testbench-registry": "testbenches: am5\n",
+        "testbench-field (no cpu)": registry(without("cpu")),
+        "testbench-field (not ddr)": registry({**bench, "memory_type": "LPDDR5X-7500"}),
+        "testbench-field (status)": registry({**bench, "status": "broken"}),
+        "testbench-field (no memory)": registry(without("memory_type")),
+        "testbench-field (speedless active)": registry({**bench, "memory_type": "DDR5"}),
+        "testbench-field (unknown)": registry({**bench, "gpu": "x"}),
+        "testbench-id-format": registry({**bench, "id": "Bench-1"}),
+        "testbench-duplicate": registry(bench, bench),
+        "testbench-primary (none)": registry({**bench, "primary": False}),
+        "testbench-primary (two)": registry(bench, {**other, "primary": True}),
+        "testbench-primary (planned)": registry({**bench, "status": "planned"}),
+        "testbench-counts-as (missing)": registry(bench, {**other, "counts_as": "nope"}),
+        "testbench-counts-as (memory)": registry(bench, {**other, "counts_as": TEST_BENCH}),
+        "testbench-counts-as (chain)": registry(
+            bench, {**other, "memory_type": "DDR5-6000", "counts_as": TEST_BENCH},
+            {**other, "id": "third_bench", "memory_type": "DDR5-6000", "counts_as": "ddr4_bench"},
+        ),
+    }
+    for label, files in cases.items():
+        rule = label.split(" ")[0]
+        with tempfile.TemporaryDirectory() as temp:
+            content = files[TESTBENCHES_PATH] if isinstance(files, dict) else files
+            (Path(temp) / TESTBENCHES_PATH).write_text(dump(content), encoding="utf-8")
+            _, issues = checks.load_testbenches(Path(temp))
+        assert rule in {issue.rule for issue in issues.errors}, (label, [issue.format() for issue in issues])
+        assert all(issue.doc() == checks.RESULTS_DOC for issue in issues), label
+    # A planned bench may leave its memory out, or name the type without a speed.
+    with tempfile.TemporaryDirectory() as temp:
+        planned = {**other, "status": "planned", "memory_type": "DDR3"}
+        del planned["memory_channels"]
+        (Path(temp) / TESTBENCHES_PATH).write_text(dump(registry(bench, planned)[TESTBENCHES_PATH]), encoding="utf-8")
+        benches, issues = checks.load_testbenches(Path(temp))
+    assert not issues and len(benches) == 2, [issue.format() for issue in issues]
+
+    catalog = {TEST_CATALOG_PATH: minimal_entry()}
+    official_path = f"official/{TEST_ID}/result_20261003_test.yaml"
+    expect_rule("result-testbench-id", {**catalog, official_path: result_run()})
+    expect_rule("result-unknown-testbench", {**catalog, official_path: result_run(testbench_id="no_such_bench")})
+    expect_rule("result-testbench-community", {**catalog, COMMUNITY_PATH: community_run(testbench_id=TEST_BENCH)})
+    laptop = minimal_entry(classification={"form_factor": "laptop"})
+    laptop_path = f"gpus/laptop/nvidia/{TEST_ID}.yaml"
+    expect_rule("result-testbench-id", {laptop_path: laptop, official_path: official_run()})
+    issues = run_checks({laptop_path: laptop, official_path: result_run()})
+    assert not issues.errors, "laptops are their own platform and need no bench"
+    # A run whose own system disagrees with its bench is a warning, never an error.
+    wrong = official_run(system={"os": "windows", "cpu": "Other CPU 100", "memory_type": "DDR4-3200", "memory_gb": 32})
+    issues = run_checks({**catalog, official_path: wrong})
+    mismatches = [issue for issue in issues.warnings if issue.rule == "result-testbench-mismatch"]
+    assert not issues.errors and len(mismatches) == 2, [issue.format() for issue in issues]
+    right = official_run(system={"os": "windows", "cpu": "Test CPU 9000 8-Core Processor", "memory_type": "DDR5-6000"})
+    assert "result-testbench-mismatch" not in {issue.rule for issue in run_checks({**catalog, official_path: right})}
+
+    # The community baseline is the primary bench: a far-off official run on
+    # another bench doesn't make a community run an outlier.
+    two = registry(bench, other)
+    slow_ddr4 = official_run(testbench_id="ddr4_bench", result=[{"resolution": "1080p", "graphics_preset": "High", "avg_fps": 50, "p1_low": 40}])
+    issues = run_checks({**catalog, **two, official_path: slow_ddr4, COMMUNITY_PATH: community_run()})
+    assert "community-outlier" not in {issue.rule for issue in issues.errors}
+    assert "result-no-baseline" in {issue.rule for issue in issues.warnings}
 
 
 def check_game_payload(api_dir):

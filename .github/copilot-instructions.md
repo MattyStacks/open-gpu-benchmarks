@@ -49,6 +49,18 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   name's `YYYYMMDD` (`result-date-filename`). Each `result` item may add a
   quoted local `time` (`'HH:MM'` or `'HH:MM:SS'`, no time zone;
   `result-time`). Neither is a grouping key.
+- Official desktop runs name their test bench with a top-level `testbench_id`,
+  an ID from `data/testbenches.yaml` (`checks.load_testbenches()`, rules
+  `testbench-*`, `result-testbench-id`, `result-unknown-testbench`,
+  `result-testbench-community`, and the `result-testbench-mismatch`
+  warning). A bench is labeled by the DDR type in its `memory_type`
+  ("DDR5 Bench", "DDR4 Bench", "DDR3 Bench"), so a DDR6 system needs no code
+  change; there is no generation field. Exactly one bench is `primary`. The
+  bench is a grouping key, so one GPU on two benches is two bars; `counts_as`
+  folds a bench into another with the same DDR type. Laptops, handhelds,
+  iGPUs, and every community file leave it out. The community outlier
+  baseline is the primary bench only. The dashboard's "Platform" chips show
+  one chip per DDR type, newest first, and every chip starts on.
 - Every game run names its game with `game_id`, an ID from
   `data/games.yaml` (`checks.load_games()`, rules `game-*`,
   `result-game-id`, `result-unknown-game`). The registry supplies the
@@ -119,7 +131,10 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   re-import backfills `p1_low` on earlier runs that lack one. The game
   doesn't report RAM type or channels, so `--memory-type` and
   `--memory-channels` default to `DDR5-6000` and `2` with an on-screen
-  warning when they're left out.
+  warning when they're left out. Official desktop runs need
+  `--testbench <id>`, which writes `testbench_id` and takes the RAM type and
+  channels from the bench; a different bench on the same day goes in a `_2`
+  file.
 - The catalog is one file per product at
   `data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml`; the file name equals `id`
   and the folders equal `classification.form_factor` and

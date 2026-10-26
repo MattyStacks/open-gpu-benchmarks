@@ -149,6 +149,7 @@ def main():
     p.add_argument("--method", default=None, choices=list(checks.PROOF_METHODS), help="Capture tool, written to proof.method. Defaults to presentmon or mangohud from the CSV format; pass it when another tool (for example capframex) made the CSV")
     p.add_argument("--os", default=None, choices=list(checks.RESULT_OSES), help="Defaults to linux for MangoHud captures, windows for PresentMon")
     p.add_argument("--os-detail", default="", help="OPTIONAL - full OS name, e.g. 'Windows 11 Pro 24H2' or 'SteamOS 3.6.19'")
+    p.add_argument("--testbench", default="", help="Official desktop runs only: the test bench ID from data/testbenches.yaml")
     p.add_argument("--output", default="")
     args=p.parse_args()
 
@@ -208,6 +209,8 @@ def main():
     data["result"][0]={k:v for k,v in data["result"][0].items() if v is not None}
     if args.submitted_by:
         data={"gpu_id": data.pop("gpu_id"), "submitted_by": args.submitted_by, **data}
+    if args.testbench:
+        data={"gpu_id": data.pop("gpu_id"), "testbench_id": args.testbench, **data}
 
     if not args.output:
         date = today.strftime("%Y%m%d")

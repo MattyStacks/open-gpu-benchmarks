@@ -31,6 +31,44 @@ short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
 
 ## Unreleased
 
+## 1.9.0.0 - 2026-10-25
+
+### Added
+
+- Official test benches. `data/testbenches.yaml` lists the maintainer's test
+  systems, each labeled by its memory type: the DDR5 Bench (Ryzen 7 9800X3D,
+  the primary bench), the DDR4 Bench (Ryzen 5 5600X3D), the DDR3 Bench (Core
+  i7-4790, planned), and the interim Ryzen 9 9950X3D (DDR5) that ran the
+  RTX 5080 FE so far. A DDR6 system becomes "DDR6 Bench" with no code change.
+  New `testbench-*` rules check the file.
+- Official desktop runs require a top-level `testbench_id`
+  (`result-testbench-id`, `result-unknown-testbench`), community files may
+  not set one (`result-testbench-community`), and a run whose CPU or memory
+  disagrees with its bench gets the `result-testbench-mismatch` warning.
+- API schema 0.18 → 0.19: run records and summaries carry `testbench_id`,
+  `testbench_source_id`, `testbench_name`, `testbench_memory` (`DDR5`), and
+  `testbench_label` (`DDR5 Bench`). The bench is a grouping key, so one GPU on two benches is
+  two summaries; `counts_as` folds one bench into another. New
+  `api/v1/testbenches.json`, and `dashboard.json` lists the benches.
+- `import_cyberpunk.py --testbench <id>`, required for official desktop runs.
+  It fills in the RAM type and channels from the bench.
+- A "Test bench" column in `benchmarks/` and `llms-full.txt`.
+- The blog's `<BenchChart>` labels bars by bench when a GPU is on more than
+  one, and takes an optional `bench` filter (`bench="DDR4"`). `parse.py` takes an
+  optional `--testbench`.
+
+### Changed
+
+- The dashboard's "Form factor" filter is now **Platform**: desktop splits
+  into one chip per bench ("DDR5 Bench", "DDR4 Bench", plus "Desktop ·
+  community"). Every chip starts on, and the same GPU on
+  two benches gets two labeled bars. The summaries table's Platform column
+  reads "Desktop: DDR5", "Desktop: DDR4", or "Desktop: community". The
+  table's "Form" column is now "Platform" and sorts a GPU's benches together.
+- `community-outlier` compares desktop community runs with official runs on
+  the primary bench only.
+- The two RTX 5080 FE result files name the interim `am5_9950x3d_ddr5` bench.
+
 ## 1.8.0.0 - 2026-10-24
 
 ### Added

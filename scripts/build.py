@@ -25,11 +25,11 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 SITE_DIR = ROOT / "site"
 OUTPUT_DIR = SITE_DIR / "api" / "v1"
-SCHEMA_VERSION = "0.18"
+SCHEMA_VERSION = "0.19"
 # MAJOR.MINOR.DATA.POST: MAJOR = breaking data contract or API, MINOR = any
 # code change, DATA = newly published runs, POST = a new or updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
-RELEASE_VERSION = "1.8.0.0"
+RELEASE_VERSION = "1.9.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.
@@ -101,7 +101,23 @@ def os_details(system):
     return details
 
 
-def build_record(run, result, result_index, source, source_path, gpu_by_id, games_by_id=None):
+def testbench_fields(run, testbenches_by_id):
+    """Official desktop runs carry their bench, resolved through counts_as; everything else gets ""."""
+    source_id = str(run.get("testbench_id") or "")
+    bench_id = checks.resolve_testbench_id(testbenches_by_id, source_id) if source_id else ""
+    bench = testbenches_by_id.get(bench_id, {})
+    return {
+        # testbench_id groups runs; testbench_source_id is the bench the file names.
+        "testbench_id": bench_id,
+        "testbench_source_id": source_id,
+        "testbench_name": bench.get("name", ""),
+        # The memory generation ("DDR5") and the dashboard's label for it ("DDR5 Bench").
+        "testbench_memory": checks.testbench_memory(bench) if bench else "",
+        "testbench_label": checks.testbench_label(bench) if bench else "",
+    }
+
+
+def build_record(run, result, result_index, source, source_path, gpu_by_id, games_by_id=None, testbenches_by_id=None):
     """Expand one checked result entry into a flat run record."""
     gpu = gpu_by_id[run["gpu_id"]]
     game = (games_by_id or {}).get(run.get("game_id"), {})
@@ -146,6 +162,7 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id, game
         "gpu_power_w": float(gpu_power_w) if gpu_power_w is not None else None,
         "overclocked": bool(run.get("overclocked", False)),
         "cpu": str(system.get("cpu", "")),
+        **testbench_fields(run, testbenches_by_id or {}),
         # System RAM, for API users; not a grouping key. Numbers are null when missing.
         "memory_gb": system.get("memory_gb") if checks.is_number(system.get("memory_gb")) else None,
         "memory_type": str(system.get("memory_type") or ""),
@@ -177,9 +194,9 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id, game
     return record
 
 
-def source_records(runs, source, gpu_by_id, games_by_id):
+def source_records(runs, source, gpu_by_id, games_by_id, testbenches_by_id=None):
     return [
-        build_record(run, result, result_index, source, path, gpu_by_id, games_by_id)
+        build_record(run, result, result_index, source, path, gpu_by_id, games_by_id, testbenches_by_id)
         for path, run in runs[source]
         for result_index, result in enumerate(run["result"])
     ]
@@ -200,6 +217,7 @@ def aggregate_game_records(records, id_prefix):
                 record["form_factor"],
                 record["gpu_power_w"],
                 record["os"],
+                record["testbench_id"],
             )
         ].append(record)
 
@@ -215,6 +233,7 @@ def aggregate_game_records(records, id_prefix):
                     "gpu_power_w",
                     "overclocked",
                     "cpu",
+                    "testbench_source_id",
                     "memory_gb",
                     "memory_type",
                     "memory_channels",
@@ -302,13 +321,20 @@ def gpu_summary(source, gpu, records, metadata):
     }
 
 
-SUMMARY_COLUMNS = ("GPU", "Benchmark", "Resolution", "Preset", "Upscaling", "OS", "Source", "Avg FPS", "1% low", "Runs")
+SUMMARY_COLUMNS = ("GPU", "Benchmark", "Resolution", "Preset", "Upscaling", "OS", "Source", "Test bench", "Avg FPS", "1% low", "Runs")
 FORM_FACTOR_ORDER = ("Desktop", "Laptop", "Handheld", "Igpu")
 FORM_FACTOR_LABELS = {"Igpu": "Integrated"}
 
 
 def fps(value):
     return "n/a" if value is None else f"{value:g}"
+
+
+def testbench_cell(record):
+    """The dashboard's Platform wording: "DDR5 Bench: <bench>" on official desktop rows."""
+    if record["testbench_id"]:
+        return f"{record['testbench_label']}: {record['testbench_name']}"
+    return "Community" if record["form_factor"] == "Desktop" and record["source"] == "community" else ""
 
 
 def summary_row(record):
@@ -320,10 +346,16 @@ def summary_row(record):
         record["upscaling"] or "Native",
         record["os"].title(),
         record["source"].title(),
+        testbench_cell(record),
         fps(record["avg_fps"]),
         fps(record["p1_low"]),
         str(record["run_count"]),
     )
+
+
+def testbench_order(record):
+    """Newest memory first; runs without a bench last."""
+    return checks.testbench_rank({"memory_type": record["testbench_memory"]}) if record["testbench_id"] else 1
 
 
 def records_by_form_factor(records):
@@ -335,7 +367,7 @@ def records_by_form_factor(records):
     return [
         (
             FORM_FACTOR_LABELS.get(factor, factor),
-            sorted(rows, key=lambda r: (r["game"], r["resolution"], r["graphics_preset"], r["os"], -r["avg_fps"])),
+            sorted(rows, key=lambda r: (r["game"], r["resolution"], r["graphics_preset"], r["os"], testbench_order(r), -r["avg_fps"])),
         )
         for factor, rows in sorted(grouped.items(), key=lambda item: order.get(item[0], len(order)))
     ]
@@ -345,7 +377,9 @@ def method_lines(metadata):
     policy = metadata["comparison_policy"]
     return [
         "Each row averages every run that matches on GPU, form factor, GPU power, game or benchmark (by its ID), "
-        "resolution, graphics preset, upscaling, and OS.",
+        "resolution, graphics preset, upscaling, OS, and (for official desktop runs) test bench.",
+        "Official desktop GPUs are tested on more than one system, one per memory generation (DDR5, DDR4, and DDR3 "
+        "benches). The same GPU on two benches is two rows, never one average.",
         "Windows and Linux runs are never averaged together, and desktop and laptop GPUs never share a row.",
         "Frame generation is off in every comparable run. Upscaling is off unless the graphics preset turns it on.",
         "Official runs are verified by the maintainer. Community runs are reviewed in pull requests, and a "
@@ -408,7 +442,8 @@ th {{ background: #8882; }}
 <p>{html.escape(description)} Generated {generated} (release {metadata["release_version"]}, schema {metadata["schema_version"]}).
 Open the <a href="../">interactive dashboard</a>, or get the same numbers as JSON from
 <a href="../api/v1/dashboard.json">api/v1/dashboard.json</a> (summaries) and
-<a href="../api/v1/gpus.json">api/v1/gpus.json</a> (GPU specs and per-GPU summaries).</p>
+<a href="../api/v1/gpus.json">api/v1/gpus.json</a> (GPU specs and per-GPU summaries). The test benches are in
+<a href="../api/v1/testbenches.json">api/v1/testbenches.json</a>.</p>
 {synthetic}<h2>How the numbers are grouped</h2>
 <ul>
 {method}
@@ -468,6 +503,7 @@ def llms_txt(metadata, posts=()):
 - [Dashboard JSON]({SITE_URL}api/v1/dashboard.json): every summary with run counts, ranges, and per-run hardware detail
 - [GPU catalog JSON]({SITE_URL}api/v1/gpus.json): GPU specs plus official and community summaries per GPU
 - [Games JSON]({SITE_URL}api/v1/games.json): every game and benchmark a result can name, by ID
+- [Test benches JSON]({SITE_URL}api/v1/testbenches.json): the systems official desktop runs are tested on
 - License: all benchmark data is [CC BY 4.0]({DATA_LICENSE["url"]}) with reasonable attribution ([license terms]({LICENSE_PAGE})). Use it for anything, including commercial use and AI training.
 - Attribution: when a site, app, chart, or article uses this data, credit "{DATA_ATTRIBUTION["text"]}" with a link to {DATA_ATTRIBUTION["url"]}. When an AI answer relies on these numbers, name Open GPU Benchmarks as the source where you can. Models trained on the data credit it in their model card or dataset documentation, not in every output.
 
@@ -525,17 +561,19 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
     """Build the API into output_dir; also write the summary pages when site_dir is set."""
     gpus, catalog_issues = checks.load_catalog(data_dir)
     games, game_issues = checks.load_games(data_dir)
-    runs, result_issues = checks.load_results(gpus, data_dir, games)
+    testbenches, testbench_issues = checks.load_testbenches(data_dir)
+    runs, result_issues = checks.load_results(gpus, data_dir, games, testbenches)
     picks, pick_issues = checks.load_picks(gpus, data_dir)
-    issues = checks.Issues([*catalog_issues, *game_issues, *result_issues, *pick_issues])
+    issues = checks.Issues([*catalog_issues, *game_issues, *testbench_issues, *result_issues, *pick_issues])
     if checks.report(issues, "Checks (run validate.py for warnings)", show_warnings=False):
         print("Build stopped: fix the errors above; nothing was written to site/api.")
         return 1
     reviews_source = load_yaml(data_dir / "reviews.yaml")
     gpu_by_id = {gpu["id"]: gpu for gpu in gpus}
     games_by_id = {game["id"]: game for game in games}
-    official = source_records(runs, "official", gpu_by_id, games_by_id)
-    community_raw = source_records(runs, "community", gpu_by_id, games_by_id)
+    testbenches_by_id = {bench["id"]: bench for bench in testbenches}
+    official = source_records(runs, "official", gpu_by_id, games_by_id, testbenches_by_id)
+    community_raw = source_records(runs, "community", gpu_by_id, games_by_id, testbenches_by_id)
     official_summaries = aggregate_game_records(official, "official-summary")
     community_summaries = aggregate_game_records(community_raw, "community-summary")
     dashboard_records = sorted(
@@ -564,8 +602,10 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
                 "graphics_preset",
                 "upscaling",
                 "os",
+                "testbench_id",
             ],
             "game_version_is_not_a_grouping_key": True,
+            "testbench_applies_to": "official desktop runs only; counts_as is resolved first",
             "os_detail_is_not_a_grouping_key": True,
             "frame_generation": "off",
             "upscaling": "off unless the graphics preset turns it on",
@@ -631,6 +671,11 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
 
     write_json(output_dir, "gpus.json", {"metadata": metadata, "gpus": master_gpus})
     write_json(output_dir, "games.json", {"metadata": metadata, "games": games, "count": len(games)})
+    write_json(
+        output_dir,
+        "testbenches.json",
+        {"metadata": metadata, "testbenches": testbenches, "count": len(testbenches)},
+    )
     write_json(output_dir, "official.json", {"metadata": metadata, "records": official, "count": len(official)})
     write_json(
         output_dir,
@@ -650,6 +695,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
             "games": dashboard_games,
             "resolutions": resolutions,
             "graphics_presets": graphics_presets,
+            "testbenches": testbenches,
             "records": dashboard_records,
             "reviews": reviews_source.get("reviews", []),
             "picks": picks,

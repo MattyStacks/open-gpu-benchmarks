@@ -15,7 +15,10 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.8.0.0`, which adds a GitHub Sponsors button. v1.7.0.0
+Current version: `v1.9.0.0`, which adds official test benches: desktop GPUs
+are tested on a DDR5, a DDR4, and a DDR3 system, and the dashboard's
+**Platform** filter shows each as its own bar. v1.8.0.0 added a
+GitHub Sponsors button. v1.7.0.0
 added 309 reference GPU specs from NVIDIA, AMD, and Intel's own spec pages, with new fields for ray tracing, encoders, API
 versions, and each vendor's feature list. v1.6.0.0 records system RAM as
 numbers in the API: `memory_gb`, plus optional `memory_type` (`DDR5-6400`) and
@@ -37,6 +40,10 @@ official runs, no community runs, and 30 dashboard summaries, all Cyberpunk
   different products, so their results are never averaged together.
 - **Like with like.** Desktop and laptop GPUs never share a summary, and
   Windows and Linux runs are charted separately (Linux bars are striped).
+- **DDR5, DDR4, and DDR3 systems.** Official desktop runs name the test bench they ran
+  on. The **Platform** filter splits desktop into a DDR5 Bench, DDR4 Bench,
+  and DDR3 Bench, so the same card on two systems is two bars. Every platform
+  starts switched on.
 - **Native or upscaled, clearly labelled.** Some presets switch an upscaler
   on, so every bar names it (`DLSS Auto`, `FSR 2.1 Quality`) or says `Native`.
   Frame generation is never allowed.
@@ -51,6 +58,7 @@ official runs, no community runs, and 30 dashboard summaries, all Cyberpunk
 ```text
 data/gpus/<form_factor>/<gpu_vendor>/<id>.yaml         hardware catalog, one file per product
 data/games.yaml                                        game registry
+data/testbenches.yaml                                  the maintainer's test systems (official desktop runs)
 data/official/<gpu_id>/result_YYYYMMDD_<game_id>.yaml  maintainer runs
 data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml community runs (+ optional raw/ evidence)
                     ↓
@@ -62,7 +70,7 @@ site/benchmarks/, llms.txt   JavaScript-free copies for search engines and AI to
 
 Each result folder is named by a catalog ID, and each result file holds one
 day's runs as a `result:` list. The build groups runs by product, game,
-resolution, preset, upscaler, and OS. Generated output is gitignored and
+resolution, preset, upscaler, OS, and (official desktop runs only) test bench. Generated output is gitignored and
 rebuilt in CI.
 
 - How products are named and what a catalog file holds:
@@ -83,6 +91,7 @@ buttons.
 | `api/v1/official/<gpu_id>/summary.json`, `api/v1/community/<gpu_id>/summary.json` | One product's runs, grouped summaries, evidence, and exact machine details |
 | `api/v1/official.json`, `api/v1/community.json` | Every run record, one file each |
 | [`api/v1/games.json`](https://opengpubenchmarks.com/api/v1/games.json) | The game registry |
+| [`api/v1/testbenches.json`](https://opengpubenchmarks.com/api/v1/testbenches.json) | The test benches official desktop runs ran on |
 | [`benchmarks/`](https://opengpubenchmarks.com/benchmarks/), [`llms.txt`](https://opengpubenchmarks.com/llms.txt), [`llms-full.txt`](https://opengpubenchmarks.com/llms-full.txt) | The same summaries as plain HTML and text |
 
 Distro, kernel, Mesa, and Proton are recorded on every Linux run but aren't

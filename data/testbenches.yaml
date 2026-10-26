@@ -1,0 +1,64 @@
+# The maintainer's test machines. Every official desktop run names the one it
+# ran on with testbench_id, and the bench is a grouping key: the same GPU on a
+# DDR5 and a DDR4 system shows as two bars, never one average. The dashboard
+# labels each bench by its memory: "DDR5 Bench", "DDR4 Bench", "DDR3 Bench".
+# A DDR6 system becomes "DDR6 Bench" on its own; move primary: true to it. Laptops,
+# handhelds, and iGPUs are their own platforms and leave testbench_id out.
+# Community runs never use it; they describe their machine under system:.
+# The rules are in docs/COMMUNITY_SUBMISSIONS.md ("Test benches", testbench-*).
+#
+#   id               required: lowercase letters, digits, and single underscores.
+#                    Never change it once runs use it.
+#   name             required: what the dashboard and tables show
+#   status           required: active, planned, interim, or retired
+#   cpu              required: the CPU, as system.cpu names it
+#   memory_type      required: DDR type and speed, such as DDR5-6000. The part
+#                    before the dash names the bench (DDR5 Bench). A planned
+#                    bench may write just DDR3 until its speed is known.
+#   primary          true on exactly one bench: the main bench, and the one
+#                    community runs are compared with (community-outlier)
+#   memory_gb, memory_channels
+#                    required unless the bench is planned
+#   counts_as        another bench with the same DDR type whose summaries this
+#                    one joins; its runs keep their own CPU in the run detail
+#   platform, motherboard, storage, bios, notes
+#                    optional detail; never grouping keys
+testbenches:
+  - id: am5_9800x3d_ddr5
+    name: Ryzen 7 9800X3D · DDR5-6000
+    status: active
+    primary: true
+    platform: AM5
+    cpu: AMD Ryzen 7 9800X3D
+    memory_gb: 64
+    memory_type: DDR5-6000
+    memory_channels: 2
+    notes: The main bench from now on.
+  - id: am4_5600x3d_ddr4
+    name: Ryzen 5 5600X3D · DDR4-3200
+    status: active
+    platform: AM4
+    cpu: AMD Ryzen 5 5600X3D
+    memory_gb: 32
+    memory_type: DDR4-3200
+    memory_channels: 2
+  - id: lga1150_4790_ddr3
+    name: Core i7-4790 · DDR3
+    status: planned
+    platform: LGA1150
+    cpu: Intel Core i7-4790
+    memory_gb: 16
+    memory_type: DDR3
+    notes: Not yet confirmed working. Fill in the memory speed and channels, then set status to active.
+  - id: am5_9950x3d_ddr5
+    name: Ryzen 9 9950X3D · DDR5-6000
+    status: interim
+    platform: AM5
+    cpu: AMD Ryzen 9 9950X3D
+    memory_gb: 64
+    memory_type: DDR5-6000
+    memory_channels: 2
+    notes: >-
+      The maintainer's main PC, used before the 9800X3D bench. Once the RTX 5080 FE
+      is re-run on the 9800X3D, either add counts_as: am5_9800x3d_ddr5 (results within
+      margin of error) or delete these runs (clearly different).

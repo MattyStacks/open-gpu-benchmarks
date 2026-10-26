@@ -1,0 +1,20 @@
+# On the interim bench, which counts_as the primary one: it joins the
+# result_20261003_cyberpunk_2077.yaml summary and keeps its own CPU per run.
+gpu_id: rtx_4090_24gb_fe
+testbench_id: am5_9950x3d_ddr5
+benchmark_type: game
+game_id: cyberpunk_2077
+date: '2026-10-04'
+version: '2.12'
+synthetic: true
+driver: '551.23'
+result:
+- avg_fps: 180.0
+  p1_low: 148.0
+  resolution: 1440p
+  graphics_preset: Ultra
+system:
+  os: windows
+  cpu: AMD Ryzen 9 9950X3D 16-Core Processor
+proof:
+  method: other

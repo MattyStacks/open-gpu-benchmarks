@@ -21,12 +21,15 @@ those fields apply to the whole file. That includes --memory-type and
 --memory-channels: pass the same ones every time, or new runs start a _2 file.
 summary.json has no RAM type or channels, so when an option is left out the
 runs get DEFAULT_MEMORY_TYPE (DDR5-6000) or DEFAULT_MEMORY_CHANNELS (2), with a
-warning on screen.
+warning on screen. Official desktop runs name their test bench with --testbench
+(an ID from data/testbenches.yaml), which also fills in the RAM type and
+channels; a different bench for the same day goes in a _2 file too.
 Full instructions: docs/CYBERPUNK_BENCHMARK.md
 
     python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --dry-run
     python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe
     python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --memory-type DDR5-6000 --memory-channels 2
+    python scripts/import_cyberpunk.py --gpu-id rtx_5080_16gb_fe --source official --testbench am5_9800x3d_ddr5
 
 Runs with frame generation, V-Sync, or an FPS limit on are skipped, as are runs
 from a different GPU than --gpu-id. A run on the Custom preset needs a preset
@@ -82,7 +85,7 @@ FRAME_TIME_COLUMN = "frame time (ms)"
 # frames.csv is ignored when its average is further than this from summary.json's.
 FRAMES_AVG_TOLERANCE = 0.01
 # File-level fields: runs share a file only when all of these match.
-SETUP_KEYS = ("gpu_id", "submitted_by", "game_id", "version", "system", "proof")
+SETUP_KEYS = ("gpu_id", "testbench_id", "submitted_by", "game_id", "version", "system", "proof")
 RESOLUTIONS = {(1920, 1080): "1080p", (2560, 1440): "1440p", (3840, 2160): "4K"}
 # Upscaler quality indices, in the order of the game's menu. UserSettings.json
 # confirms DLSS 0 = Auto and FSR 2.1 1 = Quality; the rest follow that order.
@@ -360,6 +363,24 @@ def build_entry(data, preset, folder_name, stats):
     return entry
 
 
+def testbench_for(args, gpu, data_dir):
+    """The data/testbenches.yaml entry for --testbench, None when there is none,
+    or an error message: official desktop runs need one, nothing else may use one."""
+    benches = {bench["id"]: bench for bench in checks.load_testbenches(data_dir)[0]}
+    desktop = checks.spec(gpu, "classification", "form_factor") == "desktop"
+    if not args.testbench:
+        if args.source == "official" and desktop:
+            return f"--testbench is required for official desktop runs; one of: {', '.join(benches) or 'none in data/testbenches.yaml'}"
+        return None
+    if args.source != "official":
+        return "--testbench is for official runs only; community runs describe the machine with --memory-type and --memory-channels"
+    if not desktop:
+        return f"--testbench is for desktop GPUs only; {gpu['id']} is its own platform"
+    if args.testbench not in benches:
+        return f"Unknown --testbench '{args.testbench}'; one of: {', '.join(benches) or 'none in data/testbenches.yaml'}"
+    return benches[args.testbench]
+
+
 def memory_defaults(memory_type, memory_channels):
     """The RAM type and channels to record; a missing one gets its default and a warning."""
     defaulted = []
@@ -377,9 +398,11 @@ def memory_defaults(memory_type, memory_channels):
     return memory_type.strip(), memory_channels
 
 
-def build_run(data, gpu_id, source, os_name, submitted_by, date, memory_type="", memory_channels=None):
+def build_run(data, gpu_id, source, os_name, submitted_by, date, memory_type="", memory_channels=None, testbench_id=""):
     """The file-level fields shared by every run in one result file."""
     run = {"gpu_id": gpu_id}
+    if testbench_id:
+        run["testbench_id"] = testbench_id
     if source == "community" and submitted_by:
         run["submitted_by"] = submitted_by
     run.update({"benchmark_type": "game", "game_id": GAME_ID, "date": date})
@@ -514,6 +537,7 @@ def main(argv=None):
     parser.add_argument("--os", default="linux" if sys.platform.startswith("linux") else "windows", choices=checks.RESULT_OSES, help="Defaults to the OS this script runs on")
     parser.add_argument("--memory-type", default=None, help=f"Your RAM's type and speed; defaults to {DEFAULT_MEMORY_TYPE} with a warning")
     parser.add_argument("--memory-channels", type=int, default=None, help=f"RAM channels in use: 1 single, 2 dual, 4 quad, 8 on some servers; defaults to {DEFAULT_MEMORY_CHANNELS} with a warning")
+    parser.add_argument("--testbench", default="", help="Official desktop runs only (required there): the test bench ID from data/testbenches.yaml; fills in the RAM type and channels")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be imported and write nothing")
     parser.add_argument("--data-dir", default=str(checks.DATA_DIR), help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
@@ -533,6 +557,16 @@ def main(argv=None):
     if args.memory_channels is not None and not 1 <= args.memory_channels <= checks.MAX_MEMORY_CHANNELS:
         print(f"--memory-channels must be a whole number from 1 to {checks.MAX_MEMORY_CHANNELS}")
         return 1
+    bench = testbench_for(args, gpu, data_dir)
+    if isinstance(bench, str):
+        print(bench)
+        return 1
+    if bench:
+        # The bench knows the RAM that summary.json leaves out; options still win.
+        if args.memory_type is None and checks.MEMORY_TYPE_PATTERN.match(bench.get("memory_type", "")):
+            args.memory_type = bench["memory_type"]
+        if args.memory_channels is None:
+            args.memory_channels = bench.get("memory_channels")
     memory_type, memory_channels = memory_defaults(args.memory_type, args.memory_channels)
     if args.submitted_by and not checks.GITHUB_USER_PATTERN.match(args.submitted_by):
         print(f"--submitted-by '{args.submitted_by}' isn't a valid GitHub username")
@@ -591,7 +625,7 @@ def main(argv=None):
             skip(f"unknown preset '{preset_key}'"); continue
 
         date = run_date(folder.name)
-        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by, date, memory_type, memory_channels)
+        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by, date, memory_type, memory_channels, args.testbench)
         path = target_file(out_dir, date, run, planned)
         stats = frame_stats(folder, data)
         planned[path]["result"].append(build_entry(data, preset, folder.name, stats))

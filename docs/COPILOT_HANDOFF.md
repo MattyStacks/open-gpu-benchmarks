@@ -11,10 +11,18 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.8.0.0` (2026-10-24). Versions are now
+- Current version: `v1.9.0.0` (2026-10-25). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
+  - v1.9.0.0: official test benches (schema 0.18 → 0.19). The registry
+    `data/testbenches.yaml` (`checks.load_testbenches()`, `testbench-*`
+    rules) lists the maintainer's systems, each labeled by its memory type:
+    DDR5 Bench, DDR4 Bench, DDR3 Bench. Official desktop runs require a
+    top-level `testbench_id`, and the bench is a grouping key. The dashboard's
+    "Form factor" chips became **Platform**, with one chip per DDR type. Also `api/v1/testbenches.json`, a "Test bench" column in
+    `benchmarks/` and `llms-full.txt`, and `import_cyberpunk.py --testbench`.
+    See [Test benches](#test-benches).
   - v1.8.0.0: `.github/FUNDING.yml` adds the GitHub Sponsors button
     (`github: MattyStacks`). No code, data, or API change.
   - v1.7.0.0: 309 reference GPU files (79 NVIDIA, 203 AMD, 27 Intel) from
@@ -92,6 +100,7 @@ data/official/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
 data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
 data/community/<gpu_id>/raw/**                         optional raw evidence
 data/games.yaml                                        game registry (game_id -> name, type, year)
+data/testbenches.yaml                                  test bench registry (official desktop runs' testbench_id)
                  |
                  v
 python scripts/build.py
@@ -102,6 +111,7 @@ site/api/v1/official/<gpu_id>/summary.json
 site/api/v1/community/<gpu_id>/summary.json
 site/api/v1/dashboard.json
 site/api/v1/games.json
+site/api/v1/testbenches.json
 ```
 
 There are no source `summary.yaml` files. Each source file describes one
@@ -154,6 +164,54 @@ engines), `silicon.cache_mb` (last-level cache), `memory.speed_gbps`,
 `directx`, `vulkan`, `opengl`, `cuda`, and `technologies` (a list of the
 vendor's feature names as written). `memory.bus_width_bits` now allows
 32-4096. All are optional and pass through `gpus.json` unchanged.
+
+Schema `0.19` adds test benches. Every run record and summary carries
+`testbench_id` (the bench its summaries join, after `counts_as`),
+`testbench_source_id` (the bench the file names), `testbench_name`,
+`testbench_memory` (the DDR type, such as `DDR5`), and `testbench_label`
+(`DDR5 Bench`, the dashboard's chip and bar label). All five are
+`""` on community runs and on laptop, handheld, and iGPU runs.
+`testbench_id` joins the grouping key and `comparison_policy.group_by`;
+`testbench_source_id` is in every `implementations` entry, so a folded-in
+interim run stays traceable. `dashboard.json` gains a `testbenches` list, and
+the new `testbenches.json` holds the registry.
+
+### Test benches
+
+`data/testbenches.yaml` (`checks.load_testbenches()`) is a `testbenches:` list.
+Each entry needs `id`, `name`, `status` (`active`, `planned`, `interim`, or
+`retired`), `cpu`, and `memory_type` (`DDR5-6000`; a planned bench may write
+just `DDR3`), plus `memory_gb` and `memory_channels` unless it's `planned`.
+There is no generation field: the bench's label comes from the DDR type in
+`memory_type` (`checks.testbench_memory()`, `testbench_label()`), and
+`checks.testbench_rank()` orders benches newest memory first, so a DDR6
+system needs no code change; move `primary: true` to it. Exactly one bench is
+`primary: true` (`testbench-primary`). `counts_as: <bench>` folds a bench into
+another with the same DDR type (`testbench-counts-as`;
+`checks.resolve_testbench_id()`). The
+file is optional to the loader, but without it no official desktop run passes.
+
+The current benches: `am5_9800x3d_ddr5` (DDR5, primary),
+`am4_5600x3d_ddr4` (DDR4), `lga1150_4790_ddr3` (DDR3, planned until the
+system is confirmed working), and `am5_9950x3d_ddr5` (DDR5, interim: the
+maintainer's main PC, which holds the RTX 5080 FE runs). When the 5080 FE is
+re-run on the 9800X3D, either set `counts_as: am5_9800x3d_ddr5` on the
+9950X3D bench (results within margin of error) or delete its runs.
+
+`checks.check_testbench()` applies these result rules on game runs:
+`result-testbench-id` (an official desktop run without one, or a non-desktop
+run with one), `result-unknown-testbench`, `result-testbench-community` (a
+community file that sets one), and the `result-testbench-mismatch` warning
+(`checks.testbench_mismatches()`: `system.cpu` or memory disagrees with the
+bench; the CPU matches when either name contains the other). The
+`community-outlier` baseline (`checks.official_baseline()`) counts only
+official runs with no bench (non-desktop) or on the primary bench.
+
+`import_cyberpunk.py --testbench <id>` is required with `--source official`
+for a desktop GPU and refused otherwise. It writes `testbench_id` after
+`gpu_id`, takes `memory_type` and `memory_channels` from the bench (so no
+default warning), and `testbench_id` is in `SETUP_KEYS`, so a second bench on
+the same day goes in a `_2` file.
 
 **Reference catalog (v1.7.0.0).** `data/gpus/reference/` holds 309 files:
 NVIDIA desktop RTX 50/40/30/20 and GTX 16/10, plus RTX 50/40/30 laptop GPUs;
@@ -367,6 +425,10 @@ v1.0.0 these products live only in the test fixtures:
 
 - The source schema uses `graphics_preset`; do not add a `settings` fallback.
 - Desktop and laptop GPU records never share a summary group.
+- Official desktop runs name their test bench (`testbench_id`, from
+  `data/testbenches.yaml`), and the bench is a grouping key, so one GPU on two
+  benches is two summaries. Only official desktop runs use it; community
+  files and other form factors never do.
 - Frame generation must be disabled for comparable game runs.
 - Keep exact machine metadata with each run while charts display grouped
   summaries.
@@ -624,8 +686,14 @@ Leave the snapshot alone unless a test needs a new catalog entry.
 - `check_real_data()` asserts that `data/` passes every check and holds no
   `synthetic: true` run.
 
-The fixtures have 11 catalog GPU entries, 19 official result runs, 12
-community result runs, and 30 combined dashboard summaries. Six Linux runs pair
+The fixtures have 11 catalog GPU entries, 21 official result runs, 12
+community result runs, and 31 combined dashboard summaries. Their own
+`testbenches.yaml` copies the real benches, except that the interim 9950X3D
+bench `counts_as` the primary one. Every official desktop fixture is on the
+primary bench, except two: the RTX 4070 Super's Cyberpunk 2077 1440p Ultra run
+on the previous-gen bench (its own summary, next to the primary one), and an
+RTX 4090 Cyberpunk 2077 run on the interim bench that folds into the primary
+summary (`run_count` 2). `check_testbench_payload()` asserts both. Six Linux runs pair
 with a Windows run of the same profile: official RX 7900 XTX (Alan Wake 2,
 Baldur's Gate 3, Helldivers 2; CachyOS) and RTX 4090 (Cyberpunk 2077), and
 community ROG Ally (Cyberpunk 2077; Bazzite) and Arc A770 LE (Helldivers 2;
@@ -651,6 +719,24 @@ width. The
 benchmark table sorts by any column, searches IDs, codenames, and
 architectures, and expands each row into silicon details, price history,
 and the exact runs behind the number.
+
+**Platform chips.** The "Platform" chip row (`platforms()`,
+`renderFactorFilters()`) has one chip per test bench memory type, built from
+the data and sorted newest first ("DDR5 Bench", "DDR4 Bench", ...), then
+"Desktop · community", Laptop, Handheld, and iGPU. `platformKey()` is
+`desktop:<testbench_memory>` for official desktop runs and
+`desktop:community` for community ones. Every chip starts on
+(`state.factors = new Set(platforms())` in `initialize()`), so the first view
+shows every platform. Only platforms with records get a chip. `benchSuffix()` adds the bench
+to a bar label (`testbench_label`, or `testbench_name` when two benches share
+a label) only when the same GPU is on more than one bench in view. The table's
+"Platform" column (sort key `form`, by `platformRank()` then GPU name) shows
+`formatForm()`: "Desktop: DDR5", "Desktop: community", or the form factor (the
+chips say "DDR5 Bench"; the column leaves "Bench" out). Every bench badge uses the plain `form-desktop`
+style (no bench is shown as lesser); `platformClass()` gives only community
+rows a `form-desktop-community` shade mixed from `--form-desktop` (no new
+color tokens).
+Run details show "Bench: <name>" from `dashboard.json`'s `testbenches`.
 
 **Upscaled vs native.** Many presets turn an upscaler on, so one GPU can have
 several bars at one resolution and preset (4K High: FSR 2.1 Quality and

@@ -501,6 +501,41 @@ system:
 and `memory_type` is text (`""` when missing). The old free-text `memory:` key
 is now `memory_gb`.
 
+### Test benches (official runs only)
+
+The maintainer tests desktop GPUs on more than one system, so a reader can see
+what the same card does in a DDR5, DDR4, or DDR3 PC. The systems are listed in
+[`data/testbenches.yaml`](../data/testbenches.yaml), and the dashboard names
+each by its memory type:
+
+| Dashboard label | Bench | Memory |
+| --- | --- | --- |
+| DDR5 Bench (primary) | Ryzen 7 9800X3D | DDR5-6000 |
+| DDR4 Bench | Ryzen 5 5600X3D | DDR4-3200 |
+| DDR3 Bench (planned) | Core i7-4790 | DDR3 |
+
+The label comes from the part of `memory_type` before the dash, so a DDR6
+system becomes "DDR6 Bench" with no code change.
+
+Every official desktop run names its bench with a top-level `testbench_id`:
+
+```yaml
+gpu_id: rtx_5080_16gb_fe
+testbench_id: am5_9800x3d_ddr5
+```
+
+The bench is a grouping key, so the same GPU on two benches is two summaries
+and two bars on the chart, never one average. Laptops, handhelds, and iGPUs are
+their own platforms and leave `testbench_id` out. A bench with
+`counts_as: <other bench>` joins that bench's summaries (its runs keep their
+own CPU in the run detail), which is how an interim machine's runs can be
+folded into the primary bench's average.
+
+**Community runs never use `testbench_id`.** Describe your machine under
+`system:` (`cpu`, `memory_gb`, `memory_type`, `memory_channels`) instead. The
+`community-outlier` check compares community runs with official runs on the
+primary bench only.
+
 A raw PresentMon capture is the best evidence. Put it under the same GPU
 folder, for example:
 
@@ -670,6 +705,72 @@ Two entries share an `id`, or two share a `name` (ignoring case). Each edition
 or test gets one entry with its own ID and its own name, such as
 `Skyrim Special Edition` and `Skyrim Anniversary Edition`.
 
+#### `testbench-registry`
+
+`data/testbenches.yaml` doesn't hold a `testbenches:` list. Keep one
+`- id: ...` item per bench under `testbenches:`. See
+[Test benches](#test-benches-official-runs-only).
+
+#### `testbench-field`
+
+A `data/testbenches.yaml` entry is wrong. One of these happened:
+
+- `id`, `name`, `status`, `cpu`, or `memory_type` is missing or isn't text
+- `status` isn't `active`, `planned`, `interim`, or `retired`
+- `primary` isn't `true` or `false`
+- `memory_type` isn't a DDR type and speed, such as `DDR5-6000` (it names
+  the bench: "DDR5 Bench"). A planned bench may write just the type, such as
+  `DDR3`, until its speed is known.
+- `memory_gb` or `memory_channels` is missing on a bench that isn't
+  `planned`, or isn't a whole number (`64`, `2`).
+- a field isn't one of the fields listed at the top of the file
+
+#### `testbench-id-format`
+
+A bench `id` may only use lowercase letters, digits, and single underscores,
+such as `am5_9800x3d_ddr5`.
+
+#### `testbench-duplicate`
+
+Two entries share an `id`. Give each bench its own.
+
+#### `testbench-primary`
+
+Exactly one bench needs `primary: true`, and it must be `active` (or
+`interim`) and can't use `counts_as`. Community runs are compared with the
+primary bench's official runs.
+
+#### `testbench-counts-as`
+
+`counts_as` must name another bench in the file, with the same DDR type, that
+doesn't itself use `counts_as`.
+
+#### `result-testbench-id`
+
+An official desktop run has no `testbench_id`, or a laptop, handheld, or iGPU
+run has one. Official desktop runs name the bench they ran on, an ID from
+`data/testbenches.yaml`; other form factors are their own platform and leave it
+out.
+
+#### `result-unknown-testbench`
+
+`testbench_id` isn't an ID in `data/testbenches.yaml`. Fix the spelling, or add
+the bench to the registry in the same pull request.
+
+#### `result-testbench-community`
+
+A community file sets `testbench_id`. Benches are the maintainer's machines;
+remove the line and describe your system under `system:` instead.
+
+#### `result-testbench-mismatch`
+
+Warning only. The run's `system.cpu`, `memory_gb`, `memory_type`, or
+`memory_channels` disagrees with its bench in `data/testbenches.yaml`, which
+usually means the run is tagged with the wrong bench. The CPU matches when
+either name contains the other, so `AMD Ryzen 7 9800X3D 8-Core Processor`
+matches `AMD Ryzen 7 9800X3D`. On a planned bench only the memory type is
+compared, not its speed.
+
 #### `result-form-factor`
 
 `form_factor` in the result disagrees with the catalog entry. Remove the field so
@@ -816,14 +917,16 @@ the results were published.
 #### `community-outlier`
 
 The average FPS is more than 25% away from the matching official result (the gap is measured
-against the official average). Re-check
+against the official average). For desktop GPUs, only official runs on the
+primary test bench count as the baseline. Re-check
 the settings, explain the profile difference in the pull request, or remove the
 entry.
 
 #### `result-no-baseline`
 
 Warning only. No official result has the same product, game, resolution,
-preset, upscaling, and OS to compare against, so a maintainer reviews it by hand.
+preset, upscaling, and OS (on the primary test bench, for desktop GPUs) to
+compare against, so a maintainer reviews it by hand.
 
 #### `result-no-proof`
 

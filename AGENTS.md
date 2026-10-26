@@ -65,6 +65,15 @@ distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
 keys or extra chart bars. Linux-only fields on a windows run (or the
 reverse) are errors. Per-distro comparisons are DIY from the JSON.
 
+Official desktop runs name their test bench with `testbench_id`, an ID from
+`data/testbenches.yaml`, labeled by the DDR type in its `memory_type` ("DDR5
+Bench", "DDR4 Bench"; a DDR6 system needs no code change), with exactly one
+`primary`. The bench is a grouping key, so one GPU on two benches is two bars,
+and `counts_as` folds one bench into another. Laptops, handhelds, iGPUs, and
+community files never use it, and the community outlier baseline is the
+primary bench only. The dashboard's "Platform" chips show one chip per DDR
+type, all on when the page loads.
+
 System RAM is numeric: `system.memory_gb` (a number of GB, never `"32 GB"`),
 plus optional `memory_type` (`DDR5-6400`) and `memory_channels` (a whole
 number: 1 single, 2 dual, 4 quad). All three are optional, a missing one is

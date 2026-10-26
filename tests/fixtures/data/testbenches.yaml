@@ -1,0 +1,37 @@
+# Synthetic copy of data/testbenches.yaml for the fixtures. Unlike data/, the
+# interim bench here already counts_as the primary one, so the fixture build
+# covers both a GPU on two benches and a folded-in alias.
+testbenches:
+  - id: am5_9800x3d_ddr5
+    name: Ryzen 7 9800X3D · DDR5-6000
+    status: active
+    primary: true
+    platform: AM5
+    cpu: AMD Ryzen 7 9800X3D
+    memory_gb: 64
+    memory_type: DDR5-6000
+    memory_channels: 2
+  - id: am4_5600x3d_ddr4
+    name: Ryzen 5 5600X3D · DDR4-3200
+    status: active
+    platform: AM4
+    cpu: AMD Ryzen 5 5600X3D
+    memory_gb: 32
+    memory_type: DDR4-3200
+    memory_channels: 2
+  - id: lga1150_4790_ddr3
+    name: Core i7-4790 · DDR3
+    status: planned
+    platform: LGA1150
+    cpu: Intel Core i7-4790
+    memory_gb: 16
+    memory_type: DDR3
+  - id: am5_9950x3d_ddr5
+    name: Ryzen 9 9950X3D · DDR5-6000
+    status: interim
+    counts_as: am5_9800x3d_ddr5
+    platform: AM5
+    cpu: AMD Ryzen 9 9950X3D
+    memory_gb: 64
+    memory_type: DDR5-6000
+    memory_channels: 2

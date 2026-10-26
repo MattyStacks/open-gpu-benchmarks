@@ -3,7 +3,8 @@
 // site/api/v1/dashboard.json. No client JS, so crawlers read it too.
 //   <BenchChart gpu="rtx_5080_16gb_fe" game="cyberpunk_2077" resolution="1440p" />
 // Filters: gpu (one ID or a list), game (its ID in data/games.yaml), and
-// optional resolution, preset, os,
+// optional resolution, preset, os, bench (the test bench's memory type, such
+// as "DDR5"; runs without a bench always pass),
 // and source ("official" by default, "community", or "all").
 import { dashboard, normalize, type SummaryRecord } from "../lib/api";
 import { siteRoot } from "../lib/posts";
@@ -14,11 +15,12 @@ interface Props {
   resolution?: string;
   preset?: string;
   os?: "windows" | "linux";
+  bench?: string;
   source?: "official" | "community" | "all";
   title?: string;
 }
 
-const { gpu, game, resolution, preset, os, source = "official", title } = Astro.props;
+const { gpu, game, resolution, preset, os, bench, source = "official", title } = Astro.props;
 const gpus = new Set(Array.isArray(gpu) ? gpu : [gpu]);
 const { metadata, games, records } = dashboard();
 
@@ -30,6 +32,7 @@ const rows = records
       (!resolution || normalize(r.resolution) === normalize(resolution)) &&
       (!preset || normalize(r.graphics_preset) === normalize(preset)) &&
       (!os || r.os === os) &&
+      (!bench || !r.testbench_memory || r.testbench_memory === bench.toUpperCase()) &&
       (source === "all" || r.source === source),
   )
   .sort((a, b) => b.avg_fps - a.avg_fps);
@@ -39,7 +42,7 @@ if (!games.some((g) => g.id === game)) {
   throw new Error(`<BenchChart> game="${game}" isn't a game ID with published summaries. Use one of: ${known}.`);
 }
 if (!rows.length) {
-  const filters = JSON.stringify({ gpu, game, resolution, preset, os, source });
+  const filters = JSON.stringify({ gpu, game, resolution, preset, os, bench, source });
   throw new Error(`<BenchChart> found no published summaries for ${filters}. Check the IDs against site/api/v1/dashboard.json.`);
 }
 
@@ -49,6 +52,7 @@ const showGpu = vary("gpu_id");
 const showRes = !resolution && vary("resolution");
 const showOs = vary("os");
 const showSource = vary("source");
+const showBench = vary("testbench_id");
 
 const label = (r: SummaryRecord) => [showGpu ? r.gpu_name : null, r.graphics_preset].filter(Boolean).join(" · ");
 const sub = (r: SummaryRecord) =>
@@ -56,6 +60,7 @@ const sub = (r: SummaryRecord) =>
     showRes ? r.resolution : null,
     isNative(r.upscaling) ? "Native" : r.upscaling,
     showOs ? (r.os === "linux" ? "Linux" : "Windows") : null,
+    showBench && r.testbench_label ? r.testbench_label : null,
     showSource ? r.source : null,
     `${r.run_count} run${r.run_count === 1 ? "" : "s"}`,
   ]

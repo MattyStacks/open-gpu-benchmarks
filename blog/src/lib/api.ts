@@ -20,6 +20,11 @@ export type SummaryRecord = {
   graphics_preset: string;
   upscaling: string;
   os: string;
+  // Official desktop runs only; "" otherwise. One GPU on two benches is two summaries.
+  testbench_id: string;
+  // The bench's memory type ("DDR5") and label ("DDR5 Bench").
+  testbench_memory: string;
+  testbench_label: string;
   avg_fps: number;
   p1_low: number | null;
   run_count: number;

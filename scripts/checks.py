@@ -19,7 +19,7 @@ DATA_DIR = ROOT / "data"
 CATALOG_DOC = "data/gpus/README.md"
 RESULTS_DOC = "docs/COMMUNITY_SUBMISSIONS.md"
 # Rules with these prefixes are explained in RESULTS_DOC; the rest in CATALOG_DOC.
-RESULTS_DOC_PREFIXES = ("result-", "community-", "game-")
+RESULTS_DOC_PREFIXES = ("result-", "community-", "game-", "testbench-")
 REPO_URL = "https://github.com/MattyStacks/open-gpu-benchmarks/blob/main"
 
 GPU_VENDORS = ("amd", "intel", "nvidia")
@@ -906,7 +906,56 @@ def check_game_id(path, run, games_by_id, issues):
         )
 
 
-def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=(), games_by_id=None):
+def check_testbench(source, path, run, gpu, testbenches_by_id, issues):
+    """Official desktop game runs name their test bench; nothing else may."""
+    bench_id = run.get("testbench_id")
+    if source == "community":
+        if bench_id is not None:
+            issues.error(
+                path,
+                "result-testbench-community",
+                "testbench_id is for official runs only; remove it and describe your machine under system: (cpu, memory_gb, memory_type)",
+            )
+        return
+    if gpu is None:
+        return
+    form_factor = spec(gpu, "classification", "form_factor")
+    if form_factor != "desktop":
+        if bench_id is not None:
+            issues.error(path, "result-testbench-id", f"testbench_id is for desktop GPUs only; a {form_factor} is its own platform, so remove it")
+        return
+    if bench_id is None:
+        ids = ", ".join(testbenches_by_id) or "none registered yet"
+        issues.error(path, "result-testbench-id", f"official desktop runs need a testbench_id from data/testbenches.yaml ({ids})")
+        return
+    bench = testbenches_by_id.get(bench_id) if is_text(bench_id) else None
+    if bench is None:
+        issues.error(path, "result-unknown-testbench", f"testbench_id '{bench_id}' is not in data/testbenches.yaml")
+        return
+    for problem in testbench_mismatches(run.get("system") or {}, bench):
+        issues.warning(path, "result-testbench-mismatch", f"{problem}; check that testbench_id '{bench_id}' is the machine you ran it on")
+
+
+def testbench_mismatches(system, bench):
+    """Where a run's own system fields disagree with its registered bench."""
+    problems = []
+    cpu, bench_cpu = str(system.get("cpu") or "").strip().lower(), bench["cpu"].lower()
+    if cpu and bench_cpu not in cpu and cpu not in bench_cpu:
+        problems.append(f"system.cpu '{system['cpu']}' is not the bench's {bench['cpu']}")
+    for key in ("memory_gb", "memory_channels"):
+        if system.get(key) is not None and bench.get(key) is not None and system[key] != bench[key]:
+            problems.append(f"system.{key} {system[key]} is not the bench's {bench[key]}")
+    kind, bench_kind = str(system.get("memory_type") or "").strip().upper(), str(bench.get("memory_type") or "").upper()
+    if kind and bench_kind:
+        # A planned bench may not know its memory speed yet, so only the type is compared.
+        if bench["status"] == "planned" or "-" not in bench_kind:
+            kind, bench_kind = kind.split("-")[0], bench_kind.split("-")[0]
+        if kind != bench_kind:
+            problems.append(f"system.memory_type {system['memory_type']} is not the bench's {bench['memory_type']}")
+    return problems
+
+
+def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=(), games_by_id=None, testbenches_by_id=None):
     """Check one result file; return its result entries when they are usable."""
     if not isinstance(run, dict):
         issues.error(path, "result-not-mapping", "a result file holds fields at the left margin, not an empty file or a '-' list")
@@ -944,6 +993,7 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
     if run.get("frame_generation", False):
         issues.error(path, "result-frame-generation", "frame generation must be disabled for comparable game runs")
     check_system_os(path, run, issues)
+    check_testbench(source, path, run, gpu, testbenches_by_id or {}, issues)
     proof = run.get("proof")
     method = proof.get("method") if isinstance(proof, dict) else None
     if method is None:
@@ -1022,12 +1072,16 @@ def check_upscaling(path, run, entry, label, issues):
         )
 
 
-def official_baseline(run, entry, official_runs):
+def official_baseline(run, entry, official_runs, testbenches_by_id=None):
+    """The matching official average. Desktop runs only count from the primary
+    bench (or a bench that counts_as it); other form factors have no bench."""
     power = gpu_power_w(run)
+    primary = primary_testbench_id(testbenches_by_id or {})
     matches = [
         float(other_entry["avg_fps"])
         for other, other_entries in official_runs
         if other.get("gpu_id") == run.get("gpu_id") and other.get("game_id") == run.get("game_id")
+        and (other.get("testbench_id") is None or resolve_testbench_id(testbenches_by_id or {}, other["testbench_id"]) == primary)
         and result_os(other) == result_os(run)
         for other_entry in other_entries
         if other_entry.get("resolution") == entry.get("resolution")
@@ -1038,12 +1092,12 @@ def official_baseline(run, entry, official_runs):
     return sum(matches) / len(matches) if matches else None
 
 
-def check_outliers(community_runs, official_runs, issues):
+def check_outliers(community_runs, official_runs, issues, testbenches_by_id=None):
     for path, run, entries in community_runs:
         if run.get("benchmark_type", "game") != "game":
             continue
         for index, entry in enumerate(entries):
-            baseline = official_baseline(run, entry, official_runs)
+            baseline = official_baseline(run, entry, official_runs, testbenches_by_id)
             if baseline is None:
                 issues.warning(path, "result-no-baseline", f"result[{index}] has no matching official baseline; maintainer review is required")
             elif baseline > 0 and abs(float(entry["avg_fps"]) - baseline) / baseline > OUTLIER_RATIO:
@@ -1056,15 +1110,19 @@ def check_outliers(community_runs, official_runs, issues):
                 )
 
 
-def load_results(catalog, data_dir=DATA_DIR, games=None):
+def load_results(catalog, data_dir=DATA_DIR, games=None, testbenches=None):
     """Return ({source: [(path, run)]}, issues) for every usable result file.
 
-    games is the list from load_games(); when left out it is loaded here, and
-    its own problems are left for load_games' caller to report."""
+    games and testbenches are the lists from load_games() and load_testbenches();
+    when left out they are loaded here, and their own problems are left for
+    their loaders' callers to report."""
     issues = Issues()
     if games is None:
         games = load_games(data_dir)[0]
+    if testbenches is None:
+        testbenches = load_testbenches(data_dir)[0]
     games_by_id = {game["id"]: game for game in games}
+    testbenches_by_id = {bench["id"]: bench for bench in testbenches}
     catalog_by_id = {entry["id"]: entry for entry in catalog}
     reference_ids = {path.stem for path in (data_dir / "gpus" / "reference").rglob("*.yaml")}
     runs = {}
@@ -1076,11 +1134,11 @@ def load_results(catalog, data_dir=DATA_DIR, games=None):
             parsed, run = load_yaml_file(path, issues)
             if not parsed:
                 continue
-            entries = check_result_file(source, path, run, catalog_by_id, issues, reference_ids, games_by_id)
+            entries = check_result_file(source, path, run, catalog_by_id, issues, reference_ids, games_by_id, testbenches_by_id)
             if entries is not None:
                 runs[source].append((path, run, entries))
     official = [(run, entries) for _, run, entries in runs["official"] if run.get("benchmark_type", "game") == "game"]
-    check_outliers(runs["community"], official, issues)
+    check_outliers(runs["community"], official, issues, testbenches_by_id)
     return {source: [(path, run) for path, run, _ in items] for source, items in runs.items()}, issues
 
 
@@ -1166,6 +1224,149 @@ def load_games(data_dir=DATA_DIR):
         names[name.lower()] = game_id
         games[game_id] = {key: item[key] for key in GAME_FIELDS if item.get(key) is not None} | {"name": name}
     return list(games.values()), issues
+
+
+# --- Test benches --------------------------------------------------------------
+
+# data/testbenches.yaml: the maintainer's machines. Every official desktop run
+# names one with testbench_id, and the bench is a grouping key, so the same GPU
+# on a DDR5 and a DDR4 system shows as two bars. Community runs never use it.
+# A bench is labeled by its memory generation ("DDR5 Bench"), taken from
+# memory_type, so a DDR6 bench needs no code change.
+TESTBENCH_STATUSES = ("active", "planned", "interim", "retired")
+TESTBENCH_REQUIRED = ("id", "name", "status", "cpu", "memory_type")
+TESTBENCH_MEMORY = ("memory_gb", "memory_type", "memory_channels")
+TESTBENCH_FIELDS = (
+    *TESTBENCH_REQUIRED, "primary", "platform", *TESTBENCH_MEMORY,
+    "counts_as", "motherboard", "storage", "bios", "notes",
+)
+# Desktop benches use DDR memory. A planned bench may know its memory type
+# before its speed: DDR3 or DDR3-1600.
+TESTBENCH_MEMORY_KIND = re.compile(r"^DDR(\d+)$")
+TESTBENCH_MEMORY_TYPE = re.compile(r"^DDR\d+-\d{3,5}$")
+
+
+def testbench_memory(bench):
+    """The memory generation a bench is labeled by: 'DDR5-6000' -> 'DDR5'."""
+    return str(bench.get("memory_type") or "").split("-")[0].upper()
+
+
+def testbench_label(bench):
+    """What the dashboard calls a bench: "DDR5 Bench"."""
+    return f"{testbench_memory(bench)} Bench"
+
+
+def testbench_rank(bench):
+    """Sort key putting the newest memory first: DDR6, DDR5, DDR4, ..."""
+    match = TESTBENCH_MEMORY_KIND.match(testbench_memory(bench))
+    return -int(match.group(1)) if match else 0
+
+
+def check_testbench_entry(path, label, item, issues):
+    """Check one registry entry; return True when it can be used."""
+    if not isinstance(item, dict):
+        issues.error(path, "testbench-field", f"{label} must be a '- id: ...' item with its fields indented under it")
+        return False
+    for key in sorted(set(item) - set(TESTBENCH_FIELDS)):
+        issues.error(path, "testbench-field", f"{label}: unknown field '{key}' (allowed: {', '.join(TESTBENCH_FIELDS)})")
+    ok = True
+    for key in TESTBENCH_REQUIRED:
+        if not is_text(item.get(key)):
+            issues.error(path, "testbench-field", f"{label} needs '{key}' as text")
+            ok = False
+    bench_id = item.get("id")
+    if is_text(bench_id) and not ID_PATTERN.match(bench_id):
+        issues.error(path, "testbench-id-format", f"{label}: id '{bench_id}' may only use lowercase letters, digits, and single underscores")
+        ok = False
+    status = item.get("status")
+    if status is not None and status not in TESTBENCH_STATUSES:
+        issues.error(path, "testbench-field", f"{label}: status must be one of {', '.join(TESTBENCH_STATUSES)}")
+        ok = False
+    if item.get("primary") is not None and not isinstance(item["primary"], bool):
+        issues.error(path, "testbench-field", f"{label}: primary must be true or false")
+        ok = False
+    for key in ("memory_gb", "memory_channels"):
+        if item.get(key) is None and status != "planned":
+            issues.error(path, "testbench-field", f"{label} needs {key}; only a planned bench may leave its memory out")
+            ok = False
+    size, kind, channels = (item.get(key) for key in TESTBENCH_MEMORY)
+    if size is not None and not (is_number(size) and 0 < size <= MAX_MEMORY_GB):
+        issues.error(path, "testbench-field", f"{label}: memory_gb must be a number of GB, such as 32")
+        ok = False
+    if is_text(kind) and not (TESTBENCH_MEMORY_TYPE.match(kind) or (status == "planned" and TESTBENCH_MEMORY_KIND.match(kind))):
+        issues.error(path, "testbench-field", f"{label}: memory_type must look like 'DDR5-6000', which also names the bench (DDR5 Bench); a planned bench may write just 'DDR3'")
+        ok = False
+    if channels is not None and not (isinstance(channels, int) and not isinstance(channels, bool) and 1 <= channels <= MAX_MEMORY_CHANNELS):
+        issues.error(path, "testbench-field", f"{label}: memory_channels must be a whole number, such as 2")
+        ok = False
+    for key in ("platform", "counts_as", "motherboard", "storage", "bios", "notes"):
+        if item.get(key) is not None and not is_text(item[key]):
+            issues.error(path, "testbench-field", f"{label}: {key} must be text")
+            ok = False
+    return ok
+
+
+def load_testbenches(data_dir=DATA_DIR):
+    """Return (benches in file order, issues) from data/testbenches.yaml.
+
+    The file is optional, but without it no official desktop run can pass."""
+    issues = Issues()
+    path = data_dir / "testbenches.yaml"
+    if not path.is_file():
+        return [], issues
+    parsed, data = load_yaml_file(path, issues)
+    if not parsed:
+        return [], issues
+    items = data.get("testbenches") if isinstance(data, dict) else None
+    if not isinstance(items, list):
+        issues.error(path, "testbench-registry", "the file must hold a 'testbenches:' list with one '- id: ...' item per bench")
+        return [], issues
+    benches = {}
+    for number, item in enumerate(items, start=1):
+        label = f"bench {number}" + (f" ({item['id']})" if isinstance(item, dict) and is_text(item.get("id")) else "")
+        if not check_testbench_entry(path, label, item, issues):
+            continue
+        if item["id"] in benches:
+            issues.error(path, "testbench-duplicate", f"{label}: id '{item['id']}' is listed twice")
+            continue
+        benches[item["id"]] = {key: item[key] for key in TESTBENCH_FIELDS if item.get(key) is not None} | {
+            "primary": bool(item.get("primary", False)),
+        }
+    for bench in benches.values():
+        target_id = bench.get("counts_as")
+        if target_id is None:
+            continue
+        target = benches.get(target_id)
+        label = f"bench {bench['id']}"
+        if target is None or target_id == bench["id"]:
+            issues.error(path, "testbench-counts-as", f"{label}: counts_as '{target_id}' must be another bench in this file")
+        elif target.get("counts_as"):
+            issues.error(path, "testbench-counts-as", f"{label}: counts_as '{target_id}' itself counts as another bench; point at that one")
+        elif testbench_memory(target) != testbench_memory(bench):
+            issues.error(
+                path,
+                "testbench-counts-as",
+                f"{label}: counts_as '{target_id}' is a {testbench_label(target)}, not a {testbench_label(bench)}",
+            )
+    primaries = [bench["id"] for bench in benches.values() if bench["primary"]]
+    if benches and len(primaries) != 1:
+        found = ", ".join(primaries) or "none"
+        issues.error(path, "testbench-primary", f"exactly one bench needs primary: true (found: {found}); community runs are compared with it")
+    for bench_id in primaries:
+        bench = benches[bench_id]
+        if bench.get("counts_as") or bench["status"] not in ("active", "interim"):
+            issues.error(path, "testbench-primary", f"bench {bench_id}: the primary bench must be active and can't use counts_as")
+    return list(benches.values()), issues
+
+
+def resolve_testbench_id(testbenches_by_id, bench_id):
+    """The bench a run's summaries join: its counts_as target, or itself."""
+    bench = testbenches_by_id.get(bench_id) or {}
+    return bench.get("counts_as") or bench_id
+
+
+def primary_testbench_id(testbenches_by_id):
+    return next((bench_id for bench_id, bench in testbenches_by_id.items() if bench.get("primary")), None)
 
 
 # --- Featured picks ------------------------------------------------------------

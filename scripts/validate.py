@@ -2,7 +2,7 @@
 
     python scripts/validate.py            # everything
     python scripts/validate.py catalog    # data/gpus/**, data/games.yaml, and data/picks.yaml
-    python scripts/validate.py results    # data/games.yaml, data/official/**, and data/community/**
+    python scripts/validate.py results    # data/games.yaml, data/testbenches.yaml, data/official/**, and data/community/**
     python scripts/validate.py --data-dir tests/fixtures/data   # the synthetic test fixtures
 
 Every rule lives in scripts/checks.py; build.py runs the same checks.
@@ -39,8 +39,10 @@ def main(argv=None):
         picks, pick_issues = checks.load_picks(catalog, data_dir)
         failed |= checks.report(pick_issues, f"Featured picks ({len(picks)} of {len(checks.PICK_SLOTS)} slots)")
     if args.target in ("all", "results"):
+        testbenches, testbench_issues = checks.load_testbenches(data_dir)
+        failed |= checks.report(testbench_issues, f"Test benches ({len(testbenches)} entries)")
         # Catalog problems are reported by the catalog check; results only need the IDs.
-        runs, result_issues = checks.load_results(catalog, data_dir, games)
+        runs, result_issues = checks.load_results(catalog, data_dir, games, testbenches)
         count = sum(len(items) for items in runs.values())
         failed |= checks.report(result_issues, f"Results ({count} files)")
     return 1 if failed else 0

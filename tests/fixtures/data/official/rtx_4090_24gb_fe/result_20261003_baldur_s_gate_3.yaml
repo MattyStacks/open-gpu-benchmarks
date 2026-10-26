@@ -1,4 +1,5 @@
 gpu_id: rtx_4090_24gb_fe
+testbench_id: am5_9800x3d_ddr5
 benchmark_type: game
 game_id: baldurs_gate_3
 date: '2026-10-03'

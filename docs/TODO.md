@@ -94,6 +94,25 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Data and submissions
 
+- [ ] **Fix the VRAM column (bug since 1.6.0.0).** `site/index.html` declares
+  `formatMemory` twice: the spec one (`formatMemory(record)`, VRAM size and
+  type) and the run-detail one (`formatMemory(run)`, system RAM). The second
+  wins, so the table's VRAM column shows system RAM, such as "64 GB DDR5-6000
+  dual channel". Rename the run-detail one (for example `formatSystemMemory`).
+
+- [ ] **Test bench follow-ups** (shipped in 1.9.0.0; design in
+  [TEST_BENCHES_PLAN.md](TEST_BENCHES_PLAN.md)).
+  - Re-run the RTX 5080 FE on the 9800X3D bench, then either set
+    `counts_as: am5_9800x3d_ddr5` on `am5_9950x3d_ddr5` (within margin of
+    error) or delete the 9950X3D runs (clearly different).
+  - Confirm the i7-4790 bench works, fill in its DDR3 speed and channels, and
+    set it to `status: active`.
+  - Sort community desktop runs into the DDR bench chips by their
+    `memory_type` prefix, instead of one "Desktop · community" chip.
+  - A "platform scaling" view: one GPU, one bar per bench, each as a % of the
+    primary bench.
+  - A blog post explaining the benches (POST bump, author-written).
+
 - [ ] **Use the run `date`** (API schema 0.14) now that every run has one.
   Ideas: a historical chart of a product's results over time (driver and game
   updates), a "since" filter or download option for the JSON, and a rule or
@@ -142,6 +161,43 @@ Follow-ups to average-only results and `proof.method` (PR #13).
     adds a label.
   - An "Official benchmark review" or "Report a bad result" form could reuse
     the same bot (see the items below).
+- [ ] **Let the bot process attached or pasted result files.** Issue #36 (an
+  RTX 5080 FE Open GPU Benchmarker run) is a free-form issue with the
+  `benchmark` label and only an attached `.yaml`. The bot answered "Tick the
+  CC BY 4.0 box", which can't be done without the form. Process #36 by hand,
+  or with the bot once this lands.
+  - Fix first: when `issue_to_result.py` finds neither the form's headings nor
+    a file, say so and link both forms, instead of reporting the first
+    missing field.
+  - A "Benchmark result (file)" issue form, with the same `benchmark` label so
+    the same workflow runs. It has one box to drag a file into or paste it,
+    optional GPU/Game/Resolution/Preset/OS/Date for raw captures, the Credit
+    box, and the CC BY 4.0 box. Also detect free-form issues that have
+    attachment links or a fenced yaml/json block.
+  - Consent: a ticked box, or the sentence "I release these results under
+    CC BY 4.0" typed in the issue. A license line inside the file doesn't
+    count.
+  - Downloads: only `https://github.com/user-attachments/files/<id>/<name>`,
+    redirecting only to `*.githubusercontent.com`. Cap the file count, the
+    size, and the time. Save into the workflow's `$OUT`, never the checkout.
+    Verified on #36: no auth needed, and `.yaml` attachments are accepted.
+  - Result YAML/JSON (for example the Open GPU Benchmarker export,
+    `toYaml()` in the openbenchmarker repo): load it with a SafeLoader that
+    rejects aliases. Keep `detected`, `diagnostics`, and the other extras.
+    Set `submitted_by` only from the Credit box. Drop `testbench_id`,
+    `source`, and `synthetic`. The bot writes its own header and file name.
+  - Raw captures: a PresentMon/MangoHud CSV through a function pulled out of
+    `parse.main()`, and a Cyberpunk `summary.json` (+ `frames.csv`) through
+    `import_cyberpunk`, with the date from the form.
+  - What the bot can't convert gets a new exit code: the bot replies, adds a
+    `needs-maintainer` label, and a maintainer follows a new
+    `docs/PROCESSING_ISSUES.md`.
+  - Tests: issue fixtures for each kind, with a hidden `--attachment-dir` so
+    there's no network. Extend `check_issue_form_matches_script()` and
+    `check_bot_safety()`.
+  - In the openbenchmarker repo: point the export's "Save as … in a PR"
+    header and the submit steps at the issue form. Maybe prefill it by URL
+    (`?template=benchmark_file.yml&<field>=<yaml>`).
 - [ ] **Flesh out official benchmarks and cross-check them against community
   data.** Official runs must stay close to community runs for the same
   product, game, resolution, preset, and OS. Today only the reverse exists:

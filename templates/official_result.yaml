@@ -2,12 +2,15 @@
 # The build derives all official GPU summaries from individual result files.
 #
 # For Cyberpunk 2077's built-in benchmark, run
-#   python scripts/import_cyberpunk.py --source official --gpu-id <gpu_id>
+#   python scripts/import_cyberpunk.py --source official --gpu-id <gpu_id> --testbench <bench id>
 # instead of writing this by hand (docs/CYBERPUNK_BENCHMARK.md).
 #
 # result is a YAML list. The leading "-" is required for each separate
 # resolution/preset profile, and each profile becomes an independent run.
 gpu_id: rtx_5080_16gb_fe
+# Desktop GPUs only (required there): the machine it ran on, an id from
+# data/testbenches.yaml. Leave it out for laptops, handhelds, and iGPUs.
+testbench_id: am5_9800x3d_ddr5
 benchmark_type: game
 # New game? Add it to data/games.yaml in the same pull request (id, name, type,
 # year, plus steam_appid or url when the game has one). See docs/COMMUNITY_SUBMISSIONS.md.
@@ -27,6 +30,7 @@ result:
     p1_low: 98.1
 system:
   os: windows # Required: windows or linux
+  cpu: AMD Ryzen 7 9800X3D # Should match the bench; a mismatch is a warning
   driver: "561.09"
 proof:
   method: presentmon # Required; see templates/community_submission.yaml for the tools

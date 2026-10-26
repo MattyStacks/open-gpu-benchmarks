@@ -190,8 +190,9 @@ npm --prefix blog run build              # after build.py; writes site/blog/
 git diff --check
 ```
 
-Don't commit generated `site/api/` or `site/blog/` files, `blog/node_modules/`, or `.venv/`. Create Git tags only
-when asked.
+Don't commit generated `site/api/` or `site/blog/` files, `blog/node_modules/`, or `.venv/`. After a version-bump pull request
+merges into `main`, tag the merge commit `v<RELEASE_VERSION>` (annotated) and push the tag; see
+"Tag every release" in `CLAUDE.md`.
 
 ## Clean up before finishing
 

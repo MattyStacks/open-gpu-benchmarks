@@ -11,10 +11,13 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.10.0.0` (2026-10-26). Versions are now
+- Current version: `v1.11.0.0` (2026-10-26). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it.
+  - v1.11.0.0: every release gets an annotated `v<version>` tag on its
+    merge commit once the pull request merges; tags v1.3.0.0 through
+    v1.10.0.0 were backfilled.
   - v1.10.0.0: fixes the summaries table's VRAM column, which showed the
     test system's RAM because two dashboard functions were both named
     `formatMemory`. `test_build.check_unique_site_functions()` now fails on
@@ -1127,4 +1130,7 @@ For a release:
    [CHANGELOG.md](../CHANGELOG.md) under the new version heading.
 3. Run the build, validation, compile checks, and `git diff --check`.
 4. Do not commit `site/api/` unless repository policy changes.
-5. Create a Git tag only when explicitly requested after review.
+5. After the pull request merges, create an annotated tag
+   `v<RELEASE_VERSION>` on the merge commit (first line
+   `vX.Y.Z.W: <short summary>`, then a short paragraph) and push it. Every
+   release from v1.1.0.0 on has one; data-only submissions get none.

@@ -76,7 +76,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.10.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.11.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -397,7 +397,13 @@ serves the blog with live reload at <http://localhost:4321/blog/>, drafts
 included. Stop every server when you're done with it, and run
 `deactivate` at the end of the session (see "Wrapping up a session").
 
-Create a Git tag only when explicitly asked, after the commit is reviewed.
+Tag every release. After a version-bump pull request merges into `main`,
+create an annotated tag `v<RELEASE_VERSION>` (such as `v1.11.0.0`) on the
+merge commit and push it, without being asked. The message's first line is
+`vX.Y.Z.W: <short summary>`, then a blank line and a short paragraph (see
+`git tag -n20 v1.10.0.0`). Never tag a feature branch or an unmerged commit.
+Data-only result submissions aren't releases and get no tag; the DATA bump
+that batches them does.
 
 ## Wrapping up a session
 

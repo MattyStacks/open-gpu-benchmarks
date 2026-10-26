@@ -318,8 +318,9 @@ For every bump:
    ```
 
 6. Do not commit generated `site/api/` or `site/blog/` files unless repository policy changes.
-7. Create a Git tag only when explicitly requested after the commit is
-   reviewed.
+7. After a version-bump pull request merges into `main`, create an
+   annotated tag `v<RELEASE_VERSION>` on the merge commit and push it.
+   Never tag a feature branch; data-only submissions get no tag.
 
 ## Python environment and cleanup
 

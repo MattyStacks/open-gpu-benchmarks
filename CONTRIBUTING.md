@@ -495,6 +495,11 @@ Raw files stay in Git but are not published in the site's JSON.
 Each product gets one file in the catalog. The full rules are in
 [data/gpus/README.md](data/gpus/README.md); this is the short version.
 
+Rather not write it yourself? Open an
+[Add a GPU](https://github.com/MattyStacks/open-gpu-benchmarks/issues/new?template=gpu_request.yml)
+issue with the product and a link to its spec page. A maintainer hands it to
+the `gpu-catalog` Copilot agent, which opens the pull request.
+
 1. **Search first.** Look under `data/gpus/` for your product. If it's there,
    use its ID and skip the rest.
 2. **Pick the folder:** `data/gpus/<form_factor>/<gpu_vendor>/`.
@@ -514,7 +519,11 @@ Each product gets one file in the catalog. The full rules are in
 4. **Find the reference file.** Look in `data/gpus/reference/<gpu_vendor>/`
    for your GPU's shared specs, such as `rtx_5060_ti_16gb.yaml` or
    `z1_extreme.yaml`. If it's there, set `base:` to its file name and only
-   write what your product changes or adds. If it's missing, copy
+   write what your product changes or adds: a factory OC, a lower power
+   limit, its outputs. Desktop and laptop IDs start with the base's ID
+   (`arc_a310_4gb_sparkle_eco`). See
+   [When a board differs from its reference](data/gpus/README.md#when-a-board-differs-from-its-reference).
+   If it's missing, copy
    [catalog_reference.yaml](templates/catalog_reference.yaml) to create it,
    or skip `base` and fill in every section of your product yourself.
 5. **Copy the template** for your form factor and name the copy `<id>.yaml`:
@@ -537,6 +546,8 @@ Each product gets one file in the catalog. The full rules are in
    [Sources](data/gpus/README.md#sources).
 8. **Check it:** `python scripts/validate.py catalog`.
 9. **Open a pull request**, on its own or together with your first result.
+   A pull request that only adds GPUs makes a DATA version bump (see
+   [CHANGELOG.md](CHANGELOG.md#versioning)).
 
 ### Worked examples
 

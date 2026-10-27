@@ -158,6 +158,14 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   `identity.gpu_vendor`, and may not carry `base`, `skus`, `platform`,
   `identity.board_partner`, or `classification.form_factor`. Results never
   point at a reference ID.
+- A product writes only what its board changes from the reference (clocks,
+  power, memory speed, outputs) plus product-only fields. gpus.json lists
+  each change with the reference's value in `reference_overrides`. Chip
+  fields (codename, architecture, `silicon.*`, memory size, type, bus width,
+  `shared`) never change on a board (`base-chip-override`); a repeated
+  reference value warns (`base-redundant`); desktop and laptop IDs start
+  with `<base>_` (`base-id`). `data/gpus/README.md` ("When a board differs
+  from its reference") maps spec-sheet terms to fields.
 - `platform` (device specs) is only for handheld and laptop products;
   `identity.board_partner` is only for desktop products.
 - Every catalog file lists `sources`: a block list of `{url, title, accessed,
@@ -219,6 +227,13 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   or `.github/`. Keep its prompt in step with the data rules here, and
   `test_build.check_bot_safety()` keeps its setup job read-only and
   secret-free.
+- The `gpu-catalog` Copilot agent (`.github/agents/gpu-catalog.agent.md`)
+  adds one or more catalog products from the maker's spec pages, started
+  from an "Add a GPU" issue (`.github/ISSUE_TEMPLATE/gpu_request.yml`, label
+  `gpu-request`, no workflow) or a prompt in the agents panel. It may add
+  product files and, when no reference matches, a reference file, and it
+  makes the pull request's DATA bump; it never edits code, `.github/`, or
+  existing catalog files.
 - `.github/CODEOWNERS` is the maintainer list, and a code owner's approval is
   required to merge. Adding a maintainer means adding their `@username` there
   and giving them write access. Never add a bot.
@@ -300,14 +315,14 @@ Record every behavioral, data-contract, dashboard, or workflow change under
 Versions are `MAJOR.MINOR.DATA.POST`, always four parts:
 - MAJOR is a breaking data contract or API change.
 - MINOR is any code change.
-- DATA is newly published runs.
+- DATA is newly published runs or catalog GPUs.
 - POST is a new or materially updated blog post.
 
 Every PR except a data-only result submission bumps the version, chosen by
 the biggest change it contains, and the bump resets the parts to its right.
 A license, docs-workflow, or code change is MINOR. Data-only submissions
 (including bot PRs from benchmark issues) are batched into a later DATA bump
-by a maintainer.
+by a maintainer. A catalog pull request (new GPUs) makes its own DATA bump.
 
 For every bump:
 

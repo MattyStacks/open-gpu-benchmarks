@@ -18,7 +18,7 @@ parts (tags are `vMAJOR.MINOR.DATA.POST`):
 
 - **MAJOR**: a breaking change to the data contract or the API.
 - **MINOR**: any code change (features and fixes alike).
-- **DATA**: newly published benchmark runs.
+- **DATA**: newly published benchmark runs or catalog GPUs.
 - **POST**: a new or materially updated blog post, guide, or review.
 
 Bumping one part resets the parts to its right (1.1.2.3 then 1.2.0.0). Every
@@ -26,10 +26,38 @@ pull request bumps the version, except a data-only result submission: the
 biggest kind of change in the pull request picks the part, and its lines move
 from `Unreleased` to the new version's heading. Community data PRs don't add
 their own line or bump; a maintainer batches them into a DATA release with one
-short line, for example "12 new Cyberpunk 2077 runs". A post gets "New post:
-`<title>`". Earlier releases used three parts.
+short line, for example "12 new Cyberpunk 2077 runs". A pull request that adds
+catalog GPUs makes its own DATA bump, with one "Catalog: <name> (`<id>`)" line
+per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
+
+## 1.13.0.0 - 2026-10-27
+
+### Added
+
+- A `gpu-catalog` Copilot agent (`.github/agents/gpu-catalog.agent.md`) adds
+  one or more GPUs to the catalog from their makers' spec pages or PDF spec
+  sheets. Assign it an issue from the new **Add a GPU** form (label
+  `gpu-request`), or start it from the Copilot agents panel. It builds each
+  card on its reference file, writes only what the board changes (such as a
+  lower clock or power limit) plus the card's own details, and opens one
+  pull request with a DATA version bump. `copilot-setup-steps.yml` installs
+  `pdftotext` for the spec sheets.
+- `gpus.json` lists what each card changes from its reference design in
+  `reference_overrides` (`field`, `value`, and the `reference` value), and
+  the dashboard's expanded row shows them as "Changed from the reference"
+  (schema 0.20).
+- New catalog checks: `base-chip-override` (a board can't change the chip,
+  shader counts, or memory size, type, or bus), `base-redundant` (a warning
+  for a value that repeats the reference), and `base-id` (desktop and
+  laptop IDs start with their base's ID).
+- `data/gpus/README.md` explains which values a board may change and maps
+  spec-sheet terms (Graphics Clock, TBP, and so on) to catalog fields.
+
+### Changed
+
+- DATA releases also cover new catalog GPUs.
 
 ## 1.12.0.0 - 2026-10-26
 

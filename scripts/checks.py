@@ -105,6 +105,22 @@ PLATFORM_FORM_FACTORS = ("handheld", "laptop")
 # Product-only fields a reference file may not carry; form_factor belongs to the product.
 REFERENCE_FORBIDDEN = (("base",), ("skus",), ("platform",), ("identity", "board_partner"), ("classification", "form_factor"))
 REFERENCE_REQUIRED = (("id",), ("identity", "name"), ("identity", "gpu_vendor"))
+# Fields that describe the chip and its memory. A product that changes one of
+# these is a different GPU and needs its own reference file.
+BASE_CHIP_FIELDS = (
+    ("identity", "codename"),
+    ("classification", "architecture"),
+    *(("silicon", field) for field in CATALOG_FIELDS["silicon"]),
+    ("memory", "capacity_gb"),
+    ("memory", "type"),
+    ("memory", "bus_width_bits"),
+    ("memory", "shared"),
+)
+# Never compared with the reference: the retail name always differs, and
+# base-mismatch checks gpu_vendor.
+BASE_UNCOMPARED = (("identity", "name"), ("identity", "gpu_vendor"))
+# Product IDs on these form factors start with their base's ID.
+BASE_PREFIX_FORM_FACTORS = ("desktop", "laptop")
 CATALOG_REQUIRED = (
     ("id",),
     ("identity", "name"),
@@ -489,10 +505,37 @@ def resolve_base(path, entry, references, issues):
     if product_vendor is not None and product_vendor != reference_vendor:
         issues.error(path, "base-mismatch", f"gpu_vendor '{product_vendor}' differs from base '{base}' ({reference_vendor})")
     merged = merge_specs(reference, entry)
+    merged["reference_overrides"] = reference_overrides(path, entry, reference, issues)
     sources = merge_sources(entry.get("sources"), reference.get("sources"))
     if sources:
         merged["sources"] = sources
     return merged
+
+
+def reference_overrides(path, entry, reference, issues):
+    """Return the board values that differ from the reference, as {field, value, reference}.
+    A changed chip field is an error and a repeated reference value a warning."""
+    base = entry["base"]
+    overrides = []
+    for section, fields in CATALOG_FIELDS.items():
+        for field in fields:
+            field_path = (section, field)
+            value, reference_value = spec(entry, *field_path), spec(reference, *field_path)
+            if value is None or reference_value is None or field_path in BASE_UNCOMPARED:
+                continue
+            label = f"{section}.{field}"
+            if value == reference_value:
+                issues.warning(path, "base-redundant", f"'{label}' repeats base '{base}' ({value}); delete it, it's inherited")
+            elif field_path in BASE_CHIP_FIELDS:
+                issues.error(
+                    path,
+                    "base-chip-override",
+                    f"'{label}' is {value} here but {reference_value} in base '{base}'; "
+                    "a different chip or memory configuration needs its own reference file",
+                )
+            else:
+                overrides.append({"field": label, "value": value, "reference": reference_value})
+    return overrides
 
 
 def merge_sources(product_sources, reference_sources):
@@ -548,6 +591,9 @@ def check_catalog_id(path, entry, issues):
     }
     if form_factor in shapes and not shapes[form_factor][0]:
         issues.error(path, "id-format", f"{form_factor} ids follow {shapes[form_factor][1]}")
+    base = entry.get("base")
+    if form_factor in BASE_PREFIX_FORM_FACTORS and is_text(base) and not gpu_id.startswith(f"{base}_"):
+        issues.error(path, "base-id", f"id '{gpu_id}' must start with its base: '{base}_...'")
 
     if "generic" in tokens:
         if form_factor != "laptop":
@@ -619,6 +665,8 @@ def load_catalog(data_dir=DATA_DIR):
     for path, entry in products:
         check_catalog_fields(path, entry, issues)
         merged = resolve_base(path, entry, references, issues)
+        if merged is entry:
+            merged = {**entry, "reference_overrides": []}
         check_required(path, merged, CATALOG_REQUIRED, issues)
         check_catalog_values(path, merged, issues)
         check_product_sections(path, merged, issues)

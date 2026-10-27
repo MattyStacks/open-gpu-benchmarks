@@ -149,7 +149,10 @@ commit screenshots, videos, or zips.
   reference entry when one exists, and `sources` with https URLs. The GPU
   vendor's own spec page (nvidia.com, amd.com, intel.com) wins every
   conflict. Cite the card's own vendor page as well as any overview page.
-  Never invent a spec value; leave unknown fields out.
+  Never invent a spec value; leave unknown fields out. Write only what the
+  board changes from its reference (see "When a board differs from its
+  reference" in `data/gpus/README.md`). Unlike the `gpu-catalog` agent, you
+  still don't bump the version: a benchmark PR stays data-only.
 - **Game:** add a `data/games.yaml` entry with `id`, `name`, `type`, and
   `year`. Add `steam_appid`, `igdb_id`, or `url` only after you have checked
   them on the store page. Never guess them.

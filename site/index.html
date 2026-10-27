@@ -94,7 +94,7 @@
     .detail-row td { background:color-mix(in srgb,var(--panel-strong) 55%,transparent); padding:20px; } .spec-detail { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:20px; text-align:left; } .spec-detail h3 { font-size:13px; margin:0 0 4px; } .spec-sub { color:var(--muted); font-size:12px; margin-bottom:12px; }
     .spec-chips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px; } .spec-chip { border:1px solid var(--border); border-radius:7px; padding:3px 8px; font-size:11px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; background:var(--panel); }
     .mini-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; } .mini-stat { border:1px solid var(--border); border-radius:9px; padding:9px 10px; background:var(--panel); } .mini-stat span { display:block; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); } .mini-stat strong { display:block; font-size:12px; margin-top:3px; font-weight:600; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
-    .feature-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; } .feature-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:4px 10px; background:var(--panel); font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .feature-chip span { color:var(--muted); font-size:10px; text-transform:uppercase; } .feature-chip b { color:var(--text); font-weight:600; }
+    .feature-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; } .feature-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:4px 10px; background:var(--panel); font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .feature-chip span { color:var(--muted); font-size:10px; text-transform:uppercase; } .feature-chip b { color:var(--text); font-weight:600; } .feature-chip .override-ref { text-transform:none; }
     .spec-notes { color:var(--muted); font-size:12px; line-height:1.55; } .source-list { display:grid; gap:6px; margin:4px 0 0; padding:0; list-style:none; font-size:12px; } .source-list a { color:var(--accent, inherit); word-break:break-word; } .source-list .detail { color:var(--muted); } .price-list { display:grid; gap:6px; margin:12px 0 18px; } .price-row { display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:8px; padding:7px 10px; background:var(--panel); font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; } .price-row span:last-child { color:var(--text); font-weight:600; }
     .result-meta { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; color:var(--muted); font-size:12px; margin:8px 0 12px; } .run-list { display:grid; gap:8px; margin-bottom:14px; } .run-item { border:1px solid var(--border); border-radius:9px; padding:9px 11px; background:var(--panel); font-size:11px; color:var(--muted); line-height:1.5; } .run-item strong { color:var(--text); font-size:12px; display:block; margin-bottom:2px; }
     .detail-links { display:flex; gap:8px; flex-wrap:wrap; } .detail-links a { text-decoration:none; }
@@ -933,6 +933,28 @@
       }).join("")}</ul>`;
     }
 
+    // Values a board changed from its base reference (reference_overrides in gpus.json).
+    const OVERRIDE_LABELS = {
+      "clocks.base_mhz": "Base clock", "clocks.game_mhz": "Game clock", "clocks.boost_mhz": "Boost clock",
+      "clocks.mem_mhz": "Memory clock", "memory.speed_gbps": "Memory speed", "memory.bandwidth_gbs": "Bandwidth",
+      "power.tdp_w": "TDP", "power.psu_w": "Min. PSU", "power.connectors": "Power conn.", "power.pcie": "PCIe",
+      "features.outputs": "Display out",
+    };
+    const OVERRIDE_UNITS = [["_mhz", "MHz"], ["_gbps", "Gbps"], ["_gbs", "GB/s"], ["_w", "W"]];
+
+    function formatOverrideValue(field, value) {
+      if (Array.isArray(value)) return value.join(", ");
+      const unit = OVERRIDE_UNITS.find(([suffix]) => field.endsWith(suffix));
+      return unit && typeof value === "number" ? formatUnit(value, unit[1]) : String(value);
+    }
+
+    function formatOverrides(record) {
+      const overrides = specValue(record, "reference_overrides");
+      if (!Array.isArray(overrides) || !overrides.length) return "";
+      return `<p class="section-kicker">Changed from the reference</p><div class="feature-row">${overrides.map(({ field, value, reference }) =>
+        `<span class="feature-chip"><span>${escapeHtml(OVERRIDE_LABELS[field] || field)}</span><b>${escapeHtml(formatOverrideValue(field, value))}</b><span class="override-ref">ref ${escapeHtml(formatOverrideValue(field, reference))}</span></span>`).join("")}</div>`;
+    }
+
     function formatFeatureChips(record) {
       const features = [["DLSS", specValue(record, "features", "dlss")],
         ["FSR", specValue(record, "features", "fsr")],
@@ -1053,6 +1075,7 @@
           <h3>${escapeHtml(record.gpu_name)}</h3>
           <p class="spec-sub">${escapeHtml(specValue(record, "classification", "architecture") || "Architecture unknown")}</p>
           ${chips.length ? `<div class="spec-chips">${chips.map((chip) => `<span class="spec-chip">${escapeHtml(chip)}</span>`).join("")}</div>` : ""}
+          ${formatOverrides(record)}
           <div class="mini-grid">
             <div class="mini-stat"><span>Die size</span><strong>${escapeHtml(formatDie(record))}</strong></div>
             <div class="mini-stat"><span>Transistors</span><strong>${escapeHtml(formatTransistors(record))}</strong></div>

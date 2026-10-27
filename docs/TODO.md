@@ -54,8 +54,7 @@ The four-step catalog plan is complete. These items finish it off.
   could become an error for `data/` once the fixtures stop needing it.
 - [ ] **Try the `gpu-catalog` Copilot agent on the SPARKLE Arc A310 ECO.**
   Its first real request, once 1.13.0.0 is on `main`: run "Copilot Setup
-  Steps" once, create the `gpu-request` label if it doesn't exist, then open
-  an "Add a GPU" issue with the spec sheet
+  Steps" once, then open an "Add a GPU" issue with the spec sheet
   (<https://www.sparkle.com.tw/files/20240729114820639.pdf>) or prompt the
   agent directly. Add `www.sparkle.com.tw` (and other board makers' sites as
   they come up) to the Copilot internet-access allowlist if downloads are

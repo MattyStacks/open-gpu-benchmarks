@@ -63,7 +63,8 @@ def minimal_entry(**overrides):
     return entry
 
 
-TEST_REF = "test_ref_8gb"
+# Products start with their base ID (base-id), so the test product builds on test_gpu_8gb.
+TEST_REF = "test_gpu_8gb"
 TEST_REF_PATH = f"gpus/reference/nvidia/{TEST_REF}.yaml"
 
 
@@ -1002,17 +1003,22 @@ def check_bot_safety():
     # Attachments are fetched from GitHub, never read from a path the workflow passes.
     assert "--attachment-dir" not in bot, "--attachment-dir is for tests only"
 
-    # The benchmark-processor Copilot agent and its setup job: one job, read-only, no secrets.
-    agent = (ROOT / ".github" / "agents" / "benchmark-processor.agent.md").read_text(encoding="utf-8")
-    frontmatter = agent.split("---\n")[1] if agent.startswith("---\n") else ""
-    profile = yaml.safe_load(frontmatter) or {}
-    assert profile.get("name") == "benchmark-processor" and profile.get("description"), "the agent profile needs a name and description"
+    # The Copilot agents and their setup job: one job, read-only, no secrets.
+    agents = {name: (ROOT / ".github" / "agents" / f"{name}.agent.md").read_text(encoding="utf-8") for name in ("benchmark-processor", "gpu-catalog")}
+    for name, agent in agents.items():
+        frontmatter = agent.split("---\n")[1] if agent.startswith("---\n") else ""
+        profile = yaml.safe_load(frontmatter) or {}
+        assert profile.get("name") == name and profile.get("description"), f"the {name} agent profile needs a name and description"
     setup_text = (workflows / "copilot-setup-steps.yml").read_text(encoding="utf-8")
     setup = yaml.safe_load(setup_text)
     assert list(setup["jobs"]) == ["copilot-setup-steps"], "Copilot reads only a single job named copilot-setup-steps"
     assert setup["jobs"]["copilot-setup-steps"]["permissions"] == {"contents": "read"}
-    for text in (agent, setup_text):
-        assert "secrets." not in text and "CLOUDFLARE" not in text, "the Copilot agent never sees secrets"
+    for text in (*agents.values(), setup_text):
+        assert "secrets." not in text and "CLOUDFLARE" not in text, "the Copilot agents never see secrets"
+    # The Add a GPU form feeds the gpu-catalog agent; no workflow acts on it.
+    gpu_form = yaml.safe_load((ROOT / ".github" / "ISSUE_TEMPLATE" / "gpu_request.yml").read_text(encoding="utf-8"))
+    assert gpu_form["labels"] == ["gpu-request"], gpu_form["labels"]
+    assert "gpu-request" not in bot, "benchmark-issue.yml only handles benchmark issues"
 
 
 def check_reports_every_error_and_build_stops():
@@ -1071,6 +1077,31 @@ def check_base_merge():
         "https://example.com/board", "https://example.com/shared", "https://example.com/chip",
     ], "sources add up, product first, each URL once"
     assert merged["sources"][1]["covers"] == ["release", "silicon"], "covers combine for a shared URL"
+    assert merged["reference_overrides"] == [
+        {"field": "clocks.boost_mhz", "value": 2100, "reference": 2000},
+        {"field": "features.outputs", "value": ["DP 2.1"], "reference": ["HDMI 2.1"]},
+    ], "board changes are recorded with the reference's value; the name and product-only fields aren't"
+
+
+def check_reference_overrides():
+    """A board may change clocks and power, never the chip; repeats and ID prefixes are checked."""
+    reference = reference_entry(power={"tdp_w": 75})
+    eco = minimal_entry(base=TEST_REF, clocks={"boost_mhz": 1000}, power={"tdp_w": 50, "psu_w": 350})
+    del eco["memory"]  # inherited
+    issues = run_checks({TEST_REF_PATH: reference, TEST_CATALOG_PATH: eco})
+    assert not issues.errors and {issue.rule for issue in issues} == {"sources-missing"}, [issue.format() for issue in issues]
+    expect_rule("base-chip-override", {TEST_REF_PATH: reference, TEST_CATALOG_PATH: minimal_entry(base=TEST_REF, silicon={"shader_cores": 2048})})
+    expect_rule("base-chip-override", {TEST_REF_PATH: reference, TEST_CATALOG_PATH: minimal_entry(base=TEST_REF, memory={"capacity_gb": 8, "type": "GDDR7"})})
+    expect_rule("base-redundant", {TEST_REF_PATH: reference, TEST_CATALOG_PATH: minimal_entry(base=TEST_REF, power={"tdp_w": 75})}, level="warning")
+    other = "other_gpu_8gb_test_brand"
+    expect_rule("base-id", {TEST_REF_PATH: reference, f"gpus/desktop/nvidia/{other}.yaml": minimal_entry(id=other, base=TEST_REF)})
+    # Handhelds are named after the device, so their IDs don't start with the chip's.
+    handheld = minimal_entry(id="test_device_8gb", base=TEST_REF, classification={"form_factor": "handheld"})
+    issues = run_checks({TEST_REF_PATH: reference, "gpus/handheld/nvidia/test_device_8gb.yaml": handheld})
+    assert "base-id" not in {issue.rule for issue in issues}, [issue.format() for issue in issues]
+    # The merged entry always has the list, empty without a base.
+    catalog, _ = checks.load_catalog(FIXTURES_DIR)
+    assert all(entry["reference_overrides"] == [] for entry in catalog), "the fixtures change no reference values"
 
 
 def check_templates_are_valid():
@@ -1128,7 +1159,7 @@ def check_real_data():
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.19"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.20"
     group_by = master["metadata"]["comparison_policy"]["group_by"]
     assert {"os", "upscaling", "game_id", "testbench_id"} <= set(group_by) and "game" not in group_by
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
@@ -1197,6 +1228,7 @@ def main():
     check_reports_every_error_and_build_stops()
     check_minimal_entry_builds()
     check_base_merge()
+    check_reference_overrides()
     check_rules_are_documented()
     check_templates_are_valid()
     check_real_data()

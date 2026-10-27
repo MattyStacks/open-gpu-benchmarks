@@ -1,0 +1,43 @@
+name: Add a GPU
+description: Ask for a graphics card, laptop, or handheld to be added to the GPU catalog.
+title: "Add GPU: "
+labels:
+  - gpu-request
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A maintainer assigns this to the `gpu-catalog` Copilot agent, which adds each product from its maker's spec page and opens a pull request for review. Nothing changes until a maintainer approves it.
+
+        Check the [catalog](https://github.com/MattyStacks/open-gpu-benchmarks/tree/main/data/gpus) first: memory size and board partner make a different product, but a color variant is the same one.
+  - type: textarea
+    id: products
+    attributes:
+      label: Products
+      description: >-
+        One product per line, as the maker names it, with its part number if you know it.
+        Several products are fine.
+      placeholder: |
+        SPARKLE Intel Arc A310 ECO (SA310C-4G)
+    validations:
+      required: true
+  - type: textarea
+    id: spec_links
+    attributes:
+      label: Spec pages
+      description: >-
+        A link to each product's spec page or spec sheet (PDF) on the maker's own site.
+        These are the sources the catalog cites.
+      placeholder: |
+        https://www.sparkle.com.tw/files/20240729114820639.pdf
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: >-
+        Anything else, such as how this board differs from the reference card
+        (a factory overclock, a lower power limit, a low-profile cooler).
+    validations:
+      required: false

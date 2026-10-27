@@ -24,9 +24,18 @@ identity:
   board_partner: NVIDIA          # who made the board: MSI, ASUS, Sapphire, ...
 classification:
   form_factor: desktop           # required
-# Override reference values only where this board differs, for example a factory OC:
+# Override reference values only where this board differs, and leave out values
+# that equal the reference's (base-redundant). The build lists each change with
+# the reference's value in gpus.json (reference_overrides). A factory OC:
 # clocks:
 #   boost_mhz: 2610
+# A lower-power board, such as a low-profile card:
+# clocks:
+#   game_mhz: 1000
+# power:
+#   tdp_w: 50
+# Chip fields (silicon, memory size/type/bus, codename, architecture) never
+# change on a board: a different value means a different reference.
 power:
   connectors:
     - 16-pin 12VHPWR

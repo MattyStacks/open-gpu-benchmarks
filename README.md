@@ -15,7 +15,10 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.12.0.0`: the benchmark bot also takes an attached or
+Current version: `v1.13.0.0`: a `gpu-catalog` Copilot agent adds GPUs from
+their makers' spec pages, from an "Add a GPU" issue or the agents panel, and
+each card's changes from its reference design (a lower clock or power limit,
+say) show in the API and on the dashboard. v1.12.0.0: the benchmark bot also takes an attached or
 pasted result file, submitting an issue is the CC BY 4.0 agreement, with no
 boxes to tick, and a `benchmark-processor` Copilot agent turns any other
 benchmark issue into a pull request ready to approve. v1.11.0.0 tags every release on GitHub. v1.10.0.0
@@ -92,7 +95,7 @@ buttons.
 | Endpoint | What's in it |
 | -------- | ------------ |
 | [`api/v1/dashboard.json`](https://opengpubenchmarks.com/api/v1/dashboard.json) | The grouped summaries, games, and picks the dashboard charts |
-| [`api/v1/gpus.json`](https://opengpubenchmarks.com/api/v1/gpus.json) | The master file: every catalog GPU with its specs, statistics, and links to its summaries |
+| [`api/v1/gpus.json`](https://opengpubenchmarks.com/api/v1/gpus.json) | The master file: every catalog GPU with its specs, what its board changes from the reference design (`reference_overrides`), statistics, and links to its summaries |
 | `api/v1/official/<gpu_id>/summary.json`, `api/v1/community/<gpu_id>/summary.json` | One product's runs, grouped summaries, evidence, and exact machine details |
 | `api/v1/official.json`, `api/v1/community.json` | Every run record, one file each |
 | [`api/v1/games.json`](https://opengpubenchmarks.com/api/v1/games.json) | The game registry |

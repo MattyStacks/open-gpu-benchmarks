@@ -23,7 +23,8 @@ These three steps are required for every PR:
    `## <version> - <date>` under a fresh empty `Unreleased`, and update the
    current-version references in `README.md`, `docs/COPILOT_HANDOFF.md`, and
    `CLAUDE.md`. Data-only submissions (including bot PRs) are batched into a
-   later DATA bump by a maintainer.
+   later DATA bump by a maintainer. A catalog pull request (new GPUs) makes
+   its own DATA bump.
 
 ## Branching
 
@@ -133,6 +134,10 @@ App"):
 - the `benchmark-processor` Copilot agent (`.github/agents/`, environment
   from `.github/workflows/copilot-setup-steps.yml`) edits only data and never
   bumps the version; keep its prompt in step with the data rules;
+- the `gpu-catalog` Copilot agent (`.github/agents/gpu-catalog.agent.md`),
+  started from an "Add a GPU" issue (`gpu-request` label, no workflow) or the
+  agents panel, adds only new catalog (and, when needed, reference) files
+  plus the DATA bump lines, never code or `.github/`;
 - keep the forms' labels and options in step with `issue_to_result.py`
   (`FIELDS`, `FILE_FIELDS`) and `tests/fixtures/issues/`.
 
@@ -171,8 +176,8 @@ Featured picks: `data/picks.yaml` feeds the dashboard's three GPU cards.
 - The `pick-*` rules live in `checks.load_picks()`.
 
 Versions: `MAJOR.MINOR.DATA.POST`, always four parts. MAJOR is a breaking
-data or API change, MINOR is any code change, DATA is newly published runs,
-and POST is a new or updated post. A bump resets the parts to its right.
+data or API change, MINOR is any code change, DATA is newly published runs
+or catalog GPUs, and POST is a new or updated post. A bump resets the parts to its right.
 Every PR but a data-only submission bumps it (see the top of this file).
 `RELEASE_VERSION` must equal the newest `CHANGELOG.md` release.
 
@@ -181,6 +186,11 @@ Catalog data must be accurate. Cite real pages in `sources`, list in
 guess it. The GPU vendor's own spec page (nvidia.com, amd.com, intel.com) wins
 every conflict; Wikipedia or TechPowerUp only fill fields the vendor doesn't
 publish. Cite the card's own vendor page as well as any overview page.
+A product writes only what its board changes from its `base` reference
+(clocks, power, memory speed, outputs), and gpus.json lists each change in
+`reference_overrides`; chip fields never change on a board
+(`base-chip-override`). See "When a board differs from its reference" in
+`data/gpus/README.md`.
 
 ## Checks to run before finishing
 

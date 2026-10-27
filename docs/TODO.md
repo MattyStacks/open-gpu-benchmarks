@@ -52,6 +52,18 @@ The four-step catalog plan is complete. These items finish it off.
 - [ ] **Make `_generic` laptop IDs an error.** Since v1.0.0 the published
   catalog has no `_generic` IDs (only the test fixtures do), so `id-generic`
   could become an error for `data/` once the fixtures stop needing it.
+- [ ] **Try the `gpu-catalog` Copilot agent on the SPARKLE Arc A310 ECO.**
+  Its first real request, once 1.13.0.0 is on `main`: run "Copilot Setup
+  Steps" once, create the `gpu-request` label if it doesn't exist, then open
+  an "Add a GPU" issue with the spec sheet
+  (<https://www.sparkle.com.tw/files/20240729114820639.pdf>) or prompt the
+  agent directly. Add `www.sparkle.com.tw` (and other board makers' sites as
+  they come up) to the Copilot internet-access allowlist if downloads are
+  blocked. Expect `clocks.game_mhz: 1000` and `power.tdp_w: 50` in
+  `reference_overrides`.
+- [ ] **Board fields for partner cards.** Length, slot width, low profile,
+  fan count, and weight go in `notes` today. Structured fields (a `board`
+  section) would let the dashboard filter by them.
 - [ ] **Re-add the pre-1.0 catalog products when they get real runs.** v1.0.0
   reset `data/gpus/` to the RTX 5080 FE. The old entries (RTX 4090/4080
   Super/4070 Super FE, RX 7900 XTX, Arc A770 LE, the laptops, and the
@@ -348,6 +360,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   `main`. Checked 2026-10-13: `main` has no protection or rulesets.
 
 ## Recently completed
+
+- **v1.13.0.0 (2026-10-27, branch `feat/gpu-catalog-agent`): GPU catalog agent**
+  - The `gpu-catalog` Copilot agent and the "Add a GPU" issue form;
+    `reference_overrides` in gpus.json and on the dashboard (schema 0.20);
+    the `base-chip-override`, `base-redundant`, and `base-id` checks.
 
 - **v1.8.0.0 (2026-10-24, branch `chore/github-sponsors`): GitHub Sponsors**
   - Added `.github/FUNDING.yml` for the repo's Sponsor button.

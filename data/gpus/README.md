@@ -19,7 +19,10 @@ a 16 GB and a 24 GB handheld, always get their own files.
 - **API.** `site/api/v1/gpus.json` lists every product with its specs, its
   `official` and `community` statistics, and links to its per-product
   `summary.json` files. A product that uses `base:` is returned already merged
-  with its [reference file](#reference-files).
+  with its [reference file](#reference-files), and its `reference_overrides`
+  list names every value the board changed from that reference (see
+  [When a board differs from its reference](#when-a-board-differs-from-its-reference)).
+  The dashboard shows them as "Changed from the reference" in the expanded row.
 
 ## Where a file goes
 
@@ -51,11 +54,10 @@ data/gpus/
     └── amd/z1_extreme.yaml
 ```
 
-The file names above are examples of the layout. The published catalog holds
-one product today, `desktop/nvidia/rtx_5080_16gb_fe.yaml`, built on
-`reference/nvidia/rtx_5080_16gb.yaml`. The `reference/` folder also holds 309
-reference files (79 NVIDIA, 203 AMD, 27 Intel) taken from the vendors' spec
-pages, ready for products to use with `base:`. See
+The file names above are examples of the layout; the folders hold the real
+products. The `reference/` folder holds 309 reference files (79 NVIDIA, 203
+AMD, 27 Intel) taken from the vendors' spec pages, ready for products to use
+with `base:`. See
 [Where the reference specs come from](#where-the-reference-specs-come-from).
 
 The `reference/` folder is different: it holds
@@ -247,8 +249,9 @@ release:
   msrp_usd: 1599
 ```
 
-A factory-overclocked partner card would add only what differs, such as
-`clocks.boost_mhz`.
+A factory-overclocked or lower-power partner card adds only what differs, such
+as `clocks.boost_mhz` or `power.tdp_w`. See
+[When a board differs from its reference](#when-a-board-differs-from-its-reference).
 
 What goes where:
 
@@ -272,6 +275,9 @@ Rules for reference files:
   product.
 - **`base` is optional.** A product used by only one device can hold every
   field itself. `steam_deck_oled_16gb` does.
+- **Desktop and laptop IDs start with their base:** `arc_a310_4gb_sparkle_eco`
+  builds on `arc_a310_4gb` (`base-id`). Handhelds are named after the device,
+  so they don't.
 
 ### Where the reference specs come from
 
@@ -294,6 +300,110 @@ The vendor's own page always wins:
 When a vendor lists two configurations (`512 or 640` stream processors), or
 its numbers contradict each other, the field is left out and `notes` says
 why. TechPowerUp blocks automated fetches, so no reference cites it yet.
+
+## When a board differs from its reference
+
+Board makers often change a reference design: a factory overclock, a lower
+power limit for a low-profile card, a different power connector or PSU
+recommendation. Write those values in the product file, and only those. The
+build keeps the reference's value alongside the board's in
+`reference_overrides`, so nothing is lost:
+
+```yaml
+# gpus.json, merged entry for arc_a310_4gb_sparkle_eco
+reference_overrides:
+  - field: clocks.game_mhz
+    value: 1000
+    reference: 2000
+  - field: power.tdp_w
+    value: 50
+    reference: 75
+```
+
+What a product may change, and what it may not:
+
+| A board may change (recorded in `reference_overrides`) | Never changes on a board (`base-chip-override`) |
+| ------------------------------------------------------ | ----------------------------------------------- |
+| `clocks.*` (factory OC, lower-power versions)          | `identity.codename`, `classification.architecture` |
+| `power.tdp_w`, `power.psu_w`, `power.connectors`, `power.pcie` | every `silicon` field (shaders, RT units, cache, ...) |
+| `memory.speed_gbps`, `memory.bandwidth_gbs` (memory OC) | `memory.capacity_gb`, `memory.type`, `memory.bus_width_bits`, `memory.shared` |
+| `features.*`, such as a board's own `outputs`          |                                                 |
+
+A value that differs in the right-hand column means a different GPU: a cut-down
+chip, another memory size, or GDDR5 instead of GDDR6. Use or add the reference
+file for that GPU instead. If a board maker's sheet disagrees with the GPU
+vendor's chip specs, the vendor's page wins; leave the chip field out.
+
+Don't repeat a reference value in the product: it's inherited, and the checks
+warn (`base-redundant`). Fields only products have (`release`, `skus`,
+`identity.board_partner`, `features.outputs` when the reference has none) are
+never compared.
+
+### Reading a board maker's spec sheet
+
+Board makers name the same thing differently. Use the field the reference
+already uses, so the two values line up:
+
+| On the spec sheet                                         | Field |
+| --------------------------------------------------------- | ----- |
+| Graphics Clock (Intel), Game Clock (AMD)                  | `clocks.game_mhz` |
+| Boost Clock                                               | `clocks.boost_mhz` |
+| Base Clock                                                | `clocks.base_mhz` |
+| Memory speed or effective memory clock (`15.5 Gbps`)      | `memory.speed_gbps` |
+| Memory bandwidth                                          | `memory.bandwidth_gbs` |
+| TBP, TDP, TGP, total board power, graphics card power     | `power.tdp_w` |
+| Recommended or minimum PSU, required system power         | `power.psu_w` |
+| Power connectors (leave out when the sheet doesn't say)    | `power.connectors` |
+| PCI Express configuration                                 | `power.pcie` |
+| Display outputs: `HDMI 2.0b`, `DP 2.1b x3`, `Mini DisplayPort x2` | `features.outputs` |
+| Part number or model number (not the EAN or UPC barcode)  | `skus` |
+| Release or launch date                                    | `release.date` |
+
+- **Clocks with more than one mode.** When a sheet lists an OC mode and a
+  default (gaming) mode, use the default, the clock the card runs out of the
+  box, and put the OC-mode clock in `notes`.
+- **Details without a field.** Card length, slot width, low profile, fan
+  count, and weight go in `notes`.
+- **Notes replace the reference's notes.** Say what this board changes and
+  what it is, in one or two sentences.
+
+A worked example: SPARKLE's Arc A310 ECO runs a 1000 MHz graphics clock and a
+50 W board power, where Intel's A310 runs 2000 MHz and 75 W. Its file writes
+only those two values and the product-only details:
+
+```yaml
+id: arc_a310_4gb_sparkle_eco
+base: arc_a310_4gb
+identity:
+  name: SPARKLE Intel Arc A310 ECO
+  gpu_vendor: intel
+  board_partner: SPARKLE
+classification:
+  form_factor: desktop
+clocks:
+  game_mhz: 1000                 # reference: 2000
+power:
+  tdp_w: 50                      # reference: 75
+  psu_w: 350
+release:
+  date: '2024-06-24'
+features:
+  outputs:
+    - HDMI 2.0b
+    - Mini DisplayPort x2
+skus:
+  - SA310C-4G
+notes: SPARKLE's 50 W version of the Arc A310, with a 1000 MHz graphics clock instead of 2000 MHz; low profile, single slot, single fan.
+sources:
+  - url: https://www.sparkle.com.tw/files/20240729114820639.pdf
+    title: SPARKLE Intel Arc A310 ECO spec sheet
+    accessed: '2026-10-27'
+    covers:
+      - clocks
+      - power
+      - release
+      - features
+```
 
 ## Product-only fields
 
@@ -617,6 +727,27 @@ product can't use another product as its base.
 The product's `identity.gpu_vendor` differs from its reference's. A product
 always has the same GPU vendor as the chip it's built on. Fix whichever one is
 wrong.
+
+#### `base-chip-override`
+
+A product changes a chip-level value it inherits from its `base`: the codename,
+the architecture, a `silicon` field, or the memory size, type, bus width, or
+`shared`. Boards change clocks and power, not the chip. A different value here
+means a different GPU, so point `base` at the reference for that GPU, or add one.
+See [When a board differs from its reference](#when-a-board-differs-from-its-reference).
+
+#### `base-redundant`
+
+This is a warning. The product writes a value that equals its reference's, so
+it's already inherited. Delete the line from the product file, so the file
+holds only what the board changes.
+
+#### `base-id`
+
+A desktop or laptop product's ID must start with its `base` ID and an
+underscore: `arc_a310_4gb_sparkle_eco` builds on `arc_a310_4gb`. Either the
+`base` names the wrong reference or the ID names the wrong GPU. Handhelds are
+named after the device and don't need it.
 
 #### `pick-slot`
 

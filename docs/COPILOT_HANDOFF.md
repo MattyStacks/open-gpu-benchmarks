@@ -11,10 +11,15 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.12.0.0` (2026-10-26). Versions are now
+- Current version: `v1.13.0.0` (2026-10-27). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
-  submission bumps it.
+  submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.13.0.0: a `gpu-catalog` Copilot agent adds one or more GPUs from
+    their makers' spec pages (from an "Add a GPU" issue or the agents
+    panel) and makes the DATA bump. Board changes from the reference are
+    listed in gpus.json as `reference_overrides` (schema 0.20) and on the
+    dashboard; new rules `base-chip-override`, `base-redundant`, `base-id`.
   - v1.12.0.0: a `benchmark-processor` Copilot agent turns an assigned
     benchmark issue into a ready-to-approve data pull request, and
     `parse.py` takes `--date`. The benchmark bot takes one attached or pasted result file
@@ -341,6 +346,17 @@ Schema `0.8` adds reference files.
   products, so references never appear in `gpus.json`. A result that
   points at one fails as `result-reference-id`. `gpus.json` entries carry
   `base`.
+- **Board changes (schema 0.20).** `checks.reference_overrides()` compares
+  every field a product writes with its reference. A differing chip field
+  (`BASE_CHIP_FIELDS`: codename, architecture, `silicon.*`, memory
+  capacity/type/bus/shared) is `base-chip-override`; an equal value is the
+  `base-redundant` warning; any other difference goes in the merged entry's
+  `reference_overrides`, a list of `{field, value, reference}` in
+  `CATALOG_FIELDS` order (`[]` without a base or changes). `identity.name`,
+  `identity.gpu_vendor`, `notes`, `sources`, and fields the reference lacks
+  are never compared. The dashboard's expanded row shows the list as
+  "Changed from the reference" chips (`formatOverrides()`). Desktop and
+  laptop IDs must start with `<base>_` (`base-id`, in `check_catalog_id`).
 - **Product-only fields.**
   - `identity.board_partner`: desktop only.
   - `skus`: a string list.
@@ -1051,6 +1067,21 @@ may need `objects.githubusercontent.com` on the repository's Copilot
 internet-access allowlist. `check_bot_safety` checks the profile's
 frontmatter and that the setup job is the only job, read-only, and
 secret-free. Setup and usage are in [PROCESSING_ISSUES.md](PROCESSING_ISSUES.md).
+
+**The gpu-catalog agent.** [`.github/agents/gpu-catalog.agent.md`](../.github/agents/gpu-catalog.agent.md)
+adds catalog products. Start it by assigning an "Add a GPU" issue
+([`gpu_request.yml`](../.github/ISSUE_TEMPLATE/gpu_request.yml), label
+`gpu-request`; no workflow reacts to it) to Copilot with this agent, or by
+prompting it in the agents panel ("Add the SPARKLE Arc A310 ECO, spec sheet:
+<url>"). For each product it downloads the maker's page or PDF (read with
+`pdftotext`, which `copilot-setup-steps.yml` installs from `poppler-utils`),
+picks the reference, writes only the board's changes and product-only
+fields, and checks `reference_overrides` in the built gpus.json. One pull
+request covers every product in the request and makes one DATA bump:
+`RELEASE_VERSION`, a `CHANGELOG.md` heading with one "Catalog:" line per GPU,
+the current-version lines, and the catalog GPU counts. Spec sites such as a
+board maker's may need adding to the Copilot internet-access allowlist; the
+agent opens a draft naming the domain when it's blocked.
 
 Submitting the issue is the CC BY 4.0 agreement. Neither form has a required
 checkbox (`check_issue_form_matches_script` fails on one), and the pull request

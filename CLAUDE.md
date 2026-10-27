@@ -18,14 +18,15 @@ prepares:
    increments `RELEASE_VERSION` in [scripts/build.py](scripts/build.py) by the
    biggest kind of change it contains: MAJOR (breaking data contract or API),
    MINOR (any code, check, dashboard, docs-workflow, or license change), DATA
-   (newly published runs), or POST (a new or updated blog post). Reset the
-   parts to its right. Rename `Unreleased` in `CHANGELOG.md` to
+   (newly published runs or catalog GPUs), or POST (a new or updated blog
+   post). Reset the parts to its right. Rename `Unreleased` in `CHANGELOG.md` to
    `## <version> - <date>`, add a fresh empty `Unreleased` above it, and update
    the current-version references and feature summary in `README.md`,
    `docs/COPILOT_HANDOFF.md`, and `CLAUDE.md`. `test_build.py` fails if
    `RELEASE_VERSION` doesn't match the newest changelog heading. Data-only
    submissions (including bot PRs from benchmark issues) are batched into a
-   later DATA bump by a maintainer.
+   later DATA bump by a maintainer. A catalog pull request (new GPUs, from
+   the `gpu-catalog` agent or a person) makes its own DATA bump.
 
 ## Branching
 
@@ -76,7 +77,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.12.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.13.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -138,11 +139,15 @@ AGENTS.md                          tool-neutral agent entry point (keep in step 
                                    the "Benchmark result" issue form (applies the benchmark label)
 .github/ISSUE_TEMPLATE/benchmark_file.yml
                                    the "Benchmark result (file)" form: one attached or pasted result file
+.github/ISSUE_TEMPLATE/gpu_request.yml
+                                   the "Add a GPU" form (label gpu-request; no workflow, feeds gpu-catalog)
 docs/PROCESSING_ISSUES.md          what a maintainer does with a needs-maintainer benchmark issue
 .github/agents/benchmark-processor.agent.md
                                    Copilot agent: assign a benchmark issue, get a ready-to-approve data PR
+.github/agents/gpu-catalog.agent.md
+                                   Copilot agent: add GPUs from spec pages (issue or agents panel), DATA PR
 .github/workflows/copilot-setup-steps.yml
-                                   the Copilot agent's environment (Python deps; read from main only)
+                                   the Copilot agents' environment (Python deps, pdftotext; read from main only)
 .github/CODEOWNERS                 maintainers; a code owner's approval is required to merge
 .github/FUNDING.yml                GitHub Sponsors button (github: MattyStacks)
 .github/workflows/validate.yml     four PR checks: Catalog entries, Benchmark results,
@@ -228,6 +233,16 @@ unless repository policy changes.
   `base: <ref_id>` and the build deep-merges them over the reference.
   Results never point at a reference ID. `platform` is for handhelds and
   laptops only, and `board_partner` is for desktop cards only.
+- A product writes only what its board changes from the reference (clocks,
+  power, memory speed, outputs) plus product-only fields. The merged entry's
+  `reference_overrides` (`checks.reference_overrides()`, in gpus.json and the
+  dashboard's "Changed from the reference" chips) lists each change with the
+  reference value. Chip fields (`checks.BASE_CHIP_FIELDS`: codename,
+  architecture, `silicon.*`, memory size/type/bus/shared) never change on a
+  board (`base-chip-override`); repeating a reference value warns
+  (`base-redundant`); desktop and laptop IDs start with `<base>_`
+  (`base-id`). Spec-sheet terms map to fields in `data/gpus/README.md`
+  ("When a board differs from its reference").
 - Catalog files list `sources` (https URLs, `covers` = sections that page
   actually backs). Never invent a source or a spec value; leave unknowns out.
   Quote source titles that contain `: `. The GPU vendor's own spec page
@@ -327,6 +342,16 @@ unless repository policy changes.
   or `.github/`. Keep its prompt in step with the data rules here, and
   `test_build.check_bot_safety()` keeps its setup job read-only and
   secret-free.
+- The `gpu-catalog` Copilot agent (`.github/agents/gpu-catalog.agent.md`)
+  adds one or more catalog products from the maker's spec pages, started
+  from an "Add a GPU" issue (`gpu_request.yml`, label `gpu-request`, no
+  workflow) or a prompt in the agents panel. It may add product files and,
+  when no reference matches, a reference file; it makes the PR's DATA bump
+  (`RELEASE_VERSION`, the `CHANGELOG.md` heading with one "Catalog:" line per
+  GPU, the current-version lines, and the catalog GPU counts in `README.md`
+  and `docs/COPILOT_HANDOFF.md`). It never edits code, `.github/`, or
+  existing catalog files. `copilot-setup-steps.yml` installs `poppler-utils`
+  for its PDF spec sheets.
 - `.github/CODEOWNERS` is the maintainer list, and a code owner's approval is
   required to merge. Adding a maintainer means adding their `@username` there
   and giving them write access. Never add a bot.
@@ -394,7 +419,8 @@ unless repository policy changes.
     match `blog/src/data/retailers.ts`.
   - Example picks use made-up names and `example.com` URLs.
 - Versions are `MAJOR.MINOR.DATA.POST` with four parts. MINOR is any code
-  change, DATA is new published runs, and POST is a new or updated post.
+  change, DATA is new published runs or catalog GPUs, and POST is a new or
+  updated post.
   `test_build.py` checks that `RELEASE_VERSION` matches the newest
   `## x.y.z.w - date` heading in `CHANGELOG.md`.
 
@@ -453,7 +479,7 @@ is now stale:
   `.github/copilot-instructions.md`, and `AGENTS.md` consistent.
 - **Version bump (every PR but data-only submissions; see the top of this
   file)** → pick the part from the biggest change in the PR (MAJOR breaking,
-  MINOR code, DATA runs, POST posts), reset the parts to its right, rename `Unreleased` in `CHANGELOG.md` to the new four-part
+  MINOR code, DATA runs or catalog GPUs, POST posts), reset the parts to its right, rename `Unreleased` in `CHANGELOG.md` to the new four-part
   version and date, and update `RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py) plus the version references and feature
   summary in `README.md` and `docs/COPILOT_HANDOFF.md`.

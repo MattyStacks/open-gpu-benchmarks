@@ -140,7 +140,7 @@ def main(argv=None, data_dir=checks.DATA_DIR):
     p=argparse.ArgumentParser(description="PresentMon/MangoHud -> YAML")
     p.add_argument("csv_file")
     p.add_argument("--gpu-id", required=True, help="Exact catalog ID, the file name under data/gpus/<form_factor>/<gpu_vendor>/")
-    p.add_argument("--game-id", required=True, help="The game's ID in data/games.yaml, such as cyberpunk_2077; add a new game there first")
+    p.add_argument("--game-id", required=True, help="The game's ID in data/games.yaml, such as cyberpunk_2077_benchmark; add a new game there first")
     p.add_argument("--submitted-by", default="", help="OPTIONAL - your GitHub username; leave it out to stay anonymous")
     p.add_argument("--resolution", default="1440p")
     p.add_argument("--graphics-preset", default="Ultra")

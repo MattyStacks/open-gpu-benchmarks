@@ -4,7 +4,7 @@ gpu_id: rtx_4090_24gb_fe
 testbench_id: ddr5_bench
 submitted_by: someone-else
 synthetic: true
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: "2026-10-03"
 version: "2.12"
 frame_generation: false

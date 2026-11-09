@@ -90,7 +90,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.16.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.17.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -215,7 +215,11 @@ unless repository policy changes.
   remaster, edition, or different test (Steel Nomad vs Steel Nomad Light)
   gets its own ID; a patch goes in `version`. The old free-text `game:` key
   is an error. A result for a game that isn't registered adds its registry
-  entry in the same change.
+  entry in the same change. A game's built-in benchmark is its own
+  entry apart from gameplay (`cyberpunk_2077_benchmark`, "Cyberpunk 2077
+  (built-in benchmark)"). At most one entry may set `featured: true`
+  (`game-featured`): the baseline benchmark run on every system, which the
+  dashboard lists first and opens on.
 - Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
   grouping key, so Windows and Linux runs are never averaged together; the
   distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
@@ -306,7 +310,7 @@ unless repository policy changes.
   `result-upscaling` fails. It is a grouping key, so upscaled runs never
   average with native ones.
 - Cyberpunk 2077 built-in benchmark runs come in through
-  `scripts/import_cyberpunk.py`. It writes one `result_YYYYMMDD_cyberpunk_2077.yaml`
+  `scripts/import_cyberpunk.py`. It writes one `result_YYYYMMDD_cyberpunk_2077_benchmark.yaml`
   per day and setup, with one `result` item per run. Each item's
   `benchmark_run` names its run folder, and that is how re-runs skip imported
   runs. A run with a different version, driver, CPU, memory, or OS goes in a

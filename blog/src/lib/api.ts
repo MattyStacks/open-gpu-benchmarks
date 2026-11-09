@@ -70,5 +70,5 @@ export function catalogGpu(id: string): CatalogGpu {
   return gpu;
 }
 
-// "cyberpunk_2077", "Cyberpunk 2077", and "cyberpunk-2077" all match.
+// "cyberpunk_2077_benchmark", "Cyberpunk 2077", and "cyberpunk-2077" all match.
 export const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "");

@@ -63,7 +63,7 @@ export type DashboardRecord = {
   avg_fps: number; p1_low: number | null; run_count: number; tdp_w: number | null; proof_level: string;
   implementations: Run[]; credits: { name: string; url: string; source_url: string }[];
 };
-export type Dashboard = { records: DashboardRecord[]; games: { id: string; name: string; type: string }[];
+export type Dashboard = { records: DashboardRecord[]; games: { id: string; name: string; type: string; featured: boolean }[];
   graphics_presets: string[]; picks: unknown[]; metadata: Record<string, unknown> };
 export type Gpu = Record<string, any> & { id: string };
 
@@ -105,10 +105,10 @@ export async function chooseGame(page: Page, gameId: string) {
   await page.locator("#game-select").selectOption(gameId);
 }
 
-/** The default view: the first "game" type entry, its first resolution, every chip on. */
+/** The default view: the featured game (else the first "game" type entry), its first resolution, every chip on. */
 export function defaultView() {
   const { dashboard } = fixtureData();
-  const game = dashboard.games.find((entry) => entry.type === "game")!.id;
+  const game = (dashboard.games.find((entry) => entry.featured) ?? dashboard.games.find((entry) => entry.type === "game"))!.id;
   const resolution = dashboard.records.find((record) => record.game_id === game)!.resolution;
   return { game, resolution };
 }

@@ -61,6 +61,18 @@ test("every OS, platform, and upscaling chip hides exactly its own records", asy
   }
 });
 
+test("the featured baseline benchmark is listed first and opens by default", async ({ page }) => {
+  const featured = fixtureData().dashboard.games.filter((game) => game.featured);
+  expect(featured.length, "the fixtures need exactly one featured game (featured: true in tests/fixtures/data/games.yaml) to test the default").toBe(1);
+  await openDashboard(page);
+  const select = page.locator("#game-select");
+  await expect(select, "the baseline benchmark run on every system must be what the dashboard opens on").toHaveValue(featured[0].id);
+  expect(await select.locator("option").first().getAttribute("value"), "the baseline benchmark must be the first entry in the picker")
+    .toBe(featured[0].id);
+  expect(await select.locator("optgroup").first().getAttribute("label"), "the baseline benchmark gets its own group at the top")
+    .toBe("Baseline benchmark");
+});
+
 test("source buttons, search, game, and resolution", async ({ page }) => {
   const view = defaultView();
   await openDashboard(page);

@@ -664,12 +664,20 @@
 
     const GAME_TYPE_LABELS = { game: "Games", synthetic: "Synthetic benchmarks", engine_demo: "Engine demos" };
 
-    // The benchmark picker: option values are game IDs, grouped by registry type.
+    const FEATURED_GAME_LABEL = "Baseline benchmark";
+
+    // The benchmark picker: option values are game IDs. The featured game (the
+    // baseline benchmark run on every system) gets its own group first; the rest
+    // are grouped by registry type.
     function setGameOptions(select, games, selected) {
-      const groups = Object.entries(GAME_TYPE_LABELS).map(([type, label]) => {
+      const sections = [
+        [FEATURED_GAME_LABEL, (game) => game.featured],
+        ...Object.entries(GAME_TYPE_LABELS).map(([type, label]) => [label, (game) => !game.featured && game.type === type]),
+      ];
+      const groups = sections.map(([label, matches]) => {
         const group = document.createElement("optgroup");
         group.label = label;
-        group.append(...games.filter((game) => game.type === type).map((game) => {
+        group.append(...games.filter(matches).map((game) => {
           const option = document.createElement("option");
           option.value = game.id;
           option.textContent = game.name;
@@ -1247,8 +1255,9 @@
           renderPicks();
           return;
         }
+        // Open on the featured baseline benchmark; without one, the first entry of the first type.
         const firstType = Object.keys(GAME_TYPE_LABELS).find((type) => state.data.games.some((game) => game.type === type));
-        state.game = state.data.games.find((game) => game.type === firstType).id;
+        state.game = (state.data.games.find((game) => game.featured) ?? state.data.games.find((game) => game.type === firstType)).id;
         refreshResolutionOptions();
         setGameOptions(elements.game, state.data.games, state.game);
         state.factors = new Set(platforms());

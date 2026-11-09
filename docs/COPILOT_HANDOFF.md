@@ -11,10 +11,17 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.16.0.0` (2026-11-09). Versions are now
+- Current version: `v1.17.0.0` (2026-11-09). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.17.0.0: Cyberpunk's results are its built-in benchmark, so the game
+    is `cyberpunk_2077_benchmark`, "Cyberpunk 2077 (built-in benchmark)"
+    (`cyberpunk_2077` is free for gameplay). `featured: true` in
+    `data/games.yaml` (at most one, `game-featured`) marks the baseline
+    benchmark run on every system: `build.py` sorts it first in
+    `dashboard.json` games, and the dashboard opens on it under a
+    "Baseline benchmark" group (schema 0.20 → 0.21, games carry `featured`).
   - v1.16.0.0: the browser tests run in Microsoft's Playwright image in CI
     (no 3 minute browser install), and in `build.yml` beside the build
     instead of before the deploy; `check_playwright_image` keeps the image
@@ -714,7 +721,7 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
   folder through the Windows Documents known folder (handles OneDrive), or
   the Proton prefix of Steam app 1091500 on Linux; `--input` overrides.
   Nothing is copied into the repo.
-- **Files and re-runs.** Runs go in `result_YYYYMMDD_cyberpunk_2077.yaml` by
+- **Files and re-runs.** Runs go in `result_YYYYMMDD_cyberpunk_2077_benchmark.yaml` by
   run date, one `result` item per run. Each item's `benchmark_run` holds its
   folder name (it ends up in the API under `metrics`). A run whose
   `benchmark_run` is in any `data/{official,community}/*/` result file is

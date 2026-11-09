@@ -1,4 +1,4 @@
-import { test, expect, openDashboard, tableRows } from "../helpers";
+import { test, expect, fixtureData, openDashboard, defaultView, tableRows } from "../helpers";
 
 // The chart and the comparison box agree with the table.
 
@@ -24,8 +24,16 @@ test("turning off Avg FPS leaves only the 1% low series", async ({ page }) => {
 
 test("selecting two GPUs shows the percentage comparison", async ({ page }) => {
   await openDashboard(page);
+  // Compare within the default game's busiest resolution, so the test doesn't depend on how many rows its first one has.
+  const { game } = defaultView();
+  const counts = new Map<string, number>();
+  for (const record of fixtureData().dashboard.records.filter((r) => r.game_id === game)) {
+    counts.set(record.resolution, (counts.get(record.resolution) ?? 0) + 1);
+  }
+  const [resolution] = [...counts].sort((a, b) => b[1] - a[1])[0];
+  await page.locator("#resolution-select").selectOption(resolution);
   const boxes = page.locator("#results-body tr.expandable input[type=checkbox]");
-  expect(await boxes.count(), "the default fixture view needs at least two rows").toBeGreaterThanOrEqual(2);
+  expect(await boxes.count(), `the fixtures need at least two ${game} rows at ${resolution} to compare`).toBeGreaterThanOrEqual(2);
   await boxes.nth(0).check();
   await page.locator("#results-body tr.expandable input[type=checkbox]").nth(1).check();
   await expect(page.locator("#selection-count")).toHaveText("2");

@@ -1,17 +1,20 @@
-gpu_id: rtx_4070_super_12gb_fe
+gpu_id: rtx_4090_24gb_fe
 testbench_id: am5_9800x3d_ddr5
 benchmark_type: game
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-03'
 version: '2.12'
 synthetic: true
 driver: '551.23'
 result:
-- avg_fps: 96.0
-  p1_low: 78.0
+- avg_fps: 178.0
+  p1_low: 146.0
   resolution: 1440p
   graphics_preset: Ultra
 system:
   os: windows
+  memory_gb: 64
+  memory_type: DDR5-6000
+  memory_channels: 2
 proof:
   method: other

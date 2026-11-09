@@ -9,7 +9,7 @@
 #
 # Save as data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml, using the date
 # the source was published, for example
-# data/community/rtx_5080_16gb_fe/result_20261013_cyberpunk_2077.yaml.
+# data/community/rtx_5080_16gb_fe/result_20261013_cyberpunk_2077_benchmark.yaml.
 # The folder name and gpu_id must exactly match a catalog ID: the exact product
 # the source tested, including memory size.
 #
@@ -18,7 +18,7 @@
 gpu_id: rtx_5080_16gb_fe # Required
 # New game? Add it to data/games.yaml in the same pull request (id, name, type,
 # year, plus steam_appid or url when the game has one). See docs/COMMUNITY_SUBMISSIONS.md.
-game_id: cyberpunk_2077 # Required; the game's id in data/games.yaml
+game_id: cyberpunk_2077_benchmark # Required; the game's id in data/games.yaml
 date: "2026-10-13" # Required; the day the video, review, or post was published, same as the file name
 credit:
   source_url: https://example.com/example-creator/gpu-review # Required; the video, review, or post with the numbers

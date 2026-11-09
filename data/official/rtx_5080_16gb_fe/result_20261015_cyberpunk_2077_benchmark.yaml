@@ -4,7 +4,7 @@
 gpu_id: rtx_5080_16gb_fe
 testbench_id: am5_9950x3d_ddr5
 benchmark_type: game
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-15'
 version: '2.31'
 frame_generation: false

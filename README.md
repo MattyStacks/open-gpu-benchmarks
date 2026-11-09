@@ -15,7 +15,10 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.16.0.0`: the dashboard's browser tests run in CI
+Current version: `v1.17.0.0`: the Cyberpunk results are named as the game's
+built-in benchmark (`cyberpunk_2077_benchmark`), and that baseline benchmark is
+listed first and opens the dashboard (`featured: true` in `data/games.yaml`).
+v1.16.0.0: the dashboard's browser tests run in CI
 about 2 minutes faster, in Microsoft's Playwright image, and no longer hold
 up the deploy. v1.15.1.0: the first handhelds in the catalog (Steam Deck
 LCD, Legion Go S Z1 Extreme 16 and 32 GB, ONEXPLAYER 3 Arc G3 Extreme 32 GB).
@@ -207,7 +210,7 @@ rejects IDs that aren't in the catalog. `--os` defaults to `linux` for
 MangoHud and `windows` for PresentMon:
 
 ```bash
-python scripts/parse.py capture.csv --gpu-id rtx_5080_16gb_fe --game-id cyberpunk_2077 --os windows
+python scripts/parse.py capture.csv --gpu-id rtx_5080_16gb_fe --game-id cyberpunk_2077_benchmark --os windows
 ```
 
 [`scripts/import_cyberpunk.py`](scripts/import_cyberpunk.py) reads every run in

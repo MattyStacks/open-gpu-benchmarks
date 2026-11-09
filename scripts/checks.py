@@ -721,7 +721,7 @@ def submitter_errors(path, run, issues):
         issues.error(
             path,
             "community-filename",
-            f"file name '{path.name}' must follow result_YYYYMMDD_<game_id>{path.suffix}, such as result_20261003_cyberpunk_2077{path.suffix}",
+            f"file name '{path.name}' must follow result_YYYYMMDD_<game_id>{path.suffix}, such as result_20261003_cyberpunk_2077_benchmark{path.suffix}",
         )
     submitted_by = run.get("submitted_by")
     if submitted_by is None:
@@ -950,7 +950,7 @@ def check_game_id(path, run, games_by_id, issues):
         issues.error(path, "result-game-id", f"'game' is replaced by 'game_id'; {hint}")
         return
     if game_id is None:
-        issues.error(path, "result-game-id", "missing game_id; use the game's ID from data/games.yaml, such as cyberpunk_2077")
+        issues.error(path, "result-game-id", "missing game_id; use the game's ID from data/games.yaml, such as cyberpunk_2077_benchmark")
     elif not is_text(game_id) or game_id not in games_by_id:
         issues.error(
             path,
@@ -1211,7 +1211,7 @@ GAME_TYPES = ("game", "synthetic", "engine_demo")
 GAME_REQUIRED = ("id", "name", "type", "year")
 # Store IDs and url are optional (not every game is on Steam or has a page),
 # but should be filled in whenever the game has one.
-GAME_FIELDS = (*GAME_REQUIRED, "steam_appid", "igdb_id", "url", "notes")
+GAME_FIELDS = (*GAME_REQUIRED, "steam_appid", "igdb_id", "url", "notes", "featured")
 GAME_STORE_IDS = ("steam_appid", "igdb_id")
 FIRST_GAME_YEAR = 1980
 
@@ -1250,6 +1250,8 @@ def check_game(path, label, item, issues):
         issues.error(path, "game-field", f"{label}: url must be an https:// link")
     if item.get("notes") is not None and not is_text(item["notes"]):
         issues.error(path, "game-field", f"{label}: notes must be text")
+    if "featured" in item and item["featured"] is not True:
+        issues.error(path, "game-field", f"{label}: featured may only be true; leave it out on every other game")
     return ok
 
 
@@ -1285,6 +1287,13 @@ def load_games(data_dir=DATA_DIR):
             continue
         names[name.lower()] = game_id
         games[game_id] = {key: item[key] for key in GAME_FIELDS if item.get(key) is not None} | {"name": name}
+    featured = [game_id for game_id, game in games.items() if game.get("featured") is True]
+    if len(featured) > 1:
+        issues.error(
+            path,
+            "game-featured",
+            f"{', '.join(featured)} all set featured: true; only one baseline benchmark can open the dashboard, so keep it on one",
+        )
     return list(games.values()), issues
 
 

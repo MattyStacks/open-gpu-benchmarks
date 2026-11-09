@@ -569,6 +569,9 @@ def check_game_rules():
         "game-id-format": registry({**game, "id": "New-Game"}),
         "game-duplicate (id)": registry(game, {**game, "name": "Other"}),
         "game-duplicate (name)": registry(game, {**game, "id": "new_game_2", "name": "new game"}),
+        "game-field (featured false)": registry({**game, "featured": False}),
+        "game-field (featured text)": registry({**game, "featured": "yes"}),
+        "game-featured": registry({**game, "featured": True}, {**game, "id": "new_game_2", "name": "Other", "featured": True}),
     }
     for label, games in cases.items():
         rule = label.split(" ")[0]
@@ -885,9 +888,9 @@ def check_parse_presentmon():
         # The written file passes every check in a copy of the fixtures.
         data_dir = folder / "data"
         shutil.copytree(FIXTURES_DIR, data_dir)
-        out = data_dir / "community" / "rtx_4090_24gb_fe" / "result_20261003_cyberpunk_2077_parsed.yaml"
+        out = data_dir / "community" / "rtx_4090_24gb_fe" / "result_20261003_cyberpunk_2077_benchmark_parsed.yaml"
         with contextlib.redirect_stdout(io.StringIO()):
-            parse.main([str(folder / "summary.csv"), "--gpu-id", "rtx_4090_24gb_fe", "--game-id", "cyberpunk_2077",
+            parse.main([str(folder / "summary.csv"), "--gpu-id", "rtx_4090_24gb_fe", "--game-id", "cyberpunk_2077_benchmark",
                         "--date", "2026-10-03", "--resolution", "4K", "--output", str(out)], data_dir)
         written = yaml.safe_load(out.read_text(encoding="utf-8"))
         assert written["date"] == "2026-10-03" and written["system"]["os"] == "windows", written
@@ -1026,7 +1029,7 @@ def check_import_cyberpunk():
         assert not (data_dir / "official").exists(), "a dry run writes nothing"
         assert import_cyberpunk.main(args) == 0
         out = data_dir / "official" / "rtx_4090_24gb_fe"
-        day_file = out / "result_20261013_cyberpunk_2077.yaml"
+        day_file = out / "result_20261013_cyberpunk_2077_benchmark.yaml"
         assert sorted(path.name for path in out.iterdir()) == [day_file.name]
         text = day_file.read_text(encoding="utf-8")
         assert "version: '2.31'" in text and "graphics_preset: 'Ray Tracing: Ultra'" in text, text
@@ -1085,7 +1088,7 @@ def check_import_cyberpunk():
         assert (day_run["system"]["memory_type"], day_run["system"]["memory_channels"]) == ("DDR5-6000", 2), day_run["system"]
         # A different bench on the same day goes in a _2 file, because the bench applies to the whole file.
         other_bench = {**day_run, "testbench_id": "am4_5600x3d_ddr4", "result": []}
-        assert import_cyberpunk.target_file(out, "2026-10-13", other_bench, {}).name == "result_20261013_cyberpunk_2077_2.yaml"
+        assert import_cyberpunk.target_file(out, "2026-10-13", other_bench, {}).name == "result_20261013_cyberpunk_2077_benchmark_2.yaml"
         # Left out on a community run, they default to DDR5-6000 dual channel, with a warning on screen.
         for run_args, options, warned in (
             (community_args, [], True),
@@ -1107,18 +1110,18 @@ def check_import_cyberpunk():
         })
         assert import_cyberpunk.main(args) == 0
         assert sorted(path.name for path in out.iterdir()) == [
-            day_file.name, "result_20261013_cyberpunk_2077_2.yaml", "result_20261014_cyberpunk_2077.yaml",
+            day_file.name, "result_20261013_cyberpunk_2077_benchmark_2.yaml", "result_20261014_cyberpunk_2077_benchmark.yaml",
         ]
         day_runs = [entry["benchmark_run"] for entry in yaml.safe_load(day_file.read_text(encoding="utf-8"))["result"]]
         assert day_runs[-1] == "benchmark_2026-10-13_20-00-00" and len(day_runs) == 3, day_runs
         assert yaml.safe_load(day_file.read_text(encoding="utf-8"))["result"][-1]["display_mode"] == "Borderless windowed", \
             "a different display mode stays in the same file"
-        updated = yaml.safe_load((out / "result_20261013_cyberpunk_2077_2.yaml").read_text(encoding="utf-8"))
+        updated = yaml.safe_load((out / "result_20261013_cyberpunk_2077_benchmark_2.yaml").read_text(encoding="utf-8"))
         assert updated["system"]["driver"] == "618.00" and len(updated["result"]) == 1
         assert import_cyberpunk.main([*args[:1], "no_such_gpu", *args[2:]]) == 1
         registry = (data_dir / "games.yaml").read_text(encoding="utf-8")
         (data_dir / "games.yaml").write_text("games:\n  - id: other_game\n    name: Other\n    type: game\n    year: 2020\n", encoding="utf-8")
-        assert import_cyberpunk.main(args) == 1, "the importer needs cyberpunk_2077 in data/games.yaml"
+        assert import_cyberpunk.main(args) == 1, "the importer needs cyberpunk_2077_benchmark in data/games.yaml"
         (data_dir / "games.yaml").write_text(registry, encoding="utf-8")
 
         # frames.csv gives avg_fps and p1_low: earlier runs get them on the next
@@ -1141,7 +1144,7 @@ def check_import_cyberpunk():
         assert first["avg_fps"] == 120.65 and first["p1_low"] == 66.67, first
         assert list(first).index("p1_low") == list(first).index("avg_fps") + 1
         assert "p1_low" not in custom and custom["avg_fps"] == 120.46, custom
-        latest = yaml.safe_load((out / "result_20261014_cyberpunk_2077.yaml").read_text(encoding="utf-8"))["result"]
+        latest = yaml.safe_load((out / "result_20261014_cyberpunk_2077_benchmark.yaml").read_text(encoding="utf-8"))["result"]
         assert latest[-1]["benchmark_run"] == "benchmark_2026-10-14_10-00-00" and latest[-1]["p1_low"] == 66.67, latest
 
 
@@ -1176,10 +1179,10 @@ def check_issue_to_result():
 
         status, comment = run_issue(valid, data_dir, temp / "ok")
         assert status == 0, comment
-        path = folder / "result_20261003_cyberpunk_2077.yaml"
+        path = folder / "result_20261003_cyberpunk_2077_benchmark.yaml"
         run = yaml.safe_load(path.read_text(encoding="utf-8"))
         # The product and game names resolve to their IDs; the preset reuses the existing spelling.
-        assert run["gpu_id"] == "rtx_4090_24gb_fe" and run["game_id"] == "cyberpunk_2077" and "game" not in run, run
+        assert run["gpu_id"] == "rtx_4090_24gb_fe" and run["game_id"] == "cyberpunk_2077_benchmark" and "game" not in run, run
         assert [entry["graphics_preset"] for entry in run["result"]] == ["Ultra", "Ultra"], run
         assert run["result"][1]["resolution"] == "1440p" and run["result"][1]["avg_fps"] == 180, run
         assert run["submitted_by"] == "octo-cat" and run["proof"]["method"] == "presentmon", run
@@ -1193,12 +1196,12 @@ def check_issue_to_result():
 
         # A second issue for the same day and game gets the next free name.
         assert run_issue(valid, data_dir, temp / "again")[0] == 0
-        assert (folder / "result_20261003_cyberpunk_2077_2.yaml").exists()
+        assert (folder / "result_20261003_cyberpunk_2077_benchmark_2.yaml").exists()
 
         # The game's ID works too.
-        by_id = valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\ncyberpunk_2077")
+        by_id = valid.replace("### Game\n\ncyberpunk 2077 (built-in benchmark)", "### Game\n\ncyberpunk_2077_benchmark")
         assert by_id != valid and run_issue(by_id, data_dir, temp / "by_id")[0] == 0
-        assert (folder / "result_20261003_cyberpunk_2077_3.yaml").exists()
+        assert (folder / "result_20261003_cyberpunk_2077_benchmark_3.yaml").exists()
 
         found = valid.replace("I ran it myself", "Someone else: I found it in a video, review, or post")
         status, comment = run_issue(found, data_dir, temp / "found")
@@ -1216,8 +1219,8 @@ def check_issue_to_result():
             "YYYY-MM-DD": valid.replace("2026-10-03", "10/03/2026"),
             "Memory (GB)**": valid.replace("### Memory (GB)\n\n32 GB", "### Memory (GB)\n\n32 GB DDR5"),
             "Memory channels**": valid.replace("### Memory channels\n\ndual", "### Memory channels\n\ntriple"),
-            "its own pull request": valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\nSome Unlisted Game"),
-            "Did you mean `cyberpunk_2077`?": valid.replace("### Game\n\ncyberpunk 2077", "### Game\n\ncyberpunk 2078"),
+            "its own pull request": valid.replace("### Game\n\ncyberpunk 2077 (built-in benchmark)", "### Game\n\nSome Unlisted Game"),
+            "Did you mean `cyberpunk_2077_benchmark`?": valid.replace("### Game\n\ncyberpunk 2077 (built-in benchmark)", "### Game\n\ncyberpunk 2078"),
         }
         for expected, body in failures.items():
             status, comment = run_issue(body, data_dir, temp / expected)
@@ -1259,7 +1262,7 @@ def check_issue_limits():
             "not a real calendar day": valid.replace("2026-10-03", "2026-02-30"),
             "must be an https:// link": valid.replace("https://example.com/screenshot.png", "http://example.com/s.png"),
             "must be one of the form's options": valid.replace("### Operating system\n\nWindows", "### Operating system\n\nBeOS"),
-            "result-benchmark-type": form.replace("game_id: cyberpunk_2077", "game_id: cyberpunk_2077\nbenchmark_type: other"),
+            "result-benchmark-type": form.replace("game_id: cyberpunk_2077_benchmark", "game_id: cyberpunk_2077_benchmark\nbenchmark_type: other"),
         }
         for expected, body in failures.items():
             assert body != valid and body != form, expected
@@ -1279,7 +1282,7 @@ def check_issue_limits():
         run = yaml.safe_load(written[0].read_text(encoding="utf-8"))
         assert run["credit"] == {"source_url": "https://example.com/review", "name": "Example Creator"}, run
         relative = (temp / "found" / "path.txt").read_text(encoding="utf-8").strip()
-        assert relative.endswith("community/rtx_4090_24gb_fe/result_20261003_cyberpunk_2077.yaml"), relative
+        assert relative.endswith("community/rtx_4090_24gb_fe/result_20261003_cyberpunk_2077_benchmark.yaml"), relative
         assert (temp / "found" / "title.txt").read_text(encoding="utf-8").strip(), "the bot needs a PR title"
 
         # The path guard: a run can never be written outside data/community.
@@ -1321,22 +1324,22 @@ def check_issue_files():
         # A free-form issue with one attached file, like an Open GPU Benchmarker export.
         status, comment = run_issue(body("file_attached.md"), data_dir, temp / "attached")
         assert status == 0, comment
-        run = yaml.safe_load((folder / "result_20261003_cyberpunk_2077.yaml").read_text(encoding="utf-8"))
+        run = yaml.safe_load((folder / "result_20261003_cyberpunk_2077_benchmark.yaml").read_text(encoding="utf-8"))
         assert list(run)[:2] == ["gpu_id", "game_id"], run
         for key in ("submitted_by", "testbench_id", "synthetic"):
             assert key not in run, (key, run)
         assert run["detected"] == {"browser": "Example Browser 1"} and run["result"][0]["diagnostics"]["limit"] == "gpu", run
-        assert (temp / "attached" / "attachments" / "result_20261003_cyberpunk_2077.yaml").exists()
+        assert (temp / "attached" / "attachments" / "result_20261003_cyberpunk_2077_benchmark.yaml").exists()
         assert "CC BY 4.0" in (temp / "attached" / "pr_body.md").read_text(encoding="utf-8")
 
         # The file form, pasted: the product name resolves, an unquoted date is fine, and Credit me sets submitted_by.
         status, comment = run_issue(body("file_form.md"), data_dir, temp / "form")
         assert status == 0, comment
-        run = yaml.safe_load((folder / "result_20261003_cyberpunk_2077_2.yaml").read_text(encoding="utf-8"))
+        run = yaml.safe_load((folder / "result_20261003_cyberpunk_2077_benchmark_2.yaml").read_text(encoding="utf-8"))
         assert run["gpu_id"] == "rtx_4090_24gb_fe" and run["submitted_by"] == "octo-cat" and run["date"] == "2026-10-03", run
 
         # A pasted ```json block in a free-form issue.
-        pasted = json.dumps({"gpu_id": "rtx_4090_24gb_fe", "game_id": "cyberpunk_2077", "date": "2026-10-03",
+        pasted = json.dumps({"gpu_id": "rtx_4090_24gb_fe", "game_id": "cyberpunk_2077_benchmark", "date": "2026-10-03",
                              "result": [{"resolution": "1440p", "graphics_preset": "Ultra", "avg_fps": 176, "p1_low": 144}],
                              "system": {"os": "windows"}, "proof": {"method": "presentmon"}})
         status, comment = run_issue(f"Here it is:\n\n```json\n{pasted}\n```\n", data_dir, temp / "json")
@@ -1356,7 +1359,7 @@ def check_issue_files():
             "YAML alias": form.replace("avg_fps: 177.9", "avg_fps: &fps 177.9").replace("p1_low: 145.5", "p1_low: *fps"),
             "isn't valid YAML": form.replace("avg_fps: 177.9", "avg_fps: [177.9"),
             "missing `date`": form.replace("date: 2026-10-03\n", ""),
-            "its own pull request": form.replace("game_id: cyberpunk_2077", "game_id: some_unlisted_game"),
+            "its own pull request": form.replace("game_id: cyberpunk_2077_benchmark", "game_id: some_unlisted_game"),
             "couldn't be downloaded": attached.replace("files/1001/", "files/9999/"),
             "community-outlier": form.replace("avg_fps: 177.9", "avg_fps: 400").replace("p1_low: 145.5", "p1_low: 300"),
         }
@@ -1694,7 +1697,7 @@ def check_dashboard_reads_real_fields(api_dir):
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.20"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.21"
     group_by = master["metadata"]["comparison_policy"]["group_by"]
     assert {"os", "upscaling", "game_id", "testbench_id"} <= set(group_by) and "game" not in group_by
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
@@ -1851,12 +1854,12 @@ def check_testbench_payload(api_dir, dashboard):
     super_cyberpunk = sorted(
         (record["testbench_memory"], record["run_count"], record["avg_fps"], record["testbench_label"])
         for record in dashboard["records"]
-        if record["gpu_id"] == "rtx_4070_super_12gb_fe" and record["game_id"] == "cyberpunk_2077"
+        if record["gpu_id"] == "rtx_4070_super_12gb_fe" and record["game_id"] == "cyberpunk_2077_benchmark"
     )
     assert super_cyberpunk == [("DDR4", 1, 84.0, "DDR4 Bench"), ("DDR5", 1, 96.0, "DDR5 Bench")], super_cyberpunk
     (folded,) = [
         record for record in dashboard["records"]
-        if record["gpu_id"] == "rtx_4090_24gb_fe" and record["game_id"] == "cyberpunk_2077" and record["os"] == "windows"
+        if record["gpu_id"] == "rtx_4090_24gb_fe" and record["game_id"] == "cyberpunk_2077_benchmark" and record["os"] == "windows"
     ]
     assert folded["run_count"] == 2 and folded["avg_fps"] == 179.0 and folded["testbench_id"] == "am5_9800x3d_ddr5", folded
     assert sorted(run.get("testbench_source_id") for run in folded["implementations"]) == ["am5_9800x3d_ddr5", "am5_9950x3d_ddr5"]
@@ -1943,13 +1946,18 @@ def check_testbench_rules():
 
 
 def check_game_payload(api_dir):
-    """Names come from games.yaml; the dashboard lists only games with summaries."""
+    """Names come from games.yaml; the dashboard lists only games with summaries, the featured one first."""
     dashboard = load_json(api_dir / "dashboard.json")
-    assert [game["id"] for game in dashboard["games"]] == ["alan_wake_2", "baldurs_gate_3", "cyberpunk_2077", "helldivers_2"]
-    assert dashboard["games"][2] == {"id": "cyberpunk_2077", "name": "Cyberpunk 2077", "type": "game", "year": 2020}
+    assert [game["id"] for game in dashboard["games"]] == ["cyberpunk_2077_benchmark", "alan_wake_2", "baldurs_gate_3", "helldivers_2"], (
+        "the featured game (the baseline benchmark run on every system) must lead the dashboard's games, then the rest by name"
+    )
+    assert dashboard["games"][0] == {
+        "id": "cyberpunk_2077_benchmark", "name": "Cyberpunk 2077 (built-in benchmark)", "type": "game", "year": 2020, "featured": True,
+    }
+    assert not any(game["featured"] for game in dashboard["games"][1:]), "only the featured game sets featured"
     registry = load_json(api_dir / "games.json")
     assert registry["count"] == 6 and {game["type"] for game in registry["games"]} == set(checks.GAME_TYPES)
-    assert next(game for game in registry["games"] if game["id"] == "cyberpunk_2077")["steam_appid"] == 1091500
+    assert next(game for game in registry["games"] if game["id"] == "cyberpunk_2077_benchmark")["steam_appid"] == 1091500
     names = {game["id"]: game["name"] for game in registry["games"]}
     for record in dashboard["records"]:
         assert record["game"] == names[record["game_id"]] and record["game_type"] == "game", record

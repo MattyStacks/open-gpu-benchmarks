@@ -84,7 +84,11 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   remaster, edition, or different test (Steel Nomad vs Steel Nomad Light)
   gets its own ID; a patch goes in `version`. The old free-text `game:` key
   is an error. A result for a game that isn't registered adds its registry
-  entry in the same change.
+  entry in the same change. A game's built-in benchmark is its own
+  entry apart from gameplay (`cyberpunk_2077_benchmark`, "Cyberpunk 2077
+  (built-in benchmark)"). At most one entry may set `featured: true`
+  (`game-featured`): the baseline benchmark run on every system, which the
+  dashboard lists first and opens on.
 - `benchmark_type` is optional and may only be `game` (the default);
   any other value fails `result-benchmark-type`. Before 1.14.0.0 another
   value skipped every game check and still reached the API.
@@ -139,7 +143,7 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   `preset_upscaling: true` (the graphics preset turned it on); otherwise
   `result-upscaling` fails. Upscaling is a grouping key.
 - Cyberpunk 2077 built-in benchmark runs come in through
-  `scripts/import_cyberpunk.py`. It writes one `result_YYYYMMDD_cyberpunk_2077.yaml`
+  `scripts/import_cyberpunk.py`. It writes one `result_YYYYMMDD_cyberpunk_2077_benchmark.yaml`
   per day and setup, with one `result` item per run. Each item's
   `benchmark_run` names its run folder, and that is how re-runs skip imported
   runs. A run with a different version, driver, CPU, memory, or OS goes in a

@@ -13,7 +13,7 @@ data/community/<gpu_id>/raw/permission_<name>.png  (optional permission proof, u
 
 Cyberpunk 2077 built-in benchmark runs can be imported with
 `scripts/import_cyberpunk.py`, which writes one
-`result_YYYYMMDD_cyberpunk_2077.yaml` per day with one `result` item per run; see
+`result_YYYYMMDD_cyberpunk_2077_benchmark.yaml` per day with one `result` item per run; see
 [docs/CYBERPUNK_BENCHMARK.md](../../docs/CYBERPUNK_BENCHMARK.md).
 
 **Most results arrive through a
@@ -49,7 +49,7 @@ Folder rules:
 
 - Files are anonymous by default and named `result_YYYYMMDD_<game_id>.yaml`. For
   a second file with the same date and game, add a number, such as
-  `result_20261003_cyberpunk_2077_2.yaml`. `submitted_by` (your GitHub username) is
+  `result_20261003_cyberpunk_2077_benchmark_2.yaml`. `submitted_by` (your GitHub username) is
   optional; see
   [Anonymous by default](../../docs/COMMUNITY_SUBMISSIONS.md#anonymous-by-default).
 - Found a result in a video, review, or post? Add it with a `credit` block whose

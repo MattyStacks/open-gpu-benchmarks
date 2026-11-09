@@ -1,0 +1,66 @@
+# Imported by scripts/import_cyberpunk.py from Cyberpunk 2077's built-in
+# benchmark. Each benchmark_run is a folder in the game's benchmarkResults;
+# re-running the script skips runs listed here and adds new ones.
+gpu_id: steam_machine_8gb_valve
+testbench_id: steam_machine_32gb_ddr5
+benchmark_type: game
+game_id: cyberpunk_2077
+date: '2026-11-07'
+version: '2.5'
+frame_generation: false
+result:
+  - benchmark_run: benchmark_2026-11-07_00-09-26
+    time: 00:09:26
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Low'
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 57.23
+    p1_low: 47.66
+    min_fps: 49.28
+    max_fps: 69.44
+    duration: 64.23
+    frame_count: 3676
+    display_mode: Borderless windowed
+  - benchmark_run: benchmark_2026-11-07_00-11-25
+    time: 00:11:25
+    resolution: 1440p
+    graphics_preset: Steam Deck
+    upscaling: FSR 2.1 Balanced
+    preset_upscaling: true
+    avg_fps: 92.81
+    p1_low: 71.51
+    min_fps: 76.37
+    max_fps: 112.76
+    duration: 64.25
+    frame_count: 5963
+    display_mode: Borderless windowed
+  - benchmark_run: benchmark_2026-11-07_00-21-01
+    time: 00:21:01
+    resolution: 1440p
+    graphics_preset: Steam Deck
+    avg_fps: 59.56
+    p1_low: 49.39
+    min_fps: 51.59
+    max_fps: 71.64
+    duration: 64.23
+    frame_count: 3826
+    display_mode: Borderless windowed
+system:
+  os: linux
+  os_detail: SteamOS
+  distro: SteamOS
+  distro_version: 3.9.5
+  kernel: 7.2.7-valve2-2-neptune-72-g31504582a073
+  mesa: 26.1.2
+  runtime: proton
+  proton: 11.0-100
+  launcher: Steam
+  cpu: AMD Custom CPU 1772
+  memory_gb: 32
+  memory_type: DDR5-5600
+  memory_channels: 2
+  graphics_api: DX12
+proof:
+  method: in_game_benchmark
+  format: cyberpunk_summary_json

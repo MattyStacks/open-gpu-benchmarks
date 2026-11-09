@@ -30,7 +30,7 @@ SCHEMA_VERSION = "0.20"
 # code change, DATA = newly published runs or catalog GPUs, POST = a new or
 # updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
-RELEASE_VERSION = "1.14.0.0"
+RELEASE_VERSION = "1.15.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.

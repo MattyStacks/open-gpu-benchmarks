@@ -11,10 +11,16 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.14.0.0` (2026-11-09). Versions are now
+- Current version: `v1.15.0.0` (2026-11-09). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.15.0.0: the Steam Machine (`steam_machine_8gb_valve`, a desktop
+    with its own `steam_machine_32gb_ddr5` test bench) and 35 official Cyberpunk
+    runs on SteamOS. `import_cyberpunk.py` takes `--custom-presets FILE`,
+    records the Linux detail fields (distro, kernel, Mesa, Proton), drops
+    Proton's made-up AMD/Intel driver string, and takes `memory_gb` from
+    the bench.
   - v1.14.0.0: `scripts/preflight.py` runs every check in one command
     and reports all failures; a Claude Code hook and `.githooks/pre-push`
     run it before commits and pushes. Playwright browser tests
@@ -749,10 +755,12 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 
 ## Published data and test fixtures
 
-**Published data (`data/`).** 1 catalog GPU entry (`rtx_5080_16gb_fe`) plus
-309 reference files under `data/gpus/reference/`, 34 official result runs,
-1 community run, and 31 dashboard summaries. The official runs are Cyberpunk
-2077 built-in benchmark runs on Windows at 1080p, 1440p, and 4K, imported with
+**Published data (`data/`).** 2 catalog GPU entries (`rtx_5080_16gb_fe`,
+`steam_machine_8gb_valve`) plus 309 reference files under
+`data/gpus/reference/`, 69 official result runs, 1 community run, and 61
+dashboard summaries. The official runs are Cyberpunk 2077 built-in benchmark
+runs on Windows at 1080p, 1440p, and 4K (RTX 5080) and on SteamOS with Proton
+at 1080p and 1440p (Steam Machine, `steam_machine_32gb_ddr5` bench), imported with
 `scripts/import_cyberpunk.py`; each has an `avg_fps` and `p1_low` from its
 `frames.csv`. The community run is an OpenBenchmarker Neon Flythrough result
 at 4K (a browser WebGL2 benchmark). `scripts/preflight.py` fails a code PR

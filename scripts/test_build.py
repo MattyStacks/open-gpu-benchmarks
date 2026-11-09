@@ -944,6 +944,30 @@ def check_cyberpunk_labels():
     linux = import_cyberpunk.build_system(summary, "linux")
     assert linux["os"] == "linux" and "os_build" not in linux, linux
     assert linux.get("os_detail") != "Windows 11 Pro" and "memory_type" not in linux, linux
+    # On Linux, Proton makes up AMD and Intel driver versions, so only NVIDIA's is kept,
+    # and the distro, kernel, Mesa, and Proton of the importing computer are recorded instead.
+    detail = {"distro": "SteamOS", "kernel": "7.2.7", "mesa": "26.1.2", "runtime": "proton", "proton": "11.0-100", "launcher": "Steam"}
+    amd = {**summary, "gpuName": "AMD Steam Machine (RADV NAVI33)", "gpuDriverVersion": "Radeon software 99.10.2"}
+    steam_machine = import_cyberpunk.build_system(amd, "linux", linux_detail=detail)
+    assert "driver" not in steam_machine, f"Proton's made-up AMD driver must not be recorded on Linux: {steam_machine}"
+    assert {key: steam_machine.get(key) for key in detail} == detail, f"Linux runs record the system detail they're given: {steam_machine}"
+    assert checks.RUNTIMES.count(detail["runtime"]) == 1 and all(checks.OS_FIELDS[key][0] == "linux" for key in detail), \
+        "every Linux detail the importer writes must be a linux field in checks.OS_FIELDS"
+    assert import_cyberpunk.build_system(summary, "linux")["driver"] == "617.14", "NVIDIA's driver is real under Proton, so it's kept"
+    assert import_cyberpunk.build_system(amd, "windows")["driver"] == "Radeon software 99.10.2", "Windows keeps every driver string"
+    assert "distro" not in import_cyberpunk.build_system(amd, "windows", linux_detail=detail), "Windows runs never take Linux detail"
+    for text, version in (("26.1.2.221562.radeonsi_26.1.2-2.1", "26.1.2"), ("OpenGL version string: 4.6 (Compatibility Profile) Mesa 24.2.5", "24.2.5"),
+                          ("24.2.5-1ubuntu1", "24.2.5"), ("", "")):
+        assert import_cyberpunk.mesa_version(text) == version, (text, import_cyberpunk.mesa_version(text))
+    with tempfile.TemporaryDirectory() as temp:
+        prefix = Path(temp) / "steamapps" / "compatdata" / "1091500"
+        results = prefix / "pfx" / "drive_c" / "users" / "steamuser" / "Documents" / import_cyberpunk.RESULTS_SUBPATH
+        results.mkdir(parents=True)
+        (prefix / "version").write_text("11.0-100\n", encoding="utf-8")
+        proton = import_cyberpunk.linux_system_detail(results)
+        assert (proton.get("runtime"), proton.get("proton"), proton.get("launcher")) == ("proton", "11.0-100", "Steam"), \
+            f"a benchmarkResults folder inside a Steam Proton prefix records Proton and Steam: {proton}"
+        assert "runtime" not in import_cyberpunk.linux_system_detail(Path(temp)), "a folder outside a Proton prefix claims no runtime"
 
 
 def check_import_cyberpunk():
@@ -979,6 +1003,20 @@ def check_import_cyberpunk():
                           "--custom-preset", "High", "--os", "windows", "--data-dir", str(data_dir)]
         args = [*community_args, "--source", "official", "--testbench", "am5_9800x3d_ddr5"]
 
+        # --custom-presets names each Custom run's preset; it wins over --custom-preset, and a
+        # name that isn't one of the game's presets is refused, because a typo would split groups.
+        presets_file = temp / "custom.yaml"
+        presets_file.write_text("benchmark_2026-10-13_19-00-00: Ultra\n", encoding="utf-8")
+        mapped = temp / "mapped"
+        shutil.copytree(data_dir, mapped)
+        assert import_cyberpunk.main([*community_args, "--custom-presets", str(presets_file), "--data-dir", str(mapped)]) == 0
+        mapped_runs = yaml.safe_load(next((mapped / "community" / "rtx_4090_24gb_fe").iterdir()).read_text(encoding="utf-8"))["result"]
+        assert [entry["graphics_preset"] for entry in mapped_runs] == ["Ray Tracing: Ultra", "Ultra"], \
+            f"the --custom-presets entry names the Custom run's preset: {mapped_runs}"
+        presets_file.write_text("benchmark_2026-10-13_19-00-00: Ultraa\n", encoding="utf-8")
+        assert import_cyberpunk.main([*community_args, "--custom-presets", str(presets_file), "--dry-run"]) == 1, \
+            "an unknown preset name in --custom-presets must be refused"
+
         # Official desktop runs need a known bench; community runs never take one.
         assert import_cyberpunk.main([*community_args, "--source", "official", "--dry-run"]) == 1
         assert import_cyberpunk.main([*community_args, "--source", "official", "--testbench", "no_such_bench", "--dry-run"]) == 1
@@ -1000,7 +1038,8 @@ def check_import_cyberpunk():
         assert entry["resolution"] == "1440p" and entry["avg_fps"] == 120.46
         assert entry["upscaling"] == "DLSS Auto" and entry["preset_upscaling"] is True
         assert "p1_low" not in entry and day_run["frame_generation"] is False, "no frames.csv, no p1_low"
-        assert day_run["system"]["driver"] == "617.14" and day_run["system"]["memory_gb"] == 32
+        assert day_run["system"]["driver"] == "617.14" and day_run["system"]["memory_gb"] == 64, \
+            "an official run takes the bench's installed RAM (64 GB), not summary.json's slightly smaller size"
         assert day_run["proof"]["method"] == "in_game_benchmark"
         assert custom["graphics_preset"] == "High" and "upscaling" not in custom, custom
         assert entry["display_mode"] == "Fullscreen" and "display_mode" not in day_run["system"]
@@ -1030,7 +1069,7 @@ def check_import_cyberpunk():
         assert sorted(path.name for path in out.iterdir()) == [day_file.name], "an upgraded file keeps its runs"
 
         # A file imported when memory was text ('32 GB') gets memory_gb in the same place.
-        texty = {**day_run, "system": {("memory" if key == "memory_gb" else key): ("32 GB" if key == "memory_gb" else value)
+        texty = {**day_run, "system": {("memory" if key == "memory_gb" else key): ("64 GB" if key == "memory_gb" else value)
                                        for key, value in day_run["system"].items()}}
         import_cyberpunk.write_run(day_file, texty)
         assert import_cyberpunk.main(args) == 0

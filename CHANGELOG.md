@@ -32,6 +32,37 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.15.0.0 - 2026-11-09
+
+The Steam Machine joins the catalog, and the Cyberpunk 2077 importer handles
+SteamOS and Proton.
+
+### Added
+
+- Catalog: Steam Machine (`steam_machine_8gb_valve`), Valve's living-room PC
+  with a semi-custom RDNA 3 GPU and 8 GB of GDDR6, listed as a desktop.
+- Test bench `steam_machine_32gb_ddr5` (32 GB DDR5-5600, dual channel): the
+  Steam Machine itself, used only by its own GPU's official runs. Its RAM can
+  be swapped, so another RAM setup becomes another bench.
+- 35 official Cyberpunk 2077 runs on the Steam Machine (SteamOS, Proton) at
+  1080p and 1440p, every preset with and without its upscaler.
+- `import_cyberpunk.py --custom-presets FILE` names the preset of each Custom
+  run (one `benchmark_<date>_<time>: High` line per run), so a batch of
+  "preset with the upscaler off" runs imports without prompts. Only the
+  game's preset names are accepted.
+- On Linux, `import_cyberpunk.py` records `distro`, `distro_version`,
+  `kernel`, `mesa`, and, for runs in a Steam Proton prefix, `runtime: proton`,
+  `proton`, and `launcher: Steam`.
+
+### Changed
+
+- On Linux, `import_cyberpunk.py` leaves out the AMD and Intel driver string
+  from `summary.json` (Proton reports a made-up "Radeon software 99.10.2");
+  the real driver is in `mesa`. NVIDIA's driver version is still kept.
+- Official runs imported with `--testbench` take `memory_gb` from the bench,
+  because the game reports a little less than what's installed (31952 MB for
+  32 GB).
+
 ## 1.14.0.0 - 2026-11-09
 
 Checks that catch a regression in the session that causes it, not later in

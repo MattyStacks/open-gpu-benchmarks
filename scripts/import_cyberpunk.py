@@ -33,14 +33,23 @@ Full instructions: docs/CYBERPUNK_BENCHMARK.md
 
 Runs with frame generation, V-Sync, or an FPS limit on are skipped, as are runs
 from a different GPU than --gpu-id. A run on the Custom preset needs a preset
-name (--custom-preset, or answer the prompt); a Custom run with upscaling on is
-skipped, because only a named preset may turn upscaling on.
+name (--custom-preset, --custom-presets, or answer the prompt); a Custom run with
+upscaling on is skipped, because only a named preset may turn upscaling on.
+
+On Linux (SteamOS, a Steam Machine, or any distro with Proton) the script also
+records the distro, kernel, Mesa version, and Proton version of this computer,
+and leaves out the AMD/Intel driver string summary.json reports, because Proton
+makes it up ("Radeon software 99.10.2"); the real driver is Mesa. Import soon
+after benchmarking, because these describe the system as it is now.
+
+    python scripts/import_cyberpunk.py --gpu-id steam_machine_8gb_valve --custom-presets custom.yaml
 """
 import argparse
 import csv
 import json
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -80,6 +89,11 @@ PROOF_FORMAT = "cyberpunk_summary_json"
 # summary.json has no RAM type or channel count; these fill in when the options are left out.
 DEFAULT_MEMORY_TYPE = "DDR5-6000"
 DEFAULT_MEMORY_CHANNELS = 2
+# A real NVIDIA driver version; under Proton, AMD and Intel GPUs report a made-up
+# Windows driver, so on Linux only this format is kept (Mesa is the real driver).
+NVIDIA_DRIVER = re.compile(r"nvidia v\s*(\d{4,})", re.IGNORECASE)
+# The first x.y or x.y.z in a Mesa package or glxinfo version: '26.1.2.221562.radeonsi_26.1.2-2.1' -> '26.1.2'.
+MESA_VERSION = re.compile(r"(\d+\.\d+(?:\.\d+)?)")
 FRAMES_FILE = "frames.csv"
 FRAME_TIME_COLUMN = "frame time (ms)"
 # frames.csv is ignored when its average is further than this from summary.json's.
@@ -271,24 +285,99 @@ def resolution(data):
 
 def driver_version(raw):
     """'Nvidia v 61714 [r617_07]' -> '617.14'; other formats are kept as written."""
-    match = re.match(r"nvidia v\s*(\d{4,})", str(raw or ""), re.IGNORECASE)
+    match = NVIDIA_DRIVER.match(str(raw or ""))
     if match:
         digits = match.group(1)
         return f"{digits[:-2]}.{digits[-2:]}"
     return str(raw or "").strip()
 
 
-def linux_os_detail():
+def os_release(path=Path("/etc/os-release")):
+    """/etc/os-release as a dict, or {} when it can't be read."""
+    values = {}
     try:
-        for line in Path("/etc/os-release").read_text(encoding="utf-8").splitlines():
-            if line.startswith("PRETTY_NAME="):
-                return line.split("=", 1)[1].strip().strip('"')
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if "=" in line and not line.startswith("#"):
+                key, value = line.split("=", 1)
+                values[key.strip()] = value.strip().strip('"')
     except OSError:
         pass
+    return values
+
+
+def linux_os_detail():
+    return os_release().get("PRETTY_NAME", "")
+
+
+def command_output(*command):
+    """A command's stdout, or "" when it is missing or fails."""
+    try:
+        done = subprocess.run(command, capture_output=True, text=True, timeout=10, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return done.stdout.strip() if done.returncode == 0 else ""
+
+
+def mesa_version(text):
+    """The Mesa version in a package or glxinfo line, or ""."""
+    match = re.search(r"Mesa (\d+\.\d+(?:\.\d+)?)", text) or MESA_VERSION.search(text)
+    return match.group(1) if match else ""
+
+
+def installed_mesa():
+    """Mesa's version from glxinfo, then the package manager (Debian, Fedora, Arch/SteamOS)."""
+    for command in (
+        ("glxinfo", "-B"),
+        ("dpkg-query", "-W", "-f=${Version}", "libglx-mesa0"),
+        ("rpm", "-q", "--qf", "%{VERSION}", "mesa-dri-drivers"),
+        ("pacman", "-Q", "mesa"),
+    ):
+        text = command_output(*command)
+        if command[0] == "glxinfo":
+            text = text if "Mesa" in text else ""
+        elif command[0] == "pacman":
+            text = text.split(" ", 1)[1] if " " in text else ""
+        else:
+            # Debian epochs: '1:24.2.5-1' -> '24.2.5-1'.
+            text = text.split(":", 1)[-1]
+        version = mesa_version(text)
+        if version:
+            return version
     return ""
 
 
-def build_system(data, os_name, memory_type="", memory_channels=None):
+def proton_prefix(input_dir):
+    """The Proton prefix (compatdata/<app id>) holding input_dir, or None."""
+    for parent in Path(input_dir).resolve().parents:
+        if parent.parent.name == "compatdata" and (parent / "pfx").is_dir():
+            return parent
+    return None
+
+
+def linux_system_detail(input_dir):
+    """This Linux computer's distro, kernel, Mesa, and Proton, for system: on Linux runs.
+    Anything that can't be read is left out."""
+    release = os_release()
+    detail = {
+        "distro": release.get("NAME", ""),
+        "distro_version": release.get("VERSION_ID", ""),
+        "kernel": command_output("uname", "-r"),
+        "mesa": installed_mesa(),
+    }
+    prefix = proton_prefix(input_dir)
+    if prefix is not None:
+        detail["runtime"] = "proton"
+        try:
+            # Proton writes its version into the prefix it last ran, such as '11.0-100'.
+            detail["proton"] = (prefix / "version").read_text(encoding="utf-8").strip()
+        except OSError:
+            pass
+        if prefix.parent.parent.name == "steamapps":
+            detail["launcher"] = "Steam"
+    return {key: value for key, value in detail.items() if value}
+
+
+def build_system(data, os_name, memory_type="", memory_channels=None, linux_detail=None, memory_gb=None):
     system = {"os": os_name}
     if os_name == "windows":
         # Under Proton the game reports a Windows version, so these are Windows-only.
@@ -296,18 +385,25 @@ def build_system(data, os_name, memory_type="", memory_channels=None):
             system["os_detail"] = str(data["osName"])
         if data.get("osVersion"):
             system["os_build"] = str(data["osVersion"])
-    elif linux_os_detail():
-        system["os_detail"] = linux_os_detail()
+    else:
+        if linux_os_detail():
+            system["os_detail"] = linux_os_detail()
+        system.update(linux_detail or {})
     if data.get("cpuName"):
         system["cpu"] = str(data["cpuName"]).strip()
-    if checks.is_number(data.get("systemMemory")):
+    if checks.is_number(memory_gb):
+        # A test bench knows its installed RAM; the game reports a little less (31952 MB for 32 GB).
+        system["memory_gb"] = memory_gb
+    elif checks.is_number(data.get("systemMemory")):
         system["memory_gb"] = round(data["systemMemory"] / 1024)
     # summary.json has the size only; the type and channels come from the options.
     if memory_type:
         system["memory_type"] = memory_type
     if memory_channels:
         system["memory_channels"] = memory_channels
-    if driver_version(data.get("gpuDriverVersion")):
+    # Under Proton only NVIDIA's driver version is real; AMD and Intel report a made-up one.
+    real_driver = os_name == "windows" or NVIDIA_DRIVER.match(str(data.get("gpuDriverVersion") or ""))
+    if real_driver and driver_version(data.get("gpuDriverVersion")):
         system["driver"] = driver_version(data.get("gpuDriverVersion"))
     system["graphics_api"] = "DX12"
     return system
@@ -398,7 +494,7 @@ def memory_defaults(memory_type, memory_channels):
     return memory_type.strip(), memory_channels
 
 
-def build_run(data, gpu_id, source, os_name, submitted_by, date, memory_type="", memory_channels=None, testbench_id=""):
+def build_run(data, gpu_id, source, os_name, submitted_by, date, memory_type="", memory_channels=None, testbench_id="", linux_detail=None, memory_gb=None):
     """The file-level fields shared by every run in one result file."""
     run = {"gpu_id": gpu_id}
     if testbench_id:
@@ -410,7 +506,7 @@ def build_run(data, gpu_id, source, os_name, submitted_by, date, memory_type="",
         run["version"] = str(data["gameVersion"])
     run["frame_generation"] = False
     run["result"] = []
-    run["system"] = build_system(data, os_name, memory_type, memory_channels)
+    run["system"] = build_system(data, os_name, memory_type, memory_channels, linux_detail, memory_gb)
     run["proof"] = {"method": "in_game_benchmark", "format": PROOF_FORMAT}
     return run
 
@@ -512,6 +608,23 @@ def write_run(path, run):
     path.write_text(header + text, encoding="utf-8")
 
 
+def load_custom_presets(path):
+    """A --custom-presets file: run folder name -> the named preset it started from.
+    Returns the map, or an error message."""
+    try:
+        mapping = yaml.safe_load(Path(path).expanduser().read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as error:
+        return f"Couldn't read --custom-presets {path}: {error}"
+    if not isinstance(mapping, dict) or not all(isinstance(key, str) and isinstance(value, str) for key, value in mapping.items()):
+        return f"--custom-presets {path} must map run folders to preset names, one per line: benchmark_2026-11-08_18-05-53: Low"
+    names = set(PRESETS.values())
+    unknown = sorted({value for value in mapping.values() if value not in names})
+    if unknown:
+        # A typo would start its own dashboard group, so only the game's preset names are allowed.
+        return f"--custom-presets {path} uses unknown preset(s) {', '.join(unknown)}; use one of: {', '.join(PRESETS.values())}"
+    return mapping
+
+
 def ask_custom_preset(folder, data, last):
     default = f" (Enter for '{last}')" if last else ""
     print(
@@ -534,6 +647,7 @@ def main(argv=None):
     parser.add_argument("--source", default="community", choices=checks.RESULT_SOURCES, help="community (default) or official (maintainer runs)")
     parser.add_argument("--submitted-by", default="", help="OPTIONAL - your GitHub username for community runs; leave it out to stay anonymous")
     parser.add_argument("--custom-preset", default="", help="Preset name for every Custom-preset run, for example High when you only turned upscaling off")
+    parser.add_argument("--custom-presets", default="", help="A YAML file naming the preset of each Custom run, one 'benchmark_<date>_<time>: High' line per run; wins over --custom-preset")
     parser.add_argument("--os", default="linux" if sys.platform.startswith("linux") else "windows", choices=checks.RESULT_OSES, help="Defaults to the OS this script runs on")
     parser.add_argument("--memory-type", default=None, help=f"Your RAM's type and speed; defaults to {DEFAULT_MEMORY_TYPE} with a warning")
     parser.add_argument("--memory-channels", type=int, default=None, help=f"RAM channels in use: 1 single, 2 dual, 4 quad, 8 on some servers; defaults to {DEFAULT_MEMORY_CHANNELS} with a warning")
@@ -578,6 +692,11 @@ def main(argv=None):
     print(f"Writing {checks.relative_path(out_dir)}/" + (" (dry run, nothing is written)" if args.dry_run else ""))
 
     custom_preset = args.custom_preset.strip()
+    custom_presets = load_custom_presets(args.custom_presets) if args.custom_presets else {}
+    if isinstance(custom_presets, str):
+        print(custom_presets)
+        return 1
+    linux_detail = linux_system_detail(input_dir) if args.os == "linux" and sys.platform.startswith("linux") else None
     can_ask = not args.dry_run and not custom_preset and sys.stdin.isatty()
     last_custom = ""
     previously = 0
@@ -613,19 +732,20 @@ def main(argv=None):
         if preset_key == CUSTOM_PRESET:
             if upscaling:
                 skip("Custom preset with upscaling on; re-run with upscaling off or on a named preset"); continue
-            preset = custom_preset
+            preset = custom_presets.get(folder.name) or custom_preset
             if not preset and can_ask:
                 preset = ask_custom_preset(folder, data, last_custom) or ""
                 last_custom = preset or last_custom
             if not preset:
-                skip("Custom preset needs a name; pass --custom-preset (for example High)"); continue
+                skip("Custom preset needs a name; pass --custom-preset (for example High) or list it in --custom-presets"); continue
         elif preset_key in PRESETS:
             preset = PRESETS[preset_key]
         else:
             skip(f"unknown preset '{preset_key}'"); continue
 
         date = run_date(folder.name)
-        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by, date, memory_type, memory_channels, args.testbench)
+        run = build_run(data, args.gpu_id, args.source, args.os, args.submitted_by, date, memory_type, memory_channels, args.testbench, linux_detail,
+                        bench.get("memory_gb") if bench else None)
         path = target_file(out_dir, date, run, planned)
         stats = frame_stats(folder, data)
         planned[path]["result"].append(build_entry(data, preset, folder.name, stats))

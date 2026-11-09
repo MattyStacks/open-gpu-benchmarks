@@ -62,3 +62,12 @@ testbenches:
       The maintainer's main PC, used before the 9800X3D bench. Once the RTX 5080 FE
       is re-run on the 9800X3D, either add counts_as: am5_9800x3d_ddr5 (results within
       margin of error) or delete these runs (clearly different).
+  - id: steam_machine_32gb_ddr5
+    name: Steam Machine · 32 GB DDR5-5600
+    status: active
+    platform: Steam Machine
+    cpu: AMD Custom CPU 1772
+    memory_gb: 32
+    memory_type: DDR5-5600
+    memory_channels: 2
+    notes: Valve's Steam Machine (6-core Zen 4) upgraded from the stock 1x16 GB to 2x16 GB SO-DIMMs. Only its own GPU (steam_machine_8gb_valve) runs on it. Its RAM can be swapped, so a different RAM setup gets a new bench rather than an edit to this one.

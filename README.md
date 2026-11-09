@@ -15,7 +15,9 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.14.0.0`: one command, `python scripts/preflight.py`, runs
+Current version: `v1.15.0.0`: the Steam Machine is in the catalog with 35
+official Cyberpunk 2077 runs, and the Cyberpunk importer records SteamOS/Proton
+detail and takes a `--custom-presets` file. v1.14.0.0: one command, `python scripts/preflight.py`, runs
 every check before a commit or push (Claude Code and a git hook run it
 automatically), with Playwright browser tests for the dashboard and failure
 messages that say how to fix each problem. v1.13.0.0: a `gpu-catalog` Copilot agent adds GPUs from
@@ -41,10 +43,10 @@ benchmark issue form. See [CHANGELOG.md](CHANGELOG.md) for every release and
 
 ## What's on the dashboard
 
-Published so far: 1 catalog GPU (the GeForce RTX 5080 Founders Edition), 309
-reference GPU specs ready for products to build on, 34 official runs (Cyberpunk
-2077's built-in benchmark on Windows), 1 community run (OpenBenchmarker Neon
-Flythrough at 4K), and 31 dashboard summaries.
+Published so far: 2 catalog GPUs (the GeForce RTX 5080 Founders Edition and the
+Steam Machine), 309 reference GPU specs ready for products to build on, 69
+official runs (Cyberpunk 2077's built-in benchmark on Windows and on SteamOS), 1
+community run (OpenBenchmarker Neon Flythrough at 4K), and 61 dashboard summaries.
 
 - **One bar per product.** A product is an exact card, laptop GPU, handheld, or
   iGPU, memory size included. Different memory sizes and board partners are

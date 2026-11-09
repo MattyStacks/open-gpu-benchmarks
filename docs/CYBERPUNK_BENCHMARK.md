@@ -61,6 +61,43 @@ To benchmark a preset at native resolution, pick the preset, turn only the
 upscaler off, and give the preset's name, such as `High`, when the script asks.
 A Custom run with an upscaler still on is skipped. Use a named preset for those.
 
+To name a whole batch of Custom runs at once, list them in a YAML file and
+pass it with `--custom-presets`. Each line is a run folder and the preset you
+started from; only the game's preset names are accepted, so a typo can't start
+a new dashboard group:
+
+```yaml
+benchmark_2026-11-08_18-05-53: Low
+benchmark_2026-11-08_18-10-32: High
+benchmark_2026-11-08_18-25-49: 'Ray Tracing: Low'
+```
+
+A run listed in the file uses that name; any other Custom run falls back to
+`--custom-preset` or the prompt.
+
+### SteamOS and the Steam Machine
+
+On a Steam Machine, a Steam Deck, or any Linux PC running the game through
+Proton, the script finds the runs in the game's Proton prefix by itself. In
+Desktop Mode, open a terminal in the repository and run:
+
+```bash
+source .venv/bin/activate
+python scripts/import_cyberpunk.py --gpu-id steam_machine_8gb_valve --dry-run
+```
+
+A stock Steam Machine has 16 GB of single-channel DDR5, so pass
+`--memory-type DDR5-5600 --memory-channels 1` (or `2` if you added a second
+SO-DIMM). The RAM can be swapped, so check it each time:
+`udevadm info -e | grep -E 'MEMORY_DEVICE_[0-9]+_(SIZE|TYPE|CONFIGURED_SPEED_MTS|BANK_LOCATOR)='`
+lists each stick without sudo. `cat /sys/class/dmi/id/sys_vendor /sys/class/dmi/id/product_name`
+prints `Valve` and `Fremont` on a Steam Machine.
+
+On Linux the script also records your distro, kernel, Mesa, and Proton
+versions (see [The result file](#the-result-file)). They describe the
+computer as it is when you import, so import soon after benchmarking, before
+a SteamOS or Proton update.
+
 ## 2. Set up the repository (once)
 
 Follow [CONTRIBUTING.md](../CONTRIBUTING.md) to fork and clone the repository
@@ -192,6 +229,7 @@ python scripts/import_cyberpunk.py --gpu-id <id> [options]
 | `--gpu-id <id>` | **Required.** The catalog ID of the GPU that ran the benchmarks. Runs from a different GPU are skipped. |
 | `--dry-run` | Shows what would be imported and writes nothing. |
 | `--custom-preset <name>` | The preset name to use for every Custom-preset run, for example `High`, instead of being asked for each one. |
+| `--custom-presets <file>` | A YAML file naming the preset of each Custom run, one `benchmark_<date>_<time>: High` line per run. It wins over `--custom-preset`. |
 | `--submitted-by <github-username>` | Shows your GitHub username with the runs. Leave it out to stay anonymous. Community runs only. |
 | `--input <folder>` | The `benchmarkResults` folder, if the script can't find it on its own. |
 | `--os windows` or `--os linux` | The OS the benchmarks ran on. It defaults to the OS you run the script on. |
@@ -278,12 +316,14 @@ Where each value comes from in the run folder (`summary.json` unless noted):
 | `result[].display_mode` | `windowMode` | Per run, because it can change between runs. |
 | `system.os` | `--os` | `windows` or `linux`. |
 | `system.os_detail`, `os_build` | `osName`, `osVersion` | Windows only. On Linux, `os_detail` comes from `/etc/os-release`, because Proton reports a Windows version. |
+| `system.distro`, `distro_version`, `kernel`, `mesa` | this computer | Linux only: `/etc/os-release`, `uname -r`, and the installed Mesa (glxinfo or the package manager). Left out when they can't be read. |
+| `system.runtime`, `proton`, `launcher` | the Proton prefix | Linux only, when the runs are in a Steam Proton prefix: `proton`, the prefix's `version` file (such as `11.0-100`), and `Steam`. |
 | `system.cpu` | `cpuName` | |
-| `system.memory_gb` | `systemMemory` | Converted from MB to a whole number of GB, for example `64`. |
+| `system.memory_gb` | `systemMemory` | Converted from MB to a whole number of GB, for example `64`. With `--testbench`, the bench's `memory_gb`, because the game reports a little less than what's installed. |
 | `system.memory_type` | `--memory-type` | For example `DDR5-6000`, the default when the option is left out (with a warning). The game doesn't report it. With `--testbench`, the bench's type is used. |
 | `system.memory_channels` | `--memory-channels` | A whole number: 1 single, 2 dual, 4 quad. Defaults to `2` with a warning, or the bench's with `--testbench`. |
 | `testbench_id` | `--testbench` | Official desktop runs only. |
-| `system.driver` | `gpuDriverVersion` | NVIDIA's `Nvidia v 61714 [r617_07]` becomes `617.14`; other drivers are kept as written. |
+| `system.driver` | `gpuDriverVersion` | NVIDIA's `Nvidia v 61714 [r617_07]` becomes `617.14`; other drivers are kept as written. On Linux only NVIDIA's is kept, because Proton reports a made-up AMD or Intel version; the real driver is `mesa`. |
 | `system.graphics_api` | | Always `DX12`, the game's only API. |
 | `proof.method` | | Always `in_game_benchmark`. |
 

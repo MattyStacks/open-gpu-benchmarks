@@ -9,6 +9,25 @@ found broken, or were asked to do later. This applies to people and to every
 AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
 `.github/copilot-instructions.md`.
 
+## Steam Machine follow-ups
+
+- [ ] **Detect the Steam Machine in openbenchmarker's GPU helper.** The Linux
+  command in `openbenchmarker/src/benchmark/sysinfo.ts` decides laptop or
+  desktop from the DMI chassis type, so a Steam Machine prints "Computer
+  type: laptop" and `Navi 33 [Radeon Graphics] (8 GB) [board 1e44]`, which
+  matches no catalog ID. Read `/sys/class/dmi/id/sys_vendor` and
+  `product_name` (`Valve`, `Fremont`) and map the machine to
+  `steam_machine_8gb_valve` (desktop); add PCI subsystem vendor `1e44`
+  (Valve) to `BOARD_BRANDS`; refresh its catalog snapshot.
+- [ ] **`memory_gb` on community Cyberpunk imports.** Without `--testbench`
+  the importer rounds `systemMemory`, which the game reports a little low
+  (31952 MB for 32 GB), so a machine with reserved memory can come out one or
+  more GB short. Consider rounding up, or a `--memory-gb` option, and mind
+  the `_2` split that a changed value causes for files already imported.
+- [ ] **Linux detail for `parse.py`.** MangoHud captures don't fill
+  `distro`, `kernel`, `mesa`, or `proton` the way `import_cyberpunk.py` now
+  does; share the helpers.
+
 ## Catalog follow-ups
 
 The four-step catalog plan is complete. These items finish it off.

@@ -1,0 +1,39 @@
+id: steam_machine_8gb_valve
+identity:
+  name: Steam Machine
+  gpu_vendor: amd
+  board_partner: Valve
+classification:
+  form_factor: desktop
+  architecture: RDNA 3
+memory:
+  capacity_gb: 8
+  type: GDDR6
+clocks:
+  boost_mhz: 2450
+power:
+  tdp_w: 110
+release:
+  date: '2026-06-29'
+notes: >-
+  Valve's living-room PC with a semi-custom AMD RDNA 3 GPU (28 compute units,
+  comparable to the Radeon RX 7600M) and 8 GB of GDDR6, next to a 6-core Zen 4
+  CPU. Listed as a desktop because the GPU only ships inside this machine;
+  Mesa reports it as "AMD Steam Machine (RADV NAVI33)". System RAM is upgradeable (two
+  SO-DIMM slots), so it's recorded per run and each RAM setup is its own test
+  bench.
+sources:
+  - url: https://store.steampowered.com/sale/steammachine
+    title: Steam Machine
+    accessed: '2026-11-09'
+    covers:
+      - identity
+  - url: https://en.wikipedia.org/wiki/Steam_Machine
+    title: Steam Machine - Wikipedia
+    accessed: '2026-11-09'
+    covers:
+      - classification
+      - memory
+      - clocks
+      - power
+      - release

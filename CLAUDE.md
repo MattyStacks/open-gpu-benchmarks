@@ -90,7 +90,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.15.1.0` (`RELEASE_VERSION` in
+- Current development version: `v1.16.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -168,7 +168,10 @@ docs/PROCESSING_ISSUES.md          what a maintainer does with a needs-maintaine
 scripts/preflight.py               every local check in one command (--fast before a commit,
                                    default before a push/PR); reports all failures with fixes
 tests/e2e/                         Playwright browser tests for the dashboard (own package.json);
-                                   serve_fixtures.py builds the fixtures into tests/e2e/.site
+                                   serve_fixtures.py builds the fixtures into tests/e2e/.site.
+                                   CI runs them in the mcr.microsoft.com/playwright:v<version>-noble
+                                   image, whose tag must equal @playwright/test (bump them together;
+                                   test_build.check_playwright_image)
 tests/fixtures/api_shape.json      every API payload key; changes only with SCHEMA_VERSION
                                    (rewrite it: python scripts/test_build.py --update-shape)
 .claude/settings.json              Claude Code hook: .claude/hooks/preflight_gate.py runs preflight
@@ -458,7 +461,7 @@ One-time setup (Node 22.12+):
 python -m pip install -r requirements.txt
 npm --prefix blog ci                            # again after blog/package-lock.json changes
 npm --prefix tests/e2e ci                       # the Playwright browser tests
-npx --prefix tests/e2e playwright install chromium   # Linux CI adds --with-deps; SteamOS/Arch can't
+npx --prefix tests/e2e playwright install chromium   # local only; CI uses the Playwright image
 git config core.hooksPath .githooks             # pre-push runs preflight for you
 ```
 

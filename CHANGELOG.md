@@ -32,6 +32,27 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.16.0.0 - 2026-11-09
+
+Faster browser tests in CI.
+
+### Changed
+
+- The "Dashboard (browser)" check runs in Microsoft's
+  `mcr.microsoft.com/playwright:v1.64.1-noble` image, which already has
+  Chromium and its system libraries. That drops the
+  `playwright install --with-deps` step, which took about 3 minutes of every run.
+  The image has no Python, so the job makes its `.venv` with `uv`.
+- `build.yml` runs the browser tests in their own job, in the same image,
+  beside the build. Both deploys wait for it, so a failure still stops the
+  deploy, but it no longer adds to the deploy time.
+
+### Added
+
+- `test_build.check_playwright_image`: both workflows must use the Playwright
+  image whose tag equals `@playwright/test` in `tests/e2e/package.json`, and
+  must not run `playwright install`.
+
 ## 1.15.1.0 - 2026-11-09
 
 The first handhelds in the catalog, ready for benchmarks.

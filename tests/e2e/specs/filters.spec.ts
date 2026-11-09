@@ -1,4 +1,4 @@
-import { test, expect, fixtureData, openDashboard, defaultView, type DashboardRecord } from "../helpers";
+import { test, expect, fixtureData, openDashboard, defaultView, chooseGame, type DashboardRecord } from "../helpers";
 
 // Filters: each chip, button, and the search box shows exactly the records a
 // plain filter over dashboard.json gives. The model below is the spec; if a test
@@ -62,15 +62,50 @@ test("every OS, platform, and upscaling chip hides exactly its own records", asy
 });
 
 test("the featured baseline benchmark is listed first and opens by default", async ({ page }) => {
-  const featured = fixtureData().dashboard.games.filter((game) => game.featured);
+  const { games } = fixtureData().dashboard;
+  const featured = games.filter((game) => game.featured);
   expect(featured.length, "the fixtures need exactly one featured game (featured: true in tests/fixtures/data/games.yaml) to test the default").toBe(1);
   await openDashboard(page);
-  const select = page.locator("#game-select");
-  await expect(select, "the baseline benchmark run on every system must be what the dashboard opens on").toHaveValue(featured[0].id);
-  expect(await select.locator("option").first().getAttribute("value"), "the baseline benchmark must be the first entry in the picker")
-    .toBe(featured[0].id);
-  expect(await select.locator("optgroup").first().getAttribute("label"), "the baseline benchmark gets its own group at the top")
-    .toBe("Baseline benchmark");
+  const box = page.locator("#game-search");
+  await expect(box, "the baseline benchmark run on every system must be what the dashboard opens on").toHaveValue(featured[0].name);
+  await box.click();
+  const list = page.locator("#game-list");
+  await expect(list).toBeVisible();
+  await expect(list.locator("[role=option]").first(), "the baseline benchmark must be the first entry in the picker")
+    .toHaveAttribute("data-game", featured[0].id);
+  await expect(list.locator(".combo-group").first(), "the baseline benchmark gets its own group at the top").toHaveText("Baseline benchmark");
+  await expect(list.locator("[role=option]"), "the open list shows every benchmark that has results").toHaveCount(games.length);
+});
+
+test("the benchmark picker searches as you type", async ({ page }) => {
+  const { games } = fixtureData().dashboard;
+  const target = games.find((game) => !game.featured)!;
+  const word = target.name.split(" ").find((part) => games.filter((game) => game.name.toLowerCase().includes(part.toLowerCase())).length === 1)!;
+  expect(word, `the fixtures need a word only ${target.name} has, to search for`).toBeTruthy();
+  await openDashboard(page);
+  const box = page.locator("#game-search");
+  const options = page.locator("#game-list [role=option]");
+  await box.click();
+  await expect(box, "opening the list empties the box so typing starts a new search").toHaveValue("");
+  await box.pressSequentially(word.toLowerCase());
+  await expect(options, `searching "${word}" (any case) leaves only ${target.name}`).toHaveCount(1);
+  await expect(options.first()).toHaveText(target.name);
+  await box.press("Enter");
+  await expect(page.locator("#game-list"), "Enter picks the highlighted match and closes the list").toBeHidden();
+  await expect(box).toHaveValue(target.name);
+  const resolution = fixtureData().dashboard.records.find((record) => record.game_id === target.id)!.resolution;
+  expect(await shown(page), "picking from the search shows that game's records").toBe(expectedCount({ game: target.id, resolution }));
+
+  await box.click();
+  await box.pressSequentially("zzz no such benchmark");
+  await expect(page.locator("#game-list .combo-empty"), "a search with no matches says so instead of showing an empty box").toHaveText("No benchmarks match");
+  await box.press("Escape");
+  await expect(box, "Escape closes the list and keeps the current pick").toHaveValue(target.name);
+
+  await box.click();
+  await box.press("ArrowDown");
+  await box.press("Enter");
+  await expect(box, "the arrow keys move through the list").not.toHaveValue(target.name);
 });
 
 test("source buttons, search, game, and resolution", async ({ page }) => {
@@ -90,7 +125,7 @@ test("source buttons, search, game, and resolution", async ({ page }) => {
   for (const game of fixtureData().dashboard.games) {
     const resolutions = [...new Set(fixtureData().dashboard.records.filter((r) => r.game_id === game.id).map((r) => r.resolution))];
     if (!resolutions.length) continue;
-    await page.locator("#game-select").selectOption(game.id);
+    await chooseGame(page, game.id);
     const options = await page.locator("#resolution-select option").allTextContents();
     expect(options, `${game.id}: the resolution menu lists exactly the resolutions that game has`).toEqual(resolutions);
     expect(await shown(page)).toBe(expectedCount({ game: game.id, resolution: resolutions[0] }));

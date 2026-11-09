@@ -22,6 +22,9 @@
     benchmark run on every system: `build.py` sorts it first in
     `dashboard.json` games, and the dashboard opens on it under a
     "Baseline benchmark" group (schema 0.20 → 0.21, games carry `featured`).
+    The picker is a searchable combobox (`#game-search` + `#game-list`,
+    `renderGameList()` in `index.html`), no longer a native `<select>`;
+    e2e specs pick games through `chooseGame()` in `tests/e2e/helpers.ts`.
   - v1.16.0.0: the browser tests run in Microsoft's Playwright image in CI
     (no 3 minute browser install), and in `build.yml` beside the build
     instead of before the deploy; `check_playwright_image` keeps the image

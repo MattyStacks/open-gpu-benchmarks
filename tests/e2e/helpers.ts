@@ -101,8 +101,10 @@ export async function tableRows(page: Page) {
   });
 }
 
+/** Pick a benchmark the way a person does: open the searchable list and click its option. */
 export async function chooseGame(page: Page, gameId: string) {
-  await page.locator("#game-select").selectOption(gameId);
+  await page.locator("#game-search").click();
+  await page.locator(`#game-list [role=option][data-game="${gameId}"]`).click();
 }
 
 /** The default view: the featured game (else the first "game" type entry), its first resolution, every chip on. */

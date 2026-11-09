@@ -17,7 +17,8 @@ The blog has posts, guides, and reviews built on the same data.
 
 Current version: `v1.17.0.0`: the Cyberpunk results are named as the game's
 built-in benchmark (`cyberpunk_2077_benchmark`), and that baseline benchmark is
-listed first and opens the dashboard (`featured: true` in `data/games.yaml`).
+listed first and opens the dashboard (`featured: true` in `data/games.yaml`),
+and the Benchmark picker is wider and searchable.
 v1.16.0.0: the dashboard's browser tests run in CI
 about 2 minutes faster, in Microsoft's Playwright image, and no longer hold
 up the deploy. v1.15.1.0: the first handhelds in the catalog (Steam Deck

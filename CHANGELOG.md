@@ -54,6 +54,10 @@ Cyberpunk 2077's built-in benchmark is named as such, and it always opens the da
   built-in benchmark is featured. At most one game may set it (new rule
   `game-featured`); `dashboard.json` and `games.json` games carry `featured`
   (schema 0.20 → 0.21).
+- The Benchmark picker is wider and searchable: type part of a name or ID
+  (every word must match, any case), move with the arrow keys, and pick with
+  Enter or a click; Escape keeps the current pick. The groups (Baseline
+  benchmark first) stay in the list.
 
 ## 1.16.0.0 - 2026-11-09
 

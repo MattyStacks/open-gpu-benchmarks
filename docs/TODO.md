@@ -26,6 +26,13 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
   per day and setup with every run in `result`, keep the Linux detail on it,
   and offer an official layout (`data/official/`, `testbench_id`) for
   maintainer runs.
+- [ ] **Make the Steam Machine MangoHud bundler write repo-ready files.** The
+  Helldivers 2 bundles (v1.17.2.0) wrote one `result_YYYYMMDD_GAME_ID_REQUIRED.yaml`
+  per run with no `gpu_id`, `game_id`, or `testbench_id`, `1920x1080` instead
+  of `1080p`, upper-case preset names (`STEAM DECK`), and a per-file `raw_log`;
+  they were merged by hand into one file. The bundles also record no Proton
+  version or graphics API (Helldivers 2 is DX12 through VKD3D), so those
+  fields are missing on the runs.
 - [ ] **`memory_gb` on community Cyberpunk imports.** Without `--testbench`
   the importer rounds `systemMemory`, which the game reports a little low
   (31952 MB for 32 GB), so a machine with reserved memory can come out one or

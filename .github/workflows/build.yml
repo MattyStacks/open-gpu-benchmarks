@@ -61,10 +61,11 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
     steps:
       - uses: actions/checkout@v4
+      # No pip cache here: setup-python's cache needs lsb_release, which the
+      # image doesn't have, and PyYAML and NumPy install in seconds.
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: pip
       - run: pip install -r requirements.txt
       - uses: actions/setup-node@v4
         with:

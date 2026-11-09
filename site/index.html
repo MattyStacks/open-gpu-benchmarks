@@ -71,8 +71,9 @@
     .header-actions,.source-switch,.metrics { display:flex; align-items:center; gap:8px; flex-wrap:wrap; } .version { font-size:11px; color:var(--muted); border-left:1px solid var(--border); padding-left:18px; }
     .button,.chip,.source-switch button { border:1px solid var(--border); color:var(--muted); background:var(--panel); border-radius:999px; padding:7px 11px; font-size:12px; font-weight:650; transition:.16s ease; } .button:hover,.chip:hover,.source-switch button:hover { color:var(--text); border-color:color-mix(in srgb, var(--accent) 55%, var(--border)); } .source-switch button.active { background:var(--text); color:var(--bg); border-color:var(--text); } .icon-button { width:38px; height:38px; padding:0; display:grid; place-items:center; }
     main { padding-top:28px; } .notice { border:1px solid color-mix(in srgb,var(--warning) 45%,var(--border)); background:color-mix(in srgb,var(--warning) 8%,var(--panel)); border-radius:12px; padding:12px 14px; color:var(--text); margin-bottom:18px; font-size:13px; } .hidden { display:none!important; }
-    .toolbar,.panel { background:color-mix(in srgb,var(--panel) 92%,transparent); border:1px solid var(--border); border-radius:16px; } .toolbar { padding:16px; display:grid; grid-template-columns:minmax(180px,1.1fr) minmax(120px,.65fr) minmax(130px,.8fr) 1.5fr auto auto; gap:14px; align-items:end; } label { color:var(--muted); display:block; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:7px; } select,input[type="search"] { width:100%; color:var(--text); background:var(--panel-strong); border:1px solid var(--border); border-radius:9px; padding:9px 10px; outline:none; } select:focus,input[type="search"]:focus { border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent); }
+    .toolbar,.panel { background:color-mix(in srgb,var(--panel) 92%,transparent); border:1px solid var(--border); border-radius:16px; } .toolbar { padding:16px; display:grid; grid-template-columns:minmax(300px,1.7fr) minmax(120px,.65fr) minmax(130px,.8fr) 1.5fr auto auto; gap:14px; align-items:end; } label { color:var(--muted); display:block; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:7px; } select,input[type="search"],.combo input { width:100%; color:var(--text); background:var(--panel-strong); border:1px solid var(--border); border-radius:9px; padding:9px 10px; outline:none; } select:focus,input[type="search"]:focus,.combo input:focus { border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent); }
     .chip-row { display:flex; flex-wrap:wrap; gap:6px; } .chip.active { background:color-mix(in srgb,var(--accent) 18%,var(--panel)); color:var(--text); border-color:color-mix(in srgb,var(--accent) 65%,var(--border)); } .metric { display:flex; align-items:center; gap:6px; color:var(--text); font-size:12px; white-space:nowrap; } .metric input { accent-color:var(--accent); }
+    .combo { position:relative; min-width:0; } .combo-field { position:relative; } .combo input { padding-right:30px; text-overflow:ellipsis; } .combo-caret { position:absolute; right:12px; top:50%; width:7px; height:7px; margin-top:-6px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); pointer-events:none; } .combo-list { position:absolute; z-index:20; top:calc(100% + 4px); left:0; min-width:100%; width:max-content; max-width:min(520px,calc(100vw - 32px)); max-height:340px; overflow:auto; padding:6px; background:var(--panel-strong); border:1px solid var(--border); border-radius:10px; box-shadow:0 12px 32px rgba(0,0,0,.28); } .combo-group { color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:8px 10px 4px; } .combo-option { padding:7px 10px 7px 24px; border-radius:7px; cursor:pointer; color:var(--text); font-size:14px; position:relative; overflow-wrap:anywhere; } .combo-option[aria-selected="true"] { font-weight:700; } .combo-option[aria-selected="true"]::before { content:"✓"; position:absolute; left:8px; color:var(--accent); } .combo-option.active { background:color-mix(in srgb,var(--accent) 16%,transparent); } .combo-empty { padding:9px 10px; color:var(--muted); font-size:13px; }
     .grid { display:grid; grid-template-columns:minmax(0,1fr) 310px; gap:18px; margin-top:18px; } .panel { padding:18px; } .panel-heading { display:flex; align-items:start; justify-content:space-between; gap:12px; margin-bottom:14px; } h2 { font-size:15px; letter-spacing:-.02em; } .subtle { color:var(--muted); font-size:12px; margin-top:4px; } #chart { width:100%; height:490px; } .empty { height:340px; display:grid; place-items:center; color:var(--muted); font-size:14px; text-align:center; padding:30px; }
     .summary-list { display:grid; gap:10px; } .summary { padding:12px; background:var(--panel-strong); border:1px solid var(--border); border-radius:11px; } .summary strong { display:block; font-size:18px; letter-spacing:-.04em; } .summary span { color:var(--muted); display:block; font-size:11px; margin-top:3px; } .legend { display:flex; gap:12px; color:var(--muted); font-size:11px; } .legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; } .synthetic { color:var(--warning); font-size:12px; line-height:1.5; }
     .table-panel { margin-top:18px; overflow:hidden; } .table-toolbar { display:flex; justify-content:space-between; align-items:end; gap:16px; flex-wrap:wrap; margin-bottom:14px; } .table-wrap { overflow:auto; border:1px solid var(--border); border-radius:11px; } table { width:100%; border-collapse:collapse; min-width:1600px; font-size:13px; } th { background:var(--panel-strong); color:var(--muted); text-align:left; padding:10px 12px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; } td { border-top:1px solid var(--border); padding:11px 12px; } tr.selected { background:color-mix(in srgb,var(--accent) 9%,transparent); } .name { font-weight:700; } .detail { color:var(--muted); font-size:11px; margin-top:3px; } .badge { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); border-radius:999px; padding:3px 7px; font-size:10px; font-weight:700; text-transform:uppercase; } .badge.official { color:var(--official); border-color:color-mix(in srgb,var(--official) 40%,var(--border)); } .badge.community { color:var(--community); border-color:color-mix(in srgb,var(--community) 40%,var(--border)); } .proof { color:var(--muted); font-size:11px; }
@@ -132,9 +133,13 @@
     <noscript><p class="notice">The interactive dashboard needs JavaScript. Every summary is also on the <a href="benchmarks/">plain benchmark tables</a> page and in <a href="llms-full.txt">llms-full.txt</a>.</p></noscript>
     <p class="notice hidden" id="error-notice" role="alert"></p>
     <section class="toolbar" aria-label="Benchmark filters">
-      <div>
-        <label for="game-select">Benchmark</label>
-        <select id="game-select"></select>
+      <div class="combo" id="game-combo">
+        <label for="game-search">Benchmark</label>
+        <div class="combo-field">
+          <input id="game-search" type="text" role="combobox" aria-expanded="false" aria-controls="game-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search benchmarks">
+          <span class="combo-caret" aria-hidden="true"></span>
+        </div>
+        <div class="combo-list hidden" id="game-list" role="listbox" aria-label="Benchmarks"></div>
       </div>
       <div>
         <label for="resolution-select">Resolution</label>
@@ -333,7 +338,7 @@
     const upscalingKindLabels = { native: "Native", upscaled: "Upscaled" };
     const elements = {
       error: document.querySelector("#error-notice"), version: document.querySelector("#build-version"),
-      game: document.querySelector("#game-select"), resolution: document.querySelector("#resolution-select"),
+      game: document.querySelector("#game-search"), gameList: document.querySelector("#game-list"), resolution: document.querySelector("#resolution-select"),
       preset: document.querySelector("#preset-select"),
       factors: document.querySelector("#factor-filters"), oses: document.querySelector("#os-filters"), upscalingFilters: document.querySelector("#upscaling-filters"),
       linuxLegend: document.querySelector("#linux-legend"), avg: document.querySelector("#avg-toggle"),
@@ -664,21 +669,105 @@
 
     const GAME_TYPE_LABELS = { game: "Games", synthetic: "Synthetic benchmarks", engine_demo: "Engine demos" };
 
-    // The benchmark picker: option values are game IDs, grouped by registry type.
-    function setGameOptions(select, games, selected) {
-      const groups = Object.entries(GAME_TYPE_LABELS).map(([type, label]) => {
-        const group = document.createElement("optgroup");
-        group.label = label;
-        group.append(...games.filter((game) => game.type === type).map((game) => {
-          const option = document.createElement("option");
-          option.value = game.id;
+    const FEATURED_GAME_LABEL = "Baseline benchmark";
+
+    // The benchmark picker: a searchable list of game IDs. The featured game (the
+    // baseline benchmark run on every system) gets its own group first; the rest
+    // are grouped by registry type. Typing filters by name, ID, or group, and
+    // every word must match; arrows move, Enter picks, Escape closes.
+    const gamePicker = { active: -1, options: [] };
+
+    function gameSections(games) {
+      return [
+        [FEATURED_GAME_LABEL, games.filter((game) => game.featured)],
+        ...Object.entries(GAME_TYPE_LABELS).map(([type, label]) => [label, games.filter((game) => !game.featured && game.type === type)]),
+      ].filter(([, list]) => list.length);
+    }
+
+    function renderGameList(query) {
+      const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const matches = (game, label) => words.every((word) => `${game.name} ${game.id} ${label}`.toLowerCase().includes(word));
+      const nodes = [];
+      gamePicker.options = [];
+      for (const [label, games] of gameSections(state.data.games)) {
+        const shown = games.filter((game) => matches(game, label));
+        if (!shown.length) continue;
+        const heading = document.createElement("div");
+        heading.className = "combo-group";
+        heading.setAttribute("role", "presentation");
+        heading.textContent = label;
+        nodes.push(heading);
+        for (const game of shown) {
+          const option = document.createElement("div");
+          option.className = "combo-option";
+          option.id = `game-option-${game.id}`;
+          option.setAttribute("role", "option");
+          option.setAttribute("aria-selected", String(game.id === state.game));
+          option.dataset.game = game.id;
           option.textContent = game.name;
-          option.selected = game.id === selected;
-          return option;
-        }));
-        return group;
-      }).filter((group) => group.children.length);
-      select.replaceChildren(...groups);
+          gamePicker.options.push(option);
+          nodes.push(option);
+        }
+      }
+      if (!gamePicker.options.length) {
+        const empty = document.createElement("div");
+        empty.className = "combo-empty";
+        empty.textContent = "No benchmarks match";
+        nodes.push(empty);
+      }
+      elements.gameList.replaceChildren(...nodes);
+      const selected = gamePicker.options.findIndex((option) => option.dataset.game === state.game);
+      setActiveGame(words.length ? 0 : Math.max(selected, 0));
+    }
+
+    function setActiveGame(index) {
+      gamePicker.active = gamePicker.options.length ? (index + gamePicker.options.length) % gamePicker.options.length : -1;
+      gamePicker.options.forEach((option, position) => option.classList.toggle("active", position === gamePicker.active));
+      const active = gamePicker.options[gamePicker.active];
+      if (active) {
+        elements.game.setAttribute("aria-activedescendant", active.id);
+        // Scroll only the list (scrollIntoView would also scroll the page).
+        const list = elements.gameList;
+        if (active.offsetTop < list.scrollTop) list.scrollTop = active.offsetTop;
+        else if (active.offsetTop + active.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = active.offsetTop + active.offsetHeight - list.clientHeight;
+      } else {
+        elements.game.removeAttribute("aria-activedescendant");
+      }
+    }
+
+    // Opening empties the box so typing starts a fresh search; the current pick stays visible as the placeholder.
+    // keepText is for a keystroke that opened the list: that text is the search.
+    function openGameList(keepText = false) {
+      if (!elements.gameList.classList.contains("hidden")) return;
+      elements.game.placeholder = gameName(state.game);
+      if (keepText !== true) elements.game.value = "";
+      renderGameList(elements.game.value);
+      elements.gameList.classList.remove("hidden");
+      elements.game.setAttribute("aria-expanded", "true");
+    }
+
+    // Close the list and show the chosen game's name again (any search text is dropped).
+    function closeGameList() {
+      elements.gameList.classList.add("hidden");
+      elements.game.setAttribute("aria-expanded", "false");
+      elements.game.removeAttribute("aria-activedescendant");
+      showSelectedGame();
+    }
+
+    function showSelectedGame() {
+      elements.game.placeholder = "Search benchmarks";
+      elements.game.value = gameName(state.game);
+      elements.game.title = elements.game.value;
+    }
+
+    function chooseGame(id) {
+      const changed = id !== state.game;
+      state.game = id;
+      closeGameList();
+      if (changed) {
+        refreshResolutionOptions();
+        render();
+      }
     }
 
     function gameName(id) {
@@ -1247,10 +1336,11 @@
           renderPicks();
           return;
         }
+        // Open on the featured baseline benchmark; without one, the first entry of the first type.
         const firstType = Object.keys(GAME_TYPE_LABELS).find((type) => state.data.games.some((game) => game.type === type));
-        state.game = state.data.games.find((game) => game.type === firstType).id;
+        state.game = (state.data.games.find((game) => game.featured) ?? state.data.games.find((game) => game.type === firstType)).id;
         refreshResolutionOptions();
-        setGameOptions(elements.game, state.data.games, state.game);
+        showSelectedGame();
         state.factors = new Set(platforms());
         state.graphicsPreset = "All";
         setOptions(elements.preset, ["All", ...state.data.graphics_presets], state.graphicsPreset);
@@ -1265,7 +1355,35 @@
     }
 
     document.querySelectorAll("[data-source]").forEach((button) => button.addEventListener("click", () => { state.source = button.dataset.source; render(); }));
-    elements.game.addEventListener("change", () => { state.game = elements.game.value; refreshResolutionOptions(); render(); });
+    elements.game.addEventListener("focus", () => openGameList());
+    elements.game.addEventListener("click", () => openGameList());
+    elements.game.addEventListener("input", () => {
+      if (elements.gameList.classList.contains("hidden")) openGameList(true);
+      else renderGameList(elements.game.value);
+    });
+    elements.game.addEventListener("keydown", (event) => {
+      const open = !elements.gameList.classList.contains("hidden");
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        if (!open) return openGameList();
+        setActiveGame(gamePicker.active + (event.key === "ArrowDown" ? 1 : -1));
+      } else if (event.key === "Enter" && open) {
+        event.preventDefault();
+        const active = gamePicker.options[gamePicker.active];
+        if (active) chooseGame(active.dataset.game);
+      } else if (event.key === "Escape" && open) {
+        event.preventDefault();
+        closeGameList();
+        elements.game.select(); // so the next keystroke starts a new search
+      }
+    });
+    elements.game.addEventListener("blur", () => { if (!elements.gameList.classList.contains("hidden")) closeGameList(); });
+    // mousedown, not click: picking happens before the input's blur closes the list.
+    elements.gameList.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      const option = event.target.closest(".combo-option");
+      if (option) chooseGame(option.dataset.game);
+    });
     elements.resolution.addEventListener("change", () => { state.resolution = elements.resolution.value; render(); });
     elements.preset.addEventListener("change", () => { state.graphicsPreset = elements.preset.value; render(); });
     elements.search.addEventListener("input", () => { state.search = elements.search.value; render(); });

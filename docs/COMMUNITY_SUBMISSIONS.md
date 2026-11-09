@@ -84,7 +84,7 @@ data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml
 For example:
 
 ```text
-data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077.yaml
+data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077_benchmark.yaml
 ```
 
 Ran Cyberpunk 2077's built-in benchmark? `scripts/import_cyberpunk.py` writes
@@ -101,7 +101,7 @@ that doesn't exist. The same goes for the game: `game_id` must be in
 same pull request (see [Adding a game or benchmark](#adding-a-game-or-benchmark)).
 
 For a second file with the same date and game, add a number:
-`result_20261003_cyberpunk_2077_2.yaml`.
+`result_20261003_cyberpunk_2077_benchmark_2.yaml`.
 
 ## Adding a game or benchmark
 
@@ -131,6 +131,7 @@ pull request as your results.** Copy an entry and fill in four lines:
 | `igdb_id` | no | The game's numeric IGDB ID. |
 | `url` | no | An https link to the game's official or store page. |
 | `notes` | no | Anything that tells it apart from a similar entry. |
+| `featured` | no | Maintainers only: `true` on the one baseline benchmark run on every system. The dashboard lists it first and opens on it. |
 
 The store IDs and `url` are optional because not every game is on Steam or has
 a page. **If the game has one, add it**: it pins down exactly which game the
@@ -142,7 +143,10 @@ Anniversary, Enhanced, Next-Gen, VR), or a different test (3DMark Steel Nomad
 and Steel Nomad Light) performs differently, so it gets its own ID, such as
 `skyrim_special_edition` and `skyrim_anniversary_edition`. A patch or a game
 update does not: put that in the result file's `version` field. Version is
-recorded on each run, but it never splits a group.
+recorded on each run, but it never splits a group. A game's built-in benchmark
+tool is also its own entry, apart from gameplay: Cyberpunk 2077's is
+`cyberpunk_2077_benchmark`, "Cyberpunk 2077 (built-in benchmark)", which
+leaves `cyberpunk_2077` for gameplay captures.
 
 The `game-*` rules under [What the checks mean](#what-the-checks-mean) explain
 each registry error.
@@ -241,7 +245,7 @@ treat it as the order of runs within the day, not an exact moment.
 
 ```yaml
 gpu_id: rtx_5080_16gb_fe
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-13'
 result:
   - time: '18:44'
@@ -692,7 +696,7 @@ handheld you tested, such as `rtx_5080_16gb_fe` rather than `rtx_5080_16gb`.
 #### `result-game-id`
 
 The file has no `game_id`, or it still uses the old free-text `game` key.
-Replace `game: Cyberpunk 2077` with `game_id: cyberpunk_2077`; the message
+Replace `game: Cyberpunk 2077` with `game_id: cyberpunk_2077_benchmark`; the message
 names the ID when the old name matches a registry entry. If the game isn't
 registered yet, add it to `data/games.yaml` in the same pull request (see
 [Adding a game or benchmark](#adding-a-game-or-benchmark)).
@@ -727,19 +731,27 @@ A `data/games.yaml` entry is wrong. One of these happened:
 - `year` isn't a release year written as a plain number, such as `2022`
 - `steam_appid` or `igdb_id` isn't a whole number without quotes
 - `url` isn't an https:// link
+- `featured` is set to something other than `true` (leave it out instead)
 - a field isn't one of `id`, `name`, `type`, `year`, `steam_appid`, `igdb_id`,
-  `url`, or `notes`
+  `url`, `notes`, or `featured`
 
 #### `game-id-format`
 
 A game `id` may only use lowercase letters, digits, and single underscores,
-such as `cyberpunk_2077` or `3dmark_steel_nomad`.
+such as `cyberpunk_2077_benchmark` or `3dmark_steel_nomad`.
 
 #### `game-duplicate`
 
 Two entries share an `id`, or two share a `name` (ignoring case). Each edition
 or test gets one entry with its own ID and its own name, such as
 `Skyrim Special Edition` and `Skyrim Anniversary Edition`.
+
+#### `game-featured`
+
+More than one entry sets `featured: true`. The featured entry is the baseline
+benchmark the maintainer runs on every system, such as
+`cyberpunk_2077_benchmark`: the dashboard lists it first and opens on it, so
+there can only be one. Remove `featured` from the others.
 
 #### `testbench-registry`
 

@@ -120,7 +120,7 @@ Create **one file per game run** in your product's folder:
 data/
 └── community/
     └── rtx_5080_16gb_fe/                      <- folder name = gpu_id
-        ├── result_20261003_cyberpunk_2077.yaml     <- your file
+        ├── result_20261003_cyberpunk_2077_benchmark.yaml     <- your file
         └── raw/
             └── cyberpunk_1440p.csv                  <- optional capture (recommended)
 ```
@@ -128,7 +128,7 @@ data/
 The file name has three parts. It doesn't include your name:
 
 ```text
-result_20261003_cyberpunk_2077_2.yaml
+result_20261003_cyberpunk_2077_benchmark_2.yaml
        └──┬───┘ └─────┬──────┘ ┬
        date run    game_id    repeat
        (YYYYMMDD)  (from      (only if you already
@@ -137,7 +137,7 @@ result_20261003_cyberpunk_2077_2.yaml
 ```
 
 **Is your game in [`data/games.yaml`](data/games.yaml)?** Every result names
-its game by the `id` listed there, such as `cyberpunk_2077`. If your game or
+its game by the `id` listed there, such as `cyberpunk_2077_benchmark`. If your game or
 benchmark isn't listed yet, add it in the same pull request. It needs four
 lines (`id`, `name`, `type`, `year`). Add `steam_appid` or `url` too when the
 game has one; they're optional because not every game is on Steam. See
@@ -159,7 +159,7 @@ Pick **one** way to create the file:
 
 ```powershell
 Copy-Item templates/community_submission.yaml `
-  data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077.yaml
+  data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077_benchmark.yaml
 ```
 
 Then edit the values. The examples below show what to fill in.
@@ -180,7 +180,7 @@ file, one `result` item per run, and skips runs it has already imported. See
 ```powershell
 python scripts/parse.py capture.csv `
   --gpu-id rtx_5080_16gb_fe `
-  --game-id cyberpunk_2077 `
+  --game-id cyberpunk_2077_benchmark `
   --resolution 1440p `
   --graphics-preset Ultra `
   --os windows `
@@ -261,7 +261,7 @@ raw capture or a summary link when you can.
 
 ```yaml
 gpu_id: rtx_5080_16gb_fe   # must equal the folder name
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-03'         # the day you ran it, quoted; same as the file name
 result:
   - resolution: 1440p
@@ -284,7 +284,7 @@ placeholders.
 
 ```yaml
 gpu_id: rtx_5080_16gb_fe
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-13'   # the day the source was published; same as the file name
 credit:
   source_url: https://example.com/example-creator/gpu-review   # required
@@ -308,7 +308,7 @@ optional username and machine details.
 gpu_id: rtx_5080_16gb_fe
 submitted_by: mattystacks        # optional; shown as @mattystacks
 benchmark_type: game
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-03'
 version: "2.12"
 frame_generation: false
@@ -384,7 +384,7 @@ dashboard labels these as summary-only.
 
 ```yaml
 gpu_id: steam_deck_oled_16gb
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-03'
 version: "2.12"
 frame_generation: false
@@ -437,8 +437,8 @@ Write every list item on its own `-` line. Inline `[ ]` and `{ }` are rejected.
 | ------- | --------------- | --- |
 | Folder doesn't match `gpu_id` | `[result-folder]` | Move the file, or correct `gpu_id` |
 | Old or made-up ID such as `rtx_4090` | `[result-unknown-gpu]` | Use the exact catalog file name, such as `rtx_5080_16gb_fe` |
-| File name isn't `result_YYYYMMDD_<game_id>.yaml` | `[community-filename]` | Rename the file, such as `result_20261003_cyberpunk_2077.yaml` |
-| Free-text `game_id: cyberpunk_2077` | `[result-game-id]` | Use `game_id: cyberpunk_2077` |
+| File name isn't `result_YYYYMMDD_<game_id>.yaml` | `[community-filename]` | Rename the file, such as `result_20261003_cyberpunk_2077_benchmark.yaml` |
+| Free-text `game_id: cyberpunk_2077_benchmark` | `[result-game-id]` | Use `game_id: cyberpunk_2077_benchmark` |
 | `game_id` that isn't in `data/games.yaml` | `[result-unknown-game]` | Fix the spelling, or add the game to `data/games.yaml` in the same pull request |
 | `submitted_by` with spaces or other characters a GitHub username can't have | `[community-submitter]` | Fix it, or remove the line to stay anonymous |
 | File not named `result_...` | `[result-filename]` | Rename it, or the build would skip it |

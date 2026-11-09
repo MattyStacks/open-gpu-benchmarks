@@ -4,9 +4,9 @@
 # with the result on the site. Only include what you're happy to make public.
 #
 # Save as data/community/<gpu_id>/result_YYYYMMDD_<game_id>.yaml,
-# for example data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077.yaml.
+# for example data/community/rtx_5080_16gb_fe/result_20261003_cyberpunk_2077_benchmark.yaml.
 # For a second file with the same date and game, add a number:
-# result_20261003_cyberpunk_2077_2.yaml.
+# result_20261003_cyberpunk_2077_benchmark_2.yaml.
 # The folder name and gpu_id must exactly match a catalog ID: the file name of
 # the product's entry under data/gpus/<form_factor>/<gpu_vendor>/. The ID names
 # the exact product, including memory size; use the one you tested.
@@ -25,7 +25,7 @@
 gpu_id: rtx_5080_16gb_fe # Required
 # New game? Add it to data/games.yaml in the same pull request (id, name, type,
 # year, plus steam_appid or url when the game has one). See docs/COMMUNITY_SUBMISSIONS.md.
-game_id: cyberpunk_2077 # Required; the game's id in data/games.yaml
+game_id: cyberpunk_2077_benchmark # Required; the game's id in data/games.yaml
 date: "2026-10-03" # Required; the day you ran it, quoted, the same as the file name's YYYYMMDD
 result: # Required; one "-" item per resolution/preset
   - resolution: 1440p # Required

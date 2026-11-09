@@ -65,13 +65,13 @@ Rename the file to `index.mdx` to use these. You don't import them.
 the numbers always match the dashboard:
 
 ```mdx
-<BenchChart gpu="rtx_5080_16gb_fe" game="cyberpunk_2077" resolution="1440p" />
-<BenchChart gpu={["rtx_5080_16gb_fe", "rtx_4090_24gb_fe"]} game="cyberpunk_2077" resolution="4K" preset="Ray Tracing: Ultra" />
+<BenchChart gpu="rtx_5080_16gb_fe" game="cyberpunk_2077_benchmark" resolution="1440p" />
+<BenchChart gpu={["rtx_5080_16gb_fe", "rtx_4090_24gb_fe"]} game="cyberpunk_2077_benchmark" resolution="4K" preset="Ray Tracing: Ultra" />
 ```
 
 - `gpu` is one catalog ID or a list.
 - `game` is the game's exact ID in `data/games.yaml`, such as
-  `cyberpunk_2077`. The display name comes from there too.
+  `cyberpunk_2077_benchmark`. The display name comes from there too.
 - The optional filters are `resolution`, `preset`, and `os` (`windows` or
   `linux`), plus `source`: `official` (the default), `community`, or `all`.
 - `bench` (a memory type, such as `DDR5`) keeps one test bench. Without it,

@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.20",
+  "schema_version": "0.21",
   "paths": {
     "community.json": [
       "_license",
@@ -489,6 +489,7 @@
       "url"
     ],
     "dashboard.json.games[]": [
+      "featured",
       "id",
       "name",
       "type",
@@ -681,6 +682,7 @@
       "url"
     ],
     "games.json.games[]": [
+      "featured",
       "id",
       "name",
       "notes",

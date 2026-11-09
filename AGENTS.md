@@ -73,7 +73,9 @@ from `data/games.yaml` (`id`, `name`, `type`, and `year` are required; `steam_ap
 `igdb_id`, and `url` are optional, but add them whenever the game has one, and
 never guess). `game_id` is the grouping key; an edition or a different test gets
 its own ID, and a patch goes in `version`. A result for an unregistered game adds
-the registry entry in the same change. Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
+the registry entry in the same change. A game's built-in benchmark is its own entry apart from
+gameplay (`cyberpunk_2077_benchmark`). At most one entry sets `featured: true`
+(`game-featured`): the baseline benchmark the dashboard lists first and opens on. Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
 grouping key, so Windows and Linux runs are never averaged together; the
 distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
 keys or extra chart bars. Linux-only fields on a windows run (or the
@@ -109,7 +111,7 @@ community average more than 25% from the official average fails
 ("Verified" on the dashboard) and may credit someone by `name` alone.
 Cyberpunk 2077 built-in benchmark runs come in through
 `scripts/import_cyberpunk.py` (guide: `docs/CYBERPUNK_BENCHMARK.md`): one
-`result_YYYYMMDD_cyberpunk_2077.yaml` per day and setup, one `result` item per
+`result_YYYYMMDD_cyberpunk_2077_benchmark.yaml` per day and setup, one `result` item per
 run, each naming its run folder in `benchmark_run`; keep its preset and
 upscaler labels stable, because changing one splits dashboard groups. Its
 `--memory-type` and `--memory-channels` default to `DDR5-6000` and `2`, with a

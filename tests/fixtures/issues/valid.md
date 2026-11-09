@@ -4,7 +4,7 @@ GeForce RTX 4090 Founders Edition
 
 ### Game
 
-cyberpunk 2077
+cyberpunk 2077 (built-in benchmark)
 
 ### Game version
 

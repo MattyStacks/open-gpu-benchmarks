@@ -1,9 +1,9 @@
-# The same GPU and profile as result_20261003_cyberpunk_2077.yaml, on the
+# The same GPU and profile as result_20261003_cyberpunk_2077_benchmark.yaml, on the
 # previous-generation bench: it builds its own summary, never one average.
 gpu_id: rtx_4070_super_12gb_fe
 testbench_id: am4_5600x3d_ddr4
 benchmark_type: game
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-04'
 version: '2.12'
 synthetic: true

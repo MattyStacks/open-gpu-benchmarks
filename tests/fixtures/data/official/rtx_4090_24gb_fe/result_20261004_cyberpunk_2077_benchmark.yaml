@@ -1,9 +1,9 @@
 # On the interim bench, which counts_as the primary one: it joins the
-# result_20261003_cyberpunk_2077.yaml summary and keeps its own CPU per run.
+# result_20261003_cyberpunk_2077_benchmark.yaml summary and keeps its own CPU per run.
 gpu_id: rtx_4090_24gb_fe
 testbench_id: am5_9950x3d_ddr5
 benchmark_type: game
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-04'
 version: '2.12'
 synthetic: true

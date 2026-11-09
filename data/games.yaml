@@ -13,7 +13,9 @@
 #   igdb_id      the game's numeric IGDB ID
 #   url          an https link to the game's official or store page
 #   notes        anything that tells it apart from a similar entry
-# The last four are optional, because not every game is on Steam or has a page,
+#   featured     true on the one baseline benchmark run on every system: the
+#                dashboard lists it first and opens on it. At most one entry.
+# steam_appid, igdb_id, url, and notes are optional, because not every game is on Steam or has a page,
 # but if the game has one, add it: it pins down exactly which game this is.
 # Leave out what doesn't exist or you can't check; never guess a store ID.
 #
@@ -26,11 +28,13 @@ games:
     type: synthetic
     year: 2024
     notes: The full 4K test. Steel Nomad Light is a different test and gets its own entry.
-  - id: cyberpunk_2077
-    name: Cyberpunk 2077
+  - id: cyberpunk_2077_benchmark
+    name: Cyberpunk 2077 (built-in benchmark)
     type: game
     year: 2020
     steam_appid: 1091500
+    featured: true
+    notes: The benchmark tool in the graphics menu, not gameplay. Gameplay runs get their own entry.
   - id: helldivers_2
     name: Helldivers 2
     type: game

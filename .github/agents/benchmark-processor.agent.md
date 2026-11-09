@@ -138,7 +138,7 @@ version only when the submitter states them. Never invent machine details.
 
 Raw captures help reviewers. Copy a CSV or log of 1 MB or less into
 `data/community/<gpu_id>/raw/` with a short name such as
-`raw/cyberpunk_2077_1440p_ultra.csv` and set `proof.raw_log` to it. First,
+`raw/cyberpunk_2077_benchmark_1440p_ultra.csv` and set `proof.raw_log` to it. First,
 remove the PC name, user name, or file paths if they appear in it. Don't
 commit screenshots, videos, or zips.
 

@@ -2,7 +2,7 @@
 
 ```yaml
 gpu_id: GeForce RTX 4090 Founders Edition
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: 2026-10-03
 result:
   - resolution: 1440p

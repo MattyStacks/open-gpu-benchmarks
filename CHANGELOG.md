@@ -32,6 +32,33 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.17.0.0 - 2026-11-09
+
+Cyberpunk 2077's built-in benchmark is named as such, and it always opens the dashboard.
+
+### Changed
+
+- The Cyberpunk results are the game's built-in benchmark, not gameplay, so the
+  game is now `cyberpunk_2077_benchmark`, "Cyberpunk 2077 (built-in benchmark)".
+  **API users: the `game_id` `cyberpunk_2077` is gone**; filter on
+  `cyberpunk_2077_benchmark`. The published result files, the importer
+  (`scripts/import_cyberpunk.py` writes `result_YYYYMMDD_cyberpunk_2077_benchmark.yaml`),
+  the examples, and the docs use the new ID. `cyberpunk_2077` is left free for
+  gameplay captures.
+
+### Added
+
+- `featured: true` in `data/games.yaml` marks the baseline benchmark run on
+  every system. The dashboard lists it first, in its own "Baseline benchmark"
+  group, and opens on it, however many games are added later. The Cyberpunk
+  built-in benchmark is featured. At most one game may set it (new rule
+  `game-featured`); `dashboard.json` and `games.json` games carry `featured`
+  (schema 0.20 → 0.21).
+- The Benchmark picker is wider and searchable: type part of a name or ID
+  (every word must match, any case), move with the arrow keys, and pick with
+  Enter or a click; Escape keeps the current pick. The groups (Baseline
+  benchmark first) stay in the list.
+
 ## 1.16.0.0 - 2026-11-09
 
 Faster browser tests in CI.

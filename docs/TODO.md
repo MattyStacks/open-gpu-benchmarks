@@ -28,6 +28,13 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
   `distro`, `kernel`, `mesa`, or `proton` the way `import_cyberpunk.py` now
   does; share the helpers.
 
+## Game registry follow-ups
+
+- [ ] **A gameplay `cyberpunk_2077` entry.** v1.17.0.0 renamed the built-in
+  benchmark to `cyberpunk_2077_benchmark` and left `cyberpunk_2077` free.
+  Register it (name "Cyberpunk 2077") with the first gameplay capture, so the
+  two never share a dashboard group.
+
 ## CI follow-ups
 
 - [ ] **Keep the Playwright image in step with Dependabot.** A Dependabot

@@ -9,7 +9,7 @@ optional: without it a run gets summary.json's average and no 1% low, which the
 checks note as info, never a warning or a failure. It writes the runs from
 one day into one result file, one item in its result list per run:
 
-    data/<source>/<gpu_id>/result_20261013_cyberpunk_2077.yaml
+    data/<source>/<gpu_id>/result_20261013_cyberpunk_2077_benchmark.yaml
 
 Each item's benchmark_run names the run folder it came from. Nothing is copied
 from the game folder; the runs stay where they are. Run the script again any
@@ -62,7 +62,7 @@ import checks
 from parse import percentile
 
 # The game's ID in data/games.yaml; result files are named after it too.
-GAME_ID = "cyberpunk_2077"
+GAME_ID = "cyberpunk_2077_benchmark"
 STEAM_APP_ID = "1091500"
 RESULTS_SUBPATH = Path("CD Projekt Red") / "Cyberpunk 2077" / "benchmarkResults"
 RUN_FOLDER = re.compile(r"^benchmark_(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$")

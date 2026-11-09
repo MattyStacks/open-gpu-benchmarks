@@ -132,10 +132,10 @@ with the reason:
 
 ```text
 status   run                            resolution  preset              upscaling         avg fps  file or reason
-new      benchmark_2026-10-13_18-44-57  4K          Ray Tracing: Ultra  DLSS Auto         88.5     result_20261013_cyberpunk_2077.yaml
-new      benchmark_2026-10-13_18-50-40  4K          Steam Deck          FSR 2.1 Balanced  165.6    result_20261013_cyberpunk_2077.yaml
+new      benchmark_2026-10-13_18-44-57  4K          Ray Tracing: Ultra  DLSS Auto         88.5     result_20261013_cyberpunk_2077_benchmark.yaml
+new      benchmark_2026-10-13_18-50-40  4K          Steam Deck          FSR 2.1 Balanced  165.6    result_20261013_cyberpunk_2077_benchmark.yaml
 skipped  benchmark_2026-10-13_20-12-15  1080p       Custom              FSR 2.1 Quality   189.6    Custom preset with upscaling on; re-run with upscaling off or on a named preset
-new      benchmark_2026-10-13_20-21-40  4K          High                                  91.5     result_20261013_cyberpunk_2077.yaml
+new      benchmark_2026-10-13_20-21-40  4K          High                                  91.5     result_20261013_cyberpunk_2077_benchmark.yaml
 
 3 would import, 1 skipped, 0 already imported earlier
 ```
@@ -172,7 +172,7 @@ request. Use the same values every time you import on that PC. They go under
 
 This writes the runs to `data/community/<gpu_id>/`, one file per day with one
 `result` item per run, for example
-`data/community/rtx_5080_16gb_fe/result_20261013_cyberpunk_2077.yaml`. It then
+`data/community/rtx_5080_16gb_fe/result_20261013_cyberpunk_2077_benchmark.yaml`. It then
 runs the checks on the files it wrote and prints any errors.
 
 If a run used the Custom preset and you didn't pass `--custom-preset`, the
@@ -205,7 +205,11 @@ Run the same command again whenever you've benchmarked more:
 - Files imported before `date` and `time` existed get them filled in from the
   file name and run folder names.
 - Files imported before the game registry, which say `game: Cyberpunk 2077`,
-  are rewritten to `game_id: cyberpunk_2077`.
+  are rewritten to `game_id: cyberpunk_2077_benchmark`.
+- Before v1.17.0.0 the ID was `cyberpunk_2077`, and files were named
+  `result_YYYYMMDD_cyberpunk_2077.yaml`. The importer only looks for the new
+  names, so rename an older local file (and its `game_id`) before re-importing
+  into it, or its runs are imported a second time.
 - Files from older imports with `memory: 64 GB` are rewritten to
   `memory_gb: 64`.
 - Runs after a driver or game update, or on a different CPU, memory amount,
@@ -264,7 +268,7 @@ item per run:
 # re-running the script skips runs listed here and adds new ones.
 gpu_id: rtx_5080_16gb_fe
 benchmark_type: game
-game_id: cyberpunk_2077
+game_id: cyberpunk_2077_benchmark
 date: '2026-10-13'
 version: '2.31'
 frame_generation: false
@@ -301,7 +305,7 @@ Where each value comes from in the run folder (`summary.json` unless noted):
 
 | Field | From | Notes |
 |---|---|---|
-| `game_id` | | Always `cyberpunk_2077`, its ID in `data/games.yaml`. The script stops if that entry is missing. |
+| `game_id` | | Always `cyberpunk_2077_benchmark`, its ID in `data/games.yaml`. The script stops if that entry is missing. |
 | `date` | the run folder's name | The day of the runs; the same as the file name. |
 | `version` | `gameVersion` | Same for every run in the file. |
 | `result[].benchmark_run` | the run's folder name | How re-runs recognize imported runs. Don't edit it. |

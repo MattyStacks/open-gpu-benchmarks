@@ -34,7 +34,7 @@ body:
         [data/games.yaml](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/data/games.yaml).
         Only listed games are accepted. A new game has to be added first by its own pull request
         ([how](https://github.com/MattyStacks/open-gpu-benchmarks/blob/main/docs/COMMUNITY_SUBMISSIONS.md#adding-a-game-or-benchmark)).
-      placeholder: cyberpunk_2077
+      placeholder: cyberpunk_2077_benchmark
     validations:
       required: true
   - type: input

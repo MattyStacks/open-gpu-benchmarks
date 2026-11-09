@@ -14,11 +14,13 @@ games:
     name: Baldur's Gate 3
     type: game
     year: 2023
-  - id: cyberpunk_2077
-    name: Cyberpunk 2077
+  - id: cyberpunk_2077_benchmark
+    name: Cyberpunk 2077 (built-in benchmark)
     type: game
     year: 2020
     steam_appid: 1091500
+    featured: true
+    notes: The benchmark tool in the graphics menu, not gameplay. Gameplay runs get their own entry.
   - id: example_engine_demo
     name: Example Engine Demo
     type: engine_demo

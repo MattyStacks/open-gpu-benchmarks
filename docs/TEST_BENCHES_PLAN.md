@@ -178,7 +178,7 @@ heading in `docs/COMMUNITY_SUBMISSIONS.md` or `data/gpus/README.md`
 
 ### 6. Data migration
 - Add `testbench_id: am5_9950x3d_ddr5` to both
-  `data/official/rtx_5080_16gb_fe/result_2026101{3,5}_cyberpunk_2077.yaml`.
+  `data/official/rtx_5080_16gb_fe/result_2026101{3,5}_cyberpunk_2077_benchmark.yaml`.
 - Fixtures: give the official fixture runs a bench, add one fixture GPU on
   two benches to prove they don't average, and add one `counts_as` alias case.
   Update the fixture counts in `test_build.py` and `docs/COPILOT_HANDOFF.md`.

@@ -30,6 +30,16 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
 
 ## Catalog follow-ups
 
+- [ ] **Confirm the ONEXPLAYER 3 against the maker and Intel.** Its entry
+  (v1.15.1.0) cites DROIX and Held Games, because onexplayerstore.com
+  rate-limited and intel.com/Notebookcheck refused fetches. Add the maker's
+  page and an Intel Arc G3 Extreme reference (`arc_g3_extreme`) when they can
+  be read, and the 24 GB (LPDDR5X-7467) model if anyone benchmarks it.
+- [ ] **Release dates for the Legion Go S Z1 Extreme and ONEXPLAYER 3.** The
+  sources read give none (Lenovo.com returns 403), so `release` is left out.
+- [ ] **Add the Steam Deck OLED** (`steam_deck_oled_16gb`, 6 nm Sephiroth,
+  LPDDR5-6400) when its runs arrive; it's already a test fixture.
+
 The four-step catalog plan is complete. These items finish it off.
 
 - [ ] **Hand-check the reference files against TechPowerUp.** The 309

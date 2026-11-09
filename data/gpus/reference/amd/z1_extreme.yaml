@@ -1,0 +1,27 @@
+# Reference specs shared by every product with `base: z1_extreme`.
+# Rules: data/gpus/README.md#reference-files
+id: z1_extreme
+identity:
+  name: Ryzen Z1 Extreme
+  gpu_vendor: amd
+classification:
+  architecture: RDNA 3
+memory:
+  shared: true
+clocks:
+  boost_mhz: 2900
+power:
+  tdp_w: 28
+notes: >-
+  AMD's handheld APU: 8 Zen 4 cores, 16 threads, up to 5.1 GHz, and 12 RDNA 3
+  graphics compute units up to 2900 MHz. Default TDP 28 W, configurable 9-30 W.
+  Graphics memory is shared system RAM.
+sources:
+  - url: https://www.amd.com/en/products/processors/handhelds/ryzen-z-series/z1-series/z1-extreme.html
+    title: AMD Ryzen Z1 Extreme
+    accessed: '2026-11-09'
+    covers:
+      - identity
+      - classification
+      - clocks
+      - power

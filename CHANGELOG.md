@@ -32,6 +32,23 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.15.1.0 - 2026-11-09
+
+The first handhelds in the catalog, ready for benchmarks.
+
+### Added
+
+- Catalog: Steam Deck LCD (`steam_deck_lcd_16gb`), the original 7 nm Aerith
+  model (every storage size), with 16 GB of LPDDR5-5500.
+- Catalog: Legion Go S Z1 Extreme 16 GB (`legion_go_s_z1_extreme_16gb`) and
+  32 GB (`legion_go_s_z1_extreme_32gb`), on the new `z1_extreme` reference,
+  with LPDDR5X-7500.
+- Catalog: ONEXPLAYER 3 Arc G3 Extreme 32 GB
+  (`onexplayer_3_arc_g3_extreme_32gb`), with LPDDR5X-8533; specs from a
+  retailer and a review site, since the maker's and Intel's pages couldn't be
+  read.
+- Reference: AMD Ryzen Z1 Extreme (`z1_extreme`), from AMD's spec page.
+
 ## 1.15.0.0 - 2026-11-09
 
 The Steam Machine joins the catalog, and the Cyberpunk 2077 importer handles

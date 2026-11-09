@@ -11,10 +11,13 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.17.0.0` (2026-11-09). Versions are now
+- Current version: `v1.17.1.0` (2026-11-09). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.17.1.0: 20 official OpenBenchmarker Neon Flythrough runs on the
+    Steam Machine (`steam_machine_32gb_ddr5` bench, SteamOS), 720p to 4K at
+    Low to Extreme, combined from the per-run exports into one file.
   - v1.17.0.0: Cyberpunk's results are its built-in benchmark, so the game
     is `cyberpunk_2077_benchmark`, "Cyberpunk 2077 (built-in benchmark)"
     (`cyberpunk_2077` is free for gameplay). `featured: true` in
@@ -787,12 +790,13 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 `steam_machine_8gb_valve`, and the handhelds `steam_deck_lcd_16gb`,
 `legion_go_s_z1_extreme_16gb`, `legion_go_s_z1_extreme_32gb`,
 `onexplayer_3_arc_g3_extreme_32gb`) plus 310 reference files under
-`data/gpus/reference/`, 69 official result runs, 1 community run, and 61
+`data/gpus/reference/`, 89 official result runs, 1 community run, and 81
 dashboard summaries. The official runs are Cyberpunk 2077 built-in benchmark
 runs on Windows at 1080p, 1440p, and 4K (RTX 5080) and on SteamOS with Proton
 at 1080p and 1440p (Steam Machine, `steam_machine_32gb_ddr5` bench), imported with
 `scripts/import_cyberpunk.py`; each has an `avg_fps` and `p1_low` from its
-`frames.csv`. The community run is an OpenBenchmarker Neon Flythrough result
+`frames.csv`. The Steam Machine also has 20 official OpenBenchmarker Neon
+Flythrough runs (720p to 4K, Low to Extreme) on the same bench. The community run is an OpenBenchmarker Neon Flythrough result
 at 4K (a browser WebGL2 benchmark). `scripts/preflight.py` fails a code PR
 when these counts don't match `data/`. `data/` is what
 CI builds and deploys, so it holds only real data. With no runs,

@@ -1,0 +1,709 @@
+# Captured by Open GPU Benchmarker 4.0.0 (https://opengpubenchmarker.com/), benchmark "OpenBenchmarker Neon Flythrough".
+# Timed in the browser: Avg FPS = frames / wall-clock; lows from GPU timer queries.
+# 20 runs from one session on the Steam Machine, combined from the per-run exports
+# (720p, 1080p, 1440p, 4K x Low, Medium, High, Ultra, Extreme), in the order they ran.
+gpu_id: steam_machine_8gb_valve
+testbench_id: steam_machine_32gb_ddr5
+game_id: openbenchmarker_neon_flythrough
+date: "2026-11-09"
+version: "4.0.0"
+frame_generation: false
+overclocked: false
+result:
+  - resolution: "720p"
+    time: "13:33"
+    graphics_preset: "Low"
+    avg_fps: 1984.6
+    p1_low: 1451
+    p5_low: 1584.9
+    duration: 30
+    frame_count: 59575
+    worst_frame_ms: 0.85
+    render_width: 1280
+    render_height: 720
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 0
+      shadow_map: 0
+      reflections: 0
+      volumetrics: 0
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 95.2
+      gpu_ms_per_frame: 0.48
+      frame_ms: 0.5
+      cpu_ms_per_frame: 0.13
+      scene_update_ms_per_frame: 0.02
+      gpu_wait_ms_per_frame: 0.35
+      loop_busy_pct: 89.9
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 0
+      frame_time_std_ms: 0.06
+      gpu_hitches: 0
+  - resolution: "720p"
+    time: "13:37"
+    graphics_preset: "Medium"
+    avg_fps: 645.6
+    p1_low: 499.1
+    p5_low: 541.6
+    duration: 30
+    frame_count: 19380
+    worst_frame_ms: 4.98
+    render_width: 1280
+    render_height: 720
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 1024
+      reflections: 0
+      volumetrics: 0
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 94.4
+      gpu_ms_per_frame: 1.46
+      frame_ms: 1.55
+      cpu_ms_per_frame: 0.27
+      scene_update_ms_per_frame: 0.05
+      gpu_wait_ms_per_frame: 1.1
+      loop_busy_pct: 85.7
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 0
+      frame_time_std_ms: 0.14
+      gpu_hitches: 0
+  - resolution: "720p"
+    time: "13:38"
+    graphics_preset: "Ultra"
+    avg_fps: 240.7
+    p1_low: 180.5
+    p5_low: 203.6
+    duration: 30
+    frame_count: 7227
+    worst_frame_ms: 13.1
+    render_width: 1280
+    render_height: 720
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 2048
+      reflections: 1
+      volumetrics: 12
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 94.8
+      gpu_ms_per_frame: 3.94
+      frame_ms: 4.15
+      cpu_ms_per_frame: 0.8
+      scene_update_ms_per_frame: 0.23
+      gpu_wait_ms_per_frame: 2.9
+      loop_busy_pct: 85.8
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 2
+      frame_time_std_ms: 0.34
+      gpu_hitches: 0
+  - resolution: "720p"
+    time: "13:38"
+    graphics_preset: "High"
+    avg_fps: 403.4
+    p1_low: 310.2
+    p5_low: 339
+    duration: 30
+    frame_count: 12110
+    worst_frame_ms: 8.13
+    render_width: 1280
+    render_height: 720
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 2048
+      reflections: 0
+      volumetrics: 6
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 94.4
+      gpu_ms_per_frame: 2.34
+      frame_ms: 2.48
+      cpu_ms_per_frame: 0.39
+      scene_update_ms_per_frame: 0.1
+      gpu_wait_ms_per_frame: 1.8
+      loop_busy_pct: 85.6
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 3
+      frame_time_std_ms: 0.21
+      gpu_hitches: 0
+  - resolution: "720p"
+    time: "13:39"
+    graphics_preset: "Extreme"
+    avg_fps: 109.9
+    p1_low: 85.5
+    p5_low: 94.1
+    duration: 30
+    frame_count: 3299
+    worst_frame_ms: 28.8
+    render_width: 1280
+    render_height: 720
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 8192
+      reflections: 1
+      volumetrics: 24
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 95
+      gpu_ms_per_frame: 8.64
+      frame_ms: 9.1
+      cpu_ms_per_frame: 1.53
+      scene_update_ms_per_frame: 0.66
+      gpu_wait_ms_per_frame: 5.5
+      loop_busy_pct: 75.8
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 0.73
+      gpu_hitches: 0
+  - resolution: "1080p"
+    time: "13:40"
+    graphics_preset: "Medium"
+    avg_fps: 216.8
+    p1_low: 165.2
+    p5_low: 180.8
+    duration: 30
+    frame_count: 6510
+    worst_frame_ms: 14.35
+    render_width: 1920
+    render_height: 1080
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 1024
+      reflections: 0
+      volumetrics: 0
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 95.3
+      gpu_ms_per_frame: 4.4
+      frame_ms: 4.61
+      cpu_ms_per_frame: 0.36
+      scene_update_ms_per_frame: 0.06
+      gpu_wait_ms_per_frame: 2.72
+      loop_busy_pct: 65.1
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 2
+      frame_time_std_ms: 0.41
+      gpu_hitches: 0
+  - resolution: "1080p"
+    time: "13:40"
+    graphics_preset: "Low"
+    avg_fps: 932.1
+    p1_low: 710.8
+    p5_low: 753.9
+    duration: 30
+    frame_count: 27979
+    worst_frame_ms: 1.54
+    render_width: 1920
+    render_height: 1080
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 0
+      shadow_map: 0
+      reflections: 0
+      volumetrics: 0
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 94
+      gpu_ms_per_frame: 1.01
+      frame_ms: 1.07
+      cpu_ms_per_frame: 0.17
+      scene_update_ms_per_frame: 0.03
+      gpu_wait_ms_per_frame: 0.78
+      loop_busy_pct: 85.4
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 0
+      frame_time_std_ms: 0.12
+      gpu_hitches: 0
+  - resolution: "1080p"
+    time: "13:41"
+    graphics_preset: "High"
+    avg_fps: 152.2
+    p1_low: 106.6
+    p5_low: 122
+    duration: 30
+    frame_count: 4570
+    worst_frame_ms: 21
+    render_width: 1920
+    render_height: 1080
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 2048
+      reflections: 0
+      volumetrics: 6
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 95.5
+      gpu_ms_per_frame: 6.27
+      frame_ms: 6.57
+      cpu_ms_per_frame: 0.51
+      scene_update_ms_per_frame: 0.12
+      gpu_wait_ms_per_frame: 5.59
+      loop_busy_pct: 87.8
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 0.71
+      gpu_hitches: 0
+  - resolution: "1080p"
+    time: "13:42"
+    graphics_preset: "Ultra"
+    avg_fps: 103.1
+    p1_low: 80.1
+    p5_low: 87.6
+    duration: 30
+    frame_count: 3095
+    worst_frame_ms: 29.9
+    render_width: 1920
+    render_height: 1080
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 2048
+      reflections: 1
+      volumetrics: 12
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 95.5
+      gpu_ms_per_frame: 9.26
+      frame_ms: 9.7
+      cpu_ms_per_frame: 1.1
+      scene_update_ms_per_frame: 0.31
+      gpu_wait_ms_per_frame: 5.33
+      loop_busy_pct: 65.9
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 0.82
+      gpu_hitches: 0
+  - resolution: "1080p"
+    time: "13:43"
+    graphics_preset: "Extreme"
+    avg_fps: 60.5
+    p1_low: 46.6
+    p5_low: 51.8
+    duration: 30
+    frame_count: 1817
+    worst_frame_ms: 52.9
+    render_width: 1920
+    render_height: 1080
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 8192
+      reflections: 1
+      volumetrics: 24
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 97
+      gpu_ms_per_frame: 16.05
+      frame_ms: 16.54
+      cpu_ms_per_frame: 1.79
+      scene_update_ms_per_frame: 0.77
+      gpu_wait_ms_per_frame: 5.57
+      loop_busy_pct: 44.3
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 1.44
+      gpu_hitches: 0
+  - resolution: "1440p"
+    time: "13:44"
+    graphics_preset: "Low"
+    avg_fps: 455.6
+    p1_low: 352.2
+    p5_low: 373
+    duration: 30
+    frame_count: 13678
+    worst_frame_ms: 3.4
+    render_width: 2560
+    render_height: 1440
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 0
+      shadow_map: 0
+      reflections: 0
+      volumetrics: 0
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 94.8
+      gpu_ms_per_frame: 2.08
+      frame_ms: 2.19
+      cpu_ms_per_frame: 0.2
+      scene_update_ms_per_frame: 0.03
+      gpu_wait_ms_per_frame: 1.55
+      loop_busy_pct: 77.4
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 0
+      frame_time_std_ms: 0.21
+      gpu_hitches: 0
+  - resolution: "1440p"
+    time: "13:48"
+    graphics_preset: "High"
+    avg_fps: 88.2
+    p1_low: 68.1
+    p5_low: 74.3
+    duration: 30
+    frame_count: 2649
+    worst_frame_ms: 36.2
+    render_width: 2560
+    render_height: 1440
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 2048
+      reflections: 0
+      volumetrics: 6
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 95.5
+      gpu_ms_per_frame: 10.83
+      frame_ms: 11.33
+      cpu_ms_per_frame: 0.61
+      scene_update_ms_per_frame: 0.13
+      gpu_wait_ms_per_frame: 5.33
+      loop_busy_pct: 52.3
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 1.01
+      gpu_hitches: 0
+  - resolution: "1440p"
+    time: "13:48"
+    graphics_preset: "Medium"
+    avg_fps: 123.1
+    p1_low: 92
+    p5_low: 99.6
+    duration: 30
+    frame_count: 3694
+    worst_frame_ms: 25.5
+    render_width: 2560
+    render_height: 1440
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 1024
+      reflections: 0
+      volumetrics: 0
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 95.1
+      gpu_ms_per_frame: 7.73
+      frame_ms: 8.13
+      cpu_ms_per_frame: 0.48
+      scene_update_ms_per_frame: 0.07
+      gpu_wait_ms_per_frame: 5.56
+      loop_busy_pct: 68.8
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 0.99
+      gpu_hitches: 0
+  - resolution: "1440p"
+    time: "13:49"
+    graphics_preset: "Ultra"
+    avg_fps: 59.7
+    p1_low: 46.3
+    p5_low: 51.6
+    duration: 30
+    frame_count: 1794
+    worst_frame_ms: 51.9
+    render_width: 2560
+    render_height: 1440
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 2048
+      reflections: 1
+      volumetrics: 12
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 97
+      gpu_ms_per_frame: 16.24
+      frame_ms: 16.74
+      cpu_ms_per_frame: 1.33
+      scene_update_ms_per_frame: 0.36
+      gpu_wait_ms_per_frame: 5.73
+      loop_busy_pct: 42.1
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 1.3
+      gpu_hitches: 0
+  - resolution: "1440p"
+    time: "13:50"
+    graphics_preset: "Extreme"
+    avg_fps: 37.6
+    p1_low: 28.3
+    p5_low: 32.1
+    duration: 30
+    frame_count: 1129
+    worst_frame_ms: 80.7
+    render_width: 2560
+    render_height: 1440
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 8192
+      reflections: 1
+      volumetrics: 24
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 98
+      gpu_ms_per_frame: 26.1
+      frame_ms: 26.63
+      cpu_ms_per_frame: 2.24
+      scene_update_ms_per_frame: 0.95
+      gpu_wait_ms_per_frame: 14.23
+      loop_busy_pct: 61.5
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 2.45
+      gpu_hitches: 0
+  - resolution: "4K"
+    time: "13:51"
+    graphics_preset: "Medium"
+    avg_fps: 59.1
+    p1_low: 45.5
+    p5_low: 48.9
+    duration: 30
+    frame_count: 1777
+    worst_frame_ms: 37.1
+    render_width: 3840
+    render_height: 2160
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 1024
+      reflections: 0
+      volumetrics: 0
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 96.7
+      gpu_ms_per_frame: 16.36
+      frame_ms: 16.91
+      cpu_ms_per_frame: 0.74
+      scene_update_ms_per_frame: 0.12
+      gpu_wait_ms_per_frame: 6.36
+      loop_busy_pct: 41.9
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 0
+      frame_time_std_ms: 1.6
+      gpu_hitches: 0
+  - resolution: "4K"
+    time: "13:51"
+    graphics_preset: "Low"
+    avg_fps: 191.4
+    p1_low: 144
+    p5_low: 153.5
+    duration: 30
+    frame_count: 5746
+    worst_frame_ms: 8
+    render_width: 3840
+    render_height: 2160
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 0
+      shadow_map: 0
+      reflections: 0
+      volumetrics: 0
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 94.4
+      gpu_ms_per_frame: 4.93
+      frame_ms: 5.22
+      cpu_ms_per_frame: 0.27
+      scene_update_ms_per_frame: 0.03
+      gpu_wait_ms_per_frame: 3.33
+      loop_busy_pct: 65.2
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 0
+      frame_time_std_ms: 0.49
+      gpu_hitches: 0
+  - resolution: "4K"
+    time: "13:52"
+    graphics_preset: "High"
+    avg_fps: 41.3
+    p1_low: 31.4
+    p5_low: 35.4
+    duration: 30
+    frame_count: 1243
+    worst_frame_ms: 76.1
+    render_width: 3840
+    render_height: 2160
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 2048
+      reflections: 0
+      volumetrics: 6
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 97.6
+      gpu_ms_per_frame: 23.62
+      frame_ms: 24.19
+      cpu_ms_per_frame: 0.97
+      scene_update_ms_per_frame: 0.23
+      gpu_wait_ms_per_frame: 13.13
+      loop_busy_pct: 57.8
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 2.17
+      gpu_hitches: 0
+  - resolution: "4K"
+    time: "13:53"
+    graphics_preset: "Extreme"
+    avg_fps: 18.6
+    p1_low: 16.3
+    p5_low: 16.7
+    duration: 30
+    frame_count: 561
+    worst_frame_ms: 65.5
+    render_width: 3840
+    render_height: 2160
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 8192
+      reflections: 1
+      volumetrics: 24
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 98.7
+      gpu_ms_per_frame: 52.98
+      frame_ms: 53.67
+      cpu_ms_per_frame: 2.27
+      scene_update_ms_per_frame: 0.95
+      gpu_wait_ms_per_frame: 41.53
+      loop_busy_pct: 80.4
+      main_thread_stalls: 2
+      stall_ms: 146
+      hitches: 0
+      frame_time_std_ms: 3.34
+      gpu_hitches: 0
+  - resolution: "4K"
+    time: "13:53"
+    graphics_preset: "Ultra"
+    avg_fps: 28.1
+    p1_low: 20.8
+    p5_low: 24.2
+    duration: 30
+    frame_count: 846
+    worst_frame_ms: 109.5
+    render_width: 3840
+    render_height: 2160
+    warmup_s: 3
+    timing_method: gpu-timer
+    rendered_with:
+      bloom: true
+      msaa: 8
+      shadow_map: 2048
+      reflections: 1
+      volumetrics: 12
+    diagnostics:
+      limit: gpu
+      limit_estimated: false
+      gpu_busy_pct: 98.3
+      gpu_ms_per_frame: 34.97
+      frame_ms: 35.56
+      cpu_ms_per_frame: 1.65
+      scene_update_ms_per_frame: 0.43
+      gpu_wait_ms_per_frame: 23.9
+      loop_busy_pct: 71.1
+      main_thread_stalls: 0
+      stall_ms: 0
+      hitches: 1
+      frame_time_std_ms: 3.19
+      gpu_hitches: 0
+system:
+  os: linux
+  os_detail: "SteamOS"
+  cpu: "AMD Custom CPU 1772"
+  memory_gb: 32
+  memory_type: "DDR5-5600"
+  memory_channels: 2
+  driver: "Mesa 26.1.2"
+  distro: "SteamOS"
+  kernel: "7.2.7-valve2-2-neptune-72-g31504582a073"
+  mesa: "26.1.2"
+  graphics_api: WebGL2 # recorded from the WebGL context the run used
+detected: # read from the browser by the run, not entered by the submitter
+  on_battery: false
+  browser: "Brave 157"
+proof:
+  method: other # captured by Open GPU Benchmarker (in-browser per-frame timing)

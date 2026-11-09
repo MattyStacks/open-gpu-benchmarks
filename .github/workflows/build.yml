@@ -66,7 +66,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install -r requirements.txt
+      # In a container, setup-python's Python isn't on PATH, so call it by
+      # $pythonLocation; PYTHON points the fixture server at the same one.
+      - run: '"$pythonLocation/bin/python" -m pip install -r requirements.txt'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -74,6 +76,8 @@ jobs:
           cache-dependency-path: tests/e2e/package-lock.json
       - run: npm --prefix tests/e2e ci
       - run: npm --prefix tests/e2e test
+        env:
+          PYTHON: ${{ env.pythonLocation }}/bin/python
 
   deploy:
     environment:

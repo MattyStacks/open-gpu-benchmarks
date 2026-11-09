@@ -332,14 +332,6 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Tooling and bugs
 
-- [ ] **Fix the VRAM column (bug since v1.6.0.0).** `site/index.html`
-  declares `formatMemory` twice: `formatMemory(record)` for GPU VRAM and,
-  later, `formatMemory(run)` for system RAM. In a classic script the second
-  one wins, so the table's VRAM column (`formatMemory(record)`) renders the
-  system-RAM formatter and shows nothing useful. Rename the second to
-  `formatSystemMemory` and update its call in the run line. Found while
-  checking v1.7.0.0; left out of that PR to keep it one topic.
-
 - [ ] **Warn when a file name's game part doesn't match `game_id`.** Files are
   named `result_YYYYMMDD_<game_id>.yaml`, but older community fixtures use
   short names such as `_cyberpunk`, so this isn't checked yet.
@@ -352,13 +344,39 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   copies `kernel` and `driver`. The header block also has `os`, `cpu`, `gpu`,
   and `ram`; map `cpu` to `system.cpu`, `ram` to `system.memory_gb` (a number), and a
   SteamOS/distro `os` value to `system.distro`.
-- [ ] **Changelog check in CI.** Fail or warn on a PR that changes `scripts/`,
-  `site/`, `templates/`, or catalog rules without touching `CHANGELOG.md`.
-- [ ] **Branch protection** (manual repo setting): mark the four PR checks
-  (Catalog entries, Benchmark results, Build and tests, Blog) as required on
-  `main`. Checked 2026-10-13: `main` has no protection or rulesets.
+- [ ] **Branch protection** (manual repo setting): mark the six PR checks
+  (Catalog entries, Benchmark results, Build and tests, Blog, and the new
+  Dashboard (browser) and Housekeeping from 1.14.0.0) as required on `main`
+  once 1.14.0.0 merges. Checked 2026-10-13: `main` had no protection or
+  rulesets.
+- [ ] **Visual screenshot diffs.** The Playwright suite checks text, counts,
+  and layout, not pixels. Screenshot comparisons were left out because font
+  rendering differs between Linux, Windows, and macOS and makes them flaky;
+  revisit with a pinned font or a CI-only baseline.
+- [ ] **Make the dashboard's toggle handlers testable.** The chip toggles and
+  the sort-direction flip in `site/index.html` are inline in event handlers
+  (`renderTableHead`, `renderFactorFilters`, `renderOsFilters`,
+  `renderUpscalingFilters`). Pull them into named functions so
+  `tests/e2e/specs/units.spec.ts` can call them directly.
+- [ ] **Test `issue_to_result.py`'s download path.** The size limit, timeout,
+  redirect guard, and non-UTF-8 handling in `fetch_attachment` need a local
+  HTTP server in the test; the tests use `--attachment-dir` today.
+- [ ] **Test the Cyberpunk importer's folder discovery.** `default_input_dirs`,
+  `windows_documents_dir`, and `find_input_dir` aren't tested.
+- [ ] **Name the FSR 3, FSR 4, XeSS, and FSR 1.0 modes in `import_cyberpunk.py`.**
+  Their quality maps are empty, so the labels come out as `FSR 3 (mode 2)`.
+  Map the game's mode numbers to names once they're confirmed in-game. The
+  labels are grouping keys, pinned by `check_cyberpunk_labels()` in
+  `scripts/test_build.py`; update that test and re-import together.
 
 ## Recently completed
+
+- **v1.14.0.0 (2026-11-09, branch `chore/regression-checks`): regression checks**
+  - `scripts/preflight.py`, the Claude Code and git hooks that run it, the
+    Playwright suite in `tests/e2e/`, the API shape snapshot, and many new
+    tests; a PR without a changelog line or version bump now fails locally
+    and in CI (the old "Changelog check in CI" item). Removed the stale
+    "Fix the VRAM column" item (fixed in 1.10.0.0).
 
 - **v1.13.0.0 (2026-10-27, branch `feat/gpu-catalog-agent`): GPU catalog agent**
   - The `gpu-catalog` Copilot agent and the "Add a GPU" issue form;

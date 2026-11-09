@@ -18,3 +18,15 @@
 - **Changing a fixture** changes the numbers asserted in
   `check_fixture_build()` and `check_catalog_specs()` in `scripts/test_build.py`,
   and the fixture counts in `README.md` and `docs/COPILOT_HANDOFF.md`.
+  `check_docs_in_sync()` fails until the `docs/COPILOT_HANDOFF.md` counts
+  match.
+- **`api_shape.json`** lists every key the fixture build writes, per payload.
+  `check_api_shape()` fails when a key is added or removed. If the change is
+  intended, bump `SCHEMA_VERSION` in `scripts/build.py` and run
+  `python scripts/test_build.py --update-shape`. A fixture that adds a new
+  optional field changes it too.
+- **One credited run.** `community/rog_ally_z1_extreme_16gb/result_20261003_helldivers_mattystacks.yaml`
+  has a `credit` block (made-up name, `example.com` URLs), so the API's
+  `credits` and the dashboard's "Name (via @user)" line are tested.
+- **The browser tests use them too.** `tests/e2e/serve_fixtures.py` builds
+  these fixtures into `tests/e2e/.site` for the Playwright suite.

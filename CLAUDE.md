@@ -28,6 +28,19 @@ prepares:
    later DATA bump by a maintainer. A catalog pull request (new GPUs, from
    the `gpu-catalog` agent or a person) makes its own DATA bump.
 
+## Checks catch regressions early
+
+Run `python scripts/preflight.py --fast` before a commit and
+`python scripts/preflight.py` before a push or PR. Claude Code runs them for
+you through a hook (`.claude/settings.json`), and `.githooks/pre-push` does
+the same for people; a failing check blocks the commit or push and prints
+the problem. When a check fails, its message says why the rule exists and how
+to fix it: fix the code, don't weaken the check. When you add a feature, add
+or extend the check that would catch it breaking (a `test_build.py` check, or
+a Playwright spec in `tests/e2e/specs/` for the dashboard), with a failure
+message that says why. A change to the API's keys needs a `SCHEMA_VERSION`
+bump and `python scripts/test_build.py --update-shape`.
+
 ## Branching
 
 Always create a new branch from an up-to-date `main` (`git checkout main && git pull`, then
@@ -77,7 +90,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.13.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.14.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -150,8 +163,17 @@ docs/PROCESSING_ISSUES.md          what a maintainer does with a needs-maintaine
                                    the Copilot agents' environment (Python deps, pdftotext; read from main only)
 .github/CODEOWNERS                 maintainers; a code owner's approval is required to merge
 .github/FUNDING.yml                GitHub Sponsors button (github: MattyStacks)
-.github/workflows/validate.yml     four PR checks: Catalog entries, Benchmark results,
-                                   Build and tests, Blog
+.github/workflows/validate.yml     six PR checks: Catalog entries, Benchmark results,
+                                   Build and tests, Blog, Dashboard (browser), Housekeeping
+scripts/preflight.py               every local check in one command (--fast before a commit,
+                                   default before a push/PR); reports all failures with fixes
+tests/e2e/                         Playwright browser tests for the dashboard (own package.json);
+                                   serve_fixtures.py builds the fixtures into tests/e2e/.site
+tests/fixtures/api_shape.json      every API payload key; changes only with SCHEMA_VERSION
+                                   (rewrite it: python scripts/test_build.py --update-shape)
+.claude/settings.json              Claude Code hook: .claude/hooks/preflight_gate.py runs preflight
+                                   --fast before git commit, full before git push / gh pr create
+.githooks/pre-push                 the same gate for people (git config core.hooksPath .githooks)
 ```
 
 Generated `site/api/` output is gitignored and recreated in CI. Do not commit it
@@ -429,17 +451,32 @@ unless repository policy changes.
 Run the checks inside the project's virtual environment, never the global
 Python. Create it once with `python -m venv .venv`; after that, only activate it.
 
+One-time setup (Node 22.12+):
+
 ```powershell
-.venv\Scripts\Activate.ps1               # macOS/Linux: source .venv/bin/activate
+.venv\Scripts\Activate.ps1                      # macOS/Linux: source .venv/bin/activate
 python -m pip install -r requirements.txt
-python scripts/validate.py
-python scripts/build.py
-python scripts/test_build.py
-python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/issue_to_result.py scripts/test_build.py
-npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
-npm --prefix blog run build              # after build.py; writes site/blog/
-git diff --check
+npm --prefix blog ci                            # again after blog/package-lock.json changes
+npm --prefix tests/e2e ci                       # the Playwright browser tests
+npx --prefix tests/e2e playwright install chromium   # Linux CI adds --with-deps; SteamOS/Arch can't
+git config core.hooksPath .githooks             # pre-push runs preflight for you
 ```
+
+Then one command runs every check and reports every failure at once:
+
+```powershell
+python scripts/preflight.py --fast   # before a commit (~15 s): compile every script, dashboard JS syntax,
+                                     # validate.py, build.py, test_build.py, git diff --check, housekeeping
+python scripts/preflight.py          # before a push or PR: --fast + Playwright browser tests (+ the blog build when it changed)
+python scripts/preflight.py --all    # everything, including the blog build
+```
+
+Housekeeping checks the change against `origin/main`: a new `CHANGELOG.md`
+line, a bumped `RELEASE_VERSION`, `docs/TODO.md` touched (a warning), and the
+published counts in `README.md` and `docs/COPILOT_HANDOFF.md` matching
+`data/`. Data-only result changes skip it. Every failure prints why the rule
+exists and how to fix it. `python scripts/test_build.py --only NAME` reruns
+one group of checks; `npm --prefix tests/e2e test` reruns the browser tests.
 
 Preview the site with `python -m http.server 8000 --directory site` and open
 <http://localhost:8000> (the blog is at `/blog/`). `npm --prefix blog run dev`

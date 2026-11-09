@@ -136,7 +136,7 @@ def detect_and_load(path):
         }
     raise ValueError(f"Unknown CSV format. Headers: {headers}")
 
-def main():
+def main(argv=None, data_dir=checks.DATA_DIR):
     p=argparse.ArgumentParser(description="PresentMon/MangoHud -> YAML")
     p.add_argument("csv_file")
     p.add_argument("--gpu-id", required=True, help="Exact catalog ID, the file name under data/gpus/<form_factor>/<gpu_vendor>/")
@@ -152,14 +152,14 @@ def main():
     p.add_argument("--testbench", default="", help="Official desktop runs only: the test bench ID from data/testbenches.yaml")
     p.add_argument("--date", default="", help="OPTIONAL - the day you ran it, YYYY-MM-DD; defaults to today. Sets date and the file name")
     p.add_argument("--output", default="")
-    args=p.parse_args()
+    args=p.parse_args(argv)
 
-    catalog={entry["id"]: entry for entry in checks.load_catalog()[0]}
+    catalog={entry["id"]: entry for entry in checks.load_catalog(data_dir)[0]}
     if args.gpu_id not in catalog:
         print(f"Unknown --gpu-id '{args.gpu_id}'. Use the exact file name of a catalog entry under data/gpus/.")
         sys.exit(1)
     form_factor=args.form_factor or checks.spec(catalog[args.gpu_id], "classification", "form_factor")
-    game_ids=[game["id"] for game in checks.load_games()[0]]
+    game_ids=[game["id"] for game in checks.load_games(data_dir)[0]]
     if args.game_id not in game_ids:
         print(f"Unknown --game-id '{args.game_id}'. Known IDs: {', '.join(game_ids)}.")
         print("If it's a new game, add it to data/games.yaml (id, name, type, year) in the same pull request.")
@@ -219,7 +219,9 @@ def main():
 
     if not args.output:
         date = today.strftime("%Y%m%d")
-        folder = Path(f"data/community/{args.gpu_id}")
+        # A run on a test bench is an official run; community files never name one.
+        source = "official" if args.testbench else "community"
+        folder = Path(f"data/{source}/{args.gpu_id}")
         out = folder / f"result_{date}_{args.game_id}.yaml"
         repeat = 2
         while out.exists():

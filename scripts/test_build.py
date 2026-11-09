@@ -1,9 +1,12 @@
 """Regression checks for the catalog, result checks, and aggregation."""
+import argparse
 import contextlib
 import io
 import json
 import re
+import sys
 import tempfile
+import traceback
 from pathlib import Path
 
 import yaml
@@ -17,6 +20,13 @@ ROOT = Path(__file__).resolve().parent.parent
 # nothing synthetic reaches site/api (build.yml deploys site/ after this test).
 FIXTURES_DIR = ROOT / "tests" / "fixtures" / "data"
 TEST_ID = "test_gpu_8gb_fe"
+# Every key the fixture API build writes, per payload. Rewrite it with
+# `python scripts/test_build.py --update-shape` after bumping build.SCHEMA_VERSION.
+API_SHAPE_PATH = ROOT / "tests" / "fixtures" / "api_shape.json"
+# Catalog spec sections in gpus.json mirror the catalog field list, which
+# data/gpus/README.md and checks.py already pin; the shape stops at them.
+SPEC_SECTIONS = ("identity", "classification", "silicon", "memory", "clocks", "power", "release",
+                 "features", "platform", "sources", "reference_overrides")
 TEST_CATALOG_PATH = f"gpus/desktop/nvidia/{TEST_ID}.yaml"
 GAMES_PATH = "games.yaml"
 TESTBENCHES_PATH = "testbenches.yaml"
@@ -133,6 +143,226 @@ def expect_rule(rule, files, level="error"):
     issues = run_checks(files)
     found = {issue.rule for issue in issues if issue.level == level}
     assert rule in found, f"expected {level} '{rule}', got {[issue.format() for issue in issues]}"
+
+
+def check_rule_variants():
+    """Each way a rule can fire, not just the first: a typo in one branch would
+    otherwise quietly switch that check off."""
+    base = TEST_CATALOG_PATH
+    catalog = {base: minimal_entry()}
+    memory = {"capacity_gb": 8}
+    catalog_cases = {
+        "field-type (text given a number)": minimal_entry(identity={"name": 4090, "gpu_vendor": "nvidia"}),
+        "field-type (number given text)": minimal_entry(power={"tdp_w": "225 W"}),
+        "field-type (bool given text)": minimal_entry(memory={**memory, "shared": "yes"}),
+        "field-type (section not a mapping)": minimal_entry(power="225 W"),
+        "field-type (notes not text)": minimal_entry(notes=["a"]),
+        "field-type (skus not a list)": minimal_entry(skus="RTX-1"),
+        "field-type (msrp_history not a list)": minimal_entry(release={"msrp_history": 1599}),
+        "field-type (msrp row not a mapping)": minimal_entry(release={"msrp_history": ["2024-01"]}),
+        "field-type (msrp row bad date)": minimal_entry(release={"msrp_history": [{"date": "Jan 2024", "price_usd": 1}]}),
+        "field-type (msrp row price text)": minimal_entry(release={"msrp_history": [{"date": "2024-01", "price_usd": "$1"}]}),
+        "field-unknown (in a section)": minimal_entry(memory={**memory, "colour": "red"}),
+        "field-unknown (in msrp_history)": minimal_entry(release={"msrp_history": [{"date": "2024-01", "price_usd": 1, "shop": "x"}]}),
+        "field-required (no id)": {key: value for key, value in minimal_entry().items() if key != "id"},
+        "field-value (gpu_vendor)": minimal_entry(identity={"name": "Test GPU", "gpu_vendor": "matrox"}),
+        "source-invalid (item not a mapping)": minimal_entry(sources=["https://example.com/specs"]),
+        "source-invalid (title not text)": minimal_entry(sources=[{"url": "https://example.com/specs", "title": 5}]),
+        "source-invalid (covers not a list)": minimal_entry(sources=[{"url": "https://example.com/specs", "covers": "memory"}]),
+    }
+    for label, entry in catalog_cases.items():
+        expect_rule(label.split(" (")[0], {base: entry})
+    # ID shapes per form factor, and the memory token.
+    id_cases = {
+        "id-format (desktop without a brand)": ("desktop", "test_gpu_8gb"),
+        "id-format (laptop without a model)": ("laptop", "test_gpu_laptop_8gb"),
+        "id-format (igpu without a chip)": ("igpu", "8gb_test"),
+        "id-memory-token (none)": ("desktop", "test_gpu_fe"),
+        "id-memory-token (two)": ("desktop", "test_gpu_8gb_16gb_fe"),
+        "id-generic (not a laptop)": ("desktop", "test_gpu_8gb_generic"),
+        "id-generic (generic plus a model)": ("laptop", "test_gpu_8gb_generic_x"),
+    }
+    for label, (form_factor, gpu_id) in id_cases.items():
+        entry = minimal_entry(id=gpu_id, classification={"form_factor": form_factor})
+        expect_rule(label.split(" (")[0], {f"gpus/{form_factor}/nvidia/{gpu_id}.yaml": entry})
+    # Reference files check their own IDs too.
+    reference_cases = {
+        "id-filename": (f"gpus/reference/nvidia/other_8gb.yaml", reference_entry()),
+        "id-format": (f"gpus/reference/nvidia/Test_8gb.yaml", reference_entry(id="Test_8gb")),
+        "id-memory-token": (f"gpus/reference/nvidia/test_gpu_16gb.yaml", reference_entry(id="test_gpu_16gb")),
+    }
+    for rule, (path, entry) in reference_cases.items():
+        expect_rule(rule, {path: entry})
+
+    # Result rules that only fire on a second branch.
+    entry = {"resolution": "1080p", "graphics_preset": "High", "avg_fps": 100, "p1_low": 80}
+    result_cases = {
+        "result-benchmark-type (other value)": community_run(benchmark_type="synthetic_test"),
+        "result-benchmark-type (empty)": community_run(benchmark_type=""),
+        "result-frame-generation (on one entry)": community_run(result=[{**entry, "frame_generation": True}]),
+        "result-os (system not a mapping)": community_run(system="windows"),
+        "result-list (items not mappings)": community_run(result=["1080p"]),
+        "community-permission (note not text)": community_run(credit={"name": "Friend", "permission": {"note": 5}}),
+    }
+    for label, run in result_cases.items():
+        expect_rule(label.split(" (")[0], {**catalog, COMMUNITY_PATH: run})
+    # A benchmark_type no other check knows never ships: the file is dropped,
+    # so game_id, OS, and proof errors can't hide behind it.
+    sneaky = community_run(benchmark_type="other")
+    del sneaky["game_id"], sneaky["system"], sneaky["proof"]
+    issues = run_checks({**catalog, COMMUNITY_PATH: sneaky})
+    assert {issue.rule for issue in issues.errors} == {"result-benchmark-type"}, [issue.format() for issue in issues]
+    issues = run_checks({**catalog, COMMUNITY_PATH: community_run(benchmark_type="game")})
+    assert not issues.errors, [issue.format() for issue in issues.errors]
+
+    # A laptop community run without a TGP warns; with one it's matched to the same-TGP official baseline.
+    laptop_id = "test_gpu_laptop_8gb_test_model"
+    laptop = {f"gpus/laptop/nvidia/{laptop_id}.yaml": minimal_entry(id=laptop_id, classification={"form_factor": "laptop"})}
+    laptop_path = f"community/{laptop_id}/result_20261003_test.yaml"
+    expect_rule("result-laptop-tgp", {**laptop, laptop_path: community_run(gpu_id=laptop_id)}, level="warning")
+    official = {
+        f"official/{laptop_id}/result_20261003_test_80w.yaml": result_run(gpu_id=laptop_id, gpu_power_w=80),
+        f"official/{laptop_id}/result_20261003_test_140w.yaml": result_run(
+            gpu_id=laptop_id, gpu_power_w=140, result=[{**entry, "avg_fps": 180}]),
+    }
+    at_80w = community_run(gpu_id=laptop_id, gpu_power_w=80, result=[{**entry, "avg_fps": 95}])
+    issues = run_checks({**laptop, **official, laptop_path: at_80w})
+    assert not issues.errors and "result-laptop-tgp" not in {issue.rule for issue in issues.warnings}, [
+        issue.format() for issue in issues]
+    at_140w = community_run(gpu_id=laptop_id, gpu_power_w=140, result=[{**entry, "avg_fps": 95}])
+    expect_rule("community-outlier", {**laptop, **official, laptop_path: at_140w})
+
+
+def check_review_rules():
+    """data/reviews.yaml is optional, block-style, and every review has a title and an https url."""
+    catalog = {TEST_CATALOG_PATH: minimal_entry()}
+
+    def reviews(text):
+        with tempfile.TemporaryDirectory() as temp:
+            data_dir = Path(temp)
+            for relative, content in catalog.items():
+                (data_dir / relative).parent.mkdir(parents=True, exist_ok=True)
+                (data_dir / relative).write_text(dump(content), encoding="utf-8")
+            if text is not None:
+                (data_dir / "reviews.yaml").write_text(text, encoding="utf-8")
+            gpus, _ = checks.load_catalog(data_dir)
+            return checks.load_reviews(gpus, data_dir)
+
+    good = "reviews:\n  - title: A review\n    url: https://example.com/review\n    date: '2026-10-03'\n    gpu_ids:\n      - test_gpu_8gb_fe\n"
+    for text in (None, "", "reviews:\n", good):
+        found, issues = reviews(text)
+        assert not issues, (text, [issue.format() for issue in issues])
+    assert reviews(good)[0] == [{"title": "A review", "url": "https://example.com/review", "date": "2026-10-03",
+                                 "gpu_ids": ["test_gpu_8gb_fe"]}]
+    cases = {
+        "review-field (not a list)": "reviews: soon\n",
+        "review-field (unknown top key)": "reviews:\nextra: 1\n",
+        "review-field (no title)": "reviews:\n  - url: https://example.com/r\n",
+        "review-field (http url)": "reviews:\n  - title: R\n    url: http://example.com/r\n",
+        "review-field (unknown field)": "reviews:\n  - title: R\n    url: https://example.com/r\n    score: 9\n",
+        "review-field (unquoted date)": "reviews:\n  - title: R\n    url: https://example.com/r\n    date: 2026-10-03\n",
+        "review-gpu-id": "reviews:\n  - title: R\n    url: https://example.com/r\n    gpu_ids:\n      - missing_8gb_fe\n",
+        "yaml-inline": "reviews: []\n",
+    }
+    for label, text in cases.items():
+        found, issues = reviews(text)
+        rule = label.split(" (")[0]
+        assert rule in {issue.rule for issue in issues.errors}, (label, [issue.format() for issue in issues])
+        assert not found or rule == "yaml-inline", (label, found)
+
+
+def check_validate_targets():
+    """validate.py catalog reports only catalog problems, results only result problems,
+    and both read --data-dir."""
+    import shutil
+
+    import validate
+
+    def run(*args):
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            status = validate.main([*args])
+        return status, output.getvalue()
+
+    for target in ("all", "catalog", "results"):
+        status, output = run(target, "--data-dir", str(FIXTURES_DIR))
+        assert status == 0, (target, output)
+    with tempfile.TemporaryDirectory() as temp:
+        data_dir = Path(temp) / "data"
+        shutil.copytree(FIXTURES_DIR, data_dir)
+        # One catalog problem, then one result problem.
+        catalog_file = next((data_dir / "gpus" / "desktop").rglob("*.yaml"))
+        catalog_file.write_text(catalog_file.read_text(encoding="utf-8") + "colour: red\n", encoding="utf-8")
+        status, output = run("catalog", "--data-dir", str(data_dir))
+        assert status == 1 and "field-unknown" in output, output
+        status, output = run("results", "--data-dir", str(data_dir))
+        assert status == 0 and "field-unknown" not in output, output
+        result_file = next((data_dir / "community").rglob("result_*.yaml"))
+        result_file.write_text(result_file.read_text(encoding="utf-8") + "frame_generation: true\n", encoding="utf-8")
+        status, output = run("results", "--data-dir", str(data_dir))
+        assert status == 1 and "result-frame-generation" in output and "field-unknown" not in output, output
+        status, output = run("--data-dir", str(data_dir))
+        assert status == 1 and "result-frame-generation" in output and "field-unknown" in output, output
+
+
+def check_text_pages(api_dir):
+    """The crawler pages: form factors in order with the Integrated label, '|' escaped
+    in Markdown cells, and llms.txt linking every data file and listed post."""
+    record = {
+        "gpu_name": "Test | GPU", "game": "Test Game", "resolution": "1080p", "graphics_preset": "High",
+        "upscaling": "", "os": "windows", "source": "official", "testbench_id": "", "form_factor": "Igpu",
+        "avg_fps": 60.0, "p1_low": None, "run_count": 1, "testbench_memory": "",
+    }
+    rows = [
+        {**record, "form_factor": "Handheld"},
+        record,
+        {**record, "form_factor": "Desktop", "avg_fps": 90.0},
+        {**record, "form_factor": "Desktop", "avg_fps": 120.0},
+    ]
+    grouped = build.records_by_form_factor(rows)
+    assert [label for label, _ in grouped] == ["Desktop", "Handheld", "Integrated"], grouped
+    assert [row["avg_fps"] for row in grouped[0][1]] == [120.0, 90.0], "fastest first"
+    table = build.markdown_table([record])
+    assert "Test \\| GPU" in table and "| n/a |" in table and "| Native |" in table, table
+    assert table.splitlines()[0].count("|") == len(build.SUMMARY_COLUMNS) + 1
+    build_fixture_api(api_dir)
+    metadata = load_json(api_dir / "dashboard.json")["metadata"]
+    posts = [{"slug": "a-post", "title": "A Post", "type": "guide", "date": "2026-10-01", "description": "About it."}]
+    text = build.llms_txt(metadata, posts)
+    for endpoint in ("llms-full.txt", "benchmarks/", "api/v1/dashboard.json", "api/v1/gpus.json",
+                     "api/v1/games.json", "api/v1/testbenches.json"):
+        assert f"({build.SITE_URL}{endpoint})" in text, endpoint
+    assert f"- [A Post]({build.SITE_URL}blog/a-post/): guide, 2026-10-01. About it." in text, text
+
+
+def check_docs_in_sync(api_dir):
+    """The docs agree with the code: the current version, the fixture counts, and the
+    one check command every agent file names."""
+    import preflight
+
+    version = f"v{build.RELEASE_VERSION}"
+    for path in preflight.VERSION_DOCS:
+        assert version in (ROOT / path).read_text(encoding="utf-8"), (
+            f"{path} doesn't mention the current version {version}; update its current-version line"
+        )
+    build_fixture_api(api_dir)
+    actual = preflight.api_counts(api_dir, FIXTURES_DIR)
+    paragraph = preflight.doc_paragraph("docs/COPILOT_HANDOFF.md", "The fixtures have")
+    assert paragraph, "docs/COPILOT_HANDOFF.md lost its 'The fixtures have ...' paragraph"
+    quoted = preflight.quoted_counts(paragraph)
+    for name in ("catalog GPUs", "official runs", "community runs", "dashboard summaries"):
+        assert quoted.get(name) == actual[name], (
+            f"docs/COPILOT_HANDOFF.md says the fixtures have {quoted.get(name)} {name}, but they build {actual[name]}"
+        )
+    for path in ("CLAUDE.md", "AGENTS.md", ".github/copilot-instructions.md", "CONTRIBUTING.md", "README.md",
+                 "docs/COPILOT_HANDOFF.md"):
+        assert "scripts/preflight.py" in (ROOT / path).read_text(encoding="utf-8"), (
+            f"{path} must tell people to run `python scripts/preflight.py` before finishing"
+        )
+    workflow = (ROOT / ".github" / "workflows" / "validate.yml").read_text(encoding="utf-8")
+    assert "scripts/preflight.py" in workflow and "tests/e2e" in workflow, (
+        "validate.yml must run preflight.py and the browser tests"
+    )
+    assert "py_compile scripts/" not in workflow, "use preflight.py, which compiles every script, not a hand-kept list"
 
 
 def check_valid_fixtures():
@@ -613,6 +843,62 @@ def check_parse_mangohud():
     assert result["kernel"] == "6.5.0-valve22" and result["driver"] == "Mesa 24.1.0", result
 
 
+def check_parse_presentmon():
+    """PresentMon summary and frame-by-frame captures, MangoHud without a preamble,
+    and parse.py's output file passing every result check."""
+    import shutil
+
+    import parse
+
+    captures = {
+        "summary.csv": (
+            "Application,Duration,Total Frames,Average FPS,Minimum FPS,1st Percentile FPS,5th Percentile FPS,Maximum FPS\n"
+            "Game.exe,60.0,7200,120.5,80.0,95.25,101.0,160.0\n"
+        ),
+        # 100 frames: one dropped, one over 500 ms, the rest 10 ms (100 FPS) and five 20 ms (50 FPS).
+        "detailed.csv": "Application,Dropped,MsBetweenPresents\n" + "".join(
+            ["Game.exe,1,5.0\n", "Game.exe,0,600.0\n"] + ["Game.exe,0,20.0\n"] * 5 + ["Game.exe,0,10.0\n"] * 93
+        ),
+        "mangohud_plain.csv": "fps,frametime,cpu_load\n" + "100,10.0,30\n" * 4,
+        "unknown.csv": "foo,bar\n1,2\n",
+    }
+    with tempfile.TemporaryDirectory() as temp:
+        folder = Path(temp)
+        for name, text in captures.items():
+            (folder / name).write_text(text, encoding="utf-8")
+        summary = parse.detect_and_load(folder / "summary.csv")
+        assert summary["format"] == "presentmon_summary" and summary["avg"] == 120.5 and summary["p1"] == 95.25, summary
+        assert summary["p5"] == 101.0 and summary["frame_count"] == 7200, summary
+        detailed = parse.detect_and_load(folder / "detailed.csv")
+        assert detailed["format"] == "presentmon_detailed" and detailed["frame_count"] == 98, detailed
+        assert round(detailed["avg"], 2) == round((93 * 100 + 5 * 50) / 98, 2), detailed
+        assert detailed["p1"] == 50.0 and detailed["p01"] == 50.0, detailed
+        plain = parse.detect_and_load(folder / "mangohud_plain.csv")
+        assert plain["format"] == "mangohud" and plain["avg"] == 100.0 and plain["kernel"] is None, plain
+        try:
+            parse.detect_and_load(folder / "unknown.csv")
+        except ValueError as error:
+            assert "Unknown CSV format" in str(error)
+        else:
+            raise AssertionError("an unknown CSV must raise, not parse as 0 FPS")
+
+        # The written file passes every check in a copy of the fixtures.
+        data_dir = folder / "data"
+        shutil.copytree(FIXTURES_DIR, data_dir)
+        out = data_dir / "community" / "rtx_4090_24gb_fe" / "result_20261003_cyberpunk_2077_parsed.yaml"
+        with contextlib.redirect_stdout(io.StringIO()):
+            parse.main([str(folder / "summary.csv"), "--gpu-id", "rtx_4090_24gb_fe", "--game-id", "cyberpunk_2077",
+                        "--date", "2026-10-03", "--resolution", "4K", "--output", str(out)], data_dir)
+        written = yaml.safe_load(out.read_text(encoding="utf-8"))
+        assert written["date"] == "2026-10-03" and written["system"]["os"] == "windows", written
+        assert written["proof"]["method"] == "presentmon" and "testbench_id" not in written, written
+        assert written["result"][0]["avg_fps"] == 120.5 and written["result"][0]["p1_low"] == 95.25, written
+        catalog, _ = checks.load_catalog(data_dir)
+        _, issues = checks.load_results(catalog, data_dir)
+        problems = [issue.format() for issue in issues.errors if out.name in str(issue.path)]
+        assert not problems, problems
+
+
 def cyberpunk_summary(**overrides):
     """A Cyberpunk 2077 benchmark summary.json "Data" block, RTX 4090 on a named preset."""
     data = {
@@ -628,6 +914,36 @@ def cyberpunk_summary(**overrides):
     }
     data.update(overrides)
     return {"RootType": "worldBenchmarkSummary", "Data": data}
+
+
+def check_cyberpunk_labels():
+    """The importer's upscaler labels are grouping keys: changing one splits dashboard
+    groups, so each is pinned here. Linux runs don't take Windows details from the game."""
+    import import_cyberpunk
+
+    flags = ("DLAAEnabled", "DLSSEnabled", "FSR4Enabled", "FSR3Enabled", "FSR2Enabled", "XeSSEnabled", "FSREnabled", "DRSEnabled")
+    modes = {"DLSSQuality": 1, "FSR2Quality": 2, "FSR3Quality": 2, "FSR4Quality": 1, "XeSSQuality": 1, "FSRQuality": 1}
+    expected = {
+        None: "",
+        "DLAAEnabled": "DLAA",
+        "DLSSEnabled": "DLSS Quality",
+        "FSR4Enabled": "FSR 4 (mode 1)",
+        "FSR3Enabled": "FSR 3 (mode 2)",
+        "FSR2Enabled": "FSR 2.1 Balanced",
+        "XeSSEnabled": "XeSS (mode 1)",
+        "FSREnabled": "FSR 1.0 (mode 1)",
+        "DRSEnabled": "Dynamic resolution",
+    }
+    for flag, label in expected.items():
+        data = {**{name: name == flag for name in flags}, **modes}
+        assert import_cyberpunk.upscaler(data) == label, (flag, import_cyberpunk.upscaler(data))
+    summary = cyberpunk_summary()["Data"]
+    windows = import_cyberpunk.build_system(summary, "windows", "DDR5-6000", 2)
+    assert windows["os_detail"] == "Windows 11 Pro" and windows["os_build"] == "10.0.26300", windows
+    assert (windows["memory_gb"], windows["memory_type"], windows["memory_channels"]) == (32, "DDR5-6000", 2), windows
+    linux = import_cyberpunk.build_system(summary, "linux")
+    assert linux["os"] == "linux" and "os_build" not in linux, linux
+    assert linux.get("os_detail") != "Windows 11 Pro" and "memory_type" not in linux, linux
 
 
 def check_import_cyberpunk():
@@ -874,6 +1190,77 @@ def check_issue_to_result():
         # Untrusted text can't break out of the reply's code spans.
         status, comment = run_issue(valid.replace("GeForce RTX 4090 Founders Edition", "x` @someone `y"), data_dir, temp / "md")
         assert status == 1 and "`x' @someone 'y`" in comment, comment
+
+
+def check_issue_limits():
+    """The public bot's limits and refusals: each bad issue gets a reply naming the
+    problem, and no file."""
+    import shutil
+
+    import issue_to_result
+
+    valid = ISSUE_FIXTURE.read_text(encoding="utf-8")
+    results = "1440p, ultra, 175.2, 140.1\n2560x1440, Ultra, 180 fps, 150"
+    assert results in valid
+    form = (ISSUES_DIR / "file_form.md").read_text(encoding="utf-8")
+    with tempfile.TemporaryDirectory() as temp:
+        temp = Path(temp)
+        data_dir = temp / "data"
+        shutil.copytree(FIXTURES_DIR, data_dir)
+        community = data_dir / "community"
+        before = sorted(community.rglob("*"))
+        failures = {
+            "longer than": valid + "x" * issue_to_result.MAX_BODY,
+            f"more than {issue_to_result.MAX_RUNS} runs": valid.replace(
+                results, "\n".join(["1440p, Ultra, 175, 140"] * (issue_to_result.MAX_RUNS + 1))),
+            "needs 3 or 4 comma-separated values": valid.replace(results, "1440p, Ultra"),
+            "is out of range": valid.replace(results, "1440p, Ultra, 0, 0"),
+            "has no runs": valid.replace(results, "# nothing yet"),
+            "is too long": valid.replace(results, f"1440p, {'U' * (issue_to_result.MAX_TEXT + 1)}, 175, 140"),
+            "not a real calendar day": valid.replace("2026-10-03", "2026-02-30"),
+            "must be an https:// link": valid.replace("https://example.com/screenshot.png", "http://example.com/s.png"),
+            "must be one of the form's options": valid.replace("### Operating system\n\nWindows", "### Operating system\n\nBeOS"),
+            "result-benchmark-type": form.replace("game_id: cyberpunk_2077", "game_id: cyberpunk_2077\nbenchmark_type: other"),
+        }
+        for expected, body in failures.items():
+            assert body != valid and body != form, expected
+            status, comment = run_issue(body, data_dir, temp / f"bad{len(expected)}")
+            assert status == 1 and expected in comment, (expected, status, comment)
+            assert not (temp / f"bad{len(expected)}" / "pr_body.md").exists(), expected
+        assert sorted(community.rglob("*")) == before, "a failed issue leaves no file behind"
+
+        # A found result: the creator name becomes credit.name; the preset's upscaler is recorded.
+        found = valid.replace("I ran it myself", "Someone else: I found it in a video, review, or post")
+        found = found.replace("### Source link\n\n_No response_", "### Source link\n\nhttps://example.com/review")
+        found = found.replace("### Creator name\n\n_No response_", "### Creator name\n\nExample Creator")
+        status, comment = run_issue(found, data_dir, temp / "found")
+        assert status == 0, comment
+        written = [path for path in community.rglob("*.yaml") if path not in before]
+        assert len(written) == 1, written
+        run = yaml.safe_load(written[0].read_text(encoding="utf-8"))
+        assert run["credit"] == {"source_url": "https://example.com/review", "name": "Example Creator"}, run
+        relative = (temp / "found" / "path.txt").read_text(encoding="utf-8").strip()
+        assert relative.endswith("community/rtx_4090_24gb_fe/result_20261003_cyberpunk_2077.yaml"), relative
+        assert (temp / "found" / "title.txt").read_text(encoding="utf-8").strip(), "the bot needs a PR title"
+
+        # The path guard: a run can never be written outside data/community.
+        try:
+            issue_to_result.target_path(data_dir, {"gpu_id": "../../escape", "date": "2026-10-03", "game_id": "x"})
+        except issue_to_result.SubmissionError as error:
+            assert "outside data/community" in str(error)
+        else:
+            raise AssertionError("target_path must refuse a path outside data/community")
+
+    # A bad --author is a usage error, never a file.
+    with contextlib.redirect_stderr(io.StringIO()):
+        try:
+            issue_to_result.main(["--body-file", str(ISSUE_FIXTURE), "--issue", "1", "--author", "not a user",
+                                  "--out-dir", str(ROOT / "unused")])
+        except SystemExit as error:
+            assert error.code == 2
+        else:
+            raise AssertionError("an invalid --author must exit with a usage error")
+    assert not (ROOT / "unused").exists()
 
 
 def check_issue_files():
@@ -1157,6 +1544,91 @@ def check_real_data():
     assert not synthetic, f"synthetic runs belong in tests/fixtures/data, not data/: {synthetic}"
 
 
+def collect_shape(value, path, shape):
+    """Record the keys of every object in value under a path where list items are '[]'."""
+    if isinstance(value, dict):
+        keys = shape.setdefault(path, set())
+        keys.update(value)
+        for key, item in value.items():
+            if path.endswith("gpus[]") and key in SPEC_SECTIONS:
+                continue
+            collect_shape(item, f"{path}.{key}", shape)
+    elif isinstance(value, list):
+        for item in value:
+            collect_shape(item, f"{path}[]", shape)
+
+
+def api_shape(api_dir):
+    """{payload path: sorted keys} for a built API folder; per-GPU summaries share one entry."""
+    shape = {}
+    for path in sorted(api_dir.rglob("*.json")):
+        relative = path.relative_to(api_dir).as_posix()
+        name = f"{relative.split('/')[0]}/<gpu_id>/summary.json" if relative.count("/") == 2 else relative
+        collect_shape(load_json(path), name, shape)
+    return {"schema_version": build.SCHEMA_VERSION, "paths": {key: sorted(keys) for key, keys in sorted(shape.items())}}
+
+
+def build_fixture_api(api_dir):
+    with contextlib.redirect_stdout(io.StringIO()):
+        assert build.main(FIXTURES_DIR, api_dir) == 0, "the fixtures must pass every check"
+
+
+def write_api_shape(api_dir):
+    build_fixture_api(api_dir)
+    API_SHAPE_PATH.write_text(json.dumps(api_shape(api_dir), indent=2) + "\n", encoding="utf-8")
+    print(f"Wrote {API_SHAPE_PATH.relative_to(ROOT)} for schema {build.SCHEMA_VERSION}")
+
+
+def check_api_shape(api_dir):
+    """The API's keys only change together with SCHEMA_VERSION and the snapshot."""
+    build_fixture_api(api_dir)
+    expected = json.loads(API_SHAPE_PATH.read_text(encoding="utf-8"))
+    actual = api_shape(api_dir)
+    changes = []
+    for path in sorted(set(expected["paths"]) | set(actual["paths"])):
+        before, after = set(expected["paths"].get(path, [])), set(actual["paths"].get(path, []))
+        if before != after:
+            changes.append(f"{path}: added {sorted(after - before)}, removed {sorted(before - after)}")
+    assert not changes, (
+        "the API payload keys changed:\n  " + "\n  ".join(changes) + "\nIf that's intended, bump "
+        "SCHEMA_VERSION in scripts/build.py, run `python scripts/test_build.py --update-shape`, and "
+        "note the change in CHANGELOG.md and docs/COPILOT_HANDOFF.md"
+    )
+    assert expected["schema_version"] == build.SCHEMA_VERSION, (
+        f"{API_SHAPE_PATH.relative_to(ROOT)} was written for schema {expected['schema_version']}, "
+        f"but SCHEMA_VERSION is {build.SCHEMA_VERSION}; run `python scripts/test_build.py --update-shape`"
+    )
+
+
+# Fields the dashboard reads that no fixture record carries yet. Keep it empty
+# when you can: add a fixture that sets the field instead.
+DASHBOARD_OPTIONAL_FIELDS = set()
+
+
+def check_dashboard_reads_real_fields(api_dir):
+    """Every record.X / run.X / pick.X the dashboard reads is a key build.py writes."""
+    build_fixture_api(api_dir)
+    shape = api_shape(api_dir)["paths"]
+    written = {
+        "record": set(shape["dashboard.json.records[]"]),
+        # build.py leaves empty per-run details out, so a fixture can't show all of them.
+        "run": set(build.IMPLEMENTATION_FIELDS),
+        "pick": set(shape["dashboard.json.picks[]"]),
+        "credit": set(shape["dashboard.json.records[].credits[]"]),
+    }
+    index = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    script = index[index.index("<script>"):]
+    missing = []
+    for variable, keys in written.items():
+        for field in sorted(set(re.findall(rf"\b{variable}\??\.(\w+)", script))):
+            if field not in keys and field not in DASHBOARD_OPTIONAL_FIELDS and field not in ("length",):
+                missing.append(f"{variable}.{field}")
+    assert not missing, (
+        f"site/index.html reads fields the API never writes: {missing}. Rename them to match build.py, "
+        "or add a genuinely optional field to DASHBOARD_OPTIONAL_FIELDS in scripts/test_build.py"
+    )
+
+
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
     assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.20"
@@ -1207,50 +1679,59 @@ def check_catalog_specs(api_dir):
     assert sorted(record["os"] for record in xtx_alan_wake) == ["linux", "windows"], "one summary per OS"
 
 
-def main():
-    check_valid_fixtures()
-    check_catalog_rules()
-    check_result_rules()
-    check_game_rules()
-    check_testbench_rules()
-    check_os_grouping()
-    check_average_only_runs()
-    check_outlier_limit()
-    check_anonymous_submissions()
-    check_upscaling()
-    check_third_party_credit()
-    check_parse_mangohud()
-    check_import_cyberpunk()
-    check_issue_to_result()
-    check_issue_files()
-    check_issue_form_matches_script()
-    check_bot_safety()
-    check_reports_every_error_and_build_stops()
-    check_minimal_entry_builds()
-    check_base_merge()
-    check_reference_overrides()
-    check_rules_are_documented()
-    check_templates_are_valid()
-    check_real_data()
-    with tempfile.TemporaryDirectory() as temp:
-        check_fixture_build(Path(temp))
-    with tempfile.TemporaryDirectory() as temp:
-        check_site_seo(Path(temp))
-    check_pick_rules()
-    check_blog_tokens()
-    check_unique_site_functions()
-    check_blog_posts()
-    check_release_version()
-    print("Catalog rules, result rules, aggregation, submitter, and catalog spec checks passed")
+def in_temp_dir(check):
+    """Run check(path) with a fresh temporary folder."""
+    def run():
+        with tempfile.TemporaryDirectory() as temp:
+            check(Path(temp))
+    run.__name__ = check.__name__
+    return run
 
+
+CHECKS = None  # filled in below main(), once every check is defined
+
+
+def main(argv=None):
+    """Run every check, report every failure (not just the first), and return 1 if any failed."""
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--only", metavar="NAME", help="run only checks whose name contains NAME")
+    parser.add_argument("--update-shape", action="store_true",
+                        help=f"rewrite {API_SHAPE_PATH.relative_to(ROOT)} from the fixture build")
+    args = parser.parse_args(argv)
+    if args.update_shape:
+        with tempfile.TemporaryDirectory() as temp:
+            write_api_shape(Path(temp))
+        return 0
+    selected = [check for check in CHECKS if not args.only or args.only in check.__name__]
+    failures = []
+    for check in selected:
+        try:
+            with contextlib.redirect_stdout(io.StringIO()) as captured:
+                check()
+        except Exception as error:  # noqa: BLE001 - report every kind of failure
+            detail = traceback.format_exc() if not isinstance(error, AssertionError) else ""
+            failures.append((check.__name__, error, detail, captured.getvalue()))
+    for name, error, detail, output in failures:
+        print(f"FAIL {name}: {type(error).__name__}: {error}")
+        if detail:
+            print(detail.rstrip())
+        if output.strip():
+            print("  output before the failure:")
+            print("\n".join(f"    {line}" for line in output.strip().splitlines()[-15:]))
+    if failures:
+        print(f"{len(failures)} of {len(selected)} checks failed")
+        return 1
+    print(f"All {len(selected)} checks passed")
+    return 0
 
 def check_fixture_build(api_dir):
     """Build the synthetic fixtures and check the payload numbers they're known to produce."""
-    stale = api_dir / "official" / "removed_gpu_8gb_fe" / "summary.json"
-    stale.parent.mkdir(parents=True)
-    stale.write_text("{}", encoding="utf-8")
+    stale = [api_dir / source / "removed_gpu_8gb_fe" / "summary.json" for source in ("official", "community")]
+    for path in stale:
+        path.parent.mkdir(parents=True)
+        path.write_text("{}", encoding="utf-8")
     assert build.main(FIXTURES_DIR, api_dir) == 0, "the fixtures must pass every check"
-    assert not stale.parent.exists(), "a GPU removed from the catalog loses its old summary folder"
+    assert not any(path.parent.exists() for path in stale), "a GPU removed from the catalog loses its old summary folders"
     assert load_json(api_dir / "dashboard.json")["metadata"]["synthetic_data"] is True
     picks = load_json(api_dir / "dashboard.json")["picks"]
     assert [pick["slot"] for pick in picks] == ["nvidia", "intel"], "picks come out in amd, nvidia, intel order"
@@ -1567,5 +2048,50 @@ def check_release_version():
     )
 
 
+CHECKS = [
+    check_valid_fixtures,
+    check_catalog_rules,
+    check_result_rules,
+    check_rule_variants,
+    check_review_rules,
+    check_game_rules,
+    check_testbench_rules,
+    check_os_grouping,
+    check_average_only_runs,
+    check_outlier_limit,
+    check_anonymous_submissions,
+    check_upscaling,
+    check_third_party_credit,
+    check_parse_mangohud,
+    check_parse_presentmon,
+    check_import_cyberpunk,
+    check_cyberpunk_labels,
+    check_issue_to_result,
+    check_issue_files,
+    check_issue_limits,
+    check_issue_form_matches_script,
+    check_bot_safety,
+    check_reports_every_error_and_build_stops,
+    check_validate_targets,
+    in_temp_dir(check_text_pages),
+    check_minimal_entry_builds,
+    check_base_merge,
+    check_reference_overrides,
+    check_rules_are_documented,
+    check_templates_are_valid,
+    check_real_data,
+    in_temp_dir(check_fixture_build),
+    in_temp_dir(check_site_seo),
+    in_temp_dir(check_api_shape),
+    in_temp_dir(check_dashboard_reads_real_fields),
+    check_pick_rules,
+    check_blog_tokens,
+    check_unique_site_functions,
+    check_blog_posts,
+    check_release_version,
+    in_temp_dir(check_docs_in_sync),
+]
+
+
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

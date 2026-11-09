@@ -775,3 +775,15 @@ Each pick needs a `links` list with at least one store link. Every link has
 only `retailer` (`amazon`, `newegg`, or `bestbuy`) and an `https://` `url`.
 Paste the full affiliate URL from the program (Amazon SiteStripe, or the
 network link for Newegg and Best Buy).
+
+#### `review-field`
+
+`data/reviews.yaml` is optional. When present it holds one `reviews:` list
+(an empty `reviews:` means none). Each review needs a `title` and an
+`https://` `url`, and may add a quoted `date` (`'YYYY-MM-DD'`) and a
+`gpu_ids` list. No other field is allowed. Reviews are published in
+`dashboard.json` as `reviews`; the dashboard doesn't show them.
+
+#### `review-gpu-id`
+
+Every ID in a review's `gpu_ids` must be a catalog product file name.

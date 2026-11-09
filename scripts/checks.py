@@ -704,8 +704,14 @@ def stray_result_paths(data_dir, source):
     )
 
 
+def system_section(run):
+    """run's system mapping, or {} when it's missing or malformed (result-os reports that)."""
+    system = run.get("system")
+    return system if isinstance(system, dict) else {}
+
+
 def gpu_power_w(run):
-    system = run.get("system") or {}
+    system = system_section(run)
     return run.get("gpu_power_w", run.get("tgp_w", system.get("gpu_power_w", system.get("tgp_w"))))
 
 
@@ -980,7 +986,7 @@ def check_testbench(source, path, run, gpu, testbenches_by_id, issues):
     if bench is None:
         issues.error(path, "result-unknown-testbench", f"testbench_id '{bench_id}' is not in data/testbenches.yaml")
         return
-    for problem in testbench_mismatches(run.get("system") or {}, bench):
+    for problem in testbench_mismatches(system_section(run), bench):
         issues.warning(path, "result-testbench-mismatch", f"{problem}; check that testbench_id '{bench_id}' is the machine you ran it on")
 
 
@@ -1035,8 +1041,13 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
         if form_factor != catalog_form:
             issues.error(path, "result-form-factor", f"form_factor '{form_factor}' does not match catalog value '{catalog_form}'")
 
-    if run.get("benchmark_type", "game") != "game":
-        return entries
+    if run.get("benchmark_type", "game") not in BENCHMARK_TYPES:
+        # Any other value used to skip every game check below and still ship.
+        issues.error(
+            path, "result-benchmark-type",
+            f"benchmark_type '{run.get('benchmark_type')}' must be one of {', '.join(BENCHMARK_TYPES)} (or left out)",
+        )
+        return None
     check_game_id(path, run, games_by_id or {}, issues)
     if run.get("frame_generation", False):
         issues.error(path, "result-frame-generation", "frame generation must be disabled for comparable game runs")
@@ -1191,6 +1202,9 @@ def load_results(catalog, data_dir=DATA_DIR, games=None, testbenches=None):
 
 
 # --- Games ---------------------------------------------------------------------
+
+# The only benchmark_type a result file may set; leaving it out means "game".
+BENCHMARK_TYPES = ("game",)
 
 # data/games.yaml: every game and benchmark a result can name with game_id.
 GAME_TYPES = ("game", "synthetic", "engine_demo")
@@ -1507,3 +1521,65 @@ def load_picks(catalog, data_dir=DATA_DIR):
             "links": links,
         }
     return [picks[slot] for slot in PICK_SLOTS if slot in picks], issues
+
+
+# --- Reviews -------------------------------------------------------------------
+
+# data/reviews.yaml: optional review links, still published in dashboard.json.
+REVIEW_REQUIRED = ("title", "url")
+REVIEW_FIELDS = (*REVIEW_REQUIRED, "gpu_ids", "date")
+
+
+def load_reviews(catalog, data_dir=DATA_DIR):
+    """Return (reviews, issues) from data/reviews.yaml. The file is optional, and an
+    empty 'reviews:' means none."""
+    issues = Issues()
+    path = data_dir / "reviews.yaml"
+    if not path.is_file():
+        return [], issues
+    parsed, data = load_yaml_file(path, issues)
+    if not parsed:
+        return [], issues
+    if data is not None and not isinstance(data, dict):
+        issues.error(path, "review-field", "reviews.yaml must hold a 'reviews:' list")
+        return [], issues
+    data = data or {}
+    for key in sorted(set(data) - {"reviews"}):
+        issues.error(path, "review-field", f"unknown top-level key '{key}' (only 'reviews' is allowed)")
+    items = data.get("reviews") or []
+    if not isinstance(items, list):
+        issues.error(path, "review-field", "'reviews' must be a list of '- title: ...' items")
+        return [], issues
+    catalog_ids = {entry["id"] for entry in catalog}
+    reviews = []
+    for number, item in enumerate(items, start=1):
+        label = f"review {number}"
+        if not isinstance(item, dict):
+            issues.error(path, "review-field", f"{label} must be a mapping with title and url")
+            continue
+        ok = True
+        for key in sorted(set(item) - set(REVIEW_FIELDS)):
+            issues.error(path, "review-field", f"{label}: unknown field '{key}' (allowed: {', '.join(REVIEW_FIELDS)})")
+            ok = False
+        if not is_text(item.get("title")):
+            issues.error(path, "review-field", f"{label} needs a 'title'")
+            ok = False
+        if not is_https(item.get("url")):
+            issues.error(path, "review-field", f"{label}: 'url' must be an https:// link")
+            ok = False
+        if item.get("date") is not None and not (is_text(item["date"]) and FULL_DATE.match(item["date"])):
+            issues.error(path, "review-field", f"{label}: 'date' must be a quoted 'YYYY-MM-DD'")
+            ok = False
+        gpu_ids = item.get("gpu_ids")
+        if gpu_ids is not None:
+            if not isinstance(gpu_ids, list) or not all(is_text(gpu_id) for gpu_id in gpu_ids):
+                issues.error(path, "review-field", f"{label}: 'gpu_ids' must be a list of catalog IDs")
+                ok = False
+            else:
+                for gpu_id in gpu_ids:
+                    if gpu_id not in catalog_ids:
+                        issues.error(path, "review-gpu-id", f"{label}: gpu_id '{gpu_id}' is not a catalog product")
+                        ok = False
+        if ok:
+            reviews.append(dict(item))
+    return reviews, issues

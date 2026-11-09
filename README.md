@@ -15,7 +15,10 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.13.0.0`: a `gpu-catalog` Copilot agent adds GPUs from
+Current version: `v1.14.0.0`: one command, `python scripts/preflight.py`, runs
+every check before a commit or push (Claude Code and a git hook run it
+automatically), with Playwright browser tests for the dashboard and failure
+messages that say how to fix each problem. v1.13.0.0: a `gpu-catalog` Copilot agent adds GPUs from
 their makers' spec pages, from an "Add a GPU" issue or the agents panel, and
 each card's changes from its reference design (a lower clock or power limit,
 say) show in the API and on the dashboard. v1.12.0.0: the benchmark bot also takes an attached or
@@ -39,9 +42,9 @@ benchmark issue form. See [CHANGELOG.md](CHANGELOG.md) for every release and
 ## What's on the dashboard
 
 Published so far: 1 catalog GPU (the GeForce RTX 5080 Founders Edition), 309
-reference GPU specs ready for products to build on, 34
-official runs, no community runs, and 30 dashboard summaries, all Cyberpunk
-2077 built-in benchmark runs on Windows.
+reference GPU specs ready for products to build on, 34 official runs (Cyberpunk
+2077's built-in benchmark on Windows), 1 community run (OpenBenchmarker Neon
+Flythrough at 4K), and 31 dashboard summaries.
 
 - **One bar per product.** A product is an exact card, laptop GPU, handheld, or
   iGPU, memory size included. Different memory sizes and board partners are
@@ -174,10 +177,9 @@ python -m pip install -r requirements.txt
 ### Check, build, and preview
 
 ```bash
-python scripts/validate.py               # or: validate.py catalog / validate.py results
-python scripts/build.py
-python scripts/test_build.py
-python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/issue_to_result.py scripts/test_build.py
+python scripts/preflight.py --fast       # data, build, and every test (~15 s); see CONTRIBUTING.md
+python scripts/preflight.py              # adds the Playwright browser tests (npm --prefix tests/e2e ci once)
+python scripts/validate.py               # just the data: validate.py catalog / validate.py results
 python -m http.server 8000 --directory site
 ```
 

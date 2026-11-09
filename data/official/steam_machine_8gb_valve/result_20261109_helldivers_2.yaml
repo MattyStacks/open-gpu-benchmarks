@@ -1,0 +1,64 @@
+# Helldivers 2 gameplay captured with MangoHud on the Steam Machine (SteamOS, Proton).
+# 5 runs from one session at 1080p, combined from the per-run evidence bundles, in the
+# order they ran. avg_fps, p1_low, and p0_1_low come from each run's MangoHud summary;
+# benchmark_run names its frame log in raw/helldivers_2_20261109/.
+# Settings were confirmed by hand for each run; upscaling and frame generation were off.
+gpu_id: steam_machine_8gb_valve
+testbench_id: steam_machine_32gb_ddr5
+benchmark_type: game
+game_id: helldivers_2
+date: '2026-11-09'
+version: 'Steam build 26251122'
+frame_generation: false
+result:
+  - benchmark_run: helldivers2_2026-11-09_17-00-34
+    time: '17:00:34'
+    resolution: 1080p
+    graphics_preset: Low
+    avg_fps: 124.5
+    p1_low: 108.52
+    p0_1_low: 72.89
+  - benchmark_run: helldivers2_2026-11-09_17-02-39
+    time: '17:02:39'
+    resolution: 1080p
+    graphics_preset: Steam Deck
+    avg_fps: 117.0
+    p1_low: 101.78
+    p0_1_low: 90.52
+  - benchmark_run: helldivers2_2026-11-09_17-04-23
+    time: '17:04:23'
+    resolution: 1080p
+    graphics_preset: Medium
+    avg_fps: 89.7
+    p1_low: 80.68
+    p0_1_low: 59.64
+  - benchmark_run: helldivers2_2026-11-09_17-06-05
+    time: '17:06:05'
+    resolution: 1080p
+    graphics_preset: High
+    avg_fps: 79.3
+    p1_low: 68.46
+    p0_1_low: 61.82
+  - benchmark_run: helldivers2_2026-11-09_17-07-50
+    time: '17:07:50'
+    resolution: 1080p
+    graphics_preset: Ultra
+    avg_fps: 78.2
+    p1_low: 69.31
+    p0_1_low: 40.99
+system:
+  os: linux
+  os_detail: SteamOS
+  distro: SteamOS
+  distro_version: '3.9.5'
+  kernel: 7.2.7-valve2-2-neptune-72-g31504582a073
+  mesa: '26.1.2' # vulkan-radeon (RADV) package is 26.2.0-devel
+  runtime: proton
+  launcher: Steam
+  cpu: AMD Custom CPU 1772
+  memory_gb: 32
+  memory_type: DDR5-5600
+  memory_channels: 2
+proof:
+  method: mangohud
+  raw_log: raw/helldivers_2_20261109/

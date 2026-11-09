@@ -32,6 +32,14 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.17.2.0 - 2026-11-09
+
+5 new official Helldivers 2 runs on the Steam Machine (1080p, Low to Ultra).
+
+### Added
+
+- 5 official Helldivers 2 gameplay runs on the Steam Machine (`steam_machine_32gb_ddr5` bench, SteamOS with Proton) at 1080p with the Low, Steam Deck, Medium, High, and Ultra presets, captured with MangoHud. The raw frame logs and summaries are in `data/official/steam_machine_8gb_valve/raw/helldivers_2_20261109/`.
+
 ## 1.17.1.0 - 2026-11-09
 
 20 new official OpenBenchmarker Neon Flythrough runs on the Steam Machine (720p to 4K, Low to Extreme).

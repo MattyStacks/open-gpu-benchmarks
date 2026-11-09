@@ -32,6 +32,14 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.17.1.0 - 2026-11-09
+
+20 new official OpenBenchmarker Neon Flythrough runs on the Steam Machine (720p to 4K, Low to Extreme).
+
+### Added
+
+- 20 official OpenBenchmarker Neon Flythrough runs on the Steam Machine (`steam_machine_32gb_ddr5` bench, SteamOS): 720p, 1080p, 1440p, and 4K at the Low, Medium, High, Ultra, and Extreme presets, in one file.
+
 ## 1.17.0.0 - 2026-11-09
 
 Cyberpunk 2077's built-in benchmark is named as such, and it always opens the dashboard.

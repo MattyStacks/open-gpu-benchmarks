@@ -19,6 +19,13 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
   `product_name` (`Valve`, `Fremont`) and map the machine to
   `steam_machine_8gb_valve` (desktop); add PCI subsystem vendor `1e44`
   (Valve) to `BOARD_BRANDS`; refresh its catalog snapshot.
+- [ ] **One file per session from openbenchmarker's export.** A 20-run
+  session exported 20 files (`_2` … `_20`), and only the first carried
+  `system.kernel` and `system.mesa`; they had to be merged by hand into one
+  `result_YYYYMMDD_<game_id>.yaml` (v1.17.1.0). Have the export write one file
+  per day and setup with every run in `result`, keep the Linux detail on it,
+  and offer an official layout (`data/official/`, `testbench_id`) for
+  maintainer runs.
 - [ ] **`memory_gb` on community Cyberpunk imports.** Without `--testbench`
   the importer rounds `systemMemory`, which the game reports a little low
   (31952 MB for 32 GB), so a machine with reserved memory can come out one or

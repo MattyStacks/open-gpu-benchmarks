@@ -15,7 +15,9 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.17.0.0`: the Cyberpunk results are named as the game's
+Current version: `v1.17.1.0`: 20 official OpenBenchmarker Neon Flythrough
+runs on the Steam Machine (720p to 4K, Low to Extreme).
+v1.17.0.0: the Cyberpunk results are named as the game's
 built-in benchmark (`cyberpunk_2077_benchmark`), and that baseline benchmark is
 listed first and opens the dashboard (`featured: true` in `data/games.yaml`),
 and the Benchmark picker is wider and searchable.
@@ -52,9 +54,10 @@ benchmark issue form. See [CHANGELOG.md](CHANGELOG.md) for every release and
 ## What's on the dashboard
 
 Published so far: 6 catalog GPUs (the GeForce RTX 5080 Founders Edition, the
-Steam Machine, and four handhelds), 310 reference GPU specs ready for products to build on, 69
-official runs (Cyberpunk 2077's built-in benchmark on Windows and on SteamOS), 1
-community run (OpenBenchmarker Neon Flythrough at 4K), and 61 dashboard summaries.
+Steam Machine, and four handhelds), 310 reference GPU specs ready for products to build on, 89
+official runs (Cyberpunk 2077's built-in benchmark on Windows and on SteamOS, and
+OpenBenchmarker Neon Flythrough on the Steam Machine), 1 community run
+(OpenBenchmarker Neon Flythrough at 4K), and 81 dashboard summaries.
 
 - **One bar per product.** A product is an exact card, laptop GPU, handheld, or
   iGPU, memory size included. Different memory sizes and board partners are

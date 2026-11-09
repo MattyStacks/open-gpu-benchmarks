@@ -15,8 +15,8 @@
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
-  - v1.17.2.0: 5 official Helldivers 2 gameplay runs on the Steam Machine
-    (1080p, Low/Steam Deck/Medium/High/Ultra), captured with MangoHud, with
+  - v1.17.2.0: 4 official Helldivers 2 gameplay runs on the Steam Machine
+    (1080p, Low/Steam Deck/Medium/High), captured with MangoHud, with
     the raw frame logs in `raw/helldivers_2_20261109/`.
   - v1.17.1.0: 20 official OpenBenchmarker Neon Flythrough runs on the
     Steam Machine (`steam_machine_32gb_ddr5` bench, SteamOS), 720p to 4K at
@@ -793,14 +793,14 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 `steam_machine_8gb_valve`, and the handhelds `steam_deck_lcd_16gb`,
 `legion_go_s_z1_extreme_16gb`, `legion_go_s_z1_extreme_32gb`,
 `onexplayer_3_arc_g3_extreme_32gb`) plus 310 reference files under
-`data/gpus/reference/`, 94 official result runs, 1 community run, and 86
+`data/gpus/reference/`, 93 official result runs, 1 community run, and 85
 dashboard summaries. The official runs are Cyberpunk 2077 built-in benchmark
 runs on Windows at 1080p, 1440p, and 4K (RTX 5080) and on SteamOS with Proton
 at 1080p and 1440p (Steam Machine, `steam_machine_32gb_ddr5` bench), imported with
 `scripts/import_cyberpunk.py`; each has an `avg_fps` and `p1_low` from its
 `frames.csv`. The Steam Machine also has 20 official OpenBenchmarker Neon
-Flythrough runs (720p to 4K, Low to Extreme) and 5 official Helldivers 2
-gameplay runs (1080p, Low to Ultra, MangoHud with raw frame logs) on the same bench. The community run is an OpenBenchmarker Neon Flythrough result
+Flythrough runs (720p to 4K, Low to Extreme) and 4 official Helldivers 2
+gameplay runs (1080p, Low to High, MangoHud with raw frame logs) on the same bench. The community run is an OpenBenchmarker Neon Flythrough result
 at 4K (a browser WebGL2 benchmark). `scripts/preflight.py` fails a code PR
 when these counts don't match `data/`. `data/` is what
 CI builds and deploys, so it holds only real data. With no runs,

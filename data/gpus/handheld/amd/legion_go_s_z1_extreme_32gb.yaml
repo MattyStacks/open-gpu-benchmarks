@@ -1,0 +1,36 @@
+id: legion_go_s_z1_extreme_32gb
+base: z1_extreme
+identity:
+  name: Legion Go S Z1 Extreme 32 GB
+  gpu_vendor: amd
+classification:
+  form_factor: handheld
+memory:
+  capacity_gb: 32
+  type: LPDDR5X
+platform:
+  oem: Lenovo
+  cpu: Zen 4 8C/16T
+  ram_mts: 7500
+  os_shipped: Windows 11 Home or SteamOS
+  display: 8 in 1920x1200 120 Hz VRR
+  power_min_w: 9
+  power_max_w: 30
+  battery_wh: 55.5
+notes: >-
+  Lenovo's Legion Go S (8APU1) with the Ryzen Z1 Extreme and 32 GB of
+  soldered LPDDR5X-7500, sold with Windows 11 or SteamOS. The power range is
+  the chip's configurable TDP; Lenovo doesn't publish the device's own.
+sources:
+  - url: https://psref.lenovo.com/syspool/Sys/PDF/Legion/Legion_Go_S_8APU1/Legion_Go_S_8APU1_Spec.pdf
+    title: Legion Go S 8APU1 PSREF
+    accessed: '2026-11-09'
+    covers:
+      - identity
+      - memory
+      - platform
+  - url: https://www.amd.com/en/products/processors/handhelds/ryzen-z-series/z1-series/z1-extreme.html
+    title: AMD Ryzen Z1 Extreme
+    accessed: '2026-11-09'
+    covers:
+      - platform

@@ -11,10 +11,13 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.15.0.0` (2026-11-09). Versions are now
+- Current version: `v1.15.1.0` (2026-11-09). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.15.1.0: the first handhelds in the catalog: `steam_deck_lcd_16gb`,
+    `legion_go_s_z1_extreme_16gb` and `_32gb` (on the new `z1_extreme`
+    reference), and `onexplayer_3_arc_g3_extreme_32gb`.
   - v1.15.0.0: the Steam Machine (`steam_machine_8gb_valve`, a desktop
     with its own `steam_machine_32gb_ddr5` test bench) and 35 official Cyberpunk
     runs on SteamOS. `import_cyberpunk.py` takes `--custom-presets FILE`,
@@ -755,8 +758,10 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 
 ## Published data and test fixtures
 
-**Published data (`data/`).** 2 catalog GPU entries (`rtx_5080_16gb_fe`,
-`steam_machine_8gb_valve`) plus 309 reference files under
+**Published data (`data/`).** 6 catalog GPU entries (`rtx_5080_16gb_fe`,
+`steam_machine_8gb_valve`, and the handhelds `steam_deck_lcd_16gb`,
+`legion_go_s_z1_extreme_16gb`, `legion_go_s_z1_extreme_32gb`,
+`onexplayer_3_arc_g3_extreme_32gb`) plus 310 reference files under
 `data/gpus/reference/`, 69 official result runs, 1 community run, and 61
 dashboard summaries. The official runs are Cyberpunk 2077 built-in benchmark
 runs on Windows at 1080p, 1440p, and 4K (RTX 5080) and on SteamOS with Proton

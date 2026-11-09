@@ -1,0 +1,43 @@
+id: onexplayer_3_arc_g3_extreme_32gb
+identity:
+  name: ONEXPLAYER 3 Arc G3 Extreme 32 GB
+  gpu_vendor: intel
+classification:
+  form_factor: handheld
+memory:
+  capacity_gb: 32
+  type: LPDDR5X
+  shared: true
+clocks:
+  boost_mhz: 2300
+power:
+  tdp_w: 35
+platform:
+  oem: ONE-NETBOOK
+  cpu: 2P+8E+4LP 14C/14T
+  ram_mts: 8533
+  os_shipped: Windows 11 Home
+  display: 8.8 in 1920x1200 144 Hz AMOLED
+  battery_wh: 85
+notes: >-
+  ONE-NETBOOK's 3-in-1 handheld with Intel's Arc G3 Extreme (Panther Lake, 14
+  cores) and its Arc B390 graphics (12 Xe3 cores, up to 2300 MHz), with 32 GB of
+  LPDDR5X-8533. Default TDP 35 W, 80 W boost. The 24 GB model uses slower
+  LPDDR5X-7467, so it would be its own entry. Specs come from a retailer and a
+  review site, because the maker's and Intel's pages couldn't be read.
+sources:
+  - url: https://droix.net/product/onexplayer-3/
+    title: ONEXPLAYER 3 Handheld PC with 8.8in AMOLED - DROIX Global
+    accessed: '2026-11-09'
+    covers:
+      - identity
+      - memory
+      - clocks
+      - power
+      - platform
+  - url: https://heldgames.com/devices/onexplayer-3
+    title: OneXPlayer 3 Hub | Held Games
+    accessed: '2026-11-09'
+    covers:
+      - memory
+      - platform

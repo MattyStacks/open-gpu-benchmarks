@@ -1,0 +1,58 @@
+id: steam_deck_lcd_16gb
+identity:
+  name: Steam Deck LCD
+  codename: Aerith
+  gpu_vendor: amd
+classification:
+  form_factor: handheld
+  architecture: RDNA 2
+silicon:
+  process: TSMC N7
+memory:
+  capacity_gb: 16
+  type: LPDDR5
+  bus_width_bits: 128
+  bandwidth_gbs: 88
+  shared: true
+clocks:
+  base_mhz: 1000
+  boost_mhz: 1600
+power:
+  tdp_w: 15
+release:
+  date: '2022-02-25'
+platform:
+  oem: Valve
+  cpu: Zen 2 4C/8T
+  ram_mts: 5500
+  os_shipped: SteamOS
+  display: 7 in 1280x800 60 Hz
+  power_min_w: 4
+  power_max_w: 15
+  battery_wh: 40
+notes: >-
+  The original Steam Deck (64 GB, 256 GB, and 512 GB storage models), with the
+  7 nm Aerith APU: Zen 2 4C/8T at 2.4-3.5 GHz and 8 RDNA 2 CUs at up to 1.6 GHz
+  (1.6 TFLOPS FP32), and 16 GB of LPDDR5-5500 on four 32-bit channels. APU
+  power spans 4-15 W. Storage size doesn't change the chip, so every LCD model
+  is this one entry.
+sources:
+  - url: https://www.steamdeck.com/en/tech/deck
+    title: 'Steam Deck :: Tech Specs'
+    accessed: '2026-11-09'
+    covers:
+      - classification
+      - silicon
+      - memory
+      - clocks
+      - power
+      - platform
+  - url: https://en.wikipedia.org/wiki/Steam_Deck
+    title: Steam Deck - Wikipedia
+    accessed: '2026-11-09'
+    covers:
+      - identity
+      - silicon
+      - memory
+      - clocks
+      - release

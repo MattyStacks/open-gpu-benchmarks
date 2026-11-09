@@ -1,5 +1,9 @@
 gpu_id: rog_ally_z1_extreme_16gb
 submitted_by: MattyStacks
+credit:
+  source_url: https://example.com/example-creator/handheld-review
+  name: Example Creator
+  url: https://example.com/example-creator
 game_id: helldivers_2
 date: '2026-10-03'
 version: '1.001'

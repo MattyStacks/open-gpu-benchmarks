@@ -201,10 +201,12 @@ example `raw/cyberpunk_1440p.csv`.
 ### Step 4: Run the checks
 
 ```powershell
-python scripts/validate.py
-python scripts/build.py
-python scripts/test_build.py
+python scripts/preflight.py --fast
 ```
+
+That runs `validate.py`, `build.py`, `test_build.py`, and the other quick
+checks, and reports every failure at once. To see just the data problems,
+run `python scripts/validate.py`.
 
 `validate.py` lists **every** problem at once. Each line starts with `error:`
 (blocks your PR) or `warning:` (worth improving), then the file, then the rule
@@ -241,7 +243,7 @@ Opening the pull request means you agree to release what you submit under
 anything, as long as they credit Open GPU Benchmarks. The pull request
 template asks you to confirm it.
 
-GitHub runs the same checks you just ran, as four separate checks (see
+GitHub runs the same checks you just ran, as separate checks (see
 [Reading a failed check](#reading-a-failed-check)). A maintainer then reviews
 the evidence. After merge, the site rebuilds automatically. You do not need to
 touch `site/api/`, which is generated.
@@ -601,7 +603,7 @@ same chip. See [templates/catalog_handheld.yaml](templates/catalog_handheld.yaml
 
 ## Reading a failed check
 
-A pull request runs four separate checks. The one that fails tells you where
+A pull request runs six separate checks. The one that fails tells you where
 to look:
 
 | Check name | What it covers | Run it locally | Rules explained in |
@@ -610,6 +612,8 @@ to look:
 | **Benchmark results** | `data/official/**`, `data/community/**` | `python scripts/validate.py results` | [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md#what-the-checks-mean) |
 | **Build and tests** | the generated API and regression tests, including the synthetic fixtures in `tests/fixtures/data/` | `python scripts/build.py` then `python scripts/test_build.py` | the error output |
 | **Blog** | `blog/**`, `content/**`: post frontmatter, charts, affiliate disclosure | `python scripts/build.py` then `npm --prefix blog run build` | [content/README.md](content/README.md) |
+| **Dashboard (browser)** | `site/index.html` in a real browser (Playwright), against the fixtures | `npm --prefix tests/e2e test` | the test's failure message |
+| **Housekeeping** | a changelog line, a version bump, and current published counts (data-only result PRs skip it) | `python scripts/preflight.py --only-housekeeping` | [CLAUDE.md](CLAUDE.md) "Every change" |
 
 Open the failed check's log on GitHub. Every problem is listed with its rule
 name in brackets, such as `[id-memory-token]`, and errors are also marked on the
@@ -639,14 +643,15 @@ Data-only result submissions can skip both. Before opening
 the PR, run with `.venv` activated:
 
 ```powershell
-python scripts/validate.py
-python scripts/build.py
-python scripts/test_build.py
-python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/issue_to_result.py scripts/test_build.py
-npm --prefix blog ci                     # Node 22.12+; only if you changed blog/ or content/
-npm --prefix blog run build
-git diff --check
+python scripts/preflight.py              # every check, plus the Playwright browser tests
 ```
+
+Set it up once (Node 22.12+): `npm --prefix blog ci`, `npm --prefix tests/e2e ci`,
+`npx --prefix tests/e2e playwright install chromium`, and
+`git config core.hooksPath .githooks` so `git push` runs it for you.
+`--fast` skips the browser tests and the blog; `--all` always builds the blog.
+Each failure says why the rule exists and how to fix it. Fix the code rather
+than weakening the check, and add a check for any new feature you add.
 
 Blog posts live in `content/posts/`; see [content/README.md](content/README.md).
 
@@ -670,8 +675,12 @@ and a code owner's approval is required to merge. To add a maintainer, append
 their `@username` to the `*` line there and give them write access to the
 repository; a code owner without write access can't approve. Never add a bot.
 
-**Benchmark types:** `benchmark_type` other than `game` is kept in the GPU API
-but isn't shown in the game-FPS dashboard yet.
+**Benchmark types:** `benchmark_type` may only be `game`, and it can be left
+out. Any other value fails `result-benchmark-type`.
+
+**Reviews:** `data/reviews.yaml` is optional. Each item needs a `title` and an
+https `url`, and may add a quoted `date` and catalog `gpu_ids` (rules
+`review-field` and `review-gpu-id` in `data/gpus/README.md`).
 
 </details>
 

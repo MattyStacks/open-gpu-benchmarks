@@ -699,6 +699,12 @@ registered yet, add it to `data/games.yaml` in the same pull request (see
 `scripts/import_cyberpunk.py` upgrades its own older files when you run it
 again.
 
+#### `result-benchmark-type`
+
+`benchmark_type` may only be `game`, and it can be left out (it defaults to
+`game`). Every run here is a game or benchmark run named by `game_id`. Before
+1.14.0.0 any other value skipped every game check and still reached the API.
+
 #### `result-unknown-game`
 
 `game_id` isn't an ID in `data/games.yaml`. Check the spelling against the

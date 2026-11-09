@@ -1,0 +1,19 @@
+#!/bin/sh
+# Runs every local check before a push: python scripts/preflight.py.
+# Enable once per clone: git config core.hooksPath .githooks
+# Emergencies only: SKIP_PREFLIGHT=1 git push (say why in the PR).
+[ "$SKIP_PREFLIGHT" = "1" ] && exit 0
+# Claude Code's own gate (.claude/hooks/preflight_gate.py) already ran it for this push.
+[ "$CLAUDECODE" = "1" ] && exit 0
+root=$(git rev-parse --show-toplevel) || exit 1
+if [ -x "$root/.venv/bin/python" ]; then
+  python="$root/.venv/bin/python"
+elif [ -x "$root/.venv/Scripts/python.exe" ]; then
+  python="$root/.venv/Scripts/python.exe"
+else
+  python=python3
+fi
+cd "$root" && "$python" scripts/preflight.py || {
+  echo "pre-push: preflight failed; fix the problems above (or SKIP_PREFLIGHT=1 in an emergency)." >&2
+  exit 1
+}

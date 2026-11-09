@@ -11,10 +11,17 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.13.0.0` (2026-10-27). Versions are now
+- Current version: `v1.14.0.0` (2026-11-09). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.14.0.0: `scripts/preflight.py` runs every check in one command
+    and reports all failures; a Claude Code hook and `.githooks/pre-push`
+    run it before commits and pushes. Playwright browser tests
+    (`tests/e2e/`), an API key snapshot (`tests/fixtures/api_shape.json`),
+    a dashboard-to-API field check, docs-sync checks, and many new rule
+    tests. New rules `result-benchmark-type`, `review-field`, and
+    `review-gpu-id`.
   - v1.13.0.0: a `gpu-catalog` Copilot agent adds one or more GPUs from
     their makers' spec pages (from an "Add a GPU" issue or the agents
     panel) and makes the DATA bump. Board changes from the reference are
@@ -482,7 +489,8 @@ v1.0.0 these products live only in the test fixtures:
 - Data files and templates use block-style YAML only (no inline `[ ]` or
   `{ }`); `checks.py` rejects inline style as `yaml-inline`.
 
-`benchmark_type` defaults to `game`. Game source files need `game_id` and a
+`benchmark_type` defaults to `game`, and `game` is the only value it may
+take (`result-benchmark-type`, since 1.14.0.0). Game source files need `game_id` and a
 `result` list whose entries each carry `resolution`, `graphics_preset`, and
 `avg_fps`; `p1_low` is optional (schema `0.11`), so 3DMark and in-game
 benchmark runs that report only an average are valid. A run record's `p1_low`
@@ -537,13 +545,13 @@ runner's Python with `pip install -r requirements.txt` and a pip cache.
 python -m venv .venv                     # once
 .venv\Scripts\Activate.ps1               # each terminal; macOS/Linux: source .venv/bin/activate
 python -m pip install -r requirements.txt
-python scripts/validate.py            # or: validate.py catalog / validate.py results
-python scripts/build.py
-python scripts/test_build.py
-python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/issue_to_result.py scripts/test_build.py
 npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
-npm --prefix blog run build              # after build.py; writes site/blog/
-git diff --check
+npm --prefix tests/e2e ci                # once: the Playwright browser tests
+npx --prefix tests/e2e playwright install chromium   # once; CI adds --with-deps
+git config core.hooksPath .githooks      # once: pre-push runs preflight
+python scripts/preflight.py --fast       # before a commit: every script compiles, JS syntax, validate,
+                                         # build, test_build, git diff --check, housekeeping
+python scripts/preflight.py              # before a push or PR: adds the browser tests (+ the blog if it changed)
 deactivate                               # when done
 ```
 
@@ -581,15 +589,66 @@ to the matching doc. `check_rules_are_documented()` in `test_build.py` fails
 until the heading exists. Also add a negative case to `check_catalog_rules()`
 or `check_result_rules()`.
 
+### Regression checks (preflight, hooks, browser tests)
+
+Added in 1.14.0.0 so a change fails locally, in the session that made it,
+not later in CI.
+
+- **`scripts/preflight.py`** runs every step and prints every failure,
+  each with why and how to fix it. `--fast` (before a commit): every
+  `scripts/*.py` compiles, `node --check` on the dashboard's inline script,
+  `validate.py`, `build.py`, `test_build.py`, `git diff --check`, and
+  housekeeping. The default (before a push or PR) adds the Playwright tests,
+  plus the blog build when `blog/`, `content/`, `site/index.html`,
+  `build.py`, or `data/` changed; `--all` always builds the blog.
+  Housekeeping diffs against `origin/main`: a new changelog line, a bumped
+  `RELEASE_VERSION`, `docs/TODO.md` touched (a warning), and the published
+  counts in `README.md` ("Published so far:") and this file ("**Published
+  data**") equal to what `data/` builds (`preflight.COUNT_PATTERNS` reads
+  them). Changes only under `data/community/`, `data/official/`, or
+  `data/games.yaml` skip it, so bot PRs never go red.
+- **Hooks.** `.claude/settings.json` runs `.claude/hooks/preflight_gate.py`
+  before Claude Code's Bash calls: `--fast` before `git commit`, the full
+  run before `git push` and `gh pr create`; a failure blocks the call and
+  the failure text lands in the session. `.githooks/pre-push` does the same
+  for people (`git config core.hooksPath .githooks`).
+- **`test_build.py`** runs every `check_*` and reports all failures, not
+  the first. `--only NAME` runs the checks whose name contains NAME.
+  Highlights: `check_api_shape` compares every payload key against
+  `tests/fixtures/api_shape.json` (bump `SCHEMA_VERSION`, then
+  `--update-shape`); `check_dashboard_reads_real_fields` fails when
+  `site/index.html` reads a `record.`/`run.`/`pick.`/`credit.` field that
+  build.py never writes (`build.IMPLEMENTATION_FIELDS` lists the per-run
+  ones); `check_docs_in_sync` checks the version lines, the fixture counts
+  below, and that the agent docs name `preflight.py`.
+- **`tests/e2e/`** is its own npm project (`@playwright/test` 1.64.1 and
+  `echarts` 5.5.0 pinned). `serve_fixtures.py` builds the fixtures into
+  `tests/e2e/.site` (gitignored) and serves it; ECharts is served from
+  `node_modules`, and any request to another host fails the test. Specs run
+  on a dark desktop; specs tagged `@responsive` also run in the light theme
+  and at 375 px. They cover: every table column against `gpus.json` for
+  every game and resolution (the 1.10.0.0 VRAM bug), sorting, filters,
+  detail rows (system RAM, credits, Anonymous), the chart, the comparison,
+  empty and error states, picks, the theme toggle, page overflow at phone
+  width (the 1.2.0.0 bug), pure dashboard functions, and the
+  `benchmarks/`, `license/`, and blog pages.
+
 ### CI
 
 [`.github/workflows/validate.yml`](../.github/workflows/validate.yml) runs on
-every pull request as four jobs, so the PR shows which part failed:
+every pull request as six jobs, so the PR shows which part failed:
 
 - **Catalog entries**: `validate.py catalog`
 - **Benchmark results**: `validate.py results`
-- **Build and tests**: `py_compile`, `build.py`, `test_build.py`
+- **Build and tests**: `python scripts/preflight.py --fast --no-housekeeping`
+  (every script compiles, dashboard JS syntax, `validate.py`, `build.py`,
+  `test_build.py`, `git diff --check`)
 - **Blog**: `build.py`, then `npm --prefix blog ci` and `npm --prefix blog run build` (Node 22)
+- **Dashboard (browser)**: the Playwright suite in `tests/e2e/`, against the
+  fixtures (`npm --prefix tests/e2e test`); the HTML report is uploaded on failure
+- **Housekeeping**: `python scripts/preflight.py --only-housekeeping --base
+  origin/main` (changelog line, version bump, published counts); data-only
+  pull requests pass it automatically
 
 There is deliberately no `paths:` filter. A required check that is skipped
 never reports, and that blocks the merge. Each job takes seconds.
@@ -691,11 +750,13 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 ## Published data and test fixtures
 
 **Published data (`data/`).** 1 catalog GPU entry (`rtx_5080_16gb_fe`) plus
-309 reference files under `data/gpus/reference/`, 34
-official result runs, 0 community runs, and 30 dashboard summaries: Cyberpunk
+309 reference files under `data/gpus/reference/`, 34 official result runs,
+1 community run, and 31 dashboard summaries. The official runs are Cyberpunk
 2077 built-in benchmark runs on Windows at 1080p, 1440p, and 4K, imported with
-`scripts/import_cyberpunk.py`. Every run has an `avg_fps` and `p1_low` from
-its `frames.csv`. `data/` is what
+`scripts/import_cyberpunk.py`; each has an `avg_fps` and `p1_low` from its
+`frames.csv`. The community run is an OpenBenchmarker Neon Flythrough result
+at 4K (a browser WebGL2 benchmark). `scripts/preflight.py` fails a code PR
+when these counts don't match `data/`. `data/` is what
 CI builds and deploys, so it holds only real data. With no runs,
 `dashboard.json` has an empty `records` list and `showNoBenchmarks()` in
 `site/index.html` replaces the filters, chart, and table with a "No benchmarks
@@ -946,7 +1007,9 @@ The dashboard panel near the bottom shows three cards, one per GPU maker, in
 - **Fixtures**: `tests/fixtures/data/picks.yaml` has an NVIDIA catalog pick
   and an Intel free-form pick. The AMD slot is empty on purpose.
 - **Reviews**: `data/reviews.yaml` and the API's `reviews` field remain, but
-  the dashboard no longer shows them. Reviews are blog posts now.
+  the dashboard no longer shows them. Reviews are blog posts now. Since
+  1.14.0.0 the file is optional and checked by `checks.load_reviews()`
+  (`review-field`, `review-gpu-id`); an empty list is written `reviews:`.
 
 ## Planned next steps
 

@@ -30,7 +30,7 @@ SCHEMA_VERSION = "0.20"
 # code change, DATA = newly published runs or catalog GPUs, POST = a new or
 # updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
-RELEASE_VERSION = "1.13.0.0"
+RELEASE_VERSION = "1.14.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.
@@ -58,10 +58,27 @@ API_LICENSE = {
     "terms": LICENSE_PAGE,
 }
 
-
-def load_yaml(path):
-    with path.open(encoding="utf-8") as source:
-        return yaml.safe_load(source) or {}
+# Per-run details each summary lists under implementations; empty values are left out.
+IMPLEMENTATION_FIELDS = (
+    "implementation_name",
+    "upscaling",
+    "gpu_power_w",
+    "overclocked",
+    "cpu",
+    "testbench_source_id",
+    "memory_gb",
+    "memory_type",
+    "memory_channels",
+    "power_mode",
+    "display_mode",
+    "driver",
+    "os",
+    *checks.OS_FIELDS,
+    "capture_method",
+    "credit_name",
+    "credit_source_url",
+    "submitted_by",
+)
 
 
 def catalog_name(gpu):
@@ -228,26 +245,7 @@ def aggregate_game_records(records, id_prefix):
         implementations = [
             {
                 key: run[key]
-                for key in (
-                    "implementation_name",
-                    "upscaling",
-                    "gpu_power_w",
-                    "overclocked",
-                    "cpu",
-                    "testbench_source_id",
-                    "memory_gb",
-                    "memory_type",
-                    "memory_channels",
-                    "power_mode",
-                    "display_mode",
-                    "driver",
-                    "os",
-                    *checks.OS_FIELDS,
-                    "capture_method",
-                    "credit_name",
-                    "credit_source_url",
-                    "submitted_by",
-                )
+                for key in IMPLEMENTATION_FIELDS
                 if run[key] not in ("", None)
             }
             for run in runs
@@ -565,11 +563,11 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
     testbenches, testbench_issues = checks.load_testbenches(data_dir)
     runs, result_issues = checks.load_results(gpus, data_dir, games, testbenches)
     picks, pick_issues = checks.load_picks(gpus, data_dir)
-    issues = checks.Issues([*catalog_issues, *game_issues, *testbench_issues, *result_issues, *pick_issues])
+    reviews, review_issues = checks.load_reviews(gpus, data_dir)
+    issues = checks.Issues([*catalog_issues, *game_issues, *testbench_issues, *result_issues, *pick_issues, *review_issues])
     if checks.report(issues, "Checks (run validate.py for warnings)", show_warnings=False):
         print("Build stopped: fix the errors above; nothing was written to site/api.")
         return 1
-    reviews_source = load_yaml(data_dir / "reviews.yaml")
     gpu_by_id = {gpu["id"]: gpu for gpu in gpus}
     games_by_id = {game["id"]: game for game in games}
     testbenches_by_id = {bench["id"]: bench for bench in testbenches}
@@ -698,7 +696,7 @@ def main(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, site_dir=None):
             "graphics_presets": graphics_presets,
             "testbenches": testbenches,
             "records": dashboard_records,
-            "reviews": reviews_source.get("reviews", []),
+            "reviews": reviews,
             "picks": picks,
         },
     )

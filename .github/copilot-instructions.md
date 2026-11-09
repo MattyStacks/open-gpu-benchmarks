@@ -28,6 +28,19 @@ prepares:
    to `## <version> - <date>` under a fresh empty `Unreleased`, and updates the
    current-version references. See "Version and release housekeeping" below.
 
+## Checks catch regressions early
+
+Run `python scripts/preflight.py --fast` before a commit and
+`python scripts/preflight.py` before a push or PR. Claude Code runs them for
+you through a hook (`.claude/settings.json`), and `.githooks/pre-push` does
+the same for people; a failing check blocks the commit or push and prints
+the problem. When a check fails, its message says why the rule exists and how
+to fix it: fix the code, don't weaken the check. When you add a feature, add
+or extend the check that would catch it breaking (a `test_build.py` check, or
+a Playwright spec in `tests/e2e/specs/` for the dashboard), with a failure
+message that says why. A change to the API's keys needs a `SCHEMA_VERSION`
+bump and `python scripts/test_build.py --update-shape`.
+
 ## Branching
 
 Always create a new branch from an up-to-date `main` (`git checkout main && git pull`, then
@@ -72,6 +85,13 @@ commit everything, push, and open a PR into `main`; one topic per branch.
   gets its own ID; a patch goes in `version`. The old free-text `game:` key
   is an error. A result for a game that isn't registered adds its registry
   entry in the same change.
+- `benchmark_type` is optional and may only be `game` (the default);
+  any other value fails `result-benchmark-type`. Before 1.14.0.0 another
+  value skipped every game check and still reached the API.
+- `data/reviews.yaml` is optional: a `reviews:` list (block style, empty
+  means none) whose items need a `title` and an https `url`, and may add a
+  quoted `date` and catalog `gpu_ids` (`checks.load_reviews()`, rules
+  `review-field`, `review-gpu-id`). The dashboard doesn't show reviews.
 - Game runs require `system.os`: `windows` or `linux`, lowercase. The OS is a
   grouping key, so Windows and Linux runs are never averaged together; the
   distro, kernel, Mesa, and Proton are per-run detail fields, never grouping
@@ -335,19 +355,17 @@ For every bump:
    in `README.md` and `docs/COPILOT_HANDOFF.md`, and the fixture counts in
    `docs/COPILOT_HANDOFF.md`.
 5. Run, inside the activated `.venv` (create it once with
-   `python -m venv .venv`):
+   `python -m venv .venv`, then `python -m pip install -r requirements.txt`,
+   `npm --prefix blog ci`, `npm --prefix tests/e2e ci`, and
+   `npx --prefix tests/e2e playwright install chromium`):
 
    ```powershell
-   .venv\Scripts\Activate.ps1            # macOS/Linux: source .venv/bin/activate
-   python -m pip install -r requirements.txt
-   python scripts/validate.py
-   python scripts/build.py
-   python scripts/test_build.py
-   python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/issue_to_result.py scripts/test_build.py
-   npm --prefix blog ci                  # Node 22.12+; once, or after the lockfile changes
-   npm --prefix blog run build           # after build.py; writes site/blog/
-   git diff --check
+   python scripts/preflight.py --fast   # before a commit: scripts, JS syntax, data, build, tests, housekeeping
+   python scripts/preflight.py          # before a push or PR: adds the Playwright browser tests (+ the blog when it changed)
    ```
+
+   It reports every failure at once, and each failure says why the rule
+   exists and how to fix it.
 
 6. Do not commit generated `site/api/` or `site/blog/` files unless repository policy changes.
 7. After a version-bump pull request merges into `main`, create an

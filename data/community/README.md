@@ -86,6 +86,8 @@ Folder rules:
   duplicate-key data loss, and lets the validator check each profile
   independently. Matching profiles from this or another file are averaged into
   one generated summary; different resolutions or presets remain separate.
+- Leave `benchmark_type` out, or set it to `game`; any other value fails
+  `result-benchmark-type`.
 - Keep optional raw captures in the same GPU folder, such as
   `data/community/rtx_5080_16gb_fe/raw/capture.csv`, and reference them from
   `proof.raw_log`. Raw captures are not included in the generated browser API.

@@ -32,8 +32,14 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: blog/package-lock.json
+          cache-dependency-path: |
+            blog/package-lock.json
+            tests/e2e/package-lock.json
       - run: npm --prefix blog ci
+      # Browser regression tests on the synthetic fixtures; a failure stops the deploy.
+      - run: npm --prefix tests/e2e ci
+      - run: npx --prefix tests/e2e playwright install --with-deps chromium
+      - run: npm --prefix tests/e2e test
       # Cloudflare (canonical) serves the blog at /blog/.
       - run: npm --prefix blog run build
       - uses: actions/upload-artifact@v4

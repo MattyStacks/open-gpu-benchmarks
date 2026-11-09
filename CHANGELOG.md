@@ -32,6 +32,80 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.14.0.0 - 2026-11-09
+
+Checks that catch a regression in the session that causes it, not later in
+CI, with failure messages that say why each rule exists and how to fix it.
+
+### Added
+
+- `scripts/preflight.py`: one command for every local check, reporting every
+  failure at once. `--fast` (before a commit) compiles every `scripts/*.py`,
+  syntax-checks the dashboard's inline JavaScript with `node --check`, and
+  runs `validate.py`, `build.py`, `test_build.py`, `git diff --check`, and
+  housekeeping. The default (before a push or PR) adds the Playwright tests,
+  plus the blog build when it changed; `--all` always builds the blog;
+  `--only-housekeeping` runs the housekeeping check alone. Housekeeping
+  diffs against `origin/main`: a new `CHANGELOG.md` line, a bumped
+  `RELEASE_VERSION`, `docs/TODO.md` touched (a warning), and the published
+  counts in `README.md` and `docs/COPILOT_HANDOFF.md` matching `data/`.
+  Data-only result changes skip it.
+- A Claude Code `PreToolUse` hook (`.claude/settings.json`,
+  `.claude/hooks/preflight_gate.py`) runs `preflight.py --fast` before
+  `git commit` and the full run before `git push` and `gh pr create`; a
+  failure blocks the call and puts the failure text in the session.
+  `.githooks/pre-push` does the same for people
+  (`git config core.hooksPath .githooks`).
+- Playwright browser tests in `tests/e2e/` (its own `package.json`).
+  `serve_fixtures.py` builds the fixtures into `tests/e2e/.site`, ECharts
+  is served locally, and any console error, failed request, or request to
+  another host fails a test. Specs run on a dark desktop; `@responsive`
+  specs also run in the light theme and at phone width. They check every
+  table column against `gpus.json` for every game and resolution, sorting,
+  filters, detail rows (system RAM, credits, Anonymous), the chart and the
+  comparison, empty and error states, picks, the theme toggle, overflow at
+  375 px, pure dashboard functions, and the `benchmarks/`, `license/`, and
+  blog pages.
+- `test_build.py` runs every check and reports all failures instead of
+  stopping at the first; `--only NAME` runs a subset.
+- An API shape snapshot, `tests/fixtures/api_shape.json`: a payload key can
+  only change with a `SCHEMA_VERSION` bump and
+  `python scripts/test_build.py --update-shape`.
+- A dashboard-to-API field check: every `record.`, `run.`, `pick.`, and
+  `credit.` field `site/index.html` reads must be one `build.py` writes
+  (`build.IMPLEMENTATION_FIELDS` lists the per-run ones).
+- A docs-sync check: the version lines in `README.md`,
+  `docs/COPILOT_HANDOFF.md`, and `CLAUDE.md`, the fixture counts in the
+  handoff, and `preflight.py` named in every agent and contributor doc.
+- New tests for every branch of the catalog and result rules, `parse.py`'s
+  PresentMon formats and `main()`, the benchmark bot's limits and path guard,
+  `validate.py`'s targets, the crawler text pages, and the Cyberpunk
+  importer's upscaler labels.
+- CI: two new pull request checks, **Dashboard (browser)** and
+  **Housekeeping**; **Build and tests** runs `preflight.py --fast`.
+- New rule `result-benchmark-type`: `benchmark_type` may only be `game` (or
+  left out). Any other value used to skip every game check (game, OS, proof,
+  outlier) and still reach the API.
+- `data/reviews.yaml` is checked (`review-field`, `review-gpu-id`) and
+  optional; an empty list is written `reviews:` (block style).
+
+### Fixed
+
+- A result whose `system:` was text instead of a section crashed the checks;
+  it now fails `result-os`.
+- `parse.py --testbench` wrote an official run into `data/community/`; it
+  now writes to `data/official/`.
+- The published counts in `README.md` and `docs/COPILOT_HANDOFF.md` now
+  include the community Neon Flythrough run (1 community run, 31 summaries).
+
+### Changed
+
+- A fixture community run (ROG Ally, Helldivers 2) has a `credit` block, so
+  the API's `credits` and the dashboard's credit line are tested.
+- The check lists in `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`,
+  `CONTRIBUTING.md`, `README.md`, and `docs/COPILOT_HANDOFF.md` are now
+  `python scripts/preflight.py`.
+
 ## 1.13.0.0 - 2026-10-27
 
 ### Added

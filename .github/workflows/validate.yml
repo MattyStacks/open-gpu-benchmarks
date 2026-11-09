@@ -1,5 +1,5 @@
 name: Validate
-# Four separate checks so a pull request shows exactly which part failed.
+# Six separate checks so a pull request shows exactly which part failed.
 # There is no paths filter on purpose: a required check that is skipped never
 # reports, and that blocks the merge. Each job finishes in seconds.
 on:
@@ -41,9 +41,59 @@ jobs:
           python-version: '3.11'
           cache: pip
       - run: pip install -r requirements.txt
-      - run: python -m py_compile scripts/checks.py scripts/build.py scripts/validate.py scripts/parse.py scripts/import_cyberpunk.py scripts/issue_to_result.py scripts/test_build.py
-      - run: python scripts/build.py
-      - run: python scripts/test_build.py
+      # preflight.py needs node for the dashboard's JavaScript syntax check.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # The same command people and Claude run locally: every script compiles,
+      # dashboard JS syntax, validate.py, build.py, test_build.py, and
+      # git diff --check. Housekeeping is its own job below.
+      - run: python scripts/preflight.py --fast --no-housekeeping
+
+  browser:
+    name: Dashboard (browser)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/e2e/package-lock.json
+      - run: npm --prefix tests/e2e ci
+      - run: npx --prefix tests/e2e playwright install --with-deps chromium
+      # Builds the synthetic fixtures into tests/e2e/.site and drives the
+      # dashboard in Chromium at desktop and phone widths.
+      - run: npm --prefix tests/e2e test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report
+
+  housekeeping:
+    name: Housekeeping
+    # Compares the pull request with its base branch, so it only means
+    # something on a pull request; a skipped job still reports as passing.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      # A changelog line, a version bump, and current published counts, unless
+      # the PR only adds result files (data-only PRs pass automatically).
+      - run: python scripts/preflight.py --only-housekeeping --base origin/${{ github.base_ref }}
 
   blog:
     name: Blog

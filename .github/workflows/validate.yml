@@ -61,14 +61,11 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
     steps:
       - uses: actions/checkout@v4
-      # No pip cache here: setup-python's cache needs lsb_release, which the
-      # image doesn't have, and PyYAML and NumPy install in seconds.
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      # In a container, setup-python's Python isn't on PATH, so call it by
-      # $pythonLocation; PYTHON points the fixture server at the same one.
-      - run: '"$pythonLocation/bin/python" -m pip install -r requirements.txt'
+      # The image has no Python, and setup-python's builds need the host's
+      # libraries (pip can't reach PyPI in here). uv's Python is self-contained;
+      # playwright.config finds .venv/bin/python for the fixture server.
+      - uses: astral-sh/setup-uv@v6
+      - run: uv venv --python 3.11 .venv && uv pip install --python .venv -r requirements.txt
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -78,8 +75,6 @@ jobs:
       # Builds the synthetic fixtures into tests/e2e/.site and drives the
       # dashboard in Chromium at desktop and phone widths.
       - run: npm --prefix tests/e2e test
-        env:
-          PYTHON: ${{ env.pythonLocation }}/bin/python
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

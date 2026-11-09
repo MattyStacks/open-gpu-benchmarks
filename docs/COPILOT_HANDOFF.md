@@ -662,7 +662,9 @@ every pull request as six jobs, so the PR shows which part failed:
   It runs in Microsoft's `mcr.microsoft.com/playwright:v1.64.1-noble` image,
   which already has Chromium and its system libraries, so there's no
   `playwright install --with-deps` step (that took about 3 minutes of a 3¼
-  minute job). The tag must equal `@playwright/test` in
+  minute job). The image has Node but no Python, so the job
+  makes `.venv` with `astral-sh/setup-uv` (setup-python's builds can't reach
+  PyPI inside the container); `playwright.config` picks up `.venv/bin/python`. The tag must equal `@playwright/test` in
   `tests/e2e/package.json`: bump both together, or the job can't find
   Chromium (`test_build.check_playwright_image` fails first).
 - **Housekeeping**: `python scripts/preflight.py --only-housekeeping --base

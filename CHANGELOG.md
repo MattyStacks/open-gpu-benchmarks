@@ -42,6 +42,7 @@ Faster browser tests in CI.
   `mcr.microsoft.com/playwright:v1.64.1-noble` image, which already has
   Chromium and its system libraries. That drops the
   `playwright install --with-deps` step, which took about 3 minutes of every run.
+  The image has no Python, so the job makes its `.venv` with `uv`.
 - `build.yml` runs the browser tests in their own job, in the same image,
   beside the build. Both deploys wait for it, so a failure still stops the
   deploy, but it no longer adds to the deploy time.

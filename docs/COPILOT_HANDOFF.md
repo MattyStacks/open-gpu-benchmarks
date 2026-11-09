@@ -11,10 +11,14 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.15.1.0` (2026-11-09). Versions are now
+- Current version: `v1.16.0.0` (2026-11-09). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.16.0.0: the browser tests run in Microsoft's Playwright image in CI
+    (no 3 minute browser install), and in `build.yml` beside the build
+    instead of before the deploy; `check_playwright_image` keeps the image
+    tag equal to `@playwright/test`.
   - v1.15.1.0: the first handhelds in the catalog: `steam_deck_lcd_16gb`,
     `legion_go_s_z1_extreme_16gb` and `_32gb` (on the new `z1_extreme`
     reference), and `onexplayer_3_arc_g3_extreme_32gb`.
@@ -556,7 +560,7 @@ python -m venv .venv                     # once
 python -m pip install -r requirements.txt
 npm --prefix blog ci                     # Node 22.12+; once, or after the lockfile changes
 npm --prefix tests/e2e ci                # once: the Playwright browser tests
-npx --prefix tests/e2e playwright install chromium   # once; CI adds --with-deps
+npx --prefix tests/e2e playwright install chromium   # once, locally; CI uses the Playwright image
 git config core.hooksPath .githooks      # once: pre-push runs preflight
 python scripts/preflight.py --fast       # before a commit: every script compiles, JS syntax, validate,
                                          # build, test_build, git diff --check, housekeeping
@@ -654,7 +658,13 @@ every pull request as six jobs, so the PR shows which part failed:
   `test_build.py`, `git diff --check`)
 - **Blog**: `build.py`, then `npm --prefix blog ci` and `npm --prefix blog run build` (Node 22)
 - **Dashboard (browser)**: the Playwright suite in `tests/e2e/`, against the
-  fixtures (`npm --prefix tests/e2e test`); the HTML report is uploaded on failure
+  fixtures (`npm --prefix tests/e2e test`); the HTML report is uploaded on failure.
+  It runs in Microsoft's `mcr.microsoft.com/playwright:v1.64.1-noble` image,
+  which already has Chromium and its system libraries, so there's no
+  `playwright install --with-deps` step (that took about 3 minutes of a 3¼
+  minute job). The tag must equal `@playwright/test` in
+  `tests/e2e/package.json`: bump both together, or the job can't find
+  Chromium (`test_build.check_playwright_image` fails first).
 - **Housekeeping**: `python scripts/preflight.py --only-housekeeping --base
   origin/main` (changelog line, version bump, published counts); data-only
   pull requests pass it automatically
@@ -663,7 +673,10 @@ There is deliberately no `paths:` filter. A required check that is skipped
 never reports, and that blocks the merge. Each job takes seconds.
 
 [`build.yml`](../.github/workflows/build.yml) runs `validate.py` before
-`build.py`, so `main` cannot deploy bad data.
+`build.py`, so `main` cannot deploy bad data. Its `browser` job runs the
+Playwright suite in the same image beside the `build` job, and both deploy
+jobs need both, so a browser failure still stops the deploy without adding
+to its time.
 
 **Repo setting (manual):** `main` is protected by the "Base Rules" ruleset
 (Settings → Rules), not classic branch protection. It requires a pull request

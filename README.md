@@ -15,7 +15,9 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.15.1.0`: the first handhelds in the catalog (Steam Deck
+Current version: `v1.16.0.0`: the dashboard's browser tests run in CI
+about 2 minutes faster, in Microsoft's Playwright image, and no longer hold
+up the deploy. v1.15.1.0: the first handhelds in the catalog (Steam Deck
 LCD, Legion Go S Z1 Extreme 16 and 32 GB, ONEXPLAYER 3 Arc G3 Extreme 32 GB).
 v1.15.0.0: the Steam Machine is in the catalog with 35
 official Cyberpunk 2077 runs, and the Cyberpunk importer records SteamOS/Proton

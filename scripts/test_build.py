@@ -1447,6 +1447,30 @@ def check_bot_safety():
     assert "gpu-request" not in bot, "benchmark-issue.yml only handles benchmark issues"
 
 
+PLAYWRIGHT_IMAGE = re.compile(r"image:\s*mcr\.microsoft\.com/playwright:v([0-9][^-\s]*)-")
+
+
+def check_playwright_image():
+    """The browser jobs run in Microsoft's Playwright image, which ships one Chromium build.
+    @playwright/test only launches the build of its own version, so the image tag and
+    the npm package must move together, or CI fails with "Executable doesn't exist"."""
+    package = json.loads((ROOT / "tests" / "e2e" / "package.json").read_text(encoding="utf-8"))
+    version = package["devDependencies"]["@playwright/test"]
+    workflows = ROOT / ".github" / "workflows"
+    for name in ("validate.yml", "build.yml"):
+        text = (workflows / name).read_text(encoding="utf-8")
+        tags = PLAYWRIGHT_IMAGE.findall(text)
+        assert tags, (
+            f"{name} must run its browser tests in mcr.microsoft.com/playwright:v<version>-noble, "
+            "which already has Chromium and its libraries (a 'playwright install --with-deps' step takes ~3 minutes)"
+        )
+        assert set(tags) == {version}, (
+            f"{name} uses the Playwright image v{', v'.join(sorted(set(tags)))}, but tests/e2e/package.json has "
+            f"@playwright/test {version}; bump the image tag with the package, or the browser jobs can't find Chromium"
+        )
+        assert "playwright install" not in text, f"{name}: the Playwright image already has the browsers; drop 'playwright install'"
+
+
 def check_reports_every_error_and_build_stops():
     files = {
         "gpus/desktop/amd/test_gpu_8gb_fe.yaml": minimal_entry(),
@@ -2110,6 +2134,7 @@ CHECKS = [
     check_issue_limits,
     check_issue_form_matches_script,
     check_bot_safety,
+    check_playwright_image,
     check_reports_every_error_and_build_stops,
     check_validate_targets,
     in_temp_dir(check_text_pages),

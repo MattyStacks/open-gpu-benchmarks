@@ -217,7 +217,7 @@ One-time setup (Node 22.12+):
 python -m pip install -r requirements.txt
 npm --prefix blog ci                            # again after blog/package-lock.json changes
 npm --prefix tests/e2e ci                       # the Playwright browser tests
-npx --prefix tests/e2e playwright install chromium   # Linux CI adds --with-deps; SteamOS/Arch can't
+npx --prefix tests/e2e playwright install chromium   # local only; CI uses the Playwright image
 git config core.hooksPath .githooks             # pre-push runs preflight for you
 ```
 

@@ -53,6 +53,12 @@ jobs:
   browser:
     name: Dashboard (browser)
     runs-on: ubuntu-latest
+    # Microsoft's Playwright image already has Chromium and its system
+    # libraries, which saves the ~3 minute browser download and apt install.
+    # The tag must equal @playwright/test in tests/e2e/package.json
+    # (test_build.check_playwright_image).
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -66,7 +72,6 @@ jobs:
           cache: npm
           cache-dependency-path: tests/e2e/package-lock.json
       - run: npm --prefix tests/e2e ci
-      - run: npx --prefix tests/e2e playwright install --with-deps chromium
       # Builds the synthetic fixtures into tests/e2e/.site and drives the
       # dashboard in Chromium at desktop and phone widths.
       - run: npm --prefix tests/e2e test

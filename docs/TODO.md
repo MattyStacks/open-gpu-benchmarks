@@ -28,6 +28,13 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
   `distro`, `kernel`, `mesa`, or `proton` the way `import_cyberpunk.py` now
   does; share the helpers.
 
+## CI follow-ups
+
+- [ ] **Keep the Playwright image in step with Dependabot.** A Dependabot
+  bump of `@playwright/test` alone fails `check_playwright_image` until the
+  image tag in `validate.yml` and `build.yml` moves with it. Consider a
+  Dependabot group or a note in its PR template.
+
 ## Catalog follow-ups
 
 - [ ] **Confirm the ONEXPLAYER 3 against the maker and Intel.** Its entry

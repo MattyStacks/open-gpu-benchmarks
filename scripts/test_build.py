@@ -344,6 +344,13 @@ def check_docs_in_sync(api_dir):
         assert version in (ROOT / path).read_text(encoding="utf-8"), (
             f"{path} doesn't mention the current version {version}; update its current-version line"
         )
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    stale = re.findall(r"\bv\d+\.\d+\.\d+\.\d+\b|Current version|Published so far", readme)
+    assert not stale, (
+        f"README.md quotes {stale}: the README explains the project, how to use the data, and how to "
+        "contribute, so it stays free of versions, release notes, and published counts that every PR "
+        "would have to edit. Put release notes in CHANGELOG.md and counts in docs/COPILOT_HANDOFF.md"
+    )
     build_fixture_api(api_dir)
     actual = preflight.api_counts(api_dir, FIXTURES_DIR)
     paragraph = preflight.doc_paragraph("docs/COPILOT_HANDOFF.md", "The fixtures have")

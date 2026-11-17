@@ -33,9 +33,9 @@ BLOG_DIR = ROOT / "blog"
 DATA_ONLY_PREFIXES = ("data/community/", "data/official/", "data/games.yaml")
 # A change under any of these rebuilds the blog in the default (pre-push) tier.
 BLOG_INPUTS = ("blog/", "content/", "site/index.html", "scripts/build.py", "data/")
-# Docs that quote the release version and the published data counts.
-VERSION_DOCS = ("README.md", "docs/COPILOT_HANDOFF.md", "CLAUDE.md")
-COUNT_DOCS = ("README.md", "docs/COPILOT_HANDOFF.md")
+# Docs that quote the release version. README.md is the public front door and
+# quotes neither the version nor the counts (test_build.check_docs_in_sync).
+VERSION_DOCS = ("docs/COPILOT_HANDOFF.md", "CLAUDE.md")
 # How each count is written in prose; "no" counts as 0.
 COUNT_PATTERNS = {
     "catalog GPUs": r"(\d+|no) catalog GPUs?\b",
@@ -75,7 +75,7 @@ def api_counts(api_dir, data_dir):
 
 
 def doc_paragraph(path, marker):
-    """The paragraph of a doc that starts with marker (such as 'Published so far:')."""
+    """The paragraph of a doc that starts with marker (such as '**Published data (`data/`).**')."""
     text = (ROOT / path).read_text(encoding="utf-8")
     start = text.find(marker)
     if start < 0:
@@ -85,7 +85,7 @@ def doc_paragraph(path, marker):
 
 
 # Where each doc states the published counts.
-PUBLISHED_MARKERS = {"README.md": "Published so far:", "docs/COPILOT_HANDOFF.md": "**Published data (`data/`).**"}
+PUBLISHED_MARKERS = {"docs/COPILOT_HANDOFF.md": "**Published data (`data/`).**"}
 
 
 # --- Steps -----------------------------------------------------------------------
@@ -198,8 +198,8 @@ def step_housekeeping(step, base):
     if before == now:
         step.fail(
             f"RELEASE_VERSION is still {now}: bump it (MAJOR/MINOR/DATA/POST, see CLAUDE.md), rename "
-            "'## Unreleased' in CHANGELOG.md to the new version and date, and update README.md, "
-            "docs/COPILOT_HANDOFF.md, and CLAUDE.md"
+            "'## Unreleased' in CHANGELOG.md to the new version and date, and update the current version in "
+            "docs/COPILOT_HANDOFF.md and CLAUDE.md"
         )
     if "docs/TODO.md" not in files:
         step.warnings.append("docs/TODO.md is unchanged: remove finished items and add anything deferred")

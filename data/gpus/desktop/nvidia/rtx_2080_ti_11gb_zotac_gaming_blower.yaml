@@ -1,0 +1,9 @@
+id: rtx_2080_ti_11gb_zotac_gaming_blower
+base: rtx_2080_ti_11gb
+identity:
+  name: ZOTAC GAMING GeForce RTX 2080 Ti Blower
+  gpu_vendor: nvidia
+  board_partner: ZOTAC
+classification:
+  form_factor: desktop
+notes: Blower-cooled RTX 2080 Ti from ZOTAC. Board-specific clocks, power, and outputs aren't filled in yet, because ZOTAC's product page couldn't be read when this entry was added.

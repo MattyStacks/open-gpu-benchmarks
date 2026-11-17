@@ -48,6 +48,12 @@ Always create a new branch from an up-to-date `main` (`git checkout main && git 
 feature branch, unless the user explicitly asks for it. The usual workflow:
 commit everything, push, and open a PR into `main`; one topic per branch.
 
+**One open pull request at a time.** The maintainer doesn't want two of
+your pull requests open at once. If a follow-up comes up while your PR is
+still open, either put it in that same PR, or ask the maintainer to merge
+the open one first and only then branch from the updated `main` for the
+next PR. Never open a second PR next to an unmerged one.
+
 ## Data and schema rules
 
 - `data/` holds only real data, because it's what deploys. Synthetic test runs

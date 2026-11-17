@@ -40,6 +40,7 @@ The README is now a short guide for newcomers: what the project is, how it works
 
 - `README.md` dropped its release history, published counts, local dev setup, repository layout, and deployment notes. Release notes stay in `CHANGELOG.md`, the counts in `docs/COPILOT_HANDOFF.md`, and the dev setup and layout moved to a new "Working on the code" section in `CONTRIBUTING.md`.
 - A version bump or new data no longer edits the README: `preflight.py` housekeeping checks the version and published counts only in `docs/COPILOT_HANDOFF.md` and `CLAUDE.md`, and `test_build.check_docs_in_sync` fails if `README.md` quotes a version, "Current version", or "Published so far". `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and the `gpu-catalog` agent say the same.
+- Agent rule: one open pull request at a time. A follow-up goes in the open PR, or waits until that PR merges (`CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, "Branching").
 
 ## 1.17.2.0 - 2026-11-09
 

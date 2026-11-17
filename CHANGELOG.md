@@ -32,15 +32,21 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
-## 1.17.3.0 - 2026-11-17
+## 1.18.0.0 - 2026-11-17
 
-The ZOTAC GAMING GeForce RTX 2080 Ti Blower joins the catalog with 70 official runs on the 9800X3D bench under Linux: 50 Cyberpunk 2077 built-in benchmark runs and 20 OpenBenchmarker Neon Flythrough runs.
+The ZOTAC GAMING GeForce RTX 2080 Ti Blower joins the catalog with 70 official Linux runs, and the README becomes a short guide for newcomers.
 
 ### Added
 
 - Catalog: ZOTAC GAMING GeForce RTX 2080 Ti Blower (`rtx_2080_ti_11gb_zotac_gaming_blower`). It inherits the `rtx_2080_ti_11gb` reference specs; the board's own clocks, power, and outputs are left out until ZOTAC's page can be cited.
 - 50 official Cyberpunk 2077 built-in benchmark runs on the RTX 2080 Ti (`am5_9800x3d_ddr5` bench, Nobara Linux 44 with Proton 11, NVIDIA 620.70) at 1080p, 1440p, and 4K. Each preset was run with its default upscaler and again natively; the native (Custom) runs are named after the preset they started from.
 - 20 official OpenBenchmarker Neon Flythrough runs on the RTX 2080 Ti (same bench, Nobara Linux, Brave): 720p, 1080p, 1440p, and 4K at Low to Extreme, combined from the per-run exports into one file.
+
+### Changed
+
+- `README.md` dropped its release history, published counts, local dev setup, repository layout, and deployment notes. Release notes stay in `CHANGELOG.md`, the counts in `docs/COPILOT_HANDOFF.md`, and the dev setup and layout moved to a new "Working on the code" section in `CONTRIBUTING.md`.
+- A version bump or new data no longer edits the README: `preflight.py` housekeeping checks the version and published counts only in `docs/COPILOT_HANDOFF.md` and `CLAUDE.md`, and `test_build.check_docs_in_sync` fails if `README.md` quotes a version, "Current version", or "Published so far". `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and the `gpu-catalog` agent say the same.
+- Agent rule: one open pull request at a time. A follow-up goes in the open PR, or waits until that PR merges (`CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, "Branching").
 
 ## 1.17.2.0 - 2026-11-09
 

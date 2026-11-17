@@ -37,7 +37,7 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
   2080 Ti export guessed `rtx_2080_ti_11gb_zotac_reference`, which isn't in
   the ID grammar (a partner card needs its product line, so it became
   `rtx_2080_ti_11gb_zotac_gaming_blower`), wrote `os: linux # assumed`, and
-  again put `system.kernel` on only the first of 20 files (v1.17.3.0).
+  again put `system.kernel` on only the first of 20 files (v1.18.0.0).
 - [ ] **Board specs for the ZOTAC GAMING RTX 2080 Ti Blower.**
   `rtx_2080_ti_11gb_zotac_gaming_blower` has identity only (a
   `sources-missing` warning), because zotac.com refused automated fetches.
@@ -446,6 +446,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   `scripts/test_build.py`; update that test and re-import together.
 
 ## Recently completed
+
+- **v1.18.0.0 (2026-11-17, branch `docs/readme-front-door`): README for newcomers**
+  - README trimmed to what the project is, how it works, the data, and
+    contributing; versions and counts live only in `docs/COPILOT_HANDOFF.md`
+    and `CLAUDE.md`, and a check keeps them out of the README.
 
 - **v1.14.0.0 (2026-11-09, branch `chore/regression-checks`): regression checks**
   - `scripts/preflight.py`, the Claude Code and git hooks that run it, the

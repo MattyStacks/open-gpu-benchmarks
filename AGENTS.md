@@ -21,8 +21,8 @@ These three steps are required for every PR:
    biggest kind of change it contains (MINOR for any code, check, dashboard,
    docs-workflow, or license change). Rename `Unreleased` in `CHANGELOG.md` to
    `## <version> - <date>` under a fresh empty `Unreleased`, and update the
-   current-version references in `README.md`, `docs/COPILOT_HANDOFF.md`, and
-   `CLAUDE.md`. Data-only submissions (including bot PRs) are batched into a
+   current-version references in `docs/COPILOT_HANDOFF.md` and `CLAUDE.md`
+   (`README.md` never quotes the version or counts). Data-only submissions (including bot PRs) are batched into a
    later DATA bump by a maintainer. A catalog pull request (new GPUs) makes
    its own DATA bump.
 
@@ -45,6 +45,12 @@ Always create a new branch from an up-to-date `main` (`git checkout main && git 
 `git checkout -b <type>/<name>`). Never stack a branch on another unmerged
 feature branch, unless the user explicitly asks for it. The usual workflow:
 commit everything, push, and open a PR into `main`; one topic per branch.
+
+**One open pull request at a time.** The maintainer doesn't want two of
+your pull requests open at once. If a follow-up comes up while your PR is
+still open, either put it in that same PR, or ask the maintainer to merge
+the open one first and only then branch from the updated `main` for the
+next PR. Never open a second PR next to an unmerged one.
 
 ## Read before changing anything
 
@@ -234,8 +240,7 @@ python scripts/preflight.py --all    # everything, including the blog build
 
 Housekeeping checks the change against `origin/main`: a new `CHANGELOG.md`
 line, a bumped `RELEASE_VERSION`, `docs/TODO.md` touched (a warning), and the
-published counts in `README.md` and `docs/COPILOT_HANDOFF.md` matching
-`data/`. Data-only result changes skip it. Every failure prints why the rule
+published counts in `docs/COPILOT_HANDOFF.md` matching `data/`. Data-only result changes skip it. Every failure prints why the rule
 exists and how to fix it. `python scripts/test_build.py --only NAME` reruns
 one group of checks; `npm --prefix tests/e2e test` reruns the browser tests.
 

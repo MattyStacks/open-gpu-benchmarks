@@ -22,7 +22,7 @@ and anything the form doesn't cover.
 | Add a card, laptop, or handheld that isn't in the catalog | [Adding a card, laptop, or handheld](#adding-a-card-laptop-or-handheld) |
 | Fix or remove a result I submitted        | [Fixing or removing a result](#fixing-or-removing-a-result) |
 | Understand a failed check on my PR        | [Reading a failed check](#reading-a-failed-check)      |
-| Change the dashboard, scripts, or docs    | [Other contributions](#other-contributions)            |
+| Change the dashboard, scripts, or docs    | [Working on the code](#working-on-the-code), [Other contributions](#other-contributions) |
 
 ## Submit a result in 5 steps
 
@@ -700,6 +700,57 @@ To see the dashboard full of the synthetic test data instead, build
 testing only: never copy them into `data/`, which is what the site publishes.
 
 </details>
+
+## Working on the code
+
+### Repository layout
+
+```text
+data/                 the published data (CC BY 4.0): catalog, games, benches, picks, results
+  gpus/               hardware catalog, one file per product, plus shared reference specs
+  official/           maintainer runs, one folder per product
+  community/          community runs, one folder per product
+scripts/              checks, build, validation, importers (checks.py holds every rule)
+site/                 the dashboard (index.html), license page, icons, crawler rules
+blog/                 the Astro blog project, which renders content/posts/
+content/posts/        blog posts, guides, and reviews
+templates/            starting points for result files and catalog entries
+tests/fixtures/       synthetic test data and issue bodies (never deployed)
+tests/e2e/            Playwright browser tests for the dashboard
+docs/                 contributor guides, the project handoff, and the backlog
+.github/              CI workflows, issue forms, Copilot agents, CODEOWNERS
+```
+
+### Set up and run the checks
+
+You need Python 3.11+, and Node 22.12+ for the blog and the browser tests.
+Make the `.venv` as in [Step 1](#step-1-fork-and-clone), then:
+
+```bash
+npm --prefix blog ci                               # the blog build
+npm --prefix tests/e2e ci                          # the browser tests
+npx --prefix tests/e2e playwright install chromium
+git config core.hooksPath .githooks                # git push runs preflight for you
+
+python scripts/preflight.py --fast    # before a commit (~15 s): data, build, and every test
+python scripts/preflight.py           # before a push or PR: adds the Playwright browser tests
+python scripts/build.py --data-dir tests/fixtures/data   # the dashboard with every feature in use
+python -m http.server 8000 --directory site              # preview at http://localhost:8000
+```
+
+Run `python scripts/build.py` again to go back to the real data after
+previewing the fixtures.
+
+- On Ubuntu and WSL, if `python3 -m venv` says `ensurepip` is missing, run
+  `sudo apt install python3-venv` first.
+- If your prompt theme hides `(.venv)`, check that `which python` ends in
+  `.venv/bin/python`.
+- Re-install only when `requirements.txt` changes; delete `.venv` to start over.
+
+The blog's own commands and rules are in [content/README.md](content/README.md).
+How the site builds and deploys (Cloudflare Pages and the GitHub Pages
+mirror, PR previews, the benchmark bot) is in
+[docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md).
 
 For the full review and grouping rules, see
 [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md).

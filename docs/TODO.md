@@ -33,6 +33,25 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
   they were merged by hand into one file. The bundles also record no Proton
   version or graphics API (Helldivers 2 is DX12 through VKD3D), so those
   fields are missing on the runs.
+- [ ] **Openbenchmarker export: catalog IDs and the OS.** The 2026-11-17 RTX
+  2080 Ti export guessed `rtx_2080_ti_11gb_zotac_reference`, which isn't in
+  the ID grammar (a partner card needs its product line, so it became
+  `rtx_2080_ti_11gb_zotac_gaming_blower`), wrote `os: linux # assumed`, and
+  again put `system.kernel` on only the first of 20 files (v1.17.3.0).
+- [ ] **Board specs for the ZOTAC GAMING RTX 2080 Ti Blower.**
+  `rtx_2080_ti_11gb_zotac_gaming_blower` has identity only (a
+  `sources-missing` warning), because zotac.com refused automated fetches.
+  Add the boost clock, power (the card reports a 250 W default limit),
+  connectors, outputs, and release from ZOTAC's product page, with sources.
+- [ ] **Cyberpunk importer: no `mesa` on NVIDIA.** Under Proton on an NVIDIA
+  card, `linux_system_detail()` recorded the installed Mesa package
+  (`26.2.626`), which doesn't render anything there; it was removed by hand
+  from the 2080 Ti files. Skip `mesa` when the driver is NVIDIA's.
+- [ ] **Cyberpunk importer: infer Custom presets.** A native rerun of a preset
+  keeps that preset's texture level, FSR 2.1 quality index, and ray-tracing
+  flags in `summary.json`, which identify every preset but High vs Ultra.
+  Suggest the name (and ask only for High/Ultra) instead of needing a
+  `--custom-presets` file.
 - [ ] **`memory_gb` on community Cyberpunk imports.** Without `--testbench`
   the importer rounds `systemMemory`, which the game reports a little low
   (31952 MB for 32 GB), so a machine with reserved memory can come out one or

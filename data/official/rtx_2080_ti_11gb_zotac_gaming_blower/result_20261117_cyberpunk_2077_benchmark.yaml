@@ -1,0 +1,117 @@
+# Imported by scripts/import_cyberpunk.py from Cyberpunk 2077's built-in
+# benchmark. Each benchmark_run is a folder in the game's benchmarkResults;
+# re-running the script skips runs listed here and adds new ones.
+gpu_id: rtx_2080_ti_11gb_zotac_gaming_blower
+testbench_id: am5_9800x3d_ddr5
+benchmark_type: game
+game_id: cyberpunk_2077_benchmark
+date: '2026-11-17'
+version: '2.5'
+frame_generation: false
+result:
+  - benchmark_run: benchmark_2026-11-17_08-58-25
+    time: 08:58:25
+    resolution: 1080p
+    graphics_preset: Ultra
+    avg_fps: 66.51
+    p1_low: 51.09
+    min_fps: 54.62
+    max_fps: 85.86
+    duration: 64.23
+    frame_count: 4272
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-17_09-15-54
+    time: 09:15:54
+    resolution: 1080p
+    graphics_preset: Steam Deck
+    avg_fps: 88.91
+    p1_low: 69.4
+    min_fps: 73.48
+    max_fps: 109.58
+    duration: 64.24
+    frame_count: 5712
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-17_09-50-10
+    time: 09:50:10
+    resolution: 1080p
+    graphics_preset: Steam Deck
+    avg_fps: 88.82
+    p1_low: 69.06
+    min_fps: 73.25
+    max_fps: 110.72
+    duration: 64.24
+    frame_count: 5706
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-17_09-54-19
+    time: 09:54:19
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Low'
+    avg_fps: 59.3
+    p1_low: 43.83
+    min_fps: 49.63
+    max_fps: 74.27
+    duration: 64.24
+    frame_count: 3810
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-17_10-11-44
+    time: '10:11:44'
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Medium'
+    avg_fps: 36.87
+    p1_low: 29.06
+    min_fps: 31.3
+    max_fps: 43.96
+    duration: 64.2
+    frame_count: 2367
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-17_11-02-26
+    time: '11:02:26'
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Medium'
+    avg_fps: 36.72
+    p1_low: 28.67
+    min_fps: 31.24
+    max_fps: 43.71
+    duration: 64.24
+    frame_count: 2359
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-17_11-33-24
+    time: '11:33:24'
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Ultra'
+    avg_fps: 27.07
+    p1_low: 21.25
+    min_fps: 23.02
+    max_fps: 31.79
+    duration: 64.24
+    frame_count: 1739
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-17_11-37-23
+    time: '11:37:23'
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Overdrive'
+    avg_fps: 10.06
+    p1_low: 7.8
+    min_fps: 8.27
+    max_fps: 12.02
+    duration: 96.59
+    frame_count: 972
+    display_mode: Fullscreen
+system:
+  os: linux
+  os_detail: Nobara Linux 44 (KDE Plasma Desktop Edition)
+  distro: Nobara Linux
+  distro_version: '44'
+  kernel: 7.3.4-201.nobara.fc44.x86_64
+  runtime: proton
+  proton: 11.0-100
+  launcher: Steam
+  cpu: AMD Ryzen 7 9800X3D 8-Core Processor
+  memory_gb: 64
+  memory_type: DDR5-6000
+  memory_channels: 2
+  driver: '620.70'
+  graphics_api: DX12
+proof:
+  method: in_game_benchmark
+  format: cyberpunk_summary_json

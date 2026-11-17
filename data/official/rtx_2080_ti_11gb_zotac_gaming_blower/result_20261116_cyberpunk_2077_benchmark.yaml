@@ -1,0 +1,373 @@
+# Imported by scripts/import_cyberpunk.py from Cyberpunk 2077's built-in
+# benchmark. Each benchmark_run is a folder in the game's benchmarkResults;
+# re-running the script skips runs listed here and adds new ones.
+gpu_id: rtx_2080_ti_11gb_zotac_gaming_blower
+testbench_id: am5_9800x3d_ddr5
+benchmark_type: game
+game_id: cyberpunk_2077_benchmark
+date: '2026-11-16'
+version: '2.5'
+frame_generation: false
+result:
+  - benchmark_run: benchmark_2026-11-16_14-38-53
+    time: '14:38:53'
+    resolution: 1440p
+    graphics_preset: Low
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 93.77
+    p1_low: 74.98
+    min_fps: 79.66
+    max_fps: 112.36
+    duration: 64.25
+    frame_count: 6025
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_14-40-34
+    time: '14:40:34'
+    resolution: 1440p
+    graphics_preset: Medium
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 81.64
+    p1_low: 66.31
+    min_fps: 70.11
+    max_fps: 96.38
+    duration: 64.25
+    frame_count: 5245
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_14-42-42
+    time: '14:42:42'
+    resolution: 1440p
+    graphics_preset: High
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 63.98
+    p1_low: 51.58
+    min_fps: 54.56
+    max_fps: 76.98
+    duration: 64.24
+    frame_count: 4110
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_14-44-51
+    time: '14:44:51'
+    resolution: 1440p
+    graphics_preset: Ultra
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 50.04
+    p1_low: 40.79
+    min_fps: 43.08
+    max_fps: 62.79
+    duration: 64.23
+    frame_count: 3214
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_14-46-29
+    time: '14:46:29'
+    resolution: 1440p
+    graphics_preset: Steam Deck
+    upscaling: FSR 2.1 Balanced
+    preset_upscaling: true
+    avg_fps: 79.65
+    p1_low: 63.88
+    min_fps: 67.5
+    max_fps: 95.17
+    duration: 64.25
+    frame_count: 5117
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_14-48-36
+    time: '14:48:36'
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Low'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 48.8
+    p1_low: 39.2
+    min_fps: 42.39
+    max_fps: 58.73
+    duration: 64.22
+    frame_count: 3134
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_15-02-25
+    time: '15:02:25'
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Medium'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 35.09
+    p1_low: 27.77
+    min_fps: 30.25
+    max_fps: 41.18
+    duration: 64.21
+    frame_count: 2253
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_15-04-09
+    time: '15:04:09'
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 29.24
+    p1_low: 22.8
+    min_fps: 25.17
+    max_fps: 33.72
+    duration: 64.2
+    frame_count: 1877
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_15-05-49
+    time: '15:05:49'
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Overdrive'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 11.79
+    p1_low: 9.32
+    min_fps: 10.04
+    max_fps: 13.66
+    duration: 82.71
+    frame_count: 975
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_15-07-54
+    time: '15:07:54'
+    resolution: 1440p
+    graphics_preset: Low
+    avg_fps: 66.46
+    p1_low: 54.38
+    min_fps: 57.39
+    max_fps: 78.0
+    duration: 64.25
+    frame_count: 4270
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_15-09-43
+    time: '15:09:43'
+    resolution: 1440p
+    graphics_preset: Medium
+    avg_fps: 52.2
+    p1_low: 43.26
+    min_fps: 44.95
+    max_fps: 60.63
+    duration: 64.24
+    frame_count: 3353
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_15-16-36
+    time: '15:16:36'
+    resolution: 1440p
+    graphics_preset: High
+    avg_fps: 46.91
+    p1_low: 38.93
+    min_fps: 40.82
+    max_fps: 55.82
+    duration: 64.23
+    frame_count: 3013
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_15-18-22
+    time: '15:18:22'
+    resolution: 1440p
+    graphics_preset: Ultra
+    avg_fps: 38.82
+    p1_low: 31.48
+    min_fps: 32.9
+    max_fps: 49.54
+    duration: 64.24
+    frame_count: 2494
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_16-27-25
+    time: '16:27:25'
+    resolution: 1440p
+    graphics_preset: Steam Deck
+    avg_fps: 57.81
+    p1_low: 47.14
+    min_fps: 49.81
+    max_fps: 69.1
+    duration: 64.23
+    frame_count: 3713
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_20-39-31
+    time: '20:39:31'
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Low'
+    avg_fps: 39.06
+    p1_low: 29.23
+    min_fps: 32.91
+    max_fps: 48.65
+    duration: 64.2
+    frame_count: 2508
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_20-42-13
+    time: '20:42:13'
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Medium'
+    avg_fps: 23.37
+    p1_low: 18.6
+    min_fps: 19.94
+    max_fps: 27.63
+    duration: 64.18
+    frame_count: 1500
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_20-45-29
+    time: '20:45:29'
+    resolution: 1440p
+    graphics_preset: 'Ray Tracing: Ultra'
+    avg_fps: 17.25
+    p1_low: 13.74
+    min_fps: 14.79
+    max_fps: 20.45
+    duration: 64.5
+    frame_count: 1113
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_20-47-27
+    time: '20:47:27'
+    resolution: 1080p
+    graphics_preset: Low
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 119.31
+    p1_low: 88.47
+    min_fps: 96.83
+    max_fps: 158.09
+    duration: 64.25
+    frame_count: 7666
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_20-51-31
+    time: '20:51:31'
+    resolution: 1080p
+    graphics_preset: Medium
+    upscaling: FSR 2.1 Auto
+    preset_upscaling: true
+    avg_fps: 107.26
+    p1_low: 81.3
+    min_fps: 88.56
+    max_fps: 139.01
+    duration: 64.25
+    frame_count: 6891
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_20-53-59
+    time: '20:53:59'
+    resolution: 1080p
+    graphics_preset: High
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 91.73
+    p1_low: 69.01
+    min_fps: 75.21
+    max_fps: 114.99
+    duration: 64.24
+    frame_count: 5893
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_20-57-06
+    time: '20:57:06'
+    resolution: 1080p
+    graphics_preset: Ultra
+    upscaling: FSR 2.1 Quality
+    preset_upscaling: true
+    avg_fps: 75.94
+    p1_low: 57.1
+    min_fps: 62.15
+    max_fps: 97.0
+    duration: 64.25
+    frame_count: 4879
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_21-00-31
+    time: '21:00:31'
+    resolution: 1080p
+    graphics_preset: Steam Deck
+    upscaling: FSR 2.1 Balanced
+    preset_upscaling: true
+    avg_fps: 113.02
+    p1_low: 83.47
+    min_fps: 91.66
+    max_fps: 149.98
+    duration: 64.25
+    frame_count: 7262
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_21-02-10
+    time: '21:02:10'
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Low'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 65.17
+    p1_low: 50.59
+    min_fps: 55.62
+    max_fps: 79.96
+    duration: 64.24
+    frame_count: 4187
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_21-08-24
+    time: '21:08:24'
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Medium'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 48.3
+    p1_low: 38.08
+    min_fps: 41.55
+    max_fps: 57.02
+    duration: 64.22
+    frame_count: 3102
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_21-15-28
+    time: '21:15:28'
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 41.82
+    p1_low: 32.18
+    min_fps: 35.62
+    max_fps: 49.05
+    duration: 64.22
+    frame_count: 2686
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_21-19-28
+    time: '21:19:28'
+    resolution: 1080p
+    graphics_preset: 'Ray Tracing: Overdrive'
+    upscaling: DLSS Auto
+    preset_upscaling: true
+    avg_fps: 17.73
+    p1_low: 13.74
+    min_fps: 14.99
+    max_fps: 20.66
+    duration: 64.45
+    frame_count: 1143
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_21-28-13
+    time: '21:28:13'
+    resolution: 1080p
+    graphics_preset: Low
+    avg_fps: 101.27
+    p1_low: 78.37
+    min_fps: 83.63
+    max_fps: 127.08
+    duration: 64.26
+    frame_count: 6508
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-16_21-36-36
+    time: '21:36:36'
+    resolution: 1080p
+    graphics_preset: Medium
+    avg_fps: 84.92
+    p1_low: 68.17
+    min_fps: 71.89
+    max_fps: 102.7
+    duration: 64.24
+    frame_count: 5456
+    display_mode: Fullscreen
+system:
+  os: linux
+  os_detail: Nobara Linux 44 (KDE Plasma Desktop Edition)
+  distro: Nobara Linux
+  distro_version: '44'
+  kernel: 7.3.4-201.nobara.fc44.x86_64
+  runtime: proton
+  proton: 11.0-100
+  launcher: Steam
+  cpu: AMD Ryzen 7 9800X3D 8-Core Processor
+  memory_gb: 64
+  memory_type: DDR5-6000
+  memory_channels: 2
+  driver: '620.70'
+  graphics_api: DX12
+proof:
+  method: in_game_benchmark
+  format: cyberpunk_summary_json

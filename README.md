@@ -15,7 +15,10 @@ The canonical site is <https://opengpubenchmarks.com> (Cloudflare Pages),
 mirrored on [GitHub Pages](https://mattystacks.github.io/open-gpu-benchmarks/).
 The blog has posts, guides, and reviews built on the same data.
 
-Current version: `v1.17.2.0`: 4 official Helldivers 2 gameplay runs on the
+Current version: `v1.17.3.0`: the ZOTAC GAMING GeForce RTX 2080 Ti Blower
+in the catalog, with 50 official Cyberpunk 2077 built-in benchmark runs and 20
+OpenBenchmarker Neon Flythrough runs on the 9800X3D bench under Linux.
+v1.17.2.0: 4 official Helldivers 2 gameplay runs on the
 Steam Machine (1080p, Low to High, MangoHud).
 v1.17.1.0: 20 official OpenBenchmarker Neon Flythrough
 runs on the Steam Machine (720p to 4K, Low to Extreme).
@@ -55,11 +58,13 @@ benchmark issue form. See [CHANGELOG.md](CHANGELOG.md) for every release and
 
 ## What's on the dashboard
 
-Published so far: 6 catalog GPUs (the GeForce RTX 5080 Founders Edition, the
-Steam Machine, and four handhelds), 310 reference GPU specs ready for products to build on, 93
-official runs (Cyberpunk 2077's built-in benchmark on Windows and on SteamOS, and
-OpenBenchmarker Neon Flythrough and Helldivers 2 on the Steam Machine), 1 community run
-(OpenBenchmarker Neon Flythrough at 4K), and 85 dashboard summaries.
+Published so far: 7 catalog GPUs (the GeForce RTX 5080 Founders Edition, the
+ZOTAC GAMING GeForce RTX 2080 Ti Blower, the Steam Machine, and four handhelds),
+310 reference GPU specs ready for products to build on, 163
+official runs (Cyberpunk 2077's built-in benchmark on Windows, on SteamOS, and on
+Nobara Linux; OpenBenchmarker Neon Flythrough on the Steam Machine and the RTX 2080 Ti;
+and Helldivers 2 on the Steam Machine), 1 community run
+(OpenBenchmarker Neon Flythrough at 4K), and 153 dashboard summaries.
 
 - **One bar per product.** A product is an exact card, laptop GPU, handheld, or
   iGPU, memory size included. Different memory sizes and board partners are

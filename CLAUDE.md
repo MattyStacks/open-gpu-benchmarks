@@ -21,8 +21,9 @@ prepares:
    (newly published runs or catalog GPUs), or POST (a new or updated blog
    post). Reset the parts to its right. Rename `Unreleased` in `CHANGELOG.md` to
    `## <version> - <date>`, add a fresh empty `Unreleased` above it, and update
-   the current-version references and feature summary in `README.md`,
-   `docs/COPILOT_HANDOFF.md`, and `CLAUDE.md`. `test_build.py` fails if
+   the current-version references and feature summary in
+   `docs/COPILOT_HANDOFF.md` and `CLAUDE.md`. `README.md` never quotes the
+   version, release notes, or published counts. `test_build.py` fails if
    `RELEASE_VERSION` doesn't match the newest changelog heading. Data-only
    submissions (including bot PRs from benchmark issues) are batched into a
    later DATA bump by a maintainer. A catalog pull request (new GPUs, from
@@ -59,9 +60,12 @@ docs, read:
 2. [docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md) — architecture, the data
    contract, current fixture counts, deployment, and the maintenance checklist.
    This is the project's living state document.
-3. [README.md](README.md) — public overview: what the dashboard shows, the
-   JSON endpoints, where to contribute, and local dev. Keep it short; details
-   belong in the documents below.
+3. [README.md](README.md) — the public front door: what the project is, how
+   it works, how to use the data, and how to contribute. Keep it short and
+   timeless: no version, release notes, published counts, or dev setup
+   (`test_build.check_docs_in_sync` rejects a version or counts there).
+   Details belong in the documents below; local dev is in CONTRIBUTING.md
+   ("Working on the code").
 4. [CONTRIBUTING.md](CONTRIBUTING.md) and
    [docs/COMMUNITY_SUBMISSIONS.md](docs/COMMUNITY_SUBMISSIONS.md) — contributor
    setup and the full submission/review rules.
@@ -90,7 +94,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.17.2.0` (`RELEASE_VERSION` in
+- Current development version: `v1.18.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -377,8 +381,8 @@ unless repository policy changes.
   workflow) or a prompt in the agents panel. It may add product files and,
   when no reference matches, a reference file; it makes the PR's DATA bump
   (`RELEASE_VERSION`, the `CHANGELOG.md` heading with one "Catalog:" line per
-  GPU, the current-version lines, and the catalog GPU counts in `README.md`
-  and `docs/COPILOT_HANDOFF.md`). It never edits code, `.github/`, or
+  GPU, the current-version lines, and the catalog GPU count in
+  `docs/COPILOT_HANDOFF.md`). It never edits code, `.github/`, or
   existing catalog files. `copilot-setup-steps.yml` installs `poppler-utils`
   for its PDF spec sheets.
 - `.github/CODEOWNERS` is the maintainer list, and a code owner's approval is
@@ -480,8 +484,7 @@ python scripts/preflight.py --all    # everything, including the blog build
 
 Housekeeping checks the change against `origin/main`: a new `CHANGELOG.md`
 line, a bumped `RELEASE_VERSION`, `docs/TODO.md` touched (a warning), and the
-published counts in `README.md` and `docs/COPILOT_HANDOFF.md` matching
-`data/`. Data-only result changes skip it. Every failure prints why the rule
+published counts in `docs/COPILOT_HANDOFF.md` matching `data/`. Data-only result changes skip it. Every failure prints why the rule
 exists and how to fix it. `python scripts/test_build.py --only NAME` reruns
 one group of checks; `npm --prefix tests/e2e test` reruns the browser tests.
 
@@ -511,7 +514,7 @@ is now stale:
 
 - **Data contract, schema, or build-output change** → update
   [docs/COPILOT_HANDOFF.md](docs/COPILOT_HANDOFF.md),
-  [README.md](README.md), and
+  [README.md](README.md) if the API endpoints changed, and
   [.github/copilot-instructions.md](.github/copilot-instructions.md) if a rule
   changed. Bump `SCHEMA_VERSION` when the generated API payload changes.
 - **Any behavior, schema, dashboard, or workflow change** → add a line under
@@ -526,12 +529,12 @@ is now stale:
   MINOR code, DATA runs or catalog GPUs, POST posts), reset the parts to its right, rename `Unreleased` in `CHANGELOG.md` to the new four-part
   version and date, and update `RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py) plus the version references and feature
-  summary in `README.md` and `docs/COPILOT_HANDOFF.md`.
+  summary in `docs/COPILOT_HANDOFF.md` and `CLAUDE.md` (never `README.md`).
 - **Blog post published** → a POST bump (see above), with a changelog line
   "New post: `<title>`".
 - **Fixtures or published runs added/removed** → refresh the counts (catalog
   GPUs, official runs, community runs, dashboard summaries). Published `data/`
-  counts are quoted in `README.md` and `docs/COPILOT_HANDOFF.md`; the
+  counts are quoted only in `docs/COPILOT_HANDOFF.md`; the
   `tests/fixtures/data/` counts live only in `docs/COPILOT_HANDOFF.md` and the
   fixture numbers asserted in `scripts/test_build.py`. These counts go wrong
   easily.
@@ -540,7 +543,7 @@ is now stale:
   `data/gpus/README.md`, and the data rules in
   `.github/copilot-instructions.md`.
 - **New command, script, or workflow step** → add it to the check lists in
-  `README.md`, `CONTRIBUTING.md`, `docs/COPILOT_HANDOFF.md`, and
+  `CONTRIBUTING.md`, `docs/COPILOT_HANDOFF.md`, and
   `.github/copilot-instructions.md`.
 - **Anything a future session would have to rediscover by reading code** → put
   it in `docs/COPILOT_HANDOFF.md`, and add the rule here or in

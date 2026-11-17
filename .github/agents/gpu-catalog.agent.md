@@ -142,15 +142,14 @@ however many products it adds:
    ```
 
    Keep any lines already under `Unreleased`; they move to the new heading too.
-3. The current version, in `README.md` ("Current version: `v...`"),
-   `docs/COPILOT_HANDOFF.md` ("Current version: `v...` (date)"), and
-   `CLAUDE.md` ("Current development version: `v...`"). In `README.md` and
-   `docs/COPILOT_HANDOFF.md`, start the summary with the new version and the
-   products added, and keep the earlier versions' text after it.
-4. The catalog GPU count in `README.md` ("Published so far: N catalog
-   GPUs ...") and `docs/COPILOT_HANDOFF.md` ("**Published data (`data/`).**
-   N catalog GPU entries ..."), counting the product files outside
-   `data/gpus/reference/`.
+3. The current version, in `docs/COPILOT_HANDOFF.md` ("Current version:
+   `v...` (date)") and `CLAUDE.md` ("Current development version: `v...`").
+   In `docs/COPILOT_HANDOFF.md`, start the summary with the new version and
+   the products added, and keep the earlier versions' text after it. Never
+   add a version or count to `README.md`; a check rejects it.
+4. The catalog GPU count in `docs/COPILOT_HANDOFF.md` ("**Published data
+   (`data/`).** N catalog GPU entries ..."), counting the product files
+   outside `data/gpus/reference/`.
 
 Don't touch `docs/TODO.md`, and don't tag a release; the maintainer tags it
 after the merge.

@@ -356,8 +356,9 @@ For every bump:
    matches the newest changelog release.
 3. Increment `SCHEMA_VERSION` when the generated API payload changes.
 4. Update the current-version references, published counts, and feature summary
-   in `README.md` and `docs/COPILOT_HANDOFF.md`, and the fixture counts in
-   `docs/COPILOT_HANDOFF.md`.
+   in `docs/COPILOT_HANDOFF.md` (plus the version in `CLAUDE.md`), and the
+   fixture counts there. `README.md` never quotes the version, release notes,
+   or counts.
 5. Run, inside the activated `.venv` (create it once with
    `python -m venv .venv`, then `python -m pip install -r requirements.txt`,
    `npm --prefix blog ci`, `npm --prefix tests/e2e ci`, and

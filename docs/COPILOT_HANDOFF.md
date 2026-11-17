@@ -11,10 +11,14 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.17.2.0` (2026-11-09). Versions are now
+- Current version: `v1.18.0.0` (2026-11-17). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.18.0.0: `README.md` is a short newcomer guide (what it is, how it
+    works, the data, contributing) with no version, counts, or dev setup;
+    `check_docs_in_sync` keeps it that way, and dev setup and the layout
+    live in CONTRIBUTING.md ("Working on the code").
   - v1.17.2.0: 4 official Helldivers 2 gameplay runs on the Steam Machine
     (1080p, Low/Steam Deck/Medium/High), captured with MangoHud, with
     the raw frame logs in `raw/helldivers_2_20261109/`.
@@ -632,7 +636,7 @@ not later in CI.
   `build.py`, or `data/` changed; `--all` always builds the blog.
   Housekeeping diffs against `origin/main`: a new changelog line, a bumped
   `RELEASE_VERSION`, `docs/TODO.md` touched (a warning), and the published
-  counts in `README.md` ("Published so far:") and this file ("**Published
+  counts in this file ("**Published
   data**") equal to what `data/` builds (`preflight.COUNT_PATTERNS` reads
   them). Changes only under `data/community/`, `data/official/`, or
   `data/games.yaml` skip it, so bot PRs never go red.
@@ -1315,8 +1319,8 @@ For a release:
 1. Update `RELEASE_VERSION` in [`scripts/build.py`](../scripts/build.py), and
    `SCHEMA_VERSION` when the API payload changes.
 2. Update current-version references, published counts, and feature summary
-   in [README.md](../README.md) and this document (fixture counts are only in
-   this document), and move `Unreleased` in
+   in this document and the version in `CLAUDE.md` (never in
+   [README.md](../README.md), which `test_build.py` keeps free of them), and move `Unreleased` in
    [CHANGELOG.md](../CHANGELOG.md) under the new version heading.
 3. Run the build, validation, compile checks, and `git diff --check`.
 4. Do not commit `site/api/` unless repository policy changes.

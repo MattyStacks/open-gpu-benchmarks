@@ -32,6 +32,15 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.18.0.0 - 2026-11-17
+
+The README is now a short guide for newcomers: what the project is, how it works, how to use the data, and how to contribute.
+
+### Changed
+
+- `README.md` dropped its release history, published counts, local dev setup, repository layout, and deployment notes. Release notes stay in `CHANGELOG.md`, the counts in `docs/COPILOT_HANDOFF.md`, and the dev setup and layout moved to a new "Working on the code" section in `CONTRIBUTING.md`.
+- A version bump or new data no longer edits the README: `preflight.py` housekeeping checks the version and published counts only in `docs/COPILOT_HANDOFF.md` and `CLAUDE.md`, and `test_build.check_docs_in_sync` fails if `README.md` quotes a version, "Current version", or "Published so far". `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and the `gpu-catalog` agent say the same.
+
 ## 1.17.2.0 - 2026-11-09
 
 4 new official Helldivers 2 runs on the Steam Machine (1080p, Low to High).

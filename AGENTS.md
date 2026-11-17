@@ -21,8 +21,8 @@ These three steps are required for every PR:
    biggest kind of change it contains (MINOR for any code, check, dashboard,
    docs-workflow, or license change). Rename `Unreleased` in `CHANGELOG.md` to
    `## <version> - <date>` under a fresh empty `Unreleased`, and update the
-   current-version references in `README.md`, `docs/COPILOT_HANDOFF.md`, and
-   `CLAUDE.md`. Data-only submissions (including bot PRs) are batched into a
+   current-version references in `docs/COPILOT_HANDOFF.md` and `CLAUDE.md`
+   (`README.md` never quotes the version or counts). Data-only submissions (including bot PRs) are batched into a
    later DATA bump by a maintainer. A catalog pull request (new GPUs) makes
    its own DATA bump.
 
@@ -234,8 +234,7 @@ python scripts/preflight.py --all    # everything, including the blog build
 
 Housekeeping checks the change against `origin/main`: a new `CHANGELOG.md`
 line, a bumped `RELEASE_VERSION`, `docs/TODO.md` touched (a warning), and the
-published counts in `README.md` and `docs/COPILOT_HANDOFF.md` matching
-`data/`. Data-only result changes skip it. Every failure prints why the rule
+published counts in `docs/COPILOT_HANDOFF.md` matching `data/`. Data-only result changes skip it. Every failure prints why the rule
 exists and how to fix it. `python scripts/test_build.py --only NAME` reruns
 one group of checks; `npm --prefix tests/e2e test` reruns the browser tests.
 

@@ -428,6 +428,11 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 
 ## Recently completed
 
+- **v1.18.0.0 (2026-11-17, branch `docs/readme-front-door`): README for newcomers**
+  - README trimmed to what the project is, how it works, the data, and
+    contributing; versions and counts live only in `docs/COPILOT_HANDOFF.md`
+    and `CLAUDE.md`, and a check keeps them out of the README.
+
 - **v1.14.0.0 (2026-11-09, branch `chore/regression-checks`): regression checks**
   - `scripts/preflight.py`, the Claude Code and git hooks that run it, the
     Playwright suite in `tests/e2e/`, the API shape snapshot, and many new

@@ -100,7 +100,10 @@ System RAM is numeric: `system.memory_gb` (a number of GB, never `"32 GB"`),
 plus optional `memory_type` (`DDR5-6400`) and `memory_channels` (a whole
 number: 1 single, 2 dual, 4 quad). All three are optional, a missing one is
 never reported, and none of them group runs or appear on charts. The old
-`memory`/`ram` keys fail `result-system-memory`.
+`memory`/`ram` keys fail `result-system-memory`. An integrated GPU or handheld
+run may add `system.gpu_memory_gb`, the memory set aside for the GPU in the
+BIOS or driver, in GB (512 MB is `0.5`); it's never a grouping key and is an
+error on desktop and laptop GPUs (`result-gpu-memory`).
 
 `avg_fps` is required; `p1_low` is optional (3DMark and in-game benchmarks
 report none). `proof.method` is required on every game run and names the

@@ -176,7 +176,7 @@ def check_rule_variants():
     id_cases = {
         "id-format (desktop without a brand)": ("desktop", "test_gpu_8gb"),
         "id-format (laptop without a model)": ("laptop", "test_gpu_laptop_8gb"),
-        "id-format (igpu without a chip)": ("igpu", "8gb_test"),
+        "id-format (igpu without a chip)": ("igpu", "shared_test"),
         "id-memory-token (none)": ("desktop", "test_gpu_fe"),
         "id-memory-token (two)": ("desktop", "test_gpu_8gb_16gb_fe"),
         "id-generic (not a laptop)": ("desktop", "test_gpu_8gb_generic"),
@@ -452,6 +452,127 @@ def check_catalog_rules():
     laptop = minimal_entry(id="test_gpu_laptop_8gb_generic", classification={"form_factor": "laptop"})
     issues = run_checks({"gpus/laptop/nvidia/test_gpu_laptop_8gb_generic.yaml": laptop})
     assert not issues.errors and {issue.rule for issue in issues.warnings} == {"id-generic", "sources-missing"}, issues
+
+
+def igpu_entry(gpu_id, vendor="amd", **overrides):
+    """An integrated GPU product: no VRAM, so memory.shared instead of capacity_gb."""
+    entry = {
+        "id": gpu_id,
+        "identity": {"name": "Test iGPU", "gpu_vendor": vendor},
+        "classification": {"form_factor": "igpu"},
+        "memory": {"shared": True},
+    }
+    entry.update(overrides)
+    return entry
+
+
+def igpu_reference(ref_id):
+    """An integrated chip's reference file, like data/gpus/reference/intel/arc_140v.yaml: no memory token."""
+    return {"id": ref_id, "identity": {"name": f"Test {ref_id}", "gpu_vendor": "intel"}, "memory": {"shared": True}}
+
+
+def check_igpu_ids():
+    """Integrated GPUs share system RAM, so their IDs say 'shared' where other IDs put <N>gb.
+    Using the RAM size would split one laptop into a product per RAM upgrade."""
+    references = {f"gpus/reference/intel/{ref}.yaml": igpu_reference(ref) for ref in ("arc_140v", "arc_130t")}
+    passing = {
+        # A named device on a chip with a reference file.
+        "arc_140v_shared_lenovo_yoga_slim_7x": igpu_entry("arc_140v_shared_lenovo_yoga_slim_7x", "intel", base="arc_140v", memory={}),
+        # Open GPU Benchmarker's _reference suffix for an unknown model, with and without a base.
+        "arc_130t_shared_reference": igpu_entry("arc_130t_shared_reference", "intel", base="arc_130t", memory={}),
+        "radeon_780m_shared_reference": igpu_entry("radeon_780m_shared_reference"),
+        "iris_xe_shared_reference": igpu_entry("iris_xe_shared_reference", "intel"),
+    }
+    for gpu_id, entry in passing.items():
+        entry = {key: value for key, value in entry.items() if value != {}}
+        vendor = entry["identity"]["gpu_vendor"]
+        issues = run_checks({**references, f"gpus/igpu/{vendor}/{gpu_id}.yaml": entry})
+        assert not issues.errors and {issue.rule for issue in issues.warnings} <= {"sources-missing"}, (
+            f"{gpu_id} is a valid integrated GPU id and must pass", [issue.format() for issue in issues])
+    # _generic works as on laptops: allowed, with a warning to name the device.
+    issues = run_checks({"gpus/igpu/amd/radeon_780m_shared_generic.yaml": igpu_entry("radeon_780m_shared_generic")})
+    assert not issues.errors and "id-generic" in {issue.rule for issue in issues.warnings}, (
+        "an unknown integrated GPU device uses _generic with a warning, like a laptop", [issue.format() for issue in issues])
+
+    failing = {
+        "id-memory-token": [
+            (igpu_entry("radeon_780m_16gb_x"), "an integrated GPU has no VRAM, so a <N>gb token would be the system RAM"),
+            (igpu_entry("radeon_780m_shared_x_shared"), "one 'shared' token, like one <N>gb token elsewhere"),
+            (igpu_entry("radeon_780m_8gb_shared_x"), "an integrated GPU id has 'shared' and never a memory size"),
+            (minimal_entry(id="test_gpu_laptop_shared_x", classification={"form_factor": "laptop"}),
+             "a laptop GPU has its own VRAM, so its id names the size"),
+            (minimal_entry(id="test_gpu_shared_fe"), "a desktop card has its own VRAM, so its id names the size"),
+            (minimal_entry(id="test_device_shared", classification={"form_factor": "handheld"}, memory={"capacity_gb": 16}),
+             "a handheld's RAM is soldered, so its id names the size"),
+        ],
+        "id-format": [
+            (igpu_entry("radeon_780m_shared"), "the device (or _generic/_reference) comes after 'shared'"),
+            (igpu_entry("shared_x"), "the chip comes before 'shared'"),
+        ],
+        "field-not-allowed": [
+            (igpu_entry("radeon_780m_shared_x", memory={"shared": True, "capacity_gb": 16}),
+             "capacity_gb on an integrated GPU would be system RAM, which belongs on each run"),
+        ],
+        "field-required": [
+            (igpu_entry("radeon_780m_shared_x", memory={"type": "DDR5"}),
+             "an integrated GPU must say memory.shared: true, since it has no capacity_gb"),
+        ],
+        "id-generic": [
+            (igpu_entry("radeon_780m_shared_generic_x"), "_generic replaces the whole <oem>_<model> part"),
+        ],
+        "base-id": [
+            (igpu_entry("arc_140v_x_shared_y", "intel", base="arc_140v"),
+             "an integrated GPU product starts with <base>_shared_ so the chip is read the same way everywhere"),
+        ],
+    }
+    for rule, cases in failing.items():
+        for entry, why in cases:
+            form_factor, vendor = entry["classification"]["form_factor"], entry["identity"]["gpu_vendor"]
+            files = {**references, f"gpus/{form_factor}/{vendor}/{entry['id']}.yaml": entry}
+            found = {issue.rule for issue in run_checks(files).errors}
+            assert rule in found, f"{entry['id']} must fail {rule}: {why}; got {sorted(found)}"
+
+
+def check_gpu_memory_rules():
+    """system.gpu_memory_gb is how much RAM an integrated GPU or handheld was set to use.
+    A discrete GPU's memory is fixed by its catalog id, so the field is only for shared memory."""
+    igpu_id = "radeon_780m_shared_test"
+    igpu = {f"gpus/igpu/amd/{igpu_id}.yaml": igpu_entry(igpu_id)}
+    handheld_id = "test_device_16gb"
+    handheld = {f"gpus/handheld/nvidia/{handheld_id}.yaml": minimal_entry(
+        id=handheld_id, classification={"form_factor": "handheld"}, memory={"capacity_gb": 16})}
+    laptop_id = "test_gpu_laptop_8gb_test_model"
+    laptop = {f"gpus/laptop/nvidia/{laptop_id}.yaml": minimal_entry(id=laptop_id, classification={"form_factor": "laptop"})}
+
+    def files(catalog, gpu_id, **system):
+        return {**catalog, f"community/{gpu_id}/result_20261003_test.yaml": community_run(
+            gpu_id=gpu_id, system={"os": "windows", **system})}
+
+    # The small default carve-out, a BIOS setting, and a handheld under its soldered RAM all pass.
+    for catalog, gpu_id, system in (
+        (igpu, igpu_id, {"gpu_memory_gb": 0.5}),
+        (igpu, igpu_id, {"gpu_memory_gb": 16, "memory_gb": 32}),
+        (handheld, handheld_id, {"gpu_memory_gb": 4}),
+    ):
+        issues = run_checks(files(catalog, gpu_id, **system))
+        assert not [issue for issue in issues if issue.rule in ("result-gpu-memory", "result-system-field")], (
+            gpu_id, system, [issue.format() for issue in issues])
+    failing = [
+        ({TEST_CATALOG_PATH: minimal_entry()}, TEST_ID, {"gpu_memory_gb": 8}, "a desktop card's VRAM is fixed by its id"),
+        (laptop, laptop_id, {"gpu_memory_gb": 8}, "a laptop GPU's VRAM is fixed by its id"),
+        (igpu, igpu_id, {"gpu_memory_gb": "512 MB"}, "the value is a number of GB"),
+        (igpu, igpu_id, {"gpu_memory_gb": 0}, "a GPU always gets some memory"),
+        (igpu, igpu_id, {"gpu_memory_gb": 32, "memory_gb": 16}, "the GPU's share comes out of system RAM"),
+        (handheld, handheld_id, {"gpu_memory_gb": 24}, "a handheld can't set aside more than its soldered RAM"),
+    ]
+    for catalog, gpu_id, system, why in failing:
+        issues = run_checks(files(catalog, gpu_id, **system))
+        found = [issue for issue in issues.errors if issue.rule == "result-gpu-memory"]
+        assert found, f"{gpu_id} with {system} must fail result-gpu-memory: {why}; got {[issue.format() for issue in issues]}"
+    issues = run_checks(files(igpu, igpu_id, gpu_memory_gb="512 MB"))
+    assert any("gpu_memory_gb: 0.5" in issue.message for issue in issues.errors), "the error suggests the GB number"
+    assert checks.memory_size_from_text("512 MB") == 0.5 and checks.memory_size_from_text("4 GB") == 4
+    assert checks.memory_size_from_text("4") == 4 and checks.memory_size_from_text("lots") is None
 
 
 def check_result_rules():
@@ -1236,6 +1357,20 @@ def check_issue_to_result():
         assert sorted(folder.iterdir()) == before, "a failed issue leaves no file behind"
         assert (data_dir / "games.yaml").read_text(encoding="utf-8") == games_before, "the bot never adds a game"
 
+        # A handheld's iGPU memory setting: "512 MB" is written as 0.5 GB.
+        handheld = valid.replace("GeForce RTX 4090 Founders Edition", "rog_ally_z1_extreme_16gb").replace(
+            "### iGPU memory (GB)\n\n_No response_", "### iGPU memory (GB)\n\n512 MB")
+        assert handheld.count("512 MB") == 1 and "rog_ally" in handheld
+        status, comment = run_issue(handheld, data_dir, temp / "handheld")
+        assert status == 0, comment
+        handheld_run = yaml.safe_load(next((data_dir / "community" / "rog_ally_z1_extreme_16gb").glob(
+            "result_20261003_cyberpunk_2077_benchmark*.yaml")).read_text(encoding="utf-8"))
+        assert handheld_run["system"]["gpu_memory_gb"] == 0.5, handheld_run["system"]
+        # On a desktop card the field is refused: its memory is the VRAM in its id.
+        desktop = valid.replace("### iGPU memory (GB)\n\n_No response_", "### iGPU memory (GB)\n\n4")
+        status, comment = run_issue(desktop, data_dir, temp / "desktop_gpu_memory")
+        assert status == 1 and "result-gpu-memory" in comment, comment
+
         # Untrusted text can't break out of the reply's code spans.
         status, comment = run_issue(valid.replace("GeForce RTX 4090 Founders Edition", "x` @someone `y"), data_dir, temp / "md")
         assert status == 1 and "`x' @someone 'y`" in comment, comment
@@ -1704,7 +1839,7 @@ def check_dashboard_reads_real_fields(api_dir):
 
 def check_catalog_specs(api_dir):
     master = load_json(api_dir / "gpus.json")
-    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.21"
+    assert master["metadata"]["schema_version"] == build.SCHEMA_VERSION == "0.22"
     group_by = master["metadata"]["comparison_policy"]["group_by"]
     assert {"os", "upscaling", "game_id", "testbench_id"} <= set(group_by) and "game" not in group_by
     by_id = {gpu["id"]: gpu for gpu in master["gpus"]}
@@ -1847,6 +1982,9 @@ def check_fixture_build(api_dir):
     ], with_memory
     assert all(record["memory_channels"] is None and record["memory_type"] == "" for record in flagship["records"]
                if record["memory_gb"] is None)
+    # gpu_memory_gb is for integrated GPUs and handhelds; a desktop card's record carries it as null.
+    assert all("gpu_memory_gb" in record and record["gpu_memory_gb"] is None for record in flagship["records"]), \
+        "every run record has gpu_memory_gb, null when the run doesn't set it"
     implementations = [item for summary in flagship["game_summaries"] for item in summary["implementations"]]
     assert {"memory_gb": 64, "memory_type": "DDR5-6000", "memory_channels": 2}.items() <= next(
         item for item in implementations if "memory_gb" in item).items()
@@ -2129,6 +2267,8 @@ def check_release_version():
 CHECKS = [
     check_valid_fixtures,
     check_catalog_rules,
+    check_igpu_ids,
+    check_gpu_memory_rules,
     check_result_rules,
     check_rule_variants,
     check_review_rules,

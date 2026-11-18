@@ -87,7 +87,8 @@ Fill in what you can't find this way, and list every fill-in under
   groups don't split.
 
 Put in CPU, RAM (`memory_gb` as a number, `memory_type` like `DDR5-6000`,
-`memory_channels` as a number), driver, OS version, graphics API, and game
+`memory_channels` as a number; for an integrated GPU or handheld,
+`gpu_memory_gb` for the memory set aside for the GPU, 512 MB as `0.5`), driver, OS version, graphics API, and game
 version only when the submitter states them. Never invent machine details.
 
 ### When a tool fits the input better

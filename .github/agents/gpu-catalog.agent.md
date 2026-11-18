@@ -116,7 +116,10 @@ skip checks.
    don't copy them.
 8. **Name it.** `<reference id>_<brand>_<product_line>` for desktop cards
    (`arc_a310_4gb_sparkle_eco`), `<reference id>_<oem>_<model>` for laptops,
-   `<device>_<chip>_<ram>gb` for handhelds. Keep `oc` when the maker sells OC
+   `<device>_<chip>_<ram>gb` for handhelds, and `<reference id>_shared_<oem>_<model>`
+   for an integrated GPU in a laptop or mini PC (no reference: the chip as
+   sold, such as `radeon_780m_shared_<oem>_<model>`; set `memory.shared: true`
+   and no `capacity_gb`). Keep `oc` when the maker sells OC
    and non-OC versions. A color variant with the same specs is the same
    product: add its part number to `skus` instead. Search `data/gpus/` first;
    if the product already exists, don't add it again, and say so.

@@ -1,7 +1,7 @@
 ---
 // Review header blocks: a spec card per reviewed GPU (from the published
 // catalog), then the verdict and pros/cons from frontmatter.
-import { catalogGpu } from "../lib/api";
+import { catalogGpu, type CatalogGpu } from "../lib/api";
 
 interface Props {
   gpuIds: string[];
@@ -12,11 +12,16 @@ interface Props {
 
 const { gpuIds, verdict, pros, cons } = Astro.props;
 const fmt = (value: unknown, unit = "") => (value == null || value === "" ? null : `${value}${unit}`);
+// An integrated GPU has no VRAM size; it shares system RAM.
+const memoryText = (gpu: CatalogGpu) => {
+  const size = gpu.memory.capacity_gb != null ? `${gpu.memory.capacity_gb} GB` : gpu.memory.shared ? "Shared" : "";
+  return size ? `${size} ${gpu.memory.type ?? ""}`.trim() : null;
+};
 const cards = gpuIds.map((id) => {
   const gpu = catalogGpu(id);
   const stats = [
     ["Architecture", fmt(gpu.classification.architecture)],
-    ["Memory", fmt(`${gpu.memory.capacity_gb} GB ${gpu.memory.type ?? ""}`.trim())],
+    ["Memory", fmt(memoryText(gpu))],
     ["Bus", fmt(gpu.memory.bus_width_bits, "-bit")],
     ["Bandwidth", fmt(gpu.memory.bandwidth_gbs, " GB/s")],
     ["Shaders", fmt(gpu.silicon?.shader_cores?.toLocaleString("en-US"))],

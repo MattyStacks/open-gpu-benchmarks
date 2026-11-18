@@ -147,6 +147,15 @@ body:
       description: Optional. 1 single, 2 dual, 4 quad, 8 for 8-channel server boards.
       placeholder: "2"
   - type: input
+    id: gpu_memory_gb
+    attributes:
+      label: iGPU memory (GB)
+      description: >-
+        Optional, integrated GPUs and handhelds only. The memory you set aside for the GPU in the BIOS or driver
+        (UMA frame buffer, Variable Graphics Memory, or a handheld's VRAM setting), such as 0.5 for 512 MB, or 4.
+        Leave it empty for a desktop or laptop graphics card.
+      placeholder: "4"
+  - type: input
     id: driver
     attributes:
       label: GPU driver

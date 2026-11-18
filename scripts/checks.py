@@ -120,14 +120,19 @@ BASE_CHIP_FIELDS = (
 # base-mismatch checks gpu_vendor.
 BASE_UNCOMPARED = (("identity", "name"), ("identity", "gpu_vendor"))
 # Product IDs on these form factors start with their base's ID.
-BASE_PREFIX_FORM_FACTORS = ("desktop", "laptop")
+BASE_PREFIX_FORM_FACTORS = ("desktop", "laptop", "igpu")
+# memory.capacity_gb is required too, except on an integrated GPU: see check_catalog_memory.
 CATALOG_REQUIRED = (
     ("id",),
     ("identity", "name"),
     ("identity", "gpu_vendor"),
     ("classification", "form_factor"),
-    ("memory", "capacity_gb"),
 )
+# An integrated GPU has no VRAM of its own, so its ID says "shared" where
+# other IDs put the <N>gb memory token.
+SHARED_TOKEN = "shared"
+# A placeholder for an unknown device model, allowed (with a warning) here only.
+GENERIC_FORM_FACTORS = ("laptop", "igpu")
 CATALOG_RANGES = {
     ("memory", "capacity_gb"): (1, 512, "GB"),
     # HBM cards (Radeon VII, R9 Fury) use a 4096-bit bus.
@@ -206,6 +211,7 @@ SYSTEM_FIELDS = (
     "memory_gb",
     "memory_type",
     "memory_channels",
+    "gpu_memory_gb",
     "power_mode",
     "tdp_mode",
     "display_mode",
@@ -558,6 +564,68 @@ def merge_sources(product_sources, reference_sources):
     return merged
 
 
+def check_catalog_memory(path, entry, issues):
+    """memory.capacity_gb is required, except on an integrated GPU, which has
+    no VRAM: it sets memory.shared: true and leaves the size to each run."""
+    if spec(entry, "classification", "form_factor") != "igpu":
+        check_required(path, entry, (("memory", "capacity_gb"),), issues)
+        return
+    if spec(entry, "memory", "shared") is not True:
+        issues.error(
+            path,
+            "field-required",
+            "an integrated GPU needs 'memory.shared: true': it has no VRAM of its own and uses system RAM",
+        )
+    if spec(entry, "memory", "capacity_gb") is not None:
+        issues.error(
+            path,
+            "field-not-allowed",
+            "'memory.capacity_gb' is not allowed on an integrated GPU: it would be the system RAM, which changes with "
+            "each device's configuration and upgrades; record it on each run as system.memory_gb instead "
+            "(and the amount set aside for the GPU as system.gpu_memory_gb)",
+        )
+
+
+def memory_token_position(path, gpu_id, tokens, form_factor, entry, issues):
+    """Where the ID's memory part sits: the <N>gb token, or 'shared' on an
+    integrated GPU. Returns None after reporting a problem."""
+    sizes = [index for index, token in enumerate(tokens) if MEMORY_TOKEN.match(token)]
+    shared = [index for index, token in enumerate(tokens) if token == SHARED_TOKEN]
+    if form_factor == "igpu":
+        if sizes:
+            issues.error(
+                path,
+                "id-memory-token",
+                f"id '{gpu_id}' has a memory size, but an integrated GPU has no VRAM of its own: use 'shared' in its "
+                "place (<chip>_shared_<oem>_<model>), and record system RAM on each run as system.memory_gb",
+            )
+            return None
+        if len(shared) != 1:
+            issues.error(
+                path, "id-memory-token", f"integrated GPU id '{gpu_id}' must contain 'shared' exactly once: <chip>_shared_<oem>_<model>"
+            )
+            return None
+        return shared[0]
+    if shared:
+        issues.error(
+            path,
+            "id-memory-token",
+            f"'shared' is only for integrated GPU ids (form_factor igpu); a {form_factor or 'non-igpu'} entry names its "
+            "memory size: a discrete GPU has its own VRAM, and a handheld's RAM is soldered",
+        )
+        return None
+    if len(sizes) != 1:
+        issues.error(path, "id-memory-token", f"id '{gpu_id}' must contain exactly one memory size token such as '16gb'")
+        return None
+    capacity = spec(entry, "memory", "capacity_gb")
+    token_gb = int(MEMORY_TOKEN.match(tokens[sizes[0]]).group(1))
+    if is_number(capacity) and capacity != token_gb:
+        issues.error(
+            path, "id-memory-token", f"id says {token_gb}gb but memory.capacity_gb is {capacity}"
+        )
+    return sizes[0]
+
+
 def check_catalog_id(path, entry, issues):
     gpu_id = entry.get("id")
     if not isinstance(gpu_id, str):
@@ -569,39 +637,35 @@ def check_catalog_id(path, entry, issues):
         return
 
     tokens = gpu_id.split("_")
-    memory_positions = [index for index, token in enumerate(tokens) if MEMORY_TOKEN.match(token)]
-    if len(memory_positions) != 1:
-        issues.error(path, "id-memory-token", f"id '{gpu_id}' must contain exactly one memory size token such as '16gb'")
-        return
-    position = memory_positions[0]
-    capacity = spec(entry, "memory", "capacity_gb")
-    token_gb = int(MEMORY_TOKEN.match(tokens[position]).group(1))
-    if is_number(capacity) and capacity != token_gb:
-        issues.error(
-            path, "id-memory-token", f"id says {token_gb}gb but memory.capacity_gb is {capacity}"
-        )
-
     form_factor = spec(entry, "classification", "form_factor")
+    position = memory_token_position(path, gpu_id, tokens, form_factor, entry, issues)
+    if position is None:
+        return
+
     before, after = tokens[:position], tokens[position + 1:]
     shapes = {
         "desktop": (bool(before) and bool(after), "<gpu_model>_<vram>gb_<brand>_<product_line> (or _fe, _reference, _le)"),
         "laptop": (bool(before) and bool(after), "<gpu_model>_<vram>gb_<oem>_<model> (or _generic)"),
         "handheld": (bool(before) and not after, "<device>_<chip>_<ram>gb, ending with the RAM size"),
-        "igpu": (bool(before), "<chip>_<ram>gb_..."),
+        "igpu": (bool(before) and bool(after), "<chip>_shared_<oem>_<model> (or _generic, _reference)"),
     }
     if form_factor in shapes and not shapes[form_factor][0]:
         issues.error(path, "id-format", f"{form_factor} ids follow {shapes[form_factor][1]}")
     base = entry.get("base")
-    if form_factor in BASE_PREFIX_FORM_FACTORS and is_text(base) and not gpu_id.startswith(f"{base}_"):
-        issues.error(path, "base-id", f"id '{gpu_id}' must start with its base: '{base}_...'")
+    prefix = f"{base}_{SHARED_TOKEN}_" if form_factor == "igpu" else f"{base}_"
+    if form_factor in BASE_PREFIX_FORM_FACTORS and is_text(base) and not gpu_id.startswith(prefix):
+        issues.error(path, "base-id", f"id '{gpu_id}' must start with its base: '{prefix}...'")
 
     if "generic" in tokens:
-        if form_factor != "laptop":
-            issues.error(path, "id-generic", "'generic' is only allowed in laptop ids")
+        memory_part = "shared" if form_factor == "igpu" else "<vram>gb"
+        model = "<chip>" if form_factor == "igpu" else "<gpu_model>"
+        device = "device" if form_factor == "igpu" else "laptop"
+        if form_factor not in GENERIC_FORM_FACTORS:
+            issues.error(path, "id-generic", "'generic' is only allowed in laptop and integrated GPU ids")
         elif after != ["generic"]:
-            issues.error(path, "id-generic", "'generic' replaces the whole <oem>_<model> part: <gpu_model>_<vram>gb_generic")
+            issues.error(path, "id-generic", f"'generic' replaces the whole <oem>_<model> part: {model}_{memory_part}_generic")
         else:
-            issues.warning(path, "id-generic", "laptop model is unknown; replace '_generic' with <oem>_<model> when known")
+            issues.warning(path, "id-generic", f"{device} model is unknown; replace '_generic' with <oem>_<model> when known")
 
 
 def check_catalog_folder(path, entry, gpus_dir, issues):
@@ -668,6 +732,7 @@ def load_catalog(data_dir=DATA_DIR):
         if merged is entry:
             merged = {**entry, "reference_overrides": []}
         check_required(path, merged, CATALOG_REQUIRED, issues)
+        check_catalog_memory(path, merged, issues)
         check_catalog_values(path, merged, issues)
         check_product_sections(path, merged, issues)
         check_catalog_id(path, merged, issues)
@@ -894,6 +959,55 @@ def memory_gb_from_text(value):
     return int(number) if number.is_integer() else number
 
 
+def memory_size_from_text(value):
+    """A memory amount in GB: '512 MB' -> 0.5, '4 GB' or '4' -> 4; anything else -> None."""
+    match = re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*(gb|mb)?\s*", str(value), re.IGNORECASE)
+    if not match:
+        return None
+    number = float(match.group(1)) / (1024 if (match.group(2) or "").lower() == "mb" else 1)
+    return int(number) if number.is_integer() else number
+
+
+# Form factors whose GPU shares system RAM, so a run may say how much was set aside for it.
+GPU_MEMORY_FORM_FACTORS = ("igpu", "handheld")
+
+
+def check_gpu_memory(path, system, gpu, issues):
+    """system.gpu_memory_gb: the memory an integrated GPU or handheld was set to
+    use (BIOS UMA frame buffer, AMD Variable Graphics Memory, a handheld's VRAM
+    option, or the small default carve-out). Optional, and never a grouping key."""
+    size = system.get("gpu_memory_gb")
+    if size is None:
+        return
+    form_factor = spec(gpu, "classification", "form_factor")
+    if form_factor not in GPU_MEMORY_FORM_FACTORS:
+        issues.error(
+            path,
+            "result-gpu-memory",
+            f"'system.gpu_memory_gb' is only for integrated GPUs and handhelds, not a {form_factor} GPU: a discrete "
+            "GPU's memory is its own VRAM, already fixed by the catalog id; remove the field",
+        )
+        return
+    if not (is_number(size) and 0 < size <= MAX_MEMORY_GB):
+        parsed = memory_size_from_text(size) if isinstance(size, str) else None
+        hint = f"; write 'gpu_memory_gb: {parsed}'" if parsed else " (512 MB is 0.5)"
+        issues.error(
+            path, "result-gpu-memory", f"'system.gpu_memory_gb' must be a number of GB above 0, got '{size}'{hint}"
+        )
+        return
+    system_gb = system.get("memory_gb")
+    label = "system.memory_gb"
+    if not is_number(system_gb):
+        system_gb, label = spec(gpu, "memory", "capacity_gb"), "the catalog's memory.capacity_gb"
+    if is_number(system_gb) and size > system_gb:
+        issues.error(
+            path,
+            "result-gpu-memory",
+            f"'system.gpu_memory_gb' is {size} but {label} is {system_gb}: the GPU's share comes out of system RAM, "
+            "so it can't be larger; check both numbers",
+        )
+
+
 def check_system_memory(path, system, issues):
     """memory_gb, memory_type, and memory_channels are optional; only a wrong value is reported."""
     for old in ("memory", "ram"):
@@ -1040,6 +1154,8 @@ def check_result_file(source, path, run, catalog_by_id, issues, reference_ids=()
         form_factor = str(run.get("form_factor", catalog_form)).lower()
         if form_factor != catalog_form:
             issues.error(path, "result-form-factor", f"form_factor '{form_factor}' does not match catalog value '{catalog_form}'")
+        if isinstance(run.get("system"), dict):
+            check_gpu_memory(path, run["system"], gpu, issues)
 
     if run.get("benchmark_type", "game") not in BENCHMARK_TYPES:
         # Any other value used to skip every game check below and still ship.

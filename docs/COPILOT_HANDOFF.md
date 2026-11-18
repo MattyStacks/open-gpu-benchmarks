@@ -11,10 +11,15 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.18.0.0` (2026-11-17). Versions are now
+- Current version: `v1.19.0.0` (2026-11-17). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.19.0.0: integrated GPU IDs use `shared` in place of `<N>gb`
+    (`<chip>_shared_<oem>_<model>`, `memory.shared: true`, no
+    `capacity_gb`), and igpu/handheld runs may record
+    `system.gpu_memory_gb`, the memory set aside for the GPU (schema
+    0.21 → 0.22, rule `result-gpu-memory`).
   - v1.18.0.0: `README.md` is a short newcomer guide (what it is, how it
     works, the data, contributing) with no version, counts, or dev setup;
     `check_docs_in_sync` keeps it that way, and dev setup and the layout
@@ -302,6 +307,14 @@ Run records carry `memory_gb` and `memory_channels` as numbers or `null` and
 `memory_type` as a string (`""` when missing). Summary `implementations` list
 the same three keys. None of them group runs or are charted. The dashboard's
 run details join them as "64 GB DDR5-6400 dual channel" (`formatMemory()`).
+Integrated GPU and handheld runs may add `system.gpu_memory_gb` (schema
+0.22): the memory set aside for the GPU in the BIOS or driver, in GB (512 MB
+is `0.5`), parsed from text by `checks.memory_size_from_text()`.
+`checks.check_gpu_memory()` (rule `result-gpu-memory`) rejects it on desktop
+and laptop GPUs, on a non-number or 0, and when it's larger than
+`system.memory_gb` (or a handheld's catalog `capacity_gb`). Run records and
+`implementations` carry it as a number or `null`; the dashboard shows "512 MB
+GPU memory" (`formatGpuMemory()`); it never groups runs.
 Cyberpunk's `summary.json` only reports the size, so `import_cyberpunk.py`
 takes `--memory-type` and `--memory-channels`. When either is left out, it
 records `DEFAULT_MEMORY_TYPE` (`DDR5-6000`) or `DEFAULT_MEMORY_CHANNELS` (2)
@@ -353,16 +366,27 @@ product-level:
   - laptop: `<gpu_model>_<vram>gb_<oem>_<model>`, or a temporary `_generic`
     that warns
   - handheld: `<device>_<chip>_<ram>gb`
+  - igpu: `<chip>_shared_<oem>_<model>` (or `_generic`, or Open GPU
+    Benchmarker's `_reference`); `<base>_shared_...` when the chip has a
+    reference file, otherwise the chip named as sold (`radeon_780m`,
+    `iris_xe`, `intel_hd_4000`)
 
   Handheld RAM is soldered, so it is part of the ID. Laptop system RAM is
   upgradeable, so it stays on each run in `system.memory_gb` (a number since
-  schema 0.17).
+  schema 0.17). An integrated GPU has no VRAM, so `shared` replaces the
+  memory token, the file sets `memory.shared: true`, and `capacity_gb` is
+  not allowed (`checks.check_catalog_memory`); `memory.capacity_gb` is
+  therefore absent on igpu entries in `gpus.json`, and their `vram_gb` is
+  null. A run on an igpu or handheld may record the memory set aside for the
+  GPU as `system.gpu_memory_gb` (schema 0.22; a detail, never a grouping
+  key; `result-gpu-memory`).
 - **Vendor field.** `identity.vendor` is renamed to `identity.gpu_vendor`.
   Run records carry `gpu_vendor` instead of `vendor`, and the dashboard
   reads `record.gpu_vendor`.
 - **Required fields.** Only five are required: `id`, `identity.name`,
   `identity.gpu_vendor`, `classification.form_factor`, and
-  `memory.capacity_gb`.
+  `memory.capacity_gb` (an integrated GPU needs `memory.shared: true`
+  instead).
 - **Optional fields.** These are still type-checked and range-checked: quoted
   dates, capacity 1-512 GB, bus width 32-4096 bits, TDP 5-600 W, PSU
   100-2000 W. Unknown

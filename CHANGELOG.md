@@ -32,7 +32,18 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
-## 1.18.0.0 - 2026-11-17
+## 1.19.0.0 - 2026-11-17
+
+Integrated GPUs get an ID rule of their own, and a run can say how much memory an integrated GPU or handheld was set to use.
+
+### Added
+
+- Optional `system.gpu_memory_gb` on integrated GPU and handheld runs: the memory set aside for the GPU in the BIOS or driver (UMA frame buffer, Variable Graphics Memory, a handheld's VRAM setting), in GB (512 MB is `0.5`). It's never a grouping key. It shows in the dashboard's run details ("512 MB GPU memory"), is a new run record key in the API (schema 0.22, `null` when missing), and has an optional "iGPU memory (GB)" field on the Benchmark result issue form. New rule `result-gpu-memory`: an error on desktop and laptop GPUs, on a value that isn't a number of GB above 0, or when it's larger than the system RAM.
+
+### Changed
+
+- Integrated GPU (`igpu`) IDs say `shared` in place of the `<N>gb` memory token: `<chip>_shared_<oem>_<model>` (`arc_140v_shared_lenovo_yoga_slim_7x`, `radeon_780m_shared_minisforum_um790_pro`), with `_generic` (warning) or Open GPU Benchmarker's `_reference` for an unknown model. The product sets `memory.shared: true` and may not set `memory.capacity_gb`, because that would be the system RAM, which goes on each run. With a `base`, the ID starts `<base>_shared_`; without one, the chip is named as sold (`radeon_780m`, `iris_xe`, `intel_hd_4000`). `shared` is an error in desktop, laptop, and handheld IDs. No existing catalog file changes.
+- The dashboard's VRAM column and the blog's review cards show "Shared" for an integrated GPU instead of `—`.
 
 The ZOTAC GAMING GeForce RTX 2080 Ti Blower joins the catalog with 70 official Linux runs, and the README becomes a short guide for newcomers.
 

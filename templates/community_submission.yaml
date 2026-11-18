@@ -50,6 +50,7 @@ system:
   memory_gb: 32 # System RAM in GB, just the number
   memory_type: DDR5-6000 # Type and speed, if you know it
   memory_channels: 2 # 1 single, 2 dual, 4 quad, 8 on some servers
+  # gpu_memory_gb: 4 # Integrated GPUs and handhelds only: memory set aside for the GPU in GB (512 MB is 0.5)
   driver: "561.09"
   graphics_api: DX12 # DX12, DX11, or Vulkan
   # More optional machine fields: power_mode, display_mode, resizable_bar (true or false).

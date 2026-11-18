@@ -33,7 +33,7 @@ silicon:
   rops: 80
   cache_mb: 48                  # L2 (NVIDIA, Intel) or Infinity Cache (AMD)
 memory:
-  capacity_gb: 12                # leave out for APUs; the device sets its RAM
+  capacity_gb: 12                # leave out for APUs and integrated GPUs (set shared: true); the device sets its RAM
   type: GDDR6X
   bus_width_bits: 192
   bandwidth_gbs: 504.2

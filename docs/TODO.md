@@ -86,6 +86,18 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
   sources read give none (Lenovo.com returns 403), so `release` is left out.
 - [ ] **Add the Steam Deck OLED** (`steam_deck_oled_16gb`, 6 nm Sephiroth,
   LPDDR5-6400) when its runs arrive; it's already a test fixture.
+- [ ] **An integrated GPU catalog template.** `templates/` has desktop,
+  laptop, handheld, and reference templates but none for `igpu`
+  (`<chip>_shared_<oem>_<model>`, `memory.shared: true`, no `capacity_gb`).
+  Add `templates/catalog_igpu.yaml` and link it from CONTRIBUTING step 5.
+- [ ] **Reference files for common integrated chips.** Only `arc_130t`,
+  `arc_130v`, `arc_140t`, `arc_140v`, `arc_b370`, `arc_b390`, and
+  `z1_extreme` exist. Add `radeon_780m`, `radeon_890m`, `radeon_8060s`,
+  `iris_xe`, and the like from the vendor pages when the first runs on them
+  arrive; keep the names the README gives so product IDs don't change.
+- [ ] **igpu fixtures and dashboard test.** `tests/fixtures/data/` has no
+  integrated GPU product or run, so the dashboard's "Shared" memory text and
+  the "GPU memory" run detail aren't covered by a Playwright spec yet.
 
 The four-step catalog plan is complete. These items finish it off.
 
@@ -164,6 +176,9 @@ Follow-ups to average-only results and `proof.method` (PR #13).
 - [ ] **Fill in store IDs for the registered games.** `helldivers_2` and
   `3dmark_steel_nomad` have no `steam_appid` or `url` yet. Add them after
   checking each store page; never guess.
+- [ ] **`gpu_memory_gb` in the importers.** `import_cyberpunk.py` and
+  `parse.py` can't write `system.gpu_memory_gb` yet; add a `--gpu-memory`
+  flag (GB, `0.5` for 512 MB) for integrated GPU and handheld runs.
 - [ ] **Parsers for more capture tools (separate PR).** `parse.py` reads only
   PresentMon and MangoHud CSVs. Add CapFrameX, NVIDIA FrameView, MSI
   Afterburner/RTSS, and AMD Adrenalin exports, writing the matching
@@ -446,6 +461,10 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   `scripts/test_build.py`; update that test and re-import together.
 
 ## Recently completed
+
+- **v1.19.0.0 (2026-11-17, branch `feat/igpu-shared-id`): integrated GPU IDs**
+  - `igpu` IDs use `shared` in place of `<N>gb`; optional per-run
+    `system.gpu_memory_gb` for igpu and handheld runs (schema 0.22).
 
 - **v1.18.0.0 (2026-11-17, branch `docs/readme-front-door`): README for newcomers**
   - README trimmed to what the project is, how it works, the data, and

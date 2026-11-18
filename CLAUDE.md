@@ -100,7 +100,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.18.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.19.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -241,6 +241,12 @@ unless repository policy changes.
   All three are optional, a missing one is never reported, and none of them
   group runs or appear on charts. The old `memory`/`ram` keys fail
   `result-system-memory`.
+- An integrated GPU or handheld run may add `system.gpu_memory_gb`: the memory
+  set aside for the GPU in the BIOS or driver (UMA frame buffer, Variable
+  Graphics Memory, a handheld's VRAM setting), a number of GB (512 MB is
+  `0.5`). Optional, never a grouping key, shown in run details and the API.
+  It's an error on desktop and laptop GPUs, and when larger than the system
+  RAM (`result-gpu-memory`).
 - `frame_generation: false` is required for comparable game runs.
 - `avg_fps` is required; `p1_low` is optional (3DMark and in-game benchmarks
   report none) and is `null` in the API when missing. `proof.method` is
@@ -258,14 +264,19 @@ unless repository policy changes.
 - Catalog specs are nested (`identity`, `classification`, `silicon`,
   `memory`, `clocks`, `power`, `release`, `features`). Only five fields are
   required (`id`, `identity.name`, `identity.gpu_vendor`,
-  `classification.form_factor`, `memory.capacity_gb`); quote every date and
+  `classification.form_factor`, `memory.capacity_gb`, or on an integrated
+  GPU `memory.shared: true` instead); quote every date and
   version number so YAML keeps it a string.
 - A result folder's name must exactly equal the `gpu_id` inside its files, and
   that ID must be a catalog file name under `data/gpus/`.
 - Catalog IDs are product-level with one `<N>gb` token equal to
   `memory.capacity_gb`. Different memory sizes and board partners are
   different IDs. Handheld RAM is in the ID; laptop system RAM is recorded per
-  run. The catalog folder is `<form_factor>/<gpu_vendor>`, where
+  run. An integrated GPU (`igpu`) has no VRAM, so its ID says `shared` in
+  place of `<N>gb` (`<chip>_shared_<oem>_<model>`, or `<base>_shared_...`
+  with a reference), it sets `memory.shared: true` and never `capacity_gb`,
+  and `shared` is an error in every other form factor's ID
+  (`checks.memory_token_position`). The catalog folder is `<form_factor>/<gpu_vendor>`, where
   `gpu_vendor` is the GPU chip maker. The field is `identity.gpu_vendor`, not
   `vendor`.
 - `data/gpus/reference/` holds shared chip specs, not products. Products use

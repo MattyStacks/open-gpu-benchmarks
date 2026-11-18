@@ -42,7 +42,8 @@ export type CatalogGpu = {
   id: string;
   identity: { name: string; gpu_vendor: string; board_partner?: string; codename?: string };
   classification: { form_factor: string; architecture?: string };
-  memory: { capacity_gb: number; type?: string; bus_width_bits?: number; bandwidth_gbs?: number };
+  // capacity_gb is absent on integrated GPUs, which set shared: true and use system RAM.
+  memory: { capacity_gb?: number; shared?: boolean; type?: string; bus_width_bits?: number; bandwidth_gbs?: number };
   silicon?: { shader_cores?: number; rt_cores?: number; process?: string };
   clocks?: { base_mhz?: number; boost_mhz?: number };
   power?: { tdp_w?: number };

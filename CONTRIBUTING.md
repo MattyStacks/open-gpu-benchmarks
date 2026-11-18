@@ -348,6 +348,9 @@ Validation only warns if it's missing, but your result can't be compared
 properly without it. Use your laptop model's catalog ID, and add the laptop to
 the catalog first if it isn't there yet. Laptop system RAM goes in
 `system.memory_gb` (a number), not in the ID, because it can usually be upgraded.
+The same goes for an integrated GPU (`<chip>_shared_<oem>_<model>`), which can
+also record the memory set aside for the GPU in the BIOS or driver as
+`system.gpu_memory_gb` (512 MB is `0.5`).
 
 ```yaml
 gpu_id: rtx_4070_laptop_8gb_lenovo_legion_pro_5_gen8
@@ -515,9 +518,11 @@ the `gpu-catalog` Copilot agent, which opens the pull request.
    | desktop  | `<gpu_model>_<vram>gb_<brand>_<product_line>` | `rtx_5060_ti_16gb_msi_ventus_2x` |
    | laptop   | `<gpu_model>_<vram>gb_<oem>_<model>` | `rtx_4070_laptop_8gb_asus_zephyrus_g14_2023` |
    | handheld | `<device>_<chip>_<ram>gb` | `rog_ally_x_z1_extreme_24gb` |
+   | igpu     | `<chip>_shared_<oem>_<model>` | `radeon_780m_shared_minisforum_um790_pro` |
 
    Lowercase, digits, and underscores only. The memory size must match
-   `memory.capacity_gb`.
+   `memory.capacity_gb`. An integrated GPU has no VRAM, so its ID says `shared`
+   instead, and its file sets `memory.shared: true` with no `capacity_gb`.
 4. **Find the reference file.** Look in `data/gpus/reference/<gpu_vendor>/`
    for your GPU's shared specs, such as `rtx_5060_ti_16gb.yaml` or
    `z1_extreme.yaml`. If it's there, set `base:` to its file name and only
@@ -534,7 +539,7 @@ the `gpu-catalog` Copilot agent, which opens the pull request.
    [catalog_handheld.yaml](templates/catalog_handheld.yaml).
 6. **Fill in what you know.** Only five fields are required: `id`,
    `identity.name`, `identity.gpu_vendor`, `classification.form_factor`, and
-   `memory.capacity_gb`. A product can inherit any of them from its `base`.
+   `memory.capacity_gb` (`memory.shared: true` on an integrated GPU). A product can inherit any of them from its `base`.
    Delete optional lines you can't find; the dashboard shows `—` for them.
    Quote dates (`'2024-01-17'`) and version numbers (`'3.1'`).
    - Desktop cards: add `identity.board_partner` (`MSI`, `ASUS`, ...).

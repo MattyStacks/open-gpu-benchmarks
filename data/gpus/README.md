@@ -67,14 +67,16 @@ against them.
 ## Picking the ID
 
 IDs are lowercase letters, digits, and single underscores. Every ID has exactly
-one memory token such as `16gb`, and it must equal `memory.capacity_gb`.
+one memory token such as `16gb`, and it must equal `memory.capacity_gb`. The
+one exception is an integrated GPU, which has no VRAM of its own: its ID says
+`shared` in that place (see **Integrated GPU memory** below).
 
 | Form factor | Pattern                                         | Examples |
 | ----------- | ----------------------------------------------- | -------- |
 | desktop     | `<gpu_model>_<vram>gb_<brand>_<product_line>`   | `rtx_5060_ti_8gb_msi_ventus_2x_oc`, `rtx_5060_ti_16gb_asus_tuf_gaming`, `rtx_5080_16gb_fe` |
 | laptop      | `<gpu_model>_<vram>gb_<oem>_<model>`            | `rtx_4070_laptop_8gb_asus_zephyrus_g14_2023`, `rtx_4070_laptop_8gb_generic` |
 | handheld    | `<device>_<chip>_<ram>gb`                       | `rog_ally_z1_extreme_16gb`, `rog_ally_x_z1_extreme_24gb`, `steam_deck_oled_16gb` |
-| igpu        | `<chip>_<ram>gb_...`                            | not yet defined in detail |
+| igpu        | `<chip>_shared_<oem>_<model>`                   | `arc_140v_shared_lenovo_yoga_slim_7x`, `radeon_780m_shared_minisforum_um790_pro`, `radeon_780m_shared_generic` |
 
 Rules for each part:
 
@@ -99,10 +101,34 @@ Rules for each part:
 - **Laptop RAM.** Laptop system RAM can usually be upgraded, so it is **not** in
   the ID. Record it on each run as `system.memory_gb`, a number of GB. The VRAM
   size is in the ID.
-- **`_generic` (laptops only, temporary).** When the laptop model is unknown, use
-  `generic` in place of `<oem>_<model>`, for example
-  `rtx_4070_laptop_8gb_generic`. The checks show a warning for each one. Replace
-  it with a named model whenever you know it.
+- **Integrated GPU memory.** An integrated GPU (`igpu`: Intel Arc 140V or Iris
+  Xe, Radeon 780M, a Ryzen Z1 Extreme in a laptop or mini PC) has no VRAM. It
+  borrows system RAM, so there is no honest size for the ID, and the system
+  RAM would split one laptop into a product per RAM upgrade. Its ID says
+  `shared` where the memory token goes, the file sets `memory.shared: true`, and
+  it has no `memory.capacity_gb`. Each run records the system RAM as
+  `system.memory_gb`, and, when known, how much was set aside for the GPU (the
+  BIOS or driver setting) as `system.gpu_memory_gb`.
+- **Integrated chip names.** When the chip has a reference file (`arc_140v`,
+  `arc_130t`, `z1_extreme`), set `base:` to it and start the ID with
+  `<base>_shared_`. Most integrated chips have no reference file yet. Then
+  leave out `base:` and name the chip as it's sold, without the company:
+  `iris_xe`, `uhd_620`, `iris_plus_655`, `radeon_780m`, `radeon_890m`,
+  `radeon_8060s`, `radeon_vega_8`. Intel's older HD Graphics are
+  `intel_hd_4000`, because `hd_` is AMD's Radeon HD (`hd_7790`). A reference
+  added later for the chip uses the same name
+  (`data/gpus/reference/amd/radeon_780m.yaml`, with `memory.shared: true`), so
+  the IDs don't change.
+- **`_generic` (laptops and integrated GPUs, temporary).** When the device
+  model is unknown, use `generic` in place of `<oem>_<model>`, for example
+  `rtx_4070_laptop_8gb_generic` or `radeon_780m_shared_generic`. The checks
+  show a warning for each one. Replace it with a named model whenever you know
+  it.
+- **`_reference` from Open GPU Benchmarker.** The benchmark app submits
+  `<gpu_model>_<vram>gb_reference` for a laptop and `<chip>_shared_reference`
+  for an integrated GPU (`arc_130t_shared_reference` with `base: arc_130t`,
+  `radeon_780m_shared_reference` with no base) when it can't tell the model.
+  Both pass the checks.
 
 ### Which ID do I use?
 
@@ -114,11 +140,16 @@ Rules for each part:
    `lenovo_legion_pro_5_gen8`.
 4. Handheld: write the device name, the chip if the device came with more than
    one, and the RAM size: `legion_go_s_z2_go_16gb`.
-5. Name the file `<id>.yaml` and put it in `<form_factor>/<gpu_vendor>/`.
+5. Integrated GPU: write the chip (its reference ID, or its name as sold),
+   then `_shared_`, then the maker and the model of the laptop or mini PC:
+   `radeon_780m_shared_minisforum_um790_pro`. Set `memory.shared: true` and
+   leave out `memory.capacity_gb`.
+6. Name the file `<id>.yaml` and put it in `<form_factor>/<gpu_vendor>/`.
 
 ## What goes in a file
 
-Only five fields are required. Add everything else you can find, and leave the
+Only five fields are required (an integrated GPU swaps `memory.capacity_gb`
+for `memory.shared: true`). Add everything else you can find, and leave the
 rest out. The dashboard shows `—` for anything missing.
 
 | Required field                 | Example                     |
@@ -503,12 +534,12 @@ sources.
 | `silicon`        | `die_size_mm2`, `transistors_b`, `shader_cores`, `rt_cores`, `tmus`, `rops` | number | `rt_cores` also holds AMD ray accelerators and Intel ray tracing units. |
 | `silicon`        | `tensor_cores`    | number                       | NVIDIA tensor cores, AMD AI accelerators, or Intel XMX engines. |
 | `silicon`        | `cache_mb`        | number                       | The last-level cache: L2 on NVIDIA and Intel, Infinity Cache on AMD. |
-| `memory`         | `capacity_gb`     | number, 1-512                | Required. Must match the ID's `<N>gb`. |
+| `memory`         | `capacity_gb`     | number, 1-512                | Required, except on an integrated GPU (not allowed there). Must match the ID's `<N>gb`. |
 | `memory`         | `type`            | text                         | Such as `GDDR6X` or `LPDDR5X`. |
 | `memory`         | `bus_width_bits`  | number, 32-4096              | HBM cards use 2048 or 4096 bits. |
 | `memory`         | `bandwidth_gbs`   | number                       | |
 | `memory`         | `speed_gbps`      | number                       | Effective memory speed per pin, such as `20` for 20 Gbps GDDR6. |
-| `memory`         | `shared`          | `true` or `false`            | `true` when the GPU uses system RAM (handhelds, iGPUs). |
+| `memory`         | `shared`          | `true` or `false`            | `true` when the GPU uses system RAM (handhelds, iGPUs). Required `true` on an integrated GPU. |
 | `clocks`         | `base_mhz`, `boost_mhz`, `mem_mhz` | number      | Laptop references give the top of the vendor's boost range. |
 | `clocks`         | `game_mhz`        | number                       | The typical clock while gaming: AMD's game frequency, Intel's graphics clock. |
 | `power`          | `tdp_w`           | number, 5-600                | Board power, or the top of the power range for laptops and handhelds. |
@@ -619,7 +650,9 @@ an ID that tells the two apart.
 The ID has uppercase letters, spaces, dashes, or double underscores, or it
 doesn't follow the pattern for its form factor. Desktop and laptop IDs need a
 model before the memory token and a board or device after it. Handheld IDs end
-with the memory token. See [Picking the ID](#picking-the-id).
+with the memory token. Integrated GPU IDs need the chip before `shared` and the
+device (or `generic`, or `reference`) after it. See
+[Picking the ID](#picking-the-id).
 
 #### `id-memory-token`
 
@@ -628,13 +661,21 @@ A product ID needs exactly one memory token, such as `16gb`, and it must equal
 memory size is a different product, so it gets its own file. A reference ID
 may have no memory token (`z1_extreme`), but no more than one.
 
+An integrated GPU (`igpu`) is the exception. It has no VRAM, and its system
+RAM changes with each configuration, so its ID has `shared` exactly once in
+place of the memory token, and no `<N>gb`:
+`radeon_780m_shared_minisforum_um790_pro`. Every other form factor names its
+memory size and may not use `shared`: a discrete GPU has its own VRAM, and a
+handheld's RAM is soldered.
+
 #### `id-generic`
 
-As an **error**: `generic` was used on a non-laptop entry, or it doesn't replace
-the whole `<oem>_<model>` part. Only laptops may use it, as
-`<gpu_model>_<vram>gb_generic`.
+As an **error**: `generic` was used on a desktop or handheld entry, or it
+doesn't replace the whole `<oem>_<model>` part. Only laptops and integrated
+GPUs may use it, as `<gpu_model>_<vram>gb_generic` or `<chip>_shared_generic`.
 
-As a **warning**: this laptop entry is a placeholder for an unknown model.
+As a **warning**: this laptop or integrated GPU entry is a placeholder for an
+unknown model.
 That's allowed for now. Rename it to the real laptop model when you know it, and
 move its result folders to match.
 
@@ -642,6 +683,8 @@ move its result folders to match.
 
 One of the five required fields is missing: `id`, `identity.name`,
 `identity.gpu_vendor`, `classification.form_factor`, or `memory.capacity_gb`.
+An integrated GPU needs `memory.shared: true` instead of `memory.capacity_gb`,
+which may come from its `base`.
 
 #### `field-renamed`
 
@@ -688,7 +731,8 @@ the units.
 
 A section is on the wrong kind of product. `platform` is only for handhelds and
 laptops. `identity.board_partner` is only for desktop cards. A device's maker
-goes in `platform.oem`.
+goes in `platform.oem`. An integrated GPU has no `memory.capacity_gb`: it would
+be the system RAM, which goes on each run as `system.memory_gb`.
 
 #### `reference-field`
 
@@ -745,7 +789,9 @@ holds only what the board changes.
 #### `base-id`
 
 A desktop or laptop product's ID must start with its `base` ID and an
-underscore: `arc_a310_4gb_sparkle_eco` builds on `arc_a310_4gb`. Either the
+underscore: `arc_a310_4gb_sparkle_eco` builds on `arc_a310_4gb`. An integrated
+GPU's ID starts with its `base` and `_shared_`:
+`arc_140v_shared_lenovo_yoga_slim_7x` builds on `arc_140v`. Either the
 `base` names the wrong reference or the ID names the wrong GPU. Handhelds are
 named after the device and don't need it.
 

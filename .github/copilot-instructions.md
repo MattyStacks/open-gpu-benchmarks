@@ -113,6 +113,12 @@ next PR. Never open a second PR next to an unmerged one.
   All three are optional, a missing one is never reported, and none of them
   group runs or appear on charts. The old `memory`/`ram` keys fail
   `result-system-memory`.
+- An integrated GPU or handheld run may add `system.gpu_memory_gb`: the memory
+  set aside for the GPU in the BIOS or driver (UMA frame buffer, Variable
+  Graphics Memory, a handheld's VRAM setting), a number of GB (512 MB is
+  `0.5`). Optional, never a grouping key, shown in run details and the API.
+  It's an error on desktop and laptop GPUs, and when larger than the system
+  RAM (`result-gpu-memory`).
 - Frame generation must be disabled for comparable benchmark runs.
 - `avg_fps` is required on every result entry; `p1_low` is optional (3DMark
   and in-game benchmarks report none) and is `null` in the API when missing.
@@ -176,10 +182,17 @@ next PR. Never open a second PR next to an unmerged one.
   the vendor's own card), laptop `<gpu_model>_<vram>gb_<oem>_<model>` (temporary
   `_generic` allowed with a warning), handheld `<device>_<chip>_<ram>gb`.
   Handheld RAM is in the ID (soldered); laptop system RAM is recorded per run.
+  An integrated GPU (`igpu`) has no VRAM: its ID says `shared` instead of
+  `<N>gb` (`<chip>_shared_<oem>_<model>`, `_generic` allowed with a warning),
+  it sets `memory.shared: true` and has no `capacity_gb`, and with a `base`
+  it starts `<base>_shared_`. Without a reference the chip is named as sold,
+  without the company (`radeon_780m`, `iris_xe`, `intel_hd_4000`). `shared`
+  is an error in any other form factor's ID.
 - Catalog specs are nested (`identity`, `classification`, `silicon`, `memory`,
   `clocks`, `power`, `release`, `features`). Only `id`, `identity.name`,
   `identity.gpu_vendor`, `classification.form_factor`, and
-  `memory.capacity_gb` are required; unknown fields are rejected. Quote every
+  `memory.capacity_gb` (`memory.shared: true` instead on an integrated GPU)
+  are required; unknown fields are rejected. Quote every
   date and version number.
 - Data and templates use block-style YAML only: no inline `[ ]` or `{ }`.
 - Shared chip specs live in `data/gpus/reference/<gpu_vendor>/<ref_id>.yaml`.

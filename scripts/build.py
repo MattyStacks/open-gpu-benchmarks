@@ -25,12 +25,12 @@ from checks import DATA_DIR, ROOT, relative_path, spec
 
 SITE_DIR = ROOT / "site"
 OUTPUT_DIR = SITE_DIR / "api" / "v1"
-SCHEMA_VERSION = "0.21"
+SCHEMA_VERSION = "0.22"
 # MAJOR.MINOR.DATA.POST: MAJOR = breaking data contract or API, MINOR = any
 # code change, DATA = newly published runs or catalog GPUs, POST = a new or
 # updated blog post.
 # A bump resets the parts to its right; all four parts are always written.
-RELEASE_VERSION = "1.18.0.0"
+RELEASE_VERSION = "1.19.0.0"
 # The canonical origin. Every host (Cloudflare, GitHub Pages, pages.dev) points
 # search engines here; index.html and robots.txt repeat it, and test_build.py
 # checks they agree.
@@ -69,6 +69,7 @@ IMPLEMENTATION_FIELDS = (
     "memory_gb",
     "memory_type",
     "memory_channels",
+    "gpu_memory_gb",
     "power_mode",
     "display_mode",
     "driver",
@@ -185,6 +186,8 @@ def build_record(run, result, result_index, source, source_path, gpu_by_id, game
         "memory_gb": system.get("memory_gb") if checks.is_number(system.get("memory_gb")) else None,
         "memory_type": str(system.get("memory_type") or ""),
         "memory_channels": system.get("memory_channels") if checks.is_number(system.get("memory_channels")) else None,
+        # The memory an integrated GPU or handheld was set to use (igpu/handheld only); not a grouping key.
+        "gpu_memory_gb": system.get("gpu_memory_gb") if checks.is_number(system.get("gpu_memory_gb")) else None,
         "power_mode": str(system.get("power_mode", system.get("tdp_mode", ""))),
         # A result item may carry its own display_mode when it changed between runs.
         "display_mode": str(result.get("display_mode", system.get("display_mode", ""))),

@@ -74,6 +74,7 @@ FIELDS = {
     "Memory (GB)": "memory_gb",
     "Memory type": "memory_type",
     "Memory channels": "memory_channels",
+    "iGPU memory (GB)": "gpu_memory_gb",
     "GPU driver": "driver",
     "OS version": "os_detail",
     "Graphics API": "graphics_api",
@@ -370,6 +371,16 @@ def memory_fields(fields, system):
         if not 1 <= count <= checks.MAX_MEMORY_CHANNELS:
             raise SubmissionError(f"**Memory channels** must be a whole number such as `2` (dual channel), not {code(channels)}.")
         system["memory_channels"] = count
+    # Integrated GPUs and handhelds: the memory set aside for the GPU. The checks
+    # reject it on a desktop or laptop GPU, so the reply explains that case.
+    gpu_size = text_field(fields, "gpu_memory_gb", "iGPU memory (GB)")
+    if gpu_size:
+        gpu_memory_gb = checks.memory_size_from_text(gpu_size)
+        if not gpu_memory_gb or gpu_memory_gb > checks.MAX_MEMORY_GB:
+            raise SubmissionError(
+                f"**iGPU memory (GB)** must be a number of GB such as `4`, or `512 MB`, not {code(gpu_size)}."
+            )
+        system["gpu_memory_gb"] = gpu_memory_gb
 
 
 # --- Attached or pasted result files -------------------------------------------------

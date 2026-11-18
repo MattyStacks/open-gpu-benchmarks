@@ -535,6 +535,22 @@ system:
 and `memory_type` is text (`""` when missing). The old free-text `memory:` key
 is now `memory_gb`.
 
+An integrated GPU or a handheld has no VRAM of its own: it borrows system RAM.
+If you set how much it may use (the BIOS "UMA frame buffer", AMD's "Variable
+Graphics Memory", a handheld's VRAM setting) or know the default it ran with,
+add `gpu_memory_gb`. It's a number of GB, so 512 MB is `0.5`:
+
+```yaml
+system:
+  memory_gb: 32          # all the system RAM
+  gpu_memory_gb: 4       # the part set aside for the integrated GPU
+```
+
+It's optional and, like the fields above, never groups runs or appears on the
+charts; it shows in the run details and the API (`null` when missing). Desktop
+and laptop graphics cards don't use it, because their memory is the VRAM size
+in the catalog ID ([`result-gpu-memory`](#result-gpu-memory)).
+
 ### Test benches (official runs only)
 
 The maintainer tests desktop GPUs on more than one system, so a reader can see
@@ -906,7 +922,7 @@ See [Operating system](#operating-system) for the fields.
 
 Warning only. A key under `system:` isn't a known field. Check the spelling
 against [Operating system](#operating-system) and the template. The known
-machine fields are `cpu`, `memory_gb`, `memory_type`, `memory_channels`,
+machine fields are `cpu`, `memory_gb`, `memory_type`, `memory_channels`, `gpu_memory_gb`,
 `power_mode`, `display_mode`, `driver`, `device_name`, and `gpu_power_w`.
 `display_mode` may also go on a single `result` item, when it differs between
 the profiles in one file; the item's value wins.
@@ -925,6 +941,21 @@ one out is never reported. One of these happened:
 - `memory_type` is a number instead of text.
 - Warning only: `memory_type` doesn't look like `DDR5-6400` or `LPDDR5X-7500`,
   which is the type, a dash, and the speed in MT/s.
+
+See [System memory](#system-memory).
+
+#### `result-gpu-memory`
+
+`system.gpu_memory_gb`, the memory an integrated GPU or handheld was set to
+use, is wrong. One of these happened:
+
+- The GPU is a desktop or laptop graphics card. Its memory is its own VRAM,
+  already fixed by the catalog ID, so remove the field.
+- It isn't a number of GB above 0. Write `gpu_memory_gb: 0.5` for 512 MB, not
+  `512 MB`.
+- It's larger than the system RAM (`system.memory_gb`, or for a handheld with
+  no `memory_gb`, the RAM size in its catalog ID). The GPU's share comes out of
+  system RAM, so check both numbers.
 
 See [System memory](#system-memory).
 

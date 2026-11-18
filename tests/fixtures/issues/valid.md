@@ -63,6 +63,10 @@ DDR5-6000
 
 dual
 
+### iGPU memory (GB)
+
+_No response_
+
 ### GPU driver
 
 551.23

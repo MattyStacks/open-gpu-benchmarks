@@ -48,3 +48,29 @@ test("the theme toggle flips the theme, remembers it, and recolors the favicon @
   await expect(page.locator("#build-version")).not.toHaveText(/Loading/);
   expect(await page.evaluate(() => document.documentElement.dataset.theme), "the choice survives a reload").toBe(after);
 });
+
+test("swapping in the recolored favicon mid-load isn't reported as a failed request", async ({ page }) => {
+  // Regression for a flake seen 2026-11-22: syncFavicon() replaces the <link id="favicon"> href while
+  // the browser is still loading favicons/favicon.svg, so Chromium cancels that load (net::ERR_ABORTED).
+  // Hold the link's load (never syncFavicon()'s own fetch) until the swap, so the race happens every run.
+  let swapped: () => void;
+  const swap = new Promise<void>((resolve) => { swapped = resolve; });
+  await page.route("**/favicons/favicon.svg", async (route) => {
+    if (route.request().resourceType() !== "fetch") await Promise.race([swap, new Promise((r) => setTimeout(r, 5_000))]);
+    await route.fallback().catch(() => { /* the browser already cancelled it */ });
+  });
+  await openDashboard(page);
+  await expect(page.locator("#favicon")).toHaveAttribute("href", /^data:image\/svg\+xml,/);
+  swapped!();
+  // Let the cancelled load report back before the afterEach checks the collected problems.
+  await page.waitForTimeout(500);
+});
+
+test("a missing favicon is still reported", async ({ page, problems }, testInfo) => {
+  // The rule above forgives a cancelled favicon load, never a broken one.
+  testInfo.annotations.push({ type: "expected-errors", description: "the 404 below is the point of the test" });
+  await page.route("**/favicons/favicon.svg", (route) => route.fulfill({ status: 404, body: "gone" }));
+  await openDashboard(page);
+  await expect.poll(() => problems.list.join("\n"), "a favicon 404 must fail the test like any other broken asset")
+    .toMatch(/HTTP 404 for .*\/favicons\/favicon\.svg/);
+});

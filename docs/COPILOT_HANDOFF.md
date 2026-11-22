@@ -11,11 +11,11 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.19.1.0` (2026-11-22). Versions are now
+- Current version: `v1.20.0.0` (2026-11-22). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
-  - v1.19.1.0: 121 official Windows runs on the RTX 2080 Ti
+  - v1.20.0.0: 121 official Windows runs on the RTX 2080 Ti
     (`am5_9800x3d_ddr5`, NVIDIA 621.01): 45 Black Myth: Wukong Benchmark
     Tool runs (new game `black_myth_wukong_benchmark_tool`; native TSR 100
     plus DLSS Quality and FSR 3 Quality, recorded like Cyberpunk's preset
@@ -23,7 +23,11 @@
     20 OpenBenchmarker Neon Flythrough runs (`_2`, beside the Linux file).
     They were staged on the maintainer's NAS (`\\NAS\benchmarks`,
     `COMMIT_STEPS.md`) by the benchmarking PC and copied in unchanged
-    apart from CRLF → LF.
+    apart from CRLF → LF. The browser tests now also open the published
+    data: `serve_fixtures.py` builds `data/` into `tests/e2e/.site/real`,
+    and `real_data.spec.ts` visits every real game and resolution and
+    expands every row. The problems collector forgives a favicon load that
+    `syncFavicon()` cancels (`net::ERR_ABORTED`), never a missing favicon.
   - v1.19.0.0: integrated GPU IDs use `shared` in place of `<N>gb`
     (`<chip>_shared_<oem>_<model>`, `memory.shared: true`, no
     `capacity_gb`), and igpu/handheld runs may record
@@ -702,7 +706,13 @@ not later in CI.
   detail rows (system RAM, credits, Anonymous), the chart, the comparison,
   empty and error states, picks, the theme toggle, page overflow at phone
   width (the 1.2.0.0 bug), pure dashboard functions, and the
-  `benchmarks/`, `license/`, and blog pages.
+  `benchmarks/`, `license/`, and blog pages. `serve_fixtures.py` also builds
+  the published `data/` into `.site/real`, and `real_data.spec.ts` opens it
+  at every game and resolution and expands every row (in-page clicks, so it
+  stays ~10 s), so a data batch can't ship a view that throws or draws
+  nothing. The collector in `helpers.ts` forgives only a favicon load
+  cancelled by `syncFavicon()`'s href swap (`net::ERR_ABORTED`); a missing
+  favicon still fails (`states.spec.ts` tests both).
 
 ### CI
 
@@ -716,7 +726,7 @@ every pull request as six jobs, so the PR shows which part failed:
   `test_build.py`, `git diff --check`)
 - **Blog**: `build.py`, then `npm --prefix blog ci` and `npm --prefix blog run build` (Node 22)
 - **Dashboard (browser)**: the Playwright suite in `tests/e2e/`, against the
-  fixtures (`npm --prefix tests/e2e test`); the HTML report is uploaded on failure.
+  fixtures and, in `real_data.spec.ts`, the published data (`npm --prefix tests/e2e test`); the HTML report is uploaded on failure.
   It runs in Microsoft's `mcr.microsoft.com/playwright:v1.64.1-noble` image,
   which already has Chromium and its system libraries, so there's no
   `playwright install --with-deps` step (that took about 3 minutes of a 3¼

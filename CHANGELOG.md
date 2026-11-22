@@ -32,6 +32,17 @@ per GPU. A post gets "New post: `<title>`". Earlier releases used three parts.
 
 ## Unreleased
 
+## 1.19.1.0 - 2026-11-22
+
+The RTX 2080 Ti gets 121 official runs on Windows from the 9800X3D bench, and Black Myth: Wukong Benchmark Tool joins the game registry.
+
+### Added
+
+- Game: Black Myth: Wukong Benchmark Tool (`black_myth_wukong_benchmark_tool`, Steam app 3132990), the free standalone benchmark.
+- 45 official Black Myth: Wukong Benchmark Tool runs on the RTX 2080 Ti (`am5_9800x3d_ddr5` bench, Windows 11, NVIDIA 621.01): 1080p, 1440p, and 4K at Low to Cinematic, each natively (TSR at 100) and with DLSS Quality and FSR 3 Quality, captured with PresentMon. Full ray tracing is off.
+- 56 official Cyberpunk 2077 built-in benchmark runs on the RTX 2080 Ti under Windows (same bench and driver) at 1080p, 1440p, and 4K: every preset with its default upscaler, and natively.
+- 20 official OpenBenchmarker Neon Flythrough runs on the RTX 2080 Ti under Windows (Brave): 720p to 4K at Low to Extreme.
+
 ## 1.19.0.0 - 2026-11-17
 
 Integrated GPUs get an ID rule of their own, and a run can say how much memory an integrated GPU or handheld was set to use.

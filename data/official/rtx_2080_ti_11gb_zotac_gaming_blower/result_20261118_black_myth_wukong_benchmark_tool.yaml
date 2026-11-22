@@ -1,0 +1,535 @@
+# Black Myth: Wukong Benchmark Tool (Steam app 3132990), built-in benchmark scene, Windows 11.
+# avg_fps, p1_low (average of the worst 1% of frames), duration and frame_count are from PresentMon 2.6.0,
+# cut to the ~144 s benchmark pass; p5_low, min_fps and max_fps are the game's own results screen.
+# Native = TSR at Super Resolution 100. DLSS/FSR runs use the game's Quality value (Super Resolution 66).
+# Frame generation off, Full Ray Tracing off, V-Sync off, frame cap off, borderless.
+gpu_id: rtx_2080_ti_11gb_zotac_gaming_blower
+testbench_id: am5_9800x3d_ddr5
+benchmark_type: game
+game_id: black_myth_wukong_benchmark_tool
+date: '2026-11-18'
+version: '1.0.3.14649'
+frame_generation: false
+overclocked: false
+result:
+  - resolution: 4K
+    time: '11:20'
+    graphics_preset: Low
+    avg_fps: 33.5
+    p1_low: 28.5
+    p5_low: 30
+    min_fps: 28
+    max_fps: 37
+    duration: 143.9
+    frame_count: 4817
+  - resolution: 4K
+    time: '11:32'
+    graphics_preset: Medium
+    avg_fps: 27.3
+    p1_low: 20.3
+    p5_low: 24
+    min_fps: 15
+    max_fps: 31
+    duration: 144
+    frame_count: 3926
+  - resolution: 4K
+    time: '11:37'
+    graphics_preset: High
+    avg_fps: 20.2
+    p1_low: 14.9
+    p5_low: 18
+    min_fps: 12
+    max_fps: 23
+    duration: 144
+    frame_count: 2911
+  - resolution: 4K
+    time: '11:41'
+    graphics_preset: Very High
+    avg_fps: 14.4
+    p1_low: 10.9
+    p5_low: 13
+    min_fps: 10
+    max_fps: 17
+    duration: 144
+    frame_count: 2069
+  - resolution: 4K
+    time: '11:46'
+    graphics_preset: Cinematic
+    avg_fps: 13.2
+    p1_low: 10.2
+    p5_low: 12
+    min_fps: 10
+    max_fps: 15
+    duration: 144
+    frame_count: 1899
+  - resolution: 1440p
+    time: '12:22'
+    graphics_preset: Low
+    avg_fps: 59.3
+    p1_low: 51
+    p5_low: 54
+    min_fps: 52
+    max_fps: 67
+    duration: 144
+    frame_count: 8541
+  - resolution: 1440p
+    time: '12:27'
+    graphics_preset: Medium
+    avg_fps: 46.7
+    p1_low: 39.2
+    p5_low: 41
+    min_fps: 39
+    max_fps: 53
+    duration: 144
+    frame_count: 6730
+  - resolution: 1440p
+    time: '12:31'
+    graphics_preset: High
+    avg_fps: 36.4
+    p1_low: 30.6
+    p5_low: 33
+    min_fps: 30
+    max_fps: 41
+    duration: 144
+    frame_count: 5243
+  - resolution: 1440p
+    time: '12:36'
+    graphics_preset: Very High
+    avg_fps: 24.5
+    p1_low: 20.3
+    p5_low: 22
+    min_fps: 20
+    max_fps: 28
+    duration: 144
+    frame_count: 3524
+  - resolution: 1440p
+    time: '12:41'
+    graphics_preset: Cinematic
+    avg_fps: 21.8
+    p1_low: 18.6
+    p5_low: 19
+    min_fps: 18
+    max_fps: 25
+    duration: 144
+    frame_count: 3143
+  - resolution: 1080p
+    time: '13:05'
+    graphics_preset: Cinematic
+    avg_fps: 28.5
+    p1_low: 24.1
+    p5_low: 25
+    min_fps: 24
+    max_fps: 33
+    duration: 144
+    frame_count: 4107
+  - resolution: 1080p
+    time: '13:09'
+    graphics_preset: Very High
+    avg_fps: 32.8
+    p1_low: 27.9
+    p5_low: 29
+    min_fps: 28
+    max_fps: 37
+    duration: 144
+    frame_count: 4719
+  - resolution: 1080p
+    time: '13:14'
+    graphics_preset: High
+    avg_fps: 49.8
+    p1_low: 42.4
+    p5_low: 44
+    min_fps: 42
+    max_fps: 57
+    duration: 144
+    frame_count: 7172
+  - resolution: 1080p
+    time: '13:19'
+    graphics_preset: Medium
+    avg_fps: 65.3
+    p1_low: 52.8
+    p5_low: 57
+    min_fps: 53
+    max_fps: 76
+    duration: 144
+    frame_count: 9403
+  - resolution: 1080p
+    time: '13:24'
+    graphics_preset: Low
+    avg_fps: 86.1
+    p1_low: 71.5
+    p5_low: 78
+    min_fps: 73
+    max_fps: 97
+    duration: 143.9
+    frame_count: 12399
+  - resolution: 1080p
+    time: '14:11'
+    graphics_preset: Low
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 120.2
+    p1_low: 95.9
+    p5_low: 110
+    min_fps: 94
+    max_fps: 141
+    duration: 144
+    frame_count: 17310
+  - resolution: 1080p
+    time: '15:57'
+    graphics_preset: Medium
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 89.8
+    p1_low: 69.6
+    p5_low: 80
+    min_fps: 76
+    max_fps: 101
+    duration: 144
+    frame_count: 12929
+  - resolution: 1080p
+    time: '16:06'
+    graphics_preset: High
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 72.7
+    p1_low: 59.6
+    p5_low: 65
+    min_fps: 60
+    max_fps: 84
+    duration: 144
+    frame_count: 10466
+  - resolution: 1080p
+    time: '16:11'
+    graphics_preset: Very High
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 44.2
+    p1_low: 36.9
+    p5_low: 39
+    min_fps: 37
+    max_fps: 52
+    duration: 144
+    frame_count: 6361
+  - resolution: 1080p
+    time: '16:16'
+    graphics_preset: Cinematic
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 37.5
+    p1_low: 30.9
+    p5_low: 33
+    min_fps: 32
+    max_fps: 43
+    duration: 144
+    frame_count: 5404
+  - resolution: 1440p
+    time: '16:21'
+    graphics_preset: Cinematic
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 32
+    p1_low: 26.4
+    p5_low: 28
+    min_fps: 27
+    max_fps: 37
+    duration: 144
+    frame_count: 4603
+  - resolution: 1440p
+    time: '16:25'
+    graphics_preset: Very High
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 36.8
+    p1_low: 31.6
+    p5_low: 33
+    min_fps: 31
+    max_fps: 42
+    duration: 144
+    frame_count: 5297
+  - resolution: 1440p
+    time: '16:30'
+    graphics_preset: High
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 56
+    p1_low: 46.7
+    p5_low: 50
+    min_fps: 47
+    max_fps: 65
+    duration: 144
+    frame_count: 8069
+  - resolution: 1440p
+    time: '16:35'
+    graphics_preset: Medium
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 69.8
+    p1_low: 55.2
+    p5_low: 61
+    min_fps: 56
+    max_fps: 80
+    duration: 144
+    frame_count: 10052
+  - resolution: 1440p
+    time: '16:39'
+    graphics_preset: Low
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 91.8
+    p1_low: 76.3
+    p5_low: 84
+    min_fps: 77
+    max_fps: 105
+    duration: 144
+    frame_count: 13225
+  - resolution: 4K
+    time: '16:44'
+    graphics_preset: Low
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 55
+    p1_low: 47.1
+    p5_low: 50
+    min_fps: 48
+    max_fps: 63
+    duration: 143.9
+    frame_count: 7921
+  - resolution: 4K
+    time: '16:49'
+    graphics_preset: Medium
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 44.7
+    p1_low: 37.7
+    p5_low: 39
+    min_fps: 37
+    max_fps: 51
+    duration: 144
+    frame_count: 6431
+  - resolution: 4K
+    time: '16:54'
+    graphics_preset: High
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 37
+    p1_low: 31.3
+    p5_low: 33
+    min_fps: 31
+    max_fps: 42
+    duration: 144
+    frame_count: 5330
+  - resolution: 4K
+    time: '16:58'
+    graphics_preset: Very High
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 25
+    p1_low: 20.4
+    p5_low: 22
+    min_fps: 20
+    max_fps: 29
+    duration: 144
+    frame_count: 3601
+  - resolution: 4K
+    time: '17:03'
+    graphics_preset: Cinematic
+    upscaling: DLSS Quality
+    preset_upscaling: true
+    avg_fps: 22.4
+    p1_low: 18.9
+    p5_low: 20
+    min_fps: 18
+    max_fps: 25
+    duration: 144
+    frame_count: 3223
+  - resolution: 4K
+    time: '17:08'
+    graphics_preset: Cinematic
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 21.9
+    p1_low: 18.4
+    p5_low: 20
+    min_fps: 18
+    max_fps: 25
+    duration: 144
+    frame_count: 3157
+  - resolution: 4K
+    time: '17:13'
+    graphics_preset: Very High
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 24.6
+    p1_low: 20.7
+    p5_low: 22
+    min_fps: 20
+    max_fps: 28
+    duration: 144
+    frame_count: 3537
+  - resolution: 4K
+    time: '17:17'
+    graphics_preset: High
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 35.9
+    p1_low: 30.6
+    p5_low: 32
+    min_fps: 30
+    max_fps: 40
+    duration: 144
+    frame_count: 5167
+  - resolution: 4K
+    time: '17:22'
+    graphics_preset: Medium
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 44.1
+    p1_low: 37.3
+    p5_low: 39
+    min_fps: 37
+    max_fps: 50
+    duration: 144
+    frame_count: 6352
+  - resolution: 4K
+    time: '17:27'
+    graphics_preset: Low
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 54.6
+    p1_low: 47.2
+    p5_low: 50
+    min_fps: 48
+    max_fps: 62
+    duration: 144
+    frame_count: 7865
+  - resolution: 1440p
+    time: '17:39'
+    graphics_preset: Low
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 91.6
+    p1_low: 75.4
+    p5_low: 84
+    min_fps: 79
+    max_fps: 106
+    duration: 144
+    frame_count: 13184
+  - resolution: 1440p
+    time: '17:44'
+    graphics_preset: Medium
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 68.8
+    p1_low: 52.7
+    p5_low: 60
+    min_fps: 57
+    max_fps: 79
+    duration: 144
+    frame_count: 9901
+  - resolution: 1440p
+    time: '17:49'
+    graphics_preset: High
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 54.8
+    p1_low: 44.2
+    p5_low: 49
+    min_fps: 46
+    max_fps: 64
+    duration: 144
+    frame_count: 7896
+  - resolution: 1440p
+    time: '17:53'
+    graphics_preset: Very High
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 35.8
+    p1_low: 29.7
+    p5_low: 32
+    min_fps: 30
+    max_fps: 41
+    duration: 144
+    frame_count: 5159
+  - resolution: 1440p
+    time: '17:58'
+    graphics_preset: Cinematic
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 31.3
+    p1_low: 25.9
+    p5_low: 27
+    min_fps: 26
+    max_fps: 36
+    duration: 144
+    frame_count: 4500
+  - resolution: 1080p
+    time: '18:03'
+    graphics_preset: Cinematic
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 36.8
+    p1_low: 31.3
+    p5_low: 32
+    min_fps: 31
+    max_fps: 43
+    duration: 144
+    frame_count: 5296
+  - resolution: 1080p
+    time: '18:07'
+    graphics_preset: Very High
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 42.7
+    p1_low: 35.8
+    p5_low: 38
+    min_fps: 36
+    max_fps: 51
+    duration: 144
+    frame_count: 6149
+  - resolution: 1080p
+    time: '18:12'
+    graphics_preset: High
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 69.5
+    p1_low: 56.2
+    p5_low: 62
+    min_fps: 57
+    max_fps: 82
+    duration: 144
+    frame_count: 10010
+  - resolution: 1080p
+    time: '18:17'
+    graphics_preset: Medium
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 87.1
+    p1_low: 70.4
+    p5_low: 76
+    min_fps: 71
+    max_fps: 100
+    duration: 144
+    frame_count: 12541
+  - resolution: 1080p
+    time: '18:21'
+    graphics_preset: Low
+    upscaling: FSR 3 Quality
+    preset_upscaling: true
+    avg_fps: 117.9
+    p1_low: 90.1
+    p5_low: 108
+    min_fps: 94
+    max_fps: 139
+    duration: 144
+    frame_count: 16972
+system:
+  os: windows
+  os_detail: Windows 11 Pro 26H2
+  cpu: AMD Ryzen 7 9800X3D 8-Core Processor
+  memory_gb: 64
+  memory_type: DDR5-6000
+  memory_channels: 2
+  driver: '621.01'
+  graphics_api: DX12
+proof:
+  method: presentmon

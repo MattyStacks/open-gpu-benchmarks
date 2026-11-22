@@ -11,10 +11,19 @@
 - Crawlable summaries: <https://opengpubenchmarks.com/benchmarks/>,
   <https://opengpubenchmarks.com/llms.txt>, <https://opengpubenchmarks.com/llms-full.txt>
 - Blog: <https://opengpubenchmarks.com/blog/> (RSS at `/blog/rss.xml`)
-- Current version: `v1.19.0.0` (2026-11-17). Versions are now
+- Current version: `v1.19.1.0` (2026-11-22). Versions are now
   `MAJOR.MINOR.DATA.POST`, always four parts (see the Versioning section of
   [CHANGELOG.md](../CHANGELOG.md)). Every PR except a data-only result
   submission bumps it; a catalog PR (new GPUs) is a DATA bump.
+  - v1.19.1.0: 121 official Windows runs on the RTX 2080 Ti
+    (`am5_9800x3d_ddr5`, NVIDIA 621.01): 45 Black Myth: Wukong Benchmark
+    Tool runs (new game `black_myth_wukong_benchmark_tool`; native TSR 100
+    plus DLSS Quality and FSR 3 Quality, recorded like Cyberpunk's preset
+    upscaling with `preset_upscaling: true`), 56 Cyberpunk 2077 runs, and
+    20 OpenBenchmarker Neon Flythrough runs (`_2`, beside the Linux file).
+    They were staged on the maintainer's NAS (`\\NAS\benchmarks`,
+    `COMMIT_STEPS.md`) by the benchmarking PC and copied in unchanged
+    apart from CRLF → LF.
   - v1.19.0.0: integrated GPU IDs use `shared` in place of `<N>gb`
     (`<chip>_shared_<oem>_<model>`, `memory.shared: true`, no
     `capacity_gb`), and igpu/handheld runs may record
@@ -826,7 +835,7 @@ Cyberpunk 2077 built-in benchmark runs into result files; the user guide is
 `rtx_2080_ti_11gb_zotac_gaming_blower`, `steam_machine_8gb_valve`, and the handhelds `steam_deck_lcd_16gb`,
 `legion_go_s_z1_extreme_16gb`, `legion_go_s_z1_extreme_32gb`,
 `onexplayer_3_arc_g3_extreme_32gb`) plus 310 reference files under
-`data/gpus/reference/`, 163 official result runs, 1 community run, and 153
+`data/gpus/reference/`, 284 official result runs, 1 community run, and 271
 dashboard summaries. The official runs are Cyberpunk 2077 built-in benchmark
 runs on Windows at 1080p, 1440p, and 4K (RTX 5080) and on SteamOS with Proton
 at 1080p and 1440p (Steam Machine, `steam_machine_32gb_ddr5` bench) and on
@@ -837,7 +846,10 @@ bench), imported with
 Flythrough runs (720p to 4K, Low to Extreme) and 4 official Helldivers 2
 gameplay runs (1080p, Low to High, MangoHud with raw frame logs) on the same bench.
 The RTX 2080 Ti also has 20 official OpenBenchmarker Neon Flythrough runs
-(720p to 4K, Low to Extreme) on the 9800X3D bench. The community run is an OpenBenchmarker Neon Flythrough result
+(720p to 4K, Low to Extreme) on the 9800X3D bench under Linux, and on Windows
+11 (same bench) 56 Cyberpunk 2077 runs, 20 OpenBenchmarker runs, and 45
+Black Myth: Wukong Benchmark Tool runs (1080p to 4K, Low to Cinematic, native
+plus DLSS Quality and FSR 3 Quality, PresentMon). The community run is an OpenBenchmarker Neon Flythrough result
 at 4K (a browser WebGL2 benchmark). `scripts/preflight.py` fails a code PR
 when these counts don't match `data/`. `data/` is what
 CI builds and deploys, so it holds only real data. With no runs,

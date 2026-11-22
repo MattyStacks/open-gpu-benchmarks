@@ -1,0 +1,112 @@
+# Imported by scripts/import_cyberpunk.py from Cyberpunk 2077's built-in
+# benchmark. Each benchmark_run is a folder in the game's benchmarkResults;
+# re-running the script skips runs listed here and adds new ones.
+gpu_id: rtx_2080_ti_11gb_zotac_gaming_blower
+testbench_id: am5_9800x3d_ddr5
+benchmark_type: game
+game_id: cyberpunk_2077_benchmark
+date: '2026-11-03'
+version: '2.5'
+frame_generation: false
+result:
+  - benchmark_run: benchmark_2026-11-03_20-27-35
+    time: '20:27:35'
+    resolution: 1440p
+    graphics_preset: 'Ultra'
+    avg_fps: 66.01
+    p1_low: 52.12
+    min_fps: 55.51
+    max_fps: 84.80
+    duration: 64.25
+    frame_count: 4241
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-03_20-29-34
+    time: '20:29:34'
+    resolution: 1440p
+    graphics_preset: 'High'
+    avg_fps: 78.62
+    p1_low: 66.29
+    min_fps: 68.33
+    max_fps: 94.13
+    duration: 64.25
+    frame_count: 5052
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-03_20-31-45
+    time: '20:31:45'
+    resolution: 1440p
+    graphics_preset: 'Medium'
+    avg_fps: 90.3
+    p1_low: 76.45
+    min_fps: 78.51
+    max_fps: 103.25
+    duration: 64.25
+    frame_count: 5802
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-03_20-33-44
+    time: '20:33:44'
+    resolution: 1440p
+    graphics_preset: 'Low'
+    avg_fps: 116.78
+    p1_low: 96.9
+    min_fps: 99.88
+    max_fps: 137.04
+    duration: 64.25
+    frame_count: 7503
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-03_21-27-43
+    time: '21:27:43'
+    resolution: 1080p
+    graphics_preset: 'Low'
+    avg_fps: 169.23
+    p1_low: 135.5
+    min_fps: 141.43
+    max_fps: 201.39
+    duration: 64.26
+    frame_count: 10874
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-03_21-32-49
+    time: '21:32:49'
+    resolution: 1080p
+    graphics_preset: 'Medium'
+    avg_fps: 138.2
+    p1_low: 113.77
+    min_fps: 118.16
+    max_fps: 162.24
+    duration: 64.26
+    frame_count: 8880
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-03_21-34-49
+    time: '21:34:49'
+    resolution: 1080p
+    graphics_preset: 'High'
+    avg_fps: 117.73
+    p1_low: 93.55
+    min_fps: 99.47
+    max_fps: 142.28
+    duration: 64.25
+    frame_count: 7564
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-03_21-37-55
+    time: '21:37:55'
+    resolution: 1080p
+    graphics_preset: 'Ultra'
+    avg_fps: 105.84
+    p1_low: 83.61
+    min_fps: 87.43
+    max_fps: 133.34
+    duration: 64.25
+    frame_count: 6800
+    display_mode: Fullscreen
+system:
+  os: windows
+  os_detail: Windows 11 Pro
+  os_build: '10.0.26300'
+  cpu: AMD Ryzen 7 9800X3D 8-Core Processor
+  memory_gb: 64
+  memory_type: DDR5-6000
+  memory_channels: 2
+  driver: '621.01'
+  graphics_api: DX12
+proof:
+  method: in_game_benchmark
+  format: cyberpunk_summary_json

@@ -28,6 +28,12 @@ games:
     type: synthetic
     year: 2024
     notes: The full 4K test. Steel Nomad Light is a different test and gets its own entry.
+  - id: black_myth_wukong_benchmark_tool
+    name: 'Black Myth: Wukong Benchmark Tool'
+    type: game
+    year: 2024
+    steam_appid: 3132990
+    notes: The free standalone benchmark tool, not the full game.
   - id: cyberpunk_2077_benchmark
     name: Cyberpunk 2077 (built-in benchmark)
     type: game

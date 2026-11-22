@@ -34,6 +34,9 @@ export const test = base.extend<{ problems: Problems }>({
     page.on("pageerror", (error) => problems.list.push(`uncaught exception: ${error.message}`));
     page.on("requestfailed", (request) => {
       if (!request.url().startsWith("http://127.0.0.1")) return;
+      // syncFavicon() swaps the favicon link to a data: URL, which cancels a load still in flight. Only that
+      // cancel is forgiven: a missing favicon is still an HTTP 404 below (states.spec.ts tests both).
+      if (request.url().includes("/favicons/") && request.failure()?.errorText === "net::ERR_ABORTED") return;
       problems.list.push(`failed request: ${request.url()} (${request.failure()?.errorText})`);
     });
     page.on("response", (response) => {

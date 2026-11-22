@@ -1,0 +1,174 @@
+# Imported by scripts/import_cyberpunk.py from Cyberpunk 2077's built-in
+# benchmark. Each benchmark_run is a folder in the game's benchmarkResults;
+# re-running the script skips runs listed here and adds new ones.
+gpu_id: rtx_2080_ti_11gb_zotac_gaming_blower
+testbench_id: am5_9800x3d_ddr5
+benchmark_type: game
+game_id: cyberpunk_2077_benchmark
+date: '2026-11-02'
+version: '2.5'
+frame_generation: false
+result:
+  - benchmark_run: benchmark_2026-11-02_18-47-15
+    time: '18:47:15'
+    resolution: 4K
+    graphics_preset: 'Low'
+    upscaling: 'FSR 2.1 Auto'
+    preset_upscaling: true
+    avg_fps: 107.82
+    p1_low: 91.24
+    min_fps: 94.34
+    max_fps: 123.18
+    duration: 64.26
+    frame_count: 6929
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_18-49-30
+    time: '18:49:30'
+    resolution: 4K
+    graphics_preset: 'Medium'
+    upscaling: 'FSR 2.1 Auto'
+    preset_upscaling: true
+    avg_fps: 90.32
+    p1_low: 78
+    min_fps: 80.32
+    max_fps: 102.23
+    duration: 64.26
+    frame_count: 5804
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_18-51-22
+    time: '18:51:22'
+    resolution: 4K
+    graphics_preset: 'High'
+    upscaling: 'FSR 2.1 Quality'
+    preset_upscaling: true
+    avg_fps: 56.85
+    p1_low: 49.37
+    min_fps: 50.54
+    max_fps: 65.39
+    duration: 64.24
+    frame_count: 3652
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_18-53-37
+    time: '18:53:37'
+    resolution: 4K
+    graphics_preset: 'Ultra'
+    upscaling: 'FSR 2.1 Quality'
+    preset_upscaling: true
+    avg_fps: 38.73
+    p1_low: 32.97
+    min_fps: 34.47
+    max_fps: 49.30
+    duration: 64.23
+    frame_count: 2488
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_18-56-19
+    time: '18:56:19'
+    resolution: 4K
+    graphics_preset: 'Steam Deck'
+    upscaling: 'FSR 2.1 Balanced'
+    preset_upscaling: true
+    avg_fps: 74.03
+    p1_low: 63.53
+    min_fps: 65.29
+    max_fps: 86.68
+    duration: 64.24
+    frame_count: 4756
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_18-58-27
+    time: '18:58:27'
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Low'
+    upscaling: 'DLSS Auto'
+    preset_upscaling: true
+    avg_fps: 39.76
+    p1_low: 34.83
+    min_fps: 36.10
+    max_fps: 45.84
+    duration: 64.20
+    frame_count: 2553
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_19-00-22
+    time: '19:00:22'
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Medium'
+    upscaling: 'DLSS Auto'
+    preset_upscaling: true
+    avg_fps: 30.04
+    p1_low: 26.08
+    min_fps: 26.97
+    max_fps: 33.79
+    duration: 64.20
+    frame_count: 1929
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_19-02-23
+    time: '19:02:23'
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Ultra'
+    upscaling: 'DLSS Auto'
+    preset_upscaling: true
+    avg_fps: 27.55
+    p1_low: 23.25
+    min_fps: 24.24
+    max_fps: 31.00
+    duration: 64.22
+    frame_count: 1769
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_19-04-55
+    time: '19:04:55'
+    resolution: 4K
+    graphics_preset: 'Ray Tracing: Overdrive'
+    upscaling: 'DLSS Auto'
+    preset_upscaling: true
+    avg_fps: 15.98
+    p1_low: 13.65
+    min_fps: 14.14
+    max_fps: 17.98
+    duration: 64.96
+    frame_count: 1038
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_19-16-08
+    time: '19:16:08'
+    resolution: 4K
+    graphics_preset: 'High'
+    avg_fps: 37.45
+    p1_low: 31.24
+    min_fps: 32.81
+    max_fps: 43.15
+    duration: 64.22
+    frame_count: 2405
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_19-18-09
+    time: '19:18:09'
+    resolution: 4K
+    graphics_preset: 'Medium'
+    avg_fps: 43.27
+    p1_low: 35.7
+    min_fps: 36.86
+    max_fps: 49.78
+    duration: 64.24
+    frame_count: 2780
+    display_mode: Fullscreen
+  - benchmark_run: benchmark_2026-11-02_19-20-06
+    time: '19:20:06'
+    resolution: 4K
+    graphics_preset: 'Low'
+    avg_fps: 60.05
+    p1_low: 50.86
+    min_fps: 52.46
+    max_fps: 70.18
+    duration: 64.21
+    frame_count: 3856
+    display_mode: Fullscreen
+system:
+  os: windows
+  os_detail: Windows 11 Pro
+  os_build: '10.0.26300'
+  cpu: AMD Ryzen 7 9800X3D 8-Core Processor
+  memory_gb: 64
+  memory_type: DDR5-6000
+  memory_channels: 2
+  driver: '621.01'
+  graphics_api: DX12
+proof:
+  method: in_game_benchmark
+  format: cyberpunk_summary_json

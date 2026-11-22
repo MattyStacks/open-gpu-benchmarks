@@ -43,6 +43,10 @@ AI agent. The same rule is in `CLAUDE.md`, `AGENTS.md`, and
   `sources-missing` warning), because zotac.com refused automated fetches.
   Add the boost clock, power (the card reports a 250 W default limit),
   connectors, outputs, and release from ZOTAC's product page, with sources.
+- [ ] **Black Myth: Wukong ray-tracing runs.** The Full Ray Tracing sweep
+  crashed the game on the RTX 2080 Ti, so v1.20.0.0 has only RT-off runs.
+  Run it on a card that holds up, and decide how RT runs are labeled
+  (preset name vs a separate field) before they go in.
 - [ ] **Cyberpunk importer: no `mesa` on NVIDIA.** Under Proton on an NVIDIA
   card, `linux_system_detail()` recorded the installed Mesa package
   (`26.2.626`), which doesn't render anything there; it was removed by hand
@@ -460,7 +464,17 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   labels are grouping keys, pinned by `check_cyberpunk_labels()` in
   `scripts/test_build.py`; update that test and re-import together.
 
+- [ ] **`check_issue_to_result` fails on Windows.** The benchmarking PC
+  reported (2026-11-19) that `test_build.py` makes a temp folder named
+  `Memory (GB)**`, which isn't a legal Windows path. Sanitize the name.
+
 ## Recently completed
+
+- **v1.20.0.0 (2026-11-22, branch `data/rtx-2080-ti-windows-wukong`): RTX 2080 Ti on Windows**
+  - 121 official runs (Wukong, Cyberpunk, OpenBenchmarker) from the NAS
+    staging share, and the `black_myth_wukong_benchmark_tool` game.
+  - Browser tests sweep the published data (`real_data.spec.ts`) and no
+    longer flake on a cancelled favicon load.
 
 - **v1.19.0.0 (2026-11-17, branch `feat/igpu-shared-id`): integrated GPU IDs**
   - `igpu` IDs use `shared` in place of `<N>gb`; optional per-run

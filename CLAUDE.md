@@ -100,7 +100,7 @@ toolchain beyond Python.
 - Repo: `MattyStacks/open-gpu-benchmarks`, default branch `main`
 - Site: <https://opengpubenchmarks.com> (Cloudflare Pages, canonical); mirror
   <https://mattystacks.github.io/open-gpu-benchmarks/> (GitHub Pages)
-- Current development version: `v1.19.0.0` (`RELEASE_VERSION` in
+- Current development version: `v1.20.0.0` (`RELEASE_VERSION` in
   [scripts/build.py](scripts/build.py), with `SCHEMA_VERSION` alongside it).
   Versions are `MAJOR.MINOR.DATA.POST`, always four parts; see the
   Versioning section of [CHANGELOG.md](CHANGELOG.md)
@@ -178,7 +178,8 @@ docs/PROCESSING_ISSUES.md          what a maintainer does with a needs-maintaine
 scripts/preflight.py               every local check in one command (--fast before a commit,
                                    default before a push/PR); reports all failures with fixes
 tests/e2e/                         Playwright browser tests for the dashboard (own package.json);
-                                   serve_fixtures.py builds the fixtures into tests/e2e/.site.
+                                   serve_fixtures.py builds the fixtures into tests/e2e/.site, and
+                                   data/ into .site/real for real_data.spec.ts (every real game/resolution).
                                    CI runs them in the mcr.microsoft.com/playwright:v<version>-noble
                                    image, whose tag must equal @playwright/test (bump them together;
                                    test_build.check_playwright_image)

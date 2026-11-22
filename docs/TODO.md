@@ -468,6 +468,13 @@ Follow-ups to average-only results and `proof.method` (PR #13).
   reported (2026-11-19) that `test_build.py` makes a temp folder named
   `Memory (GB)**`, which isn't a legal Windows path. Sanitize the name.
 
+- [ ] **Flaky favicon request in the browser tests.** Once in about seven
+  runs (2026-11-22), `details.spec.ts` "a run's system RAM shows in the run
+  line" failed on `failed request: .../favicons/favicon.svg
+  (net::ERR_ABORTED)`: the page moved on before the favicon finished. The
+  problem collector in `tests/e2e/helpers.ts` should ignore aborted favicon
+  requests (or wait for them).
+
 ## Recently completed
 
 - **v1.19.1.0 (2026-11-22, branch `data/rtx-2080-ti-windows-wukong`): RTX 2080 Ti on Windows**
